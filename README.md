@@ -52,9 +52,34 @@ The project enforces separation of concerns, secure access via roles (ROLE_ADMIN
 
 ## Setting up the Project
 # Prerequisites
+Authentication Setup (Using Postman)
 
+To interact with the API, you must authenticate using JWT. Follow these steps to configure Postman:
 
+    Locate the JWT secret
+    Open the .env file in the project root and copy the value of the JWT_SECRET property.
 
+    Open Postman and go to the Authorization tab.
+
+    From the drop-down menu, select "Bearer Token" or "JWT Bearer" (depending on your Postman version and plugins).
+
+    Set the following parameters:
+
+        Algorithm: HS512
+
+        Secret: paste the secret key copied from the .env file
+
+        Leave other fields as default
+
+    Use the appropriate endpoint to create the first user:
+
+        Create a super admin user first (required to manage the system)
+
+        Then proceed to create admin and regular employee accounts
+
+    After logging in, you will receive a JWT token.
+
+        Use this token in the Authorization header as Bearer <token> for all protected routes.
 
 ## 🧪 Run & Test
 
@@ -113,8 +138,8 @@ cd erp-v1
 
 
 
-##Author
+#Author
 
 # Jovan Golić - Author of this project.
 
-## License
+# License
