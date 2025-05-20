@@ -37,9 +37,8 @@ This is the backend component of a modular ERP system tailored for micro, small 
 - **security/ --> JWT handling and auth config
 - **mapper/ --> Custom mappers for DTO conversion
 
-## Architecture Description (Moderate Complexity)
-
-# This backend follows a layered architecture:
+# Architecture Description (Moderate Complexity)
+This backend follows a layered architecture:
 
     Controller Layer (REST API): Exposes endpoints for clients to interact with resources like users, products, inventories, etc.
 
@@ -49,7 +48,7 @@ This is the backend component of a modular ERP system tailored for micro, small 
 
     Entity Layer: Contains all domain models that represent the database tables (e.g., User, Warehouse, InventoryItem, Token, etc.)
 
-# The project enforces separation of concerns, secure access via roles (ROLE_ADMIN, ROLE_STORAGE_EMPLOYEE, ROLE_STORAGE_FOREMAN), and integrates JWT-based authentication for session control.
+The project enforces separation of concerns, secure access via roles (ROLE_ADMIN, ROLE_STORAGE_EMPLOYEE, ROLE_STORAGE_FOREMAN), and integrates JWT-based authentication for session control.
 
 ## Setting up the Project
 # Prerequisites
@@ -59,7 +58,7 @@ This is the backend component of a modular ERP system tailored for micro, small 
 
 ## 🧪 Run & Test
 
-```bash
+bash
 mvn clean install -DskipTests
 mvn spring-boot:run
 
