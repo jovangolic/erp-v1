@@ -128,27 +128,31 @@ cd erp-v1
 Endpoint: POST http://localhost:8080/users/create-superadmin
 Body:
 🧑‍💼 Superadmin Registration
+```json
 {
-    "firstName": "Super",
-    "lastName": "Admin",
-    "email": "superadmin@example.com",
-    "username": "superadmin",
-    "password": "adminpassword",
-    "phoneNumber": "123456789",
-    "address": "Super Admin Address",
-    "roleIds": [1]  
+  "firstName": "Super",
+  "lastName": "Admin",
+  "email": "superadmin@example.com",
+  "username": "superadmin",
+  "password": "adminpassword",
+  "phoneNumber": "123456789",
+  "address": "Super Admin Address",
+  "roleIds": [1]
 }
+```
 🔐 Login as Superadmin
 Endpoint: POST http://localhost:8080/auth/login
+```json
 {
   "identifier": "superadmin@example.com",
   "password": "yourpassword"
 }
-
+```
 👤 Admin Registration
 
 Endpoint: POST http://localhost:8080/users/create-admin
 Body:
+```json
 {
   "firstName": "Dragan",
   "lastName": "Torbica",
@@ -159,23 +163,26 @@ Body:
   "address": "Detelinara 100, Novi Sad",
   "roleIds": [2]
 }
+```
 🔐 Login as Admin
 Endpoint: POST http://localhost:8080/auth/login
+```json
 {
   "identifier": "dragan@gmail.com",
   "password": "dragan10"
 }
+```
 
-👤 Users Registration
-Login as Admin  POST http://localhost:8080/auth/login
-{
-  "identifier": "dragan@gmail.com",
-  "password": "dragan10"
-}
-Then create employee and foreman
+👥 Creating Employees (as Admin)
+
+You must be logged in as Admin to create users with other roles.
+
+📋 ROLE_STORAGE_FOREMAN
+
 Endpoint: POST http://localhost:8080/users/admin/create-user
 Body:
 For ROLE_STORAGE_FOREMAN
+```json
 {
     "firstName": "Djorje",
     "lastName": "Cvarkov",
@@ -186,9 +193,13 @@ For ROLE_STORAGE_FOREMAN
     "address": "Pejicevi salasi, Novosadski put 1",
     "roleIds": [3]	
 }
-Endpoint: POST http://localhost:8080/users/admin/create-user
+```
+👥 Create Storage Employee (ROLE_STORAGE_EMPLOYEE)
+
+Endpoint:
+POST http://localhost:8080/users/admin/create-user
 Body:
-For ROLE_STORAGE_EMPLOYEE
+```json
 {
     "firstName": "Bosko",
     "lastName": "Boskic",
@@ -199,8 +210,7 @@ For ROLE_STORAGE_EMPLOYEE
     "address": "Vase Stajica 10, Novi Sad",
     "roleIds": [4]	
 }
-
-#Author
+```
 
 # Jovan Golić - Author of this project.
 
