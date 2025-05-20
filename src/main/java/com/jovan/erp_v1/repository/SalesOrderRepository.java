@@ -1,6 +1,5 @@
 package com.jovan.erp_v1.repository;
 
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -18,10 +17,10 @@ import com.jovan.erp_v1.model.SalesOrder;
 @Repository
 public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 
-	List<SalesOrder> findByBuyer(Buyer buyer);
+    List<SalesOrder> findByBuyer(Buyer buyer);
 
     Optional<SalesOrder> findByInvoice(Invoice invoice);
-    
+
     List<SalesOrder> findByInvoice_Id(Long invoiceId);
 
     List<SalesOrder> findByStatus(OrderStatus status);
@@ -30,11 +29,17 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 
     @Query("SELECT s FROM SalesOrder s WHERE s.orderDate BETWEEN :start AND :end")
     List<SalesOrder> findByOrderDateBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
-    
+
     @Query("SELECT COUNT(s) FROM SalesOrder s WHERE YEAR(s.orderDate) = :year")
     int countByOrderDateYear(@Param("year") int year);
-    
-    Optional<SalesOrder> findById(Long id); 
+
+    Optional<SalesOrder> findById(Long id);
+
     Optional<SalesOrder> findByOrderNumber(String orderNumber);
-	
+
+    Integer countByStatus(OrderStatus status);
+
+    @Query("SELECT s.status, COUNT(s) FROM SalesOrder s GROUP BY s.status")
+    List<Object[]> countOrdersByStatus();
+
 }

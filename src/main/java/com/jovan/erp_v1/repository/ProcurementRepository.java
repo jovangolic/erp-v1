@@ -16,14 +16,17 @@ import com.jovan.erp_v1.model.Procurement;
 public interface ProcurementRepository extends JpaRepository<Procurement, Long> {
 
 	List<Procurement> findByDate(LocalDateTime date);
-	
+
 	List<Procurement> findByTotalCost(BigDecimal totalCost);
-	
+
 	@Query("SELECT p FROM Procurement p WHERE p.date BETWEEN :start AND :end")
 	List<Procurement> findByDateBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
-	
+
 	@Query("SELECT p FROM Procurement p WHERE p.totalCost BETWEEN :min AND :max")
 	List<Procurement> findByTotalCostBetween(@Param("min") BigDecimal min, @Param("max") BigDecimal max);
-	
+
 	Optional<Procurement> findById(Long id);
+
+	@Query("SELECT SUM(p.totalCost) FROM Procurement p")
+	BigDecimal sumTotalCost();
 }
