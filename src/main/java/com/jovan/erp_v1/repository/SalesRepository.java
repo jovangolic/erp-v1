@@ -14,6 +14,8 @@ import com.jovan.erp_v1.dto.DailySalesDTO;
 import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.Sales;
 
+import jakarta.persistence.MapKeyColumn;
+
 @Repository
 public interface SalesRepository extends JpaRepository<Sales, Long> {
 
@@ -27,7 +29,10 @@ public interface SalesRepository extends JpaRepository<Sales, Long> {
 
 	List<Sales> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
-	@Query("SELECT new com.example.dto.DailySalesDTO(DATE(s.createdAt), SUM(s.totalPrice)) " +
-			"FROM Sales s WHERE s.createdAt >= :startDate GROUP BY DATE(s.createdAt) ORDER BY DATE(s.createdAt)")
-	List<DailySalesDTO> getDailySalesLast7Days(@Param("startDate") LocalDate startDate);
+	@Query("SELECT s.createdAt.toLocalDate() AS date, SUM(s.totalPrice) FROM Sales s WHERE s.createdAt >= :fromDate GROUP BY s.createdAt.toLocalDate()")
+	@MapKeyColumn(name = "date")
+	List<DailySalesDTO> getDailySalesLast7Days(@Param("fromDate") LocalDate fromDate);
+
+	@Query("SELECT SUM(s.totalPrice) FROM Sales s")
+	BigDecimal sumAllSalesRevenue();
 }
