@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.dto.DailySalesDTO;
@@ -35,6 +36,7 @@ public class DashboardService implements IDashboardService {
     private final ProcurementRepository procurementRepository;
     private final ShiftRepository shiftRepository;
 
+    @Cacheable(value = "dashboardCache")
     @Override
     public DashboardResponse getDashboardData() {
         Long totalUsers = userRepository.count();

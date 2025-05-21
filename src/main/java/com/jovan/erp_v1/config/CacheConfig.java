@@ -11,15 +11,14 @@ import org.springframework.context.annotation.Configuration;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 
-
 @Configuration
 @EnableCaching
 public class CacheConfig {
 
-	@Bean
+    @Bean
     public CacheManager cacheManager() {
-		CaffeineCacheManager cacheManager = new CaffeineCacheManager();
-        cacheManager.setCacheNames(List.of("otpAttempts")); // Define the cache name
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
+        cacheManager.setCacheNames(List.of("dashboardCache")); // Define the cache name
         cacheManager.setCaffeine(caffeineConfig());
         return cacheManager;
     }
