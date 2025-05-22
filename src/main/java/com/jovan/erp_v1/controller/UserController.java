@@ -39,77 +39,75 @@ public class UserController {
 	private final PasswordEncoder passwordEncoder;
 	private final RoleRepository roleRepository;
 	private final UserRepository userRepository;
-	
+
 	@PostMapping("/create-superadmin")
 	public ResponseEntity<UserResponse> createSuperAdmin(@Valid @RequestBody UserRequest userRequest) {
-	    UserResponse userResponse = userService.createSuperAdmin(userRequest);
-	    return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
+		UserResponse userResponse = userService.createSuperAdmin(userRequest);
+		return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
 	}
-	
-	
-    @PostMapping("/create-admin")
-    public ResponseEntity<UserResponse> createAdmin(@Valid @RequestBody UserRequest userRequest) {
-        UserResponse userResponse = userService.createAdmin(userRequest);
-        return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
-    }
-	
-	
+
+	@PostMapping("/create-admin")
+	public ResponseEntity<UserResponse> createAdmin(@Valid @RequestBody UserRequest userRequest) {
+		UserResponse userResponse = userService.createAdmin(userRequest);
+		return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
+	}
+
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/admin/create-user")
-	public ResponseEntity<UserResponse> createUserByAdmin(@Valid @RequestBody UserRequest request){
+	public ResponseEntity<UserResponse> createUserByAdmin(@Valid @RequestBody UserRequest request) {
 		UserResponse createdUser = userService.createUserByAdmin(request);
 		return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
 	}
-	
+
 	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/get-all")
 	public ResponseEntity<List<User>> getAllUsers() {
-	       return ResponseEntity.ok(userService.getUsers());
-	   }
+		return ResponseEntity.ok(userService.getUsers());
+	}
 
 	@PreAuthorize("hasRole('ADMIN')")
-	@DeleteMapping("/email/{email}")
-	public ResponseEntity<Void> deleteUser(@PathVariable String email) {
-	        userService.deleteUser(email);
-	        return ResponseEntity.noContent().build();
-	    }
-	
+	@DeleteMapping("/delete/{userId}")
+	public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+		userService.deleteUser(userId);
+		return ResponseEntity.noContent().build();
+	}
+
 	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/email/{email}")
-    public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(userService.getUserByEmail(email));
-    }
+	public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
+		return ResponseEntity.ok(userService.getUserByEmail(email));
+	}
 
 	@PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/identifier/{identifier}")
-    public ResponseEntity<User> getUserByIdentifier(@PathVariable String identifier) {
-        return ResponseEntity.ok(userService.getUserByIdentifier(identifier));
-    }
-	
+	@GetMapping("/identifier/{identifier}")
+	public ResponseEntity<User> getUserByIdentifier(@PathVariable String identifier) {
+		return ResponseEntity.ok(userService.getUserByIdentifier(identifier));
+	}
+
 	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
-    }
+	public ResponseEntity<User> getUserById(@PathVariable Long id) {
+		return ResponseEntity.ok(userService.getUserById(id));
+	}
 
 	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}")
 	public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody UserRequest request) {
-	    return ResponseEntity.ok(userService.updateUser(id, request));
+		return ResponseEntity.ok(userService.updateUser(id, request));
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/role/{roleName}")
-    public ResponseEntity<List<UserResponse>> getUsersByRole(@PathVariable String roleName) {
-        return ResponseEntity.ok(userService.getUsersByRoleName(roleName));
-    }
-	
+	@GetMapping("/role/{roleName}")
+	public ResponseEntity<List<UserResponse>> getUsersByRole(@PathVariable String roleName) {
+		return ResponseEntity.ok(userService.getUsersByRoleName(roleName));
+	}
+
 	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/username/{username}")
-    public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
-        return userService.findByUsername(username)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-	
+	public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
+		return userService.findByUsername(username)
+				.map(ResponseEntity::ok)
+				.orElse(ResponseEntity.notFound().build());
+	}
+
 }

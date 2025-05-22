@@ -35,10 +35,14 @@ public class ShelfService implements IShelfService {
 		Shelf shelf = new Shelf();
 		shelf.setRowCount(request.rowCount());
 		shelf.setCols(request.cols());
-		Storage storage = storageRepository.findById(request.storageId()).orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " +request.storageId()));
+		Storage storage = storageRepository.findById(request.storageId())
+				.orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " + request.storageId()));
 		shelf.setStorage(storage);
-		if(request.goods() != null && !request.goods().isEmpty()) {
+		if (request.goods() != null && !request.goods().isEmpty()) {
 			List<Goods> goods = goodsRepository.findAllById(request.goods());
+			for (Goods g : goods) {
+				g.setShelf(shelf); // ✳️ Bitan korak
+			}
 			shelf.setGoods(goods);
 		}
 		Shelf saved = shelfRepository.save(shelf);
@@ -48,17 +52,25 @@ public class ShelfService implements IShelfService {
 	@Transactional
 	@Override
 	public ShelfResponse updateShelf(Long id, ShelfRequest request) {
-		Shelf shelf = shelfRepository.findById(id).orElseThrow(() -> new ShelfNotFoundException("Shelf not found with id: "+ id));
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
+		Shelf shelf = shelfRepository.findById(id)
+				.orElseThrow(() -> new ShelfNotFoundException("Shelf not found with id: " + id));
 		shelf.setRowCount(request.rowCount());
 		shelf.setCols(request.cols());
-		Storage storage = storageRepository.findById(request.storageId()).orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " +request.storageId()));
+		Storage storage = storageRepository.findById(request.storageId())
+				.orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " + request.storageId()));
 		shelf.setStorage(storage);
 		if (request.goods() != null && !request.goods().isEmpty()) {
-	        List<Goods> goodsList = goodsRepository.findAllById(request.goods());
-	        shelf.setGoods(goodsList);
-	    } else {
-	        shelf.setGoods(new ArrayList<>());
-	    }
+			List<Goods> goodsList = goodsRepository.findAllById(request.goods());
+			for (Goods g : goodsList) {
+				g.setShelf(shelf); // ✳️ važno
+			}
+			shelf.setGoods(goodsList);
+		} else {
+			shelf.setGoods(new ArrayList<>());
+		}
 		Shelf updated = shelfRepository.save(shelf);
 		return new ShelfResponse(updated);
 	}
@@ -66,7 +78,7 @@ public class ShelfService implements IShelfService {
 	@Transactional
 	@Override
 	public void deleteShelf(Long id) {
-		if(!shelfRepository.existsById(id)) {
+		if (!shelfRepository.existsById(id)) {
 			throw new ShelfNotFoundException("Shelf not found with id: " + id);
 		}
 		shelfRepository.deleteById(id);
@@ -96,8 +108,8 @@ public class ShelfService implements IShelfService {
 
 	@Override
 	public Optional<ShelfResponse> findByRowCountAndColsAndStorageId(Integer rows, Integer cols, Long storageId) {
-	    return shelfRepository.findByRowCountAndColsAndStorageId(rows, cols, storageId)
-	            .map(ShelfResponse::new);
+		return shelfRepository.findByRowCountAndColsAndStorageId(rows, cols, storageId)
+				.map(ShelfResponse::new);
 	}
 
 	@Override
@@ -113,5 +125,5 @@ public class ShelfService implements IShelfService {
 				.map(ShelfResponse::new)
 				.collect(Collectors.toList());
 	}
-	
+
 }

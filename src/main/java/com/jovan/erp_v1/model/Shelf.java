@@ -18,40 +18,40 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-//@NoArgsConstructor
+// @NoArgsConstructor
 @AllArgsConstructor
 public class Shelf {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@Column(name = "row_count")
-    private Integer rowCount;
-	
+	private Integer rowCount;
+
 	@Column
 	private Integer cols;
-	
+
 	@ManyToOne
-	@JoinColumn(name="storage_id")
+	@JoinColumn(name = "storage_id")
 	private Storage storage;
-	
+
 	@OneToMany(mappedBy = "shelf", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Goods> goods;
 
 	public Shelf() {
-	    this.goods = new ArrayList<>();
+		this.goods = new ArrayList<>();
 	}
-	
+
 	public void generateShelves(Storage storage, int rows, int columns) {
-	    for (int i = 1; i <= rows; i++) {
-	        for (int j = 1; j <= columns; j++) {
-	            Shelf shelf = new Shelf();
-	            shelf.setRowCount(j);
-	            shelf.setCols(j);
-	            shelf.setStorage(storage);
-	            storage.addShelf(shelf); // koristi helper metodu
-	        }
-	    }
+		for (int i = 1; i <= rows; i++) {
+			for (int j = 1; j <= columns; j++) {
+				Shelf shelf = new Shelf();
+				shelf.setRowCount(i);
+				shelf.setCols(j);
+				shelf.setStorage(storage);
+				storage.addShelf(shelf); // koristi helper metodu
+			}
+		}
 	}
 }
