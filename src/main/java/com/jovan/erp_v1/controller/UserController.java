@@ -61,7 +61,7 @@ public class UserController {
 
 	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/get-all")
-	public ResponseEntity<List<User>> getAllUsers() {
+	public ResponseEntity<List<UserResponse>> getAllUsers() {
 		return ResponseEntity.ok(userService.getUsers());
 	}
 
@@ -91,7 +91,7 @@ public class UserController {
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
-	@PutMapping("/{id}")
+	@PutMapping("/update/{id}")
 	public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody UserRequest request) {
 		return ResponseEntity.ok(userService.updateUser(id, request));
 	}

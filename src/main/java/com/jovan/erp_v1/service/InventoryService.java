@@ -39,33 +39,40 @@ public class InventoryService implements IInventoryService {
 	public InventoryResponse create(InventoryRequest request) {
 		Inventory inventory = new Inventory();
 		User storageEmployee = userRepository.findById(request.storageEmployeeId())
-		        .orElseThrow(() -> new StorageEmployeeNotFoundException("Storage-Employee not found: " + request.storageEmployeeId()));
+				.orElseThrow(() -> new StorageEmployeeNotFoundException(
+						"Storage-Employee not found: " + request.storageEmployeeId()));
 		User storageForeman = userRepository.findById(request.storageForemanId())
-		        .orElseThrow(() -> new StorageForemanNotFoundException("Storage-Foreman not found: " + request.storageForemanId()));
+				.orElseThrow(() -> new StorageForemanNotFoundException(
+						"Storage-Foreman not found: " + request.storageForemanId()));
+		inventory.getInventoryItems().clear();
+		inventoryItemsRepository.deleteAllByInventoryId(request.id());
 		inventory.setStorageEmployee(storageEmployee);
-	    inventory.setStorageForeman(storageForeman);
-	    inventory.setDate(request.date());
-	    inventory.setAligned(request.aligned());
-	    inventory.setStatus(request.status());
-	    // Sačuvaj osnovni inventory (da dobije ID)
-	    Inventory savedInventory = inventoryRepository.save(inventory);
-	    // Mapiraj stavke i poveži sa tim inventarom
-	    List<InventoryItems> items = mapInventoryItemRequestsToEntities(request.inventoryItems(), savedInventory);
-	    // Sačuvaj sve stavke
-	    inventoryItemsRepository.saveAll(items);
-	    // Postavi u savedInventory da bi response imao popunjenu listu (opciono)
-	    savedInventory.setInventoryItems(items);
-	    return new InventoryResponse(savedInventory);
+		inventory.setStorageForeman(storageForeman);
+		inventory.setDate(request.date());
+		inventory.setAligned(request.aligned());
+		inventory.setStatus(request.status());
+		// Sačuvaj osnovni inventory (da dobije ID)
+		Inventory savedInventory = inventoryRepository.save(inventory);
+		// Mapiraj stavke i poveži sa tim inventarom
+		List<InventoryItems> items = mapInventoryItemRequestsToEntities(request.inventoryItems(), savedInventory);
+		// Sačuvaj sve stavke
+		inventoryItemsRepository.saveAll(items);
+		// Postavi u savedInventory da bi response imao popunjenu listu (opciono)
+		savedInventory.setInventoryItems(items);
+		return new InventoryResponse(savedInventory);
 	}
 
 	@Transactional
 	@Override
 	public InventoryResponse update(Long id, InventoryRequest request) {
-		Inventory inventory = inventoryRepository.findById(id).orElseThrow(() -> new InventoryNotFoundException("Inventory not found with id: " +id));
+		Inventory inventory = inventoryRepository.findById(id)
+				.orElseThrow(() -> new InventoryNotFoundException("Inventory not found with id: " + id));
 		User storageEmployee = userRepository.findById(request.storageEmployeeId())
-		        .orElseThrow(() -> new StorageEmployeeNotFoundException("Storage-Employee not found: " + request.storageEmployeeId()));
+				.orElseThrow(() -> new StorageEmployeeNotFoundException(
+						"Storage-Employee not found: " + request.storageEmployeeId()));
 		User storageForeman = userRepository.findById(request.storageForemanId())
-		        .orElseThrow(() -> new StorageForemanNotFoundException("Storage-Foreman not found: " + request.storageForemanId()));
+				.orElseThrow(() -> new StorageForemanNotFoundException(
+						"Storage-Foreman not found: " + request.storageForemanId()));
 		inventory.setStorageEmployee(storageEmployee);
 		inventory.setStorageEmployee(storageEmployee);
 		inventory.setStorageForeman(storageForeman);
@@ -82,8 +89,8 @@ public class InventoryService implements IInventoryService {
 	@Transactional
 	@Override
 	public void delete(Long id) {
-		if(!inventoryRepository.existsById(id)) {
-			throw new InventoryNotFoundException("Inventory not found with id: "+id);
+		if (!inventoryRepository.existsById(id)) {
+			throw new InventoryNotFoundException("Inventory not found with id: " + id);
 		}
 		inventoryRepository.deleteById(id);
 	}
@@ -111,7 +118,8 @@ public class InventoryService implements IInventoryService {
 
 	@Override
 	public InventoryResponse findById(Long id) {
-		Inventory inventory = inventoryRepository.findById(id).orElseThrow(() -> new InventoryNotFoundException("Inventory not found with id: " + id));
+		Inventory inventory = inventoryRepository.findById(id)
+				.orElseThrow(() -> new InventoryNotFoundException("Inventory not found with id: " + id));
 		return new InventoryResponse(inventory);
 	}
 
@@ -139,30 +147,31 @@ public class InventoryService implements IInventoryService {
 	@Override
 	public void changeStatus(Long inventoryId, InventoryStatus newStatus) {
 		Inventory inventory = inventoryRepository.findById(inventoryId)
-		        .orElseThrow(() -> new InventoryNotFoundException("Inventory not found with id: " + inventoryId));
-		    
-		    inventory.setStatus(newStatus);
-		    inventoryRepository.save(inventory);
+				.orElseThrow(() -> new InventoryNotFoundException("Inventory not found with id: " + inventoryId));
+
+		inventory.setStatus(newStatus);
+		inventoryRepository.save(inventory);
 	}
 
 	@Override
 	public List<InventoryResponse> findPendingInventories() {
 		return inventoryRepository.findPendingInventories().stream()
-	            .map(InventoryResponse::new)
-	            .collect(Collectors.toList());
+				.map(InventoryResponse::new)
+				.collect(Collectors.toList());
 	}
-	
-	private List<InventoryItems> mapInventoryItemRequestsToEntities(List<InventoryItemsRequest> requests, Inventory inventory) {
-		return requests.stream().map(req -> {
-	        Product product = productRepository.findById(req.productId())
-	            .orElseThrow(() -> new RuntimeException("Product not found: " + req.productId()));
 
-	        InventoryItems item = new InventoryItems();
-	        item.setInventory(inventory);
-	        item.setProduct(product);
-	        item.setQuantity(req.quantity());
-	        item.setItemCondition(req.condition());
-	        return item;
-	    }).toList();
+	private List<InventoryItems> mapInventoryItemRequestsToEntities(List<InventoryItemsRequest> requests,
+			Inventory inventory) {
+		return requests.stream().map(req -> {
+			Product product = productRepository.findById(req.productId())
+					.orElseThrow(() -> new RuntimeException("Product not found: " + req.productId()));
+
+			InventoryItems item = new InventoryItems();
+			item.setInventory(inventory);
+			item.setProduct(product);
+			item.setQuantity(req.quantity());
+			item.setItemCondition(req.condition());
+			return item;
+		}).toList();
 	}
 }

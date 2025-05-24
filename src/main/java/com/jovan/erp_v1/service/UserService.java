@@ -78,8 +78,10 @@ public class UserService implements IUserService {
 	}
 
 	@Override
-	public List<User> getUsers() {
-		return userRepository.findAll();
+	public List<UserResponse> getUsers() {
+		return userRepository.findAll().stream()
+				.map(this::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Transactional

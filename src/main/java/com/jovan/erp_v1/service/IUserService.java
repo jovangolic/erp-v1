@@ -30,7 +30,7 @@ public interface IUserService extends UserDetailsService {
 
 	User getUser(String email);
 
-	List<User> getUsers();
+	List<UserResponse> getUsers();
 
 	List<UserResponse> getUsersByRoleName(String roleName);
 
