@@ -14,6 +14,7 @@ import com.jovan.erp_v1.request.SystemSettingRequest;
 import com.jovan.erp_v1.request.SystemSettingUpdateRequest;
 import com.jovan.erp_v1.response.SystemSettingResponse;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -24,7 +25,16 @@ public class SystemSettingService implements ISystemSetting {
 
     @Override
     public List<SystemSettingResponse> getAll() {
-        return settingRepository.findAll().stream()
+        return settingRepository.findAll()
+                .stream()
+                .map(SystemSettingResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SystemSettingResponse> getByCategory(String category) {
+        return settingRepository.findAllByCategory(category)
+                .stream()
                 .map(SystemSettingResponse::new)
                 .collect(Collectors.toList());
     }
@@ -32,36 +42,52 @@ public class SystemSettingService implements ISystemSetting {
     @Override
     public SystemSettingResponse getByKey(String key) {
         SystemSetting setting = settingRepository.findByKey(key)
-                .orElseThrow(() -> new SystemSettingErrorNotFoundException("System setting not found: " + key));
+                .orElseThrow(() -> new SystemSettingErrorNotFoundException("Setting not found for key: " + key));
         return new SystemSettingResponse(setting);
     }
 
+    @Transactional
     @Override
     public SystemSettingResponse create(SystemSettingCreateRequest request) {
         if (settingRepository.existsByKey(request.key())) {
-            throw new IllegalArgumentException("Setting with the given key already exists.");
+            throw new IllegalArgumentException("Setting with this key already exists.");
         }
+
         SystemSetting setting = new SystemSetting();
         setting.setKey(request.key());
         setting.setValue(request.value());
-        setting.setDescription(""); // ili null ako nije obavezno
+        setting.setDescription(request.description());
+        setting.setCategory(request.category());
+        setting.setDataType(request.dataType());
+        setting.setEditable(request.editable() != null ? request.editable() : true);
+        setting.setIsVisible(request.isVisible() != null ? request.isVisible() : true);
+        setting.setDefaultValue(request.defaultValue());
+
         return new SystemSettingResponse(settingRepository.save(setting));
     }
 
+    @Transactional
     @Override
     public SystemSettingResponse update(SystemSettingUpdateRequest request) {
         SystemSetting setting = settingRepository.findById(request.id())
-                .orElseThrow(() -> new ResourceNotFoundException("Setting not found with id: " + request.id()));
+                .orElseThrow(() -> new SystemSettingErrorNotFoundException("Setting not found"));
 
         setting.setValue(request.value());
+        setting.setDescription(request.description());
+        setting.setCategory(request.category());
+        setting.setDataType(request.dataType());
+        setting.setEditable(request.editable());
+        setting.setIsVisible(request.isVisible());
+        setting.setDefaultValue(request.defaultValue());
 
         return new SystemSettingResponse(settingRepository.save(setting));
     }
 
+    @Transactional
     @Override
     public void delete(Long id) {
         if (!settingRepository.existsById(id)) {
-            throw new SystemSettingErrorNotFoundException("System-setting not found with id: " + id);
+            throw new SystemSettingErrorNotFoundException("Setting not found with id: " + id);
         }
         settingRepository.deleteById(id);
     }

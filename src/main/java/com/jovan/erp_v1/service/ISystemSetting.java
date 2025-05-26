@@ -10,6 +10,8 @@ public interface ISystemSetting {
 
     List<SystemSettingResponse> getAll();
 
+    List<SystemSettingResponse> getByCategory(String category);
+
     SystemSettingResponse getByKey(String key);
 
     SystemSettingResponse create(SystemSettingCreateRequest request);

@@ -1,11 +1,18 @@
 package com.jovan.erp_v1.request;
 
+import com.jovan.erp_v1.enumeration.SettingDataType;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record SystemSettingUpdateRequest(
 
-        @NotNull(message = "ID is required") Long id,
-
-        @NotBlank(message = "Value is required") String value) {
+        @NotNull Long id,
+        @NotBlank String value,
+        String description,
+        String category,
+        SettingDataType dataType,
+        Boolean editable,
+        Boolean isVisible,
+        String defaultValue) {
 }

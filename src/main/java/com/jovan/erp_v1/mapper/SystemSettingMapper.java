@@ -14,7 +14,14 @@ public class SystemSettingMapper {
                 setting.getId(),
                 setting.getKey(),
                 setting.getValue(),
-                setting.getDescription());
+                setting.getDescription(),
+                setting.getCategory(),
+                setting.getDataType(),
+                setting.getEditable(),
+                setting.getIsVisible(),
+                setting.getDefaultValue(),
+                setting.getCreatedAt(),
+                setting.getUpdatedAt());
     }
 
     public SystemSetting toEntity(SystemSettingRequest request) {

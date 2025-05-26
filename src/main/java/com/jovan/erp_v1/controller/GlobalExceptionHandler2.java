@@ -77,7 +77,8 @@ public class GlobalExceptionHandler2 {
             RoleErrorNotFoundException.class,
             EmailAlreadyExistsException.class,
             ShelfNotFoundException.class,
-            SystemSettingErrorNotFoundException.class
+            SystemSettingErrorNotFoundException.class,
+            HelpErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {
