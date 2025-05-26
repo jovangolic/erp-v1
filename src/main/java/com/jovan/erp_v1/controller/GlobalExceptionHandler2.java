@@ -30,54 +30,55 @@ public class GlobalExceptionHandler2 {
     }
 
     @ExceptionHandler({
-        IllegalArgumentException.class,
-        StorageNotFoundException.class,
-        GoodsNotFoundException.class,
-        ProductNotFoundException.class,
-        UserNotFoundException.class,
-        NoSuchShiftErrorException.class,
-        NoSuchShiftReportFoundException.class,
-        ProcurementNotFoundException.class,
-        BuyerNotFoundException.class,
-        ConfirmationDocumentNotFoundException.class,
-        InvoiceNotFoundException.class,
-        SalesOrderNotFoundException.class,
-        PaymentNotFoundException.class,
-        SalesNotFoundException.class,
-        ProductNotFoundException.class,
-        RawMaterialNotFoundException.class,
-        ItemSalesNotFoundException.class,
-        SupplierNotFoundException.class,
-        RoleAlreadyExistException.class,
-        UserInvalidException.class,
-        SupplyNotFoundException.class,
-        SupplyItemNotFoundException.class,
-        UnauthorizedSalesException.class,
-        SupervisorNotFoundException.class,
-        DuplicateBarCodeException.class,
-        DuplicatePIBException.class,
-        InsufficientRawMaterialException.class,
-        InsufficientStockException.class,
-        InternalServerException.class,
-        InvalidCredentialsException.class,
-        InvalidTokenException.class,
-        InvalidProcurementDataException.class,
-        ItemSalesNotFoundException.class,
-        PhotoRetrievalException.class,
-        ResourceNotFoundException.class,
-        UserAlreadyExistsException.class,
-        UserInvalidException.class,
-        TokenNotFoundException.class,
-        StorageEmployeeNotFoundException.class,
-        StorageForemanNotFoundException.class,
-        InventoryNotFoundException.class,
-        InventoryItemsNotFoundException.class,
-        BarCodeNotUniqueException.class,
-        BarCodeNotFoundException.class,
-        RoleErrorNotFoundException.class,
-        EmailAlreadyExistsException.class,
-        ShelfNotFoundException.class
-        
+            IllegalArgumentException.class,
+            StorageNotFoundException.class,
+            GoodsNotFoundException.class,
+            ProductNotFoundException.class,
+            UserNotFoundException.class,
+            NoSuchShiftErrorException.class,
+            NoSuchShiftReportFoundException.class,
+            ProcurementNotFoundException.class,
+            BuyerNotFoundException.class,
+            ConfirmationDocumentNotFoundException.class,
+            InvoiceNotFoundException.class,
+            SalesOrderNotFoundException.class,
+            PaymentNotFoundException.class,
+            SalesNotFoundException.class,
+            ProductNotFoundException.class,
+            RawMaterialNotFoundException.class,
+            ItemSalesNotFoundException.class,
+            SupplierNotFoundException.class,
+            RoleAlreadyExistException.class,
+            UserInvalidException.class,
+            SupplyNotFoundException.class,
+            SupplyItemNotFoundException.class,
+            UnauthorizedSalesException.class,
+            SupervisorNotFoundException.class,
+            DuplicateBarCodeException.class,
+            DuplicatePIBException.class,
+            InsufficientRawMaterialException.class,
+            InsufficientStockException.class,
+            InternalServerException.class,
+            InvalidCredentialsException.class,
+            InvalidTokenException.class,
+            InvalidProcurementDataException.class,
+            ItemSalesNotFoundException.class,
+            PhotoRetrievalException.class,
+            ResourceNotFoundException.class,
+            UserAlreadyExistsException.class,
+            UserInvalidException.class,
+            TokenNotFoundException.class,
+            StorageEmployeeNotFoundException.class,
+            StorageForemanNotFoundException.class,
+            InventoryNotFoundException.class,
+            InventoryItemsNotFoundException.class,
+            BarCodeNotUniqueException.class,
+            BarCodeNotFoundException.class,
+            RoleErrorNotFoundException.class,
+            EmailAlreadyExistsException.class,
+            ShelfNotFoundException.class,
+            SystemSettingErrorNotFoundException.class
+
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {
         log.error("Bad request error: ", err);
@@ -107,28 +108,28 @@ public class GlobalExceptionHandler2 {
         log.error("Unhandled exception: ", err);
         return buildErrorResponse(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
         log.error("Constraint violation: ", ex);
 
         String errorMessages = ex.getConstraintViolations()
-            .stream()
-            .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
-            .collect(Collectors.joining("; "));
+                .stream()
+                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .collect(Collectors.joining("; "));
 
         ErrorResponse error = new ErrorResponse(errorMessages, LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
-    
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
         log.error("Validation error: ", ex);
 
         String errorMessages = ex.getBindingResult().getFieldErrors()
-            .stream()
-            .map(err -> err.getField() + ": " + err.getDefaultMessage())
-            .collect(Collectors.joining("; "));
+                .stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .collect(Collectors.joining("; "));
 
         ErrorResponse error = new ErrorResponse(errorMessages, LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
