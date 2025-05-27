@@ -28,7 +28,7 @@ import com.jovan.erp_v1.request.UserRequest;
 import com.jovan.erp_v1.response.UserResponse;
 import com.jovan.erp_v1.security.JwtAuthenticationFilter;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

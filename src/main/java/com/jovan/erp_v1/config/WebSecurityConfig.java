@@ -5,6 +5,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -22,11 +23,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.jovan.erp_v1.security.JwtAuthenticationEntryPoint;
 import com.jovan.erp_v1.security.JwtAuthenticationFilter;
-
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -35,28 +35,33 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @EnableMethodSecurity
 @EnableWebSecurity
-public class WebSecurityConfig {
+public class WebSecurityConfig implements WebMvcConfigurer {
 
-	private final JwtAuthenticationFilter jwtAuthFilter;
+    private final JwtAuthenticationFilter jwtAuthFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
 
     // Endpoint grupe za čitljivost i održavanje
     private static final String[] STORAGE_EMPLOYEE_ENDPOINTS = {
-        "/vendor/**", "/goods/**", "/invoice/**", "/storage/**",
-        "/rawMaterial/**", "/confirmationDocument/**",
-        "/sales/**", "/supply/**", "/salesOrder/**",
-        "/inventory/**", "/inventoryItems/**"
+            "/vendor/**", "/goods/**", "/invoice/**", "/storage/**",
+            "/rawMaterial/**", "/confirmationDocument/**",
+            "/sales/**", "/supply/**", "/salesOrder/**",
+            "/inventory/**", "/inventoryItems/**"
     };
 
     private static final String[] STORAGE_FOREMAN_ENDPOINTS = {
-        "/buyer/**", "/confirmationDocument/**", "/goods/**", "/invoice/**",
-        "/itemSales/**", "/payment/**", "/product/**", "/procurement/**",
-        "/rawMaterial/**", "/sales/**", "/salesOrder/**", "/storage/**",
-        "/supply/**", "/supplyitem/**", "/vendor/**", "/shift/**",
-        "/shiftReport/**", "/inventory/**", "/inventoryItems/**","/shelf/**"
+            "/buyer/**", "/confirmationDocument/**", "/goods/**", "/invoice/**",
+            "/itemSales/**", "/payment/**", "/product/**", "/procurement/**",
+            "/rawMaterial/**", "/sales/**", "/salesOrder/**", "/storage/**",
+            "/supply/**", "/supplyitem/**", "/vendor/**", "/shift/**",
+            "/shiftReport/**", "/inventory/**", "/inventoryItems/**", "/shelf/**"
     };
+
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addConverter(new StringToFileExtensionConverter());
+    }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -75,30 +80,27 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults())
-            .csrf(AbstractHttpConfigurer::disable)
-            .authenticationProvider(authenticationProvider())
-            .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // 🔓 Endpointi dostupni bez autentifikacije
-                .requestMatchers("/auth/login", "/users/create-superadmin").permitAll()
-                .requestMatchers("/auth/register").hasRole("ADMIN")
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .authenticationProvider(authenticationProvider())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // 🔓 Endpointi dostupni bez autentifikacije
+                        .requestMatchers("/auth/login", "/users/create-superadmin").permitAll()
+                        .requestMatchers("/auth/register").hasRole("ADMIN")
 
-                // 🔒 Pristup prema ulogama
-                .requestMatchers("/admin/**", "/users/create-admin/**").hasRole("SUPERADMIN")
-                .requestMatchers("/user/**", "/role/**", "/users/admin/**").hasRole("ADMIN")
-                .requestMatchers(STORAGE_EMPLOYEE_ENDPOINTS).hasRole("STORAGE_EMPLOYEE")
-                .requestMatchers(STORAGE_FOREMAN_ENDPOINTS).hasRole("STORAGE_FOREMAN")
+                        // 🔒 Pristup prema ulogama
+                        .requestMatchers("/admin/**", "/users/create-admin/**").hasRole("SUPERADMIN")
+                        .requestMatchers("/user/**", "/role/**", "/users/admin/**").hasRole("ADMIN")
+                        .requestMatchers(STORAGE_EMPLOYEE_ENDPOINTS).hasRole("STORAGE_EMPLOYEE")
+                        .requestMatchers(STORAGE_FOREMAN_ENDPOINTS).hasRole("STORAGE_FOREMAN")
 
-                // ❗ Bilo koji drugi zahtev zahteva autentifikaciju
-                .anyRequest().authenticated()
-            )
-            .logout(logout -> logout
-                .logoutSuccessHandler((request, response, authentication) -> 
-                    response.setStatus(HttpServletResponse.SC_OK)
-                )
-            );
+                        // ❗ Bilo koji drugi zahtev zahteva autentifikaciju
+                        .anyRequest().authenticated())
+                .logout(logout -> logout
+                        .logoutSuccessHandler(
+                                (request, response, authentication) -> response.setStatus(HttpServletResponse.SC_OK)));
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

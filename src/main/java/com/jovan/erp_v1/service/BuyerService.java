@@ -12,7 +12,7 @@ import com.jovan.erp_v1.repository.BuyerRepository;
 import com.jovan.erp_v1.request.BuyerRequest;
 import com.jovan.erp_v1.response.BuyerResponse;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service

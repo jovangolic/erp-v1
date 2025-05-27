@@ -16,7 +16,7 @@ import com.jovan.erp_v1.repository.InventoryRepository;
 import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.request.InventoryItemsRequest;
 import com.jovan.erp_v1.response.InventoryItemsResponse;
-
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,12 +27,15 @@ public class InventoryItemsService implements IInventoryItemsService {
 	private final InventoryRepository inventoryRepository;
 	private final ProductRepository productRepository;
 
+	@Transactional
 	@Override
 	public InventoryItemsResponse create(InventoryItemsRequest request) {
 		InventoryItems items = new InventoryItems();
-		Inventory inventory = inventoryRepository.findById(request.inventoryId()).orElseThrow(() -> new InventoryNotFoundException("Inventory not found "));
+		Inventory inventory = inventoryRepository.findById(request.inventoryId())
+				.orElseThrow(() -> new InventoryNotFoundException("Inventory not found "));
 		items.setInventory(inventory);
-		Product product = productRepository.findById(request.productId()).orElseThrow(() -> new ProductNotFoundException("Product not found "));
+		Product product = productRepository.findById(request.productId())
+				.orElseThrow(() -> new ProductNotFoundException("Product not found "));
 		items.setProduct(product);
 		items.setItemCondition(request.condition());
 		items.setQuantity(request.quantity());
@@ -41,12 +44,16 @@ public class InventoryItemsService implements IInventoryItemsService {
 		return new InventoryItemsResponse(saved);
 	}
 
+	@Transactional
 	@Override
 	public InventoryItemsResponse update(Long id, InventoryItemsRequest request) {
-		InventoryItems items = inventoryItemsRepository.findById(id).orElseThrow(() -> new InventoryItemsNotFoundException("Inventory-Items not found with id: "+id));
-		Inventory inventory = inventoryRepository.findById(request.inventoryId()).orElseThrow(() -> new InventoryNotFoundException("Inventory not found "));
+		InventoryItems items = inventoryItemsRepository.findById(id)
+				.orElseThrow(() -> new InventoryItemsNotFoundException("Inventory-Items not found with id: " + id));
+		Inventory inventory = inventoryRepository.findById(request.inventoryId())
+				.orElseThrow(() -> new InventoryNotFoundException("Inventory not found "));
 		items.setInventory(inventory);
-		Product product = productRepository.findById(request.productId()).orElseThrow(() -> new ProductNotFoundException("Product not found "));
+		Product product = productRepository.findById(request.productId())
+				.orElseThrow(() -> new ProductNotFoundException("Product not found "));
 		items.setProduct(product);
 		items.setItemCondition(request.condition());
 		items.setQuantity(request.quantity());
@@ -55,13 +62,14 @@ public class InventoryItemsService implements IInventoryItemsService {
 		return new InventoryItemsResponse(updated);
 	}
 
+	@Transactional
 	@Override
 	public void delete(Long id) {
-		if(!inventoryItemsRepository.existsById(id)) {
-			throw new InventoryItemsNotFoundException("Inventory-Items not found with id: "+id);
+		if (!inventoryItemsRepository.existsById(id)) {
+			throw new InventoryItemsNotFoundException("Inventory-Items not found with id: " + id);
 		}
 		inventoryItemsRepository.deleteById(id);
-		
+
 	}
 
 	@Override
@@ -80,7 +88,8 @@ public class InventoryItemsService implements IInventoryItemsService {
 
 	@Override
 	public List<InventoryItemsResponse> getByInventoryId(Long inventoryId) {
-		Inventory inventory = inventoryRepository.findById(inventoryId).orElseThrow(() -> new InventoryNotFoundException("Inventory not found"));
+		Inventory inventory = inventoryRepository.findById(inventoryId)
+				.orElseThrow(() -> new InventoryNotFoundException("Inventory not found"));
 		return inventoryItemsRepository.findByInventoryId(inventory.getId()).stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
@@ -88,8 +97,9 @@ public class InventoryItemsService implements IInventoryItemsService {
 
 	@Override
 	public List<InventoryItemsResponse> getByProductId(Long productId) {
-		Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found"));
-		return  inventoryItemsRepository.findByProductId(product.getId()).stream()
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
+		return inventoryItemsRepository.findByProductId(product.getId()).stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -103,7 +113,8 @@ public class InventoryItemsService implements IInventoryItemsService {
 
 	@Override
 	public InventoryItemsResponse findById(Long id) {
-		InventoryItems items = inventoryItemsRepository.findById(id).orElseThrow(() -> new InventoryItemsNotFoundException("Inventory-Items not found with id: "+id));
+		InventoryItems items = inventoryItemsRepository.findById(id)
+				.orElseThrow(() -> new InventoryItemsNotFoundException("Inventory-Items not found with id: " + id));
 		return new InventoryItemsResponse(items);
 	}
 
@@ -117,11 +128,11 @@ public class InventoryItemsService implements IInventoryItemsService {
 	@Override
 	public List<InventoryItemsResponse> findItemsWithDifference(Double threshold) {
 		return inventoryItemsRepository.findByDifferenceGreaterThan(threshold).stream()
-	            .map(InventoryItemsResponse::new)
-	            .collect(Collectors.toList());
+				.map(InventoryItemsResponse::new)
+				.collect(Collectors.toList());
 	}
-	
+
 	private double calculateDifference(Double quantity, Integer condition) {
-	    return quantity - condition;
+		return quantity - condition;
 	}
 }

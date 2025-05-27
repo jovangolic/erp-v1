@@ -14,7 +14,7 @@ import com.jovan.erp_v1.request.SystemSettingRequest;
 import com.jovan.erp_v1.request.SystemSettingUpdateRequest;
 import com.jovan.erp_v1.response.SystemSettingResponse;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service

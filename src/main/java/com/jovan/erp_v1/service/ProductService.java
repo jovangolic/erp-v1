@@ -24,7 +24,7 @@ import com.jovan.erp_v1.request.BarCodeRequest;
 import com.jovan.erp_v1.request.ProductRequest;
 import com.jovan.erp_v1.response.ProductResponse;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -46,7 +46,7 @@ public class ProductService implements IProductService {
     @Transactional
     @Override
     public ProductResponse updateProduct(Long id, ProductRequest request) {
-    	Product product = productRepository.findById(id)
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
         product.setCurrentQuantity(request.currentQuantity());
         product.setName(request.name());
@@ -67,8 +67,8 @@ public class ProductService implements IProductService {
     @Transactional
     @Override
     public void deleteProduct(Long id) {
-        if(!productRepository.existsById(id)) {
-        	throw new ProductNotFoundException("Product not found with id: " + id);
+        if (!productRepository.existsById(id)) {
+            throw new ProductNotFoundException("Product not found with id: " + id);
         }
         productRepository.deleteById(id);
     }
@@ -87,7 +87,8 @@ public class ProductService implements IProductService {
 
     @Override
     public ProductResponse findByBarCode(String code) {
-        Product product = productRepository.findByBarCodes(code).orElseThrow(() -> new ProductNotFoundException("Product not found with barCode: "+code));
+        Product product = productRepository.findByBarCodes(code)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with barCode: " + code));
         if (product == null) {
             throw new ProductNotFoundException("Product not found with bar code: " + code);
         }
@@ -133,7 +134,7 @@ public class ProductService implements IProductService {
     public List<ProductResponse> findByGoodsType(GoodsType goodsType) {
         return productMapper.toProductResponseList(productRepository.findByGoodsType(goodsType));
     }
-    
+
     private void updateBarCodes(Product product, List<BarCodeRequest> barCodeRequests) {
         // Kreiraj mapu postojećih BarCode entiteta po ID (ako imaju ID)
         Map<Long, BarCode> existingBarCodesById = product.getBarCodes().stream()
@@ -161,8 +162,10 @@ public class ProductService implements IProductService {
                 updatedBarCodes.add(newBarCode);
             }
         }
-        // BarCode entiteti koji su ostali u existingBarCodesById mapi su obrisani u request-u,
-        // pa ih treba ukloniti iz proizvoda (orphanRemoval = true će ih obrisati iz baze)
+        // BarCode entiteti koji su ostali u existingBarCodesById mapi su obrisani u
+        // request-u,
+        // pa ih treba ukloniti iz proizvoda (orphanRemoval = true će ih obrisati iz
+        // baze)
         product.getBarCodes().clear();
         product.getBarCodes().addAll(updatedBarCodes);
     }

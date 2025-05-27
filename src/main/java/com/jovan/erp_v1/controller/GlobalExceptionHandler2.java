@@ -78,7 +78,10 @@ public class GlobalExceptionHandler2 {
             EmailAlreadyExistsException.class,
             ShelfNotFoundException.class,
             SystemSettingErrorNotFoundException.class,
-            HelpErrorException.class
+            HelpErrorException.class,
+            OptionErrorException.class,
+            FileOptErrorException.class,
+            EditOptErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

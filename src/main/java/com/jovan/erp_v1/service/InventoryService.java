@@ -22,7 +22,7 @@ import com.jovan.erp_v1.request.InventoryItemsRequest;
 import com.jovan.erp_v1.request.InventoryRequest;
 import com.jovan.erp_v1.response.InventoryResponse;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service

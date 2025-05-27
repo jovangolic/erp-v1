@@ -21,7 +21,7 @@ import com.jovan.erp_v1.repository.ConfirmationDocumentRepository;
 import com.jovan.erp_v1.repository.ShiftRepository;
 import com.jovan.erp_v1.repository.UserRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -34,42 +34,43 @@ public class ConfirmationDocumentService implements IConfirmationDocumentService
 	private final String FILE_DIRECTORY = "C:/Users/Admin/erp";
 
 	@Transactional
-    public ConfirmationDocument saveDocument(ConfirmationDocument document) {
-        document.setCreatedAt(LocalDateTime.now());
-        return confirmationDocumentRepository.save(document);
-    }
+	public ConfirmationDocument saveDocument(ConfirmationDocument document) {
+		document.setCreatedAt(LocalDateTime.now());
+		return confirmationDocumentRepository.save(document);
+	}
 
-    public Optional<ConfirmationDocument> getDocumentById(Long id) {
-        return confirmationDocumentRepository.findById(id);
-    }
+	public Optional<ConfirmationDocument> getDocumentById(Long id) {
+		return confirmationDocumentRepository.findById(id);
+	}
 
-    public List<ConfirmationDocument> getAllDocuments() {
-        return confirmationDocumentRepository.findAll();
-    }
+	public List<ConfirmationDocument> getAllDocuments() {
+		return confirmationDocumentRepository.findAll();
+	}
 
-    public List<ConfirmationDocument> getDocumentsByUserId(Long userId) {
-        return confirmationDocumentRepository.findByCreatedById(userId);
-    }
+	public List<ConfirmationDocument> getDocumentsByUserId(Long userId) {
+		return confirmationDocumentRepository.findByCreatedById(userId);
+	}
 
-    public List<ConfirmationDocument> getDocumentsCreatedAfter(LocalDateTime date) {
-        return confirmationDocumentRepository.findByCreatedAtAfter(date);
-    }
+	public List<ConfirmationDocument> getDocumentsCreatedAfter(LocalDateTime date) {
+		return confirmationDocumentRepository.findByCreatedAtAfter(date);
+	}
 
-    @Transactional
-    public void deleteDocument(Long id) {
-        confirmationDocumentRepository.deleteById(id);
-    }
+	@Transactional
+	public void deleteDocument(Long id) {
+		confirmationDocumentRepository.deleteById(id);
+	}
 
 	@Override
 	public ConfirmationDocument uploadDocument(MultipartFile file, Long userId, Long shiftId) throws IOException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
-		Shift shift = shiftRepository.findById(shiftId).orElseThrow(() -> new NoSuchShiftErrorException("Shift not found"));
+		Shift shift = shiftRepository.findById(shiftId)
+				.orElseThrow(() -> new NoSuchShiftErrorException("Shift not found"));
 		// cuvanje fajla na disku
-		String fileName = UUID.randomUUID()+"_"+file.getOriginalFilename();
+		String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 		Path filePath = Paths.get(FILE_DIRECTORY, fileName);
 		Files.createDirectories(filePath.getParent());
 		Files.write(filePath, file.getBytes());
-		//kreiranje i cuvanje dokumenta
+		// kreiranje i cuvanje dokumenta
 		ConfirmationDocument document = new ConfirmationDocument();
 		document.setFilePath(fileName);
 		document.setCreatedAt(LocalDateTime.now());

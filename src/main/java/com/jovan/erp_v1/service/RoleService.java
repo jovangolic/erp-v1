@@ -12,30 +12,30 @@ import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.RoleRequest;
 import com.jovan.erp_v1.response.RoleResponse;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class RoleService implements IRoleService {
 
-	private final RoleRepository roleRepository;
-	private final RoleMapper roleMapper;
-	private final UserRepository userRepository;
-	
-	@Transactional
-	@Override
+    private final RoleRepository roleRepository;
+    private final RoleMapper roleMapper;
+    private final UserRepository userRepository;
+
+    @Transactional
+    @Override
     public RoleResponse createRole(RoleRequest request) {
-		String roleName = "ROLE_" + request.getName().toUpperCase();
-	    if (roleRepository.existsByName(roleName)) {
-	        throw new RuntimeException("Role already exists with name: " + roleName);
-	    }
-	    Role role = new Role(roleName);
-	    Role savedRole = roleRepository.save(role);
-	    return roleMapper.toResponse(savedRole);
+        String roleName = "ROLE_" + request.getName().toUpperCase();
+        if (roleRepository.existsByName(roleName)) {
+            throw new RuntimeException("Role already exists with name: " + roleName);
+        }
+        Role role = new Role(roleName);
+        Role savedRole = roleRepository.save(role);
+        return roleMapper.toResponse(savedRole);
     }
 
-	@Transactional
+    @Transactional
     @Override
     public RoleResponse updateRole(Long roleId, RoleRequest updatedRequest) {
         Role existingRole = roleRepository.findById(roleId)
@@ -46,7 +46,7 @@ public class RoleService implements IRoleService {
         return roleMapper.toResponse(updated);
     }
 
-	@Transactional
+    @Transactional
     @Override
     public void deleteRole(Long roleId) {
         Role role = roleRepository.findById(roleId)
@@ -80,5 +80,5 @@ public class RoleService implements IRoleService {
         role.assignRoleToUser(user);
         roleRepository.save(role); // opcionalno jer @Transactional može odraditi flush automatski
     }
-	
+
 }

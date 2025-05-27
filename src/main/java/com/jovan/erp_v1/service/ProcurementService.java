@@ -18,49 +18,46 @@ import com.jovan.erp_v1.repository.SupplyItemRepository;
 import com.jovan.erp_v1.request.ProcurementRequest;
 import com.jovan.erp_v1.response.ProcurementResponse;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class ProcurementService implements IProcurementService {
 
-	
 	private final ProcurementRepository procurementRepository;
 	private final ItemSalesRepository itemSalesRepository;
 	private final SupplyItemRepository supplyItemRepository;
 	private final ProcurementMapper procurementMapper;
 
-	
 	@Transactional
 	@Override
-    public ProcurementResponse createProcurement(ProcurementRequest request) {
-        Procurement procurement = procurementMapper.toEntity(request);
-        Procurement savedProcurement = procurementRepository.save(procurement);
-        updateItemSalesAndSupplies(savedProcurement, request);
-        Procurement updatedProcurement = procurementRepository.save(savedProcurement);
-        return procurementMapper.toResponse(updatedProcurement);
-    }
+	public ProcurementResponse createProcurement(ProcurementRequest request) {
+		Procurement procurement = procurementMapper.toEntity(request);
+		Procurement savedProcurement = procurementRepository.save(procurement);
+		updateItemSalesAndSupplies(savedProcurement, request);
+		Procurement updatedProcurement = procurementRepository.save(savedProcurement);
+		return procurementMapper.toResponse(updatedProcurement);
+	}
 
-	
 	@Transactional
-    @Override
-    public ProcurementResponse updateProcurement(Long id, ProcurementRequest request) {
-        Procurement existingProcurement = procurementRepository.findById(id)
-                .orElseThrow(() -> new ProcurementNotFoundException("Procurement not found with id: " + id));
-        existingProcurement.setDate(request.date());
-        existingProcurement.setTotalCost(request.totalCost());
-        existingProcurement.getItemSales().clear();
-        existingProcurement.getSupplies().clear();
-        updateItemSalesAndSupplies(existingProcurement, request);
-        Procurement updatedProcurement = procurementRepository.save(existingProcurement);
-        return procurementMapper.toResponse(updatedProcurement);
-    }
+	@Override
+	public ProcurementResponse updateProcurement(Long id, ProcurementRequest request) {
+		Procurement existingProcurement = procurementRepository.findById(id)
+				.orElseThrow(() -> new ProcurementNotFoundException("Procurement not found with id: " + id));
+		existingProcurement.setDate(request.date());
+		existingProcurement.setTotalCost(request.totalCost());
+		existingProcurement.getItemSales().clear();
+		existingProcurement.getSupplies().clear();
+		updateItemSalesAndSupplies(existingProcurement, request);
+		Procurement updatedProcurement = procurementRepository.save(existingProcurement);
+		return procurementMapper.toResponse(updatedProcurement);
+	}
 
 	@Transactional
 	@Override
 	public void deleteProcurement(Long id) {
-		if(!procurementRepository.existsById(id)) {
+		if (!procurementRepository.existsById(id)) {
 			throw new ProcurementNotFoundException("Procurement not found with id: " + id);
 		}
 		procurementRepository.deleteById(id);
@@ -68,15 +65,16 @@ public class ProcurementService implements IProcurementService {
 
 	@Override
 	public ProcurementResponse getByProcurementId(Long id) {
-		Procurement procurement = procurementRepository.findById(id).orElseThrow(() -> new ProcurementNotFoundException("Procurement not found with id: " + id));
+		Procurement procurement = procurementRepository.findById(id)
+				.orElseThrow(() -> new ProcurementNotFoundException("Procurement not found with id: " + id));
 		return procurementMapper.toResponse(procurement);
 	}
 
 	@Override
 	public List<ProcurementResponse> getAllProcurement() {
-	    return procurementRepository.findAll().stream()
-	            .map(procurementMapper::toResponse)
-	            .collect(Collectors.toList());
+		return procurementRepository.findAll().stream()
+				.map(procurementMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -99,21 +97,21 @@ public class ProcurementService implements IProcurementService {
 				.map(procurementMapper::toResponse)
 				.collect(Collectors.toList());
 	}
-	
-	private void updateItemSalesAndSupplies(Procurement procurement, ProcurementRequest request) {
-        // Postavljanje ItemSales relacija
-        if (request.itemSalesIds() != null) {
-            List<ItemSales> itemSalesList = itemSalesRepository.findAllById(request.itemSalesIds());
-            itemSalesList.forEach(item -> item.setProcurement(procurement));
-            procurement.setItemSales(itemSalesList);
-        }
 
-        // Postavljanje SupplyItem relacija
-        if (request.supplyItemIds() != null) {
-            List<SupplyItem> supplyItemList = supplyItemRepository.findAllById(request.supplyItemIds());
-            supplyItemList.forEach(supply -> supply.setProcurement(procurement));
-            procurement.setSupplies(supplyItemList);
-        }
-    }
-	
+	private void updateItemSalesAndSupplies(Procurement procurement, ProcurementRequest request) {
+		// Postavljanje ItemSales relacija
+		if (request.itemSalesIds() != null) {
+			List<ItemSales> itemSalesList = itemSalesRepository.findAllById(request.itemSalesIds());
+			itemSalesList.forEach(item -> item.setProcurement(procurement));
+			procurement.setItemSales(itemSalesList);
+		}
+
+		// Postavljanje SupplyItem relacija
+		if (request.supplyItemIds() != null) {
+			List<SupplyItem> supplyItemList = supplyItemRepository.findAllById(request.supplyItemIds());
+			supplyItemList.forEach(supply -> supply.setProcurement(procurement));
+			procurement.setSupplies(supplyItemList);
+		}
+	}
+
 }

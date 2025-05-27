@@ -15,8 +15,7 @@ import com.jovan.erp_v1.repository.BarCodeRepository;
 import com.jovan.erp_v1.repository.GoodsRepository;
 import com.jovan.erp_v1.request.BarCodeRequest;
 import com.jovan.erp_v1.response.BarCodeResponse;
-
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -33,7 +32,8 @@ public class BarCodeService implements IBarcodeService {
 		barCode.setCode(request.code());
 		barCode.setScannedAt(request.scannedAt());
 		barCode.setScannedBy(request.scannedBy());
-		Goods goods = goodsRepository.findById(request.goodsId()).orElseThrow(() -> new GoodsNotFoundException("Goods not found with id: "+request.goodsId()));
+		Goods goods = goodsRepository.findById(request.goodsId())
+				.orElseThrow(() -> new GoodsNotFoundException("Goods not found with id: " + request.goodsId()));
 		barCode.setGoods(goods);
 		BarCode saved = barCodeRepository.save(barCode);
 		return new BarCodeResponse(saved);
@@ -42,11 +42,13 @@ public class BarCodeService implements IBarcodeService {
 	@Transactional
 	@Override
 	public BarCodeResponse updateBarCode(Long id, BarCodeRequest request) {
-		BarCode barCode = barCodeRepository.findById(id).orElseThrow(() -> new BarCodeNotFoundException("Bar-code not found with id: " + id));
+		BarCode barCode = barCodeRepository.findById(id)
+				.orElseThrow(() -> new BarCodeNotFoundException("Bar-code not found with id: " + id));
 		barCode.setCode(request.code());
 		barCode.setScannedAt(request.scannedAt());
 		barCode.setScannedBy(request.scannedBy());
-		Goods goods = goodsRepository.findById(request.goodsId()).orElseThrow(() -> new GoodsNotFoundException("Goods not found with id: "+request.goodsId()));
+		Goods goods = goodsRepository.findById(request.goodsId())
+				.orElseThrow(() -> new GoodsNotFoundException("Goods not found with id: " + request.goodsId()));
 		barCode.setGoods(goods);
 		BarCode update = barCodeRepository.save(barCode);
 		return new BarCodeResponse(update);
@@ -55,7 +57,7 @@ public class BarCodeService implements IBarcodeService {
 	@Transactional
 	@Override
 	public void delete(Long id) {
-		if(!barCodeRepository.existsById(id)) {
+		if (!barCodeRepository.existsById(id)) {
 			throw new BarCodeNotFoundException("BarCode not found with id: " + id);
 		}
 		barCodeRepository.deleteById(id);
@@ -63,7 +65,8 @@ public class BarCodeService implements IBarcodeService {
 
 	@Override
 	public BarCodeResponse getOne(Long id) {
-		BarCode code = barCodeRepository.findById(id).orElseThrow(() -> new BarCodeNotFoundException("BarCode not found with id: " +id));
+		BarCode code = barCodeRepository.findById(id)
+				.orElseThrow(() -> new BarCodeNotFoundException("BarCode not found with id: " + id));
 		return new BarCodeResponse(code);
 	}
 

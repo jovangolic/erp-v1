@@ -12,7 +12,7 @@ import com.jovan.erp_v1.repository.HelpRepository;
 import com.jovan.erp_v1.request.HelpRequest;
 import com.jovan.erp_v1.response.HelpResponse;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -62,6 +62,7 @@ public class HelpService implements IHelpService {
         return new HelpResponse(help);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<HelpResponse> getAll() {
         return helpRepository.findAll()

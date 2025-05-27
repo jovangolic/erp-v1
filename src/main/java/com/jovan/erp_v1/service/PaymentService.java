@@ -19,8 +19,7 @@ import com.jovan.erp_v1.repository.PaymentRepository;
 import com.jovan.erp_v1.repository.SalesRepository;
 import com.jovan.erp_v1.request.PaymentRequest;
 import com.jovan.erp_v1.response.PaymentResponse;
-
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -31,83 +30,87 @@ public class PaymentService implements IPaymentService {
 	private final PaymentMapper paymentMapper;
 	private final BuyerRepository buyerRepository;
 	private final SalesRepository salesRepository;
-	
-	
-	
+
 	@Transactional
 	@Override
-    public PaymentResponse createPayment(PaymentRequest request) {
-        Buyer buyer = buyerRepository.findById(request.buyerId())
-            .orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: " + request.buyerId()));
-        Sales sales = salesRepository.findById(request.relatedSalesId())
-            .orElseThrow(() -> new SalesNotFoundException("Sales not found with id: " + request.relatedSalesId()));
+	public PaymentResponse createPayment(PaymentRequest request) {
+		Buyer buyer = buyerRepository.findById(request.buyerId())
+				.orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: " + request.buyerId()));
+		Sales sales = salesRepository.findById(request.relatedSalesId())
+				.orElseThrow(() -> new SalesNotFoundException("Sales not found with id: " + request.relatedSalesId()));
 
-        Payment payment = paymentMapper.toEntity(request);
-        payment.setBuyer(buyer);
-        payment.setRelatedSales(sales);
-        
-        Payment savedPayment = paymentRepository.save(payment);
-        return paymentMapper.toResponse(savedPayment);
-    }
-	
-	
+		Payment payment = paymentMapper.toEntity(request);
+		payment.setBuyer(buyer);
+		payment.setRelatedSales(sales);
+
+		Payment savedPayment = paymentRepository.save(payment);
+		return paymentMapper.toResponse(savedPayment);
+	}
+
 	@Override
 	public PaymentResponse getPaymentById(Long id) {
-		Payment payment = paymentRepository.findById(id).orElseThrow(() -> new PaymentNotFoundException("Payment not found with id: "+id));
+		Payment payment = paymentRepository.findById(id)
+				.orElseThrow(() -> new PaymentNotFoundException("Payment not found with id: " + id));
 		return paymentMapper.toResponse(payment);
 	}
+
 	@Override
 	public List<PaymentResponse> getAllPayments() {
 		return paymentRepository.findAll().stream()
 				.map(paymentMapper::toResponse)
 				.collect(Collectors.toList());
 	}
+
 	@Override
 	public List<PaymentResponse> getPaymentsByBuyer(Long buyerId) {
-		Buyer buyer = buyerRepository.findById(buyerId).orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: "+buyerId));
+		Buyer buyer = buyerRepository.findById(buyerId)
+				.orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: " + buyerId));
 		return paymentRepository.findByBuyerId(buyer.getId()).stream()
 				.map(paymentMapper::toResponse)
 				.collect(Collectors.toList());
 	}
+
 	@Override
 	public List<PaymentResponse> getPaymentsByStatus(PaymentStatus status) {
 		return paymentRepository.findByStatus(status).stream()
 				.map(paymentMapper::toResponse)
 				.collect(Collectors.toList());
 	}
+
 	@Override
 	public List<PaymentResponse> getPaymentsByMethod(PaymentMethod method) {
 		return paymentRepository.findByMethod(method).stream()
 				.map(paymentMapper::toResponse)
 				.collect(Collectors.toList());
 	}
+
 	@Transactional
 	@Override
 	public void deletePayment(Long id) {
-		if(!paymentRepository.existsById(id)) {
-			throw new PaymentNotFoundException("Payment not found wuth id: "+id);
+		if (!paymentRepository.existsById(id)) {
+			throw new PaymentNotFoundException("Payment not found wuth id: " + id);
 		}
 		paymentRepository.deleteById(id);
 	}
-	
+
 	@Transactional
 	@Override
 	public PaymentResponse updatePayment(Long id, PaymentRequest request) {
-		Payment payment = paymentRepository.findById(id).orElseThrow(() -> new PaymentNotFoundException("Payment not found with id: "+id));
+		Payment payment = paymentRepository.findById(id)
+				.orElseThrow(() -> new PaymentNotFoundException("Payment not found with id: " + id));
 		payment.setAmount(request.amount());
 		payment.setPaymentDate(request.paymentDate());
 		payment.setMethod(request.method());
 		payment.setStatus(request.status());
 		payment.setReferenceNumber(request.referenceNumber());
 		Buyer buyer = buyerRepository.findById(request.buyerId())
-	            .orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: " + request.buyerId()));
-	    Sales sales = salesRepository.findById(request.relatedSalesId())
-	            .orElseThrow(() -> new SalesNotFoundException("Sales not found with id: " + request.relatedSalesId()));
-	    payment.setBuyer(buyer);
-	    payment.setRelatedSales(sales);
-	    Payment updated = paymentRepository.save(payment);
+				.orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: " + request.buyerId()));
+		Sales sales = salesRepository.findById(request.relatedSalesId())
+				.orElseThrow(() -> new SalesNotFoundException("Sales not found with id: " + request.relatedSalesId()));
+		payment.setBuyer(buyer);
+		payment.setRelatedSales(sales);
+		Payment updated = paymentRepository.save(payment);
 		return paymentMapper.toResponse(updated);
 	}
-	
-	
+
 }

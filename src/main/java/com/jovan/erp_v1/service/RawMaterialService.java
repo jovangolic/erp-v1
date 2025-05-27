@@ -22,14 +22,14 @@ import com.jovan.erp_v1.repository.SupplyRepository;
 import com.jovan.erp_v1.request.RawMaterialRequest;
 import com.jovan.erp_v1.response.RawMaterialResponse;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class RawMaterialService implements IRawMaterialService {
 
-	private final RawMaterialRepository rawMaterialRepository;
+    private final RawMaterialRepository rawMaterialRepository;
     private final RawMaterialMapper rawMaterialMapper;
     private final StorageRepository storageRepository;
     private final SupplyRepository supplyRepository;
@@ -57,7 +57,7 @@ public class RawMaterialService implements IRawMaterialService {
     @Transactional
     @Override
     public RawMaterialResponse update(Long id, RawMaterialRequest request) {
-    	RawMaterial existing = rawMaterialRepository.findById(id)
+        RawMaterial existing = rawMaterialRepository.findById(id)
                 .orElseThrow(() -> new RawMaterialNotFoundException("RawMaterial not found with id: " + id));
         // Ažuriranje osnovnih podataka
         existing.setName(request.name());
@@ -81,7 +81,8 @@ public class RawMaterialService implements IRawMaterialService {
         // Ažuriranje povezanog proizvoda
         if (request.productId() != null) {
             Product product = productRepository.findById(request.productId())
-                    .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + request.productId()));
+                    .orElseThrow(
+                            () -> new ProductNotFoundException("Product not found with id: " + request.productId()));
             existing.setProduct(product);
         } else {
             existing.setProduct(null);
@@ -115,7 +116,6 @@ public class RawMaterialService implements IRawMaterialService {
     @Override
     public List<RawMaterialResponse> findByName(String name) {
         return rawMaterialMapper.toResponseList(
-            rawMaterialRepository.findByNameContainingIgnoreCase(name)
-        );
+                rawMaterialRepository.findByNameContainingIgnoreCase(name));
     }
 }

@@ -24,7 +24,7 @@ import com.jovan.erp_v1.request.ItemSalesRequest;
 import com.jovan.erp_v1.request.SalesRequest;
 import com.jovan.erp_v1.response.SalesResponse;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service

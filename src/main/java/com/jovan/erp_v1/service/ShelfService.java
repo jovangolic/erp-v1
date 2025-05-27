@@ -18,7 +18,7 @@ import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.request.ShelfRequest;
 import com.jovan.erp_v1.response.ShelfResponse;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
