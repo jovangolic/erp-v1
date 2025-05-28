@@ -12,7 +12,7 @@ public class SystemSettingMapper {
     public SystemSettingResponse toResponse(SystemSetting setting) {
         return new SystemSettingResponse(
                 setting.getId(),
-                setting.getKey(),
+                setting.getSettingKey(),
                 setting.getValue(),
                 setting.getDescription(),
                 setting.getCategory(),
@@ -26,7 +26,7 @@ public class SystemSettingMapper {
 
     public SystemSetting toEntity(SystemSettingRequest request) {
         SystemSetting setting = new SystemSetting();
-        setting.setKey(request.key());
+        setting.setSettingKey(request.settingKey());
         setting.setValue(request.value());
         return setting;
     }

@@ -11,11 +11,11 @@ import com.jovan.erp_v1.model.SystemSetting;
 @Repository
 public interface SystemSettingRepository extends JpaRepository<SystemSetting, Long> {
 
-    Optional<SystemSetting> findByKey(String key);
+    Optional<SystemSetting> findBySettingKey(String settingKey);
 
     Optional<SystemSetting> findByValue(String value);
 
-    boolean existsByKey(String key);
+    boolean existsBySettingKey(String settingKey);
 
     List<SystemSetting> findAllByCategory(String category);
 }

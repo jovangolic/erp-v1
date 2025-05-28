@@ -41,7 +41,7 @@ public class SystemSettingService implements ISystemSetting {
 
     @Override
     public SystemSettingResponse getByKey(String key) {
-        SystemSetting setting = settingRepository.findByKey(key)
+        SystemSetting setting = settingRepository.findBySettingKey(key)
                 .orElseThrow(() -> new SystemSettingErrorNotFoundException("Setting not found for key: " + key));
         return new SystemSettingResponse(setting);
     }
@@ -49,12 +49,12 @@ public class SystemSettingService implements ISystemSetting {
     @Transactional
     @Override
     public SystemSettingResponse create(SystemSettingCreateRequest request) {
-        if (settingRepository.existsByKey(request.key())) {
+        if (settingRepository.existsBySettingKey(request.settingKey())) {
             throw new IllegalArgumentException("Setting with this key already exists.");
         }
 
         SystemSetting setting = new SystemSetting();
-        setting.setKey(request.key());
+        setting.setSettingKey(request.settingKey());
         setting.setValue(request.value());
         setting.setDescription(request.description());
         setting.setCategory(request.category());

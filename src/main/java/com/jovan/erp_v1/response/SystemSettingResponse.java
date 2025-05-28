@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class SystemSettingResponse {
 
     private Long id;
-    private String key;
+    private String settingKey;
     private String value;
     private String description;
     private String category;
@@ -28,7 +28,7 @@ public class SystemSettingResponse {
 
     public SystemSettingResponse(SystemSetting setting) {
         this.id = setting.getId();
-        this.key = setting.getKey();
+        this.settingKey = setting.getSettingKey();
         this.value = setting.getValue();
         this.description = setting.getDescription();
         this.category = setting.getCategory();

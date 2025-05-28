@@ -6,12 +6,12 @@ import jakarta.validation.constraints.NotBlank;
 
 public record SystemSettingCreateRequest(
 
-        @NotBlank String key,
-        @NotBlank String value,
-        String description,
-        String category,
-        SettingDataType dataType,
-        Boolean editable,
-        Boolean isVisible,
-        String defaultValue) {
+                @NotBlank String settingKey,
+                @NotBlank String value,
+                String description,
+                String category,
+                SettingDataType dataType,
+                Boolean editable,
+                Boolean isVisible,
+                String defaultValue) {
 }

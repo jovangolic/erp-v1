@@ -30,7 +30,7 @@ public class SystemSetting {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String key;
+    private String settingKey;
 
     @Column(nullable = false)
     private String value;
