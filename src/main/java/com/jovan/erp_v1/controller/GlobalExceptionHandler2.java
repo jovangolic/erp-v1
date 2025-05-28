@@ -1,6 +1,8 @@
 package com.jovan.erp_v1.controller;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -12,8 +14,10 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.context.request.WebRequest;
-import com.jovan.erp_v1.exception.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.jovan.erp_v1.exception.*;
+import org.springframework.core.convert.ConversionFailedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jovan.erp_v1.response.ErrorResponse;
 
@@ -137,5 +141,21 @@ public class GlobalExceptionHandler2 {
 
         ErrorResponse error = new ErrorResponse(errorMessages, LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConversionFailedException.class)
+    public ResponseEntity<Object> handleConversionFailedException(ConversionFailedException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("error", "Bad Request");
+        body.put("message", "Neispravan tip vrednosti: " + ex.getValue()); // izvuče problematičnu vrednost
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<String> handleEnumMismatch(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.badRequest().body("Neispravan parametar: " + ex.getValue());
     }
 }

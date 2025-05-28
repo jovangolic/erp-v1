@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,6 +18,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class EditOpt {
 
     @Id
@@ -34,8 +36,10 @@ public class EditOpt {
     private EditOptType type; // npr: "NOTIFICATION_METHOD", "REPORT_FORMAT", itd.
 
     @Column
+    @Builder.Default
     private boolean editable = true;
 
     @Column
+    @Builder.Default
     private boolean visible = true;
 }
