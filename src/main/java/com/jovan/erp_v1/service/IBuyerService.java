@@ -18,4 +18,6 @@ public interface IBuyerService {
     void deleteBuyer(Long id);
 
     List<BuyerResponse> searchBuyers(String keyword);
+
+    BuyerResponse getBuyerByPid(String pib);
 }

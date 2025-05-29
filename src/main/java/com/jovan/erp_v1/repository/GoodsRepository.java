@@ -18,9 +18,9 @@ import com.jovan.erp_v1.response.GoodsResponse;
 @Repository
 public interface GoodsRepository extends JpaRepository<Goods, Long> {
 
-	List<Goods> findByName(String name);
-	
-	Goods findGoodsById(Long id);
+    List<Goods> findByName(String name);
+
+    Goods findGoodsById(Long id);
 
     List<Goods> findByNameContainingIgnoreCase(String name);
 
@@ -43,20 +43,22 @@ public interface GoodsRepository extends JpaRepository<Goods, Long> {
 
     @Query("SELECT g FROM Goods g WHERE g.unitMeasure = :unitMeasure")
     List<Goods> findByUnitMeasure(@Param("unitMeasure") String unitMeasure);
-    
+
     @Query("SELECT g FROM Goods g JOIN g.barCodes b WHERE b.code = :barCode")
     List<Goods> findAllByBarCodes(@Param("barCode") String barCode);
-    
+
     @Query("SELECT g FROM Goods g JOIN g.barCodes b WHERE b.code = :barCode AND g.goodsType = :goodsType")
-    List<Goods> findAllByBarCodesAndGoodsType(@Param("barCode") String barCode, @Param("goodsType") GoodsType goodsType);
-    
+    List<Goods> findAllByBarCodesAndGoodsType(@Param("barCode") String barCode,
+            @Param("goodsType") GoodsType goodsType);
+
     @Query("SELECT g FROM Goods g JOIN g.barCodes b WHERE b.code = :barCode AND g.storage.id = :storageId")
     List<Goods> findAllByBarCodesAndStorageId(@Param("barCode") String barCode, @Param("storageId") Long storageId);
-    
+
     @Query("SELECT b.goods FROM BarCode b WHERE b.code = :code")
     Optional<Goods> findGoodsByBarCode(@Param("code") String code);
-    
+
     @Query("SELECT g FROM Goods g WHERE g.shelf.id = :shelf_id")
     List<Goods> findByShelfId(@Param("shelf_id") Long shelf_id);
-}
 
+    List<Goods> findByStorageId(Long storageId);
+}

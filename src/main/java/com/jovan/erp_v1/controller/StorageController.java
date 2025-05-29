@@ -33,89 +33,91 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin("http://localhost:5173")
 public class StorageController {
 
-	
 	private final IStorageService storageService;
 	private final StorageMapper storageMapper;
-	
+
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
 	@PostMapping("/create/new-storage")
-	public ResponseEntity<StorageResponse> createStorage(@Valid @RequestBody StorageRequest request){
+	public ResponseEntity<StorageResponse> createStorage(@Valid @RequestBody StorageRequest request) {
 		StorageResponse response = storageService.createStorage(request);
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
 	@PutMapping("/update/{storageId}")
-	public ResponseEntity<StorageResponse> updateStorage(@PathVariable Long storageId, @Valid @RequestBody StorageRequest request){
+	public ResponseEntity<StorageResponse> updateStorage(@PathVariable Long storageId,
+			@Valid @RequestBody StorageRequest request) {
 		StorageResponse updated = storageService.updateStorage(storageId, request);
 		return ResponseEntity.ok(updated);
 	}
-	
+
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
 	@DeleteMapping("/delete/{storageId}")
-	public ResponseEntity<Void> deleteStorage(@PathVariable Long storageId){
+	public ResponseEntity<Void> deleteStorage(@PathVariable Long storageId) {
 		storageService.deleteStorage(storageId);
 		return ResponseEntity.noContent().build();
 	}
-	
-	
+
 	@GetMapping("/get-by-storage-type")
-	public ResponseEntity<List<StorageResponse>> getByStorageType(@RequestParam("storageType") StorageType type){
+	public ResponseEntity<List<StorageResponse>> getByStorageType(@RequestParam("storageType") StorageType type) {
 		List<StorageResponse> responses = storageService.getByStorageType(type);
 		return ResponseEntity.ok(responses);
 	}
-	
-	
+
 	@GetMapping("/storage/{storageId}")
-	public ResponseEntity<StorageResponse> getByStorageId(@PathVariable Long storageId){
+	public ResponseEntity<StorageResponse> getByStorageId(@PathVariable Long storageId) {
 		StorageResponse response = storageService.getByStorageId(storageId);
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@GetMapping("/storage/by-name")
-	public ResponseEntity<List<StorageResponse>> getByStorageName(@RequestParam("name") String name){
+	public ResponseEntity<List<StorageResponse>> getByStorageName(@RequestParam("name") String name) {
 		List<StorageResponse> responses = storageService.getByName(name);
 		return ResponseEntity.ok(responses);
 	}
-	
-	
+
 	@GetMapping("/storage/by-location")
-	public ResponseEntity<List<StorageResponse>> getByStorageLocation(@RequestParam("location") String location){
+	public ResponseEntity<List<StorageResponse>> getByStorageLocation(@RequestParam("location") String location) {
 		List<StorageResponse> responses = storageService.getByLocation(location);
 		return ResponseEntity.ok(responses);
 	}
-	
-	
+
 	@GetMapping("/storage/by-capacity")
-	public ResponseEntity<List<StorageResponse>> getByStorageCapacity(@RequestParam("capacity") Double capacity){
+	public ResponseEntity<List<StorageResponse>> getByStorageCapacity(@RequestParam("capacity") Double capacity) {
 		List<StorageResponse> responses = storageService.getByCapacity(capacity);
 		return ResponseEntity.ok(responses);
 	}
-	
+
 	@GetMapping("/storage/by-name-and-location")
-	public ResponseEntity<List<StorageResponse>> getStorageByNameAndLocation(@RequestParam("name") String name,@RequestParam("location") String location){
+	public ResponseEntity<List<StorageResponse>> getStorageByNameAndLocation(@RequestParam("name") String name,
+			@RequestParam("location") String location) {
 		List<StorageResponse> responses = storageService.getByNameAndLocation(name, location);
 		return ResponseEntity.ok(responses);
 	}
-	
-	
+
 	@GetMapping("/storage/by-type-and-capacity")
-	public ResponseEntity<List<StorageResponse>> getByTypeAndCapacityGreaterThan(@RequestParam("type") StorageType type ,@RequestParam("capacity")Double capacity ){
+	public ResponseEntity<List<StorageResponse>> getByTypeAndCapacityGreaterThan(@RequestParam("type") StorageType type,
+			@RequestParam("capacity") Double capacity) {
 		List<StorageResponse> responses = storageService.getByTypeAndCapacityGreaterThan(type, capacity);
 		return ResponseEntity.ok(responses);
 	}
-	
+
 	@GetMapping("/storage/by-minCount")
-	public ResponseEntity<List<StorageResponse>> getStoragesWithMinGoods(@RequestParam("minCount") int minCount){
+	public ResponseEntity<List<StorageResponse>> getStoragesWithMinGoods(@RequestParam("minCount") int minCount) {
 		List<StorageResponse> responses = storageService.getStoragesWithMinGoods(minCount);
 		return ResponseEntity.ok(responses);
 	}
-	
-	
+
 	@GetMapping("/storage/ignore-case")
-	public ResponseEntity<List<StorageResponse>> getByNameContainingIgnoreCase(@RequestParam("name") String name){
+	public ResponseEntity<List<StorageResponse>> getByNameContainingIgnoreCase(@RequestParam("name") String name) {
 		List<StorageResponse> responses = storageService.getByNameContainingIgnoreCase(name);
 		return ResponseEntity.ok(responses);
 	}
-	
+
+	@GetMapping("/get-all-storages")
+	public ResponseEntity<List<StorageResponse>> getAllStorage() {
+		List<StorageResponse> responses = storageService.getAllStorage();
+		return ResponseEntity.ok(responses);
+	}
+
 }

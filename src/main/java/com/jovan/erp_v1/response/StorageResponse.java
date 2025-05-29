@@ -21,7 +21,8 @@ public class StorageResponse {
 	private Double capacity;
 	private StorageType type;
 	private List<GoodsResponse> goods;
-	
+	private List<ShelfResponse> shelves;
+
 	public StorageResponse(Storage storage) {
 		this.id = storage.getId();
 		this.name = storage.getName();
@@ -29,8 +30,12 @@ public class StorageResponse {
 		this.capacity = storage.getCapacity();
 		this.type = storage.getType();
 		this.goods = storage.getGoods()
-                .stream()
-                .map(GoodsResponse::new)
-                .collect(Collectors.toList());
+				.stream()
+				.map(GoodsResponse::new)
+				.collect(Collectors.toList());
+		this.shelves = storage.getShelves()
+				.stream()
+				.map(ShelfResponse::new)
+				.collect(Collectors.toList());
 	}
 }

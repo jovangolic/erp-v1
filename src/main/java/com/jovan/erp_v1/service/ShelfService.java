@@ -16,7 +16,9 @@ import com.jovan.erp_v1.repository.GoodsRepository;
 import com.jovan.erp_v1.repository.ShelfRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.request.ShelfRequest;
+import com.jovan.erp_v1.response.GoodsResponse;
 import com.jovan.erp_v1.response.ShelfResponse;
+import com.jovan.erp_v1.response.ShelfResponseWithGoods;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -124,6 +126,21 @@ public class ShelfService implements IShelfService {
 		return shelfRepository.findByColsAndStorageId(cols, storageId).stream()
 				.map(ShelfResponse::new)
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	public ShelfResponseWithGoods getShelfWithGoods(Long shelfId) {
+		Shelf shelf = shelfRepository.findById(shelfId)
+				.orElseThrow(() -> new ShelfNotFoundException("Shelf not found with id: " + shelfId));
+		List<GoodsResponse> goodsResponses = shelf.getGoods().stream()
+				.map(GoodsResponse::new) // koristiš tvoj postojeći konstruktor
+				.collect(Collectors.toList());
+		return new ShelfResponseWithGoods(
+				shelf.getId(),
+				shelf.getRowCount(),
+				shelf.getCols(),
+				shelf.getStorage().getId(),
+				goodsResponses);
 	}
 
 }

@@ -10,15 +10,27 @@ import com.jovan.erp_v1.response.GoodsResponse;
 
 public interface IGoodsService {
 
-	List<GoodsResponse> findByName(String name);
-	List<GoodsResponse> findByBarCodes(String barCode);
+    List<GoodsResponse> findByName(String name);
+
+    List<GoodsResponse> findByBarCodes(String barCode);
+
     List<GoodsResponse> findByUnitMeasure(String unitMeasure);
+
     List<GoodsResponse> findBySupplierType(SupplierType type);
+
     List<GoodsResponse> findByStorageType(StorageType type);
+
     List<GoodsResponse> findByGoodsType(GoodsType type);
+
     List<GoodsResponse> findByStorageName(String storageName);
+
     List<GoodsResponse> findBySupplyId(Long supplyId);
+
     List<GoodsResponse> findByBarCodeAndGoodsType(String barCode, GoodsType goodsType);
+
     List<GoodsResponse> findByBarCodeAndStorageId(String barCode, Long storageId);
+
     GoodsResponse findSingleByBarCode(String barCode);
+
+    List<GoodsResponse> findByStorageId(Long storageId);
 }

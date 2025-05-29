@@ -117,4 +117,11 @@ public class StorageService implements IStorageService {
 		return storageMapper.toResponseList(storages);
 	}
 
+	@Override
+	public List<StorageResponse> getAllStorage() {
+		return storageRepository.findAll().stream()
+				.map(StorageResponse::new)
+				.collect(Collectors.toList());
+	}
+
 }

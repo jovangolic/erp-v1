@@ -2,7 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -20,23 +20,23 @@ import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.RawMaterialRepository;
 import com.jovan.erp_v1.response.GoodsResponse;
 
-
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class GoodsService implements IGoodsService {
 
-	private final ProductRepository productRepository;
+    private final ProductRepository productRepository;
     private final RawMaterialRepository rawMaterialRepository;
     private final ProductMapper productMapper;
     private final RawMaterialMapper rawMaterialMapper;
-	private final GoodsRepository goodsRepository;
-    
+    private final GoodsRepository goodsRepository;
+
     @Override
     public List<GoodsResponse> findByName(String name) {
         List<GoodsResponse> products = productMapper.toGoodsResponseList(productRepository.findByName(name));
-        List<GoodsResponse> rawMaterials = rawMaterialMapper.toGoodsResponseList(rawMaterialRepository.findByName(name));
+        List<GoodsResponse> rawMaterials = rawMaterialMapper
+                .toGoodsResponseList(rawMaterialRepository.findByName(name));
         return mergeResults(products, rawMaterials);
     }
 
@@ -59,46 +59,54 @@ public class GoodsService implements IGoodsService {
 
     @Override
     public List<GoodsResponse> findByUnitMeasure(String unitMeasure) {
-        List<GoodsResponse> products = productMapper.toGoodsResponseList(productRepository.findByUnitMeasure(unitMeasure));
-        List<GoodsResponse> rawMaterials = rawMaterialMapper.toGoodsResponseList(rawMaterialRepository.findByUnitMeasure(unitMeasure));
+        List<GoodsResponse> products = productMapper
+                .toGoodsResponseList(productRepository.findByUnitMeasure(unitMeasure));
+        List<GoodsResponse> rawMaterials = rawMaterialMapper
+                .toGoodsResponseList(rawMaterialRepository.findByUnitMeasure(unitMeasure));
         return mergeResults(products, rawMaterials);
     }
 
     @Override
     public List<GoodsResponse> findBySupplierType(SupplierType type) {
         List<GoodsResponse> products = productMapper.toGoodsResponseList(productRepository.findBySupplierType(type));
-        List<GoodsResponse> rawMaterials = rawMaterialMapper.toGoodsResponseList(rawMaterialRepository.findBysupplierType(type));
+        List<GoodsResponse> rawMaterials = rawMaterialMapper
+                .toGoodsResponseList(rawMaterialRepository.findBysupplierType(type));
         return mergeResults(products, rawMaterials);
     }
 
     @Override
     public List<GoodsResponse> findByStorageType(StorageType type) {
         List<GoodsResponse> products = productMapper.toGoodsResponseList(productRepository.findByStorageType(type));
-        List<GoodsResponse> rawMaterials = rawMaterialMapper.toGoodsResponseList(rawMaterialRepository.findByStorageType(type));
+        List<GoodsResponse> rawMaterials = rawMaterialMapper
+                .toGoodsResponseList(rawMaterialRepository.findByStorageType(type));
         return mergeResults(products, rawMaterials);
     }
 
     @Override
     public List<GoodsResponse> findByGoodsType(GoodsType type) {
         List<GoodsResponse> products = productMapper.toGoodsResponseList(productRepository.findByGoodsType(type));
-        List<GoodsResponse> rawMaterials = rawMaterialMapper.toGoodsResponseList(rawMaterialRepository.findByGoodsType(type));
+        List<GoodsResponse> rawMaterials = rawMaterialMapper
+                .toGoodsResponseList(rawMaterialRepository.findByGoodsType(type));
         return mergeResults(products, rawMaterials);
     }
 
     @Override
     public List<GoodsResponse> findByStorageName(String storageName) {
-        List<GoodsResponse> products = productMapper.toGoodsResponseList(productRepository.findByStorageName(storageName));
-        List<GoodsResponse> rawMaterials = rawMaterialMapper.toGoodsResponseList(rawMaterialRepository.findByStorageName(storageName));
+        List<GoodsResponse> products = productMapper
+                .toGoodsResponseList(productRepository.findByStorageName(storageName));
+        List<GoodsResponse> rawMaterials = rawMaterialMapper
+                .toGoodsResponseList(rawMaterialRepository.findByStorageName(storageName));
         return mergeResults(products, rawMaterials);
     }
 
     @Override
     public List<GoodsResponse> findBySupplyId(Long supplyId) {
         List<GoodsResponse> products = productMapper.toGoodsResponseList(productRepository.findBySupplyId(supplyId));
-        List<GoodsResponse> rawMaterials = rawMaterialMapper.toGoodsResponseList(rawMaterialRepository.findBySupplyId(supplyId));
+        List<GoodsResponse> rawMaterials = rawMaterialMapper
+                .toGoodsResponseList(rawMaterialRepository.findBySupplyId(supplyId));
         return mergeResults(products, rawMaterials);
     }
-    
+
     @Override
     public List<GoodsResponse> findByBarCodeAndGoodsType(String barCode, GoodsType goodsType) {
         List<Goods> goodsList = goodsRepository.findAllByBarCodesAndGoodsType(barCode, goodsType);
@@ -114,7 +122,7 @@ public class GoodsService implements IGoodsService {
     @Override
     public GoodsResponse findSingleByBarCode(String barCode) {
         Goods goods = goodsRepository.findGoodsByBarCode(barCode)
-            .orElseThrow(() -> new GoodsNotFoundException("No goods found for barcode: " + barCode));
+                .orElseThrow(() -> new GoodsNotFoundException("No goods found for barcode: " + barCode));
         return mapGoodsToResponse(goods);
     }
 
@@ -124,7 +132,7 @@ public class GoodsService implements IGoodsService {
         combined.addAll(list2);
         return combined;
     }
-    
+
     private List<GoodsResponse> mapGoodsListToResponse(List<Goods> goodsList) {
         List<GoodsResponse> responseList = new ArrayList<>();
         for (Goods goods : goodsList) {
@@ -132,7 +140,7 @@ public class GoodsService implements IGoodsService {
         }
         return responseList;
     }
-    
+
     private GoodsResponse mapGoodsToResponse(Goods goods) {
         if (goods instanceof Product product) {
             return productMapper.toGoodsResponse(product);
@@ -141,6 +149,13 @@ public class GoodsService implements IGoodsService {
         } else {
             throw new IllegalStateException("Unknown Goods subtype: " + goods.getClass().getSimpleName());
         }
+    }
+
+    @Override
+    public List<GoodsResponse> findByStorageId(Long storageId) {
+        return goodsRepository.findByStorageId(storageId).stream()
+                .map(GoodsResponse::new)
+                .collect(Collectors.toList());
     }
 
 }

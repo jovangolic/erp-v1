@@ -2,6 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -81,5 +82,19 @@ public class VendorService implements IVendorService {
 
     private VendorResponse mapToResponse(Vendor vendor) {
         return new VendorResponse(vendor);
+    }
+
+    @Override
+    public VendorResponse getById(Long id) {
+        Vendor vendor = vendorRepository.findById(id)
+                .orElseThrow(() -> new SupplierNotFoundException("Vendor not found with id:" + id));
+        return new VendorResponse(vendor);
+    }
+
+    @Override
+    public List<VendorResponse> getAllVendors() {
+        return vendorRepository.findAll().stream()
+                .map(VendorResponse::new)
+                .collect(Collectors.toList());
     }
 }

@@ -100,4 +100,12 @@ public class BuyerService implements IBuyerService {
 				.stream().map(BuyerResponse::new)
 				.collect(Collectors.toList());
 	}
+
+	@Override
+	public BuyerResponse getBuyerByPid(String pib) {
+		Buyer buyer = buyerRepository.findByPib(pib)
+				.orElseThrow(() -> new BuyerNotFoundException("Buyer not found" + pib));
+		return new BuyerResponse(buyer);
+	}
+
 }

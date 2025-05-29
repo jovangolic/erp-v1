@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.jovan.erp_v1.model.Shelf;
 import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.request.StorageRequest;
 import com.jovan.erp_v1.response.StorageResponse;
@@ -15,14 +16,24 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StorageMapper {
 
-	
-	public Storage toEntity(StorageRequest request) {
+    private final ShelfMapper shelfMapper;
+
+    public Storage toEntity(StorageRequest request) {
         Storage storage = new Storage();
         storage.setId(request.id());
         storage.setName(request.name());
         storage.setLocation(request.location());
         storage.setCapacity(request.capacity());
         storage.setType(request.type());
+        List<Shelf> shelves = request.shelves().stream()
+                .map(shelfRequest -> {
+                    Shelf shelf = shelfMapper.toEntity(shelfRequest);
+                    shelf.setStorage(storage); // Veza ka parent skladištu
+                    return shelf;
+                })
+                .collect(Collectors.toList());
+
+        storage.setShelves(shelves);
         return storage;
     }
 

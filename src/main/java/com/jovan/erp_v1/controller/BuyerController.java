@@ -77,4 +77,10 @@ public class BuyerController {
 		List<BuyerResponse> results = buyerService.searchBuyers(keyword);
 		return ResponseEntity.ok(results);
 	}
+
+	@GetMapping("/by-pib/{pib}")
+	public ResponseEntity<BuyerResponse> getBuyerByPid(@PathVariable String pib){
+		BuyerResponse response = buyerService.getBuyerByPid(pib);
+		return ResponseEntity.ok(response);
+	}
 }
