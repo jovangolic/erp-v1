@@ -38,6 +38,8 @@ import com.jovan.erp_v1.model.Shift;
 import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.ShiftRepository;
 import com.jovan.erp_v1.repository.UserRepository;
+import com.jovan.erp_v1.request.ConfirmationDocumentRequest;
+import com.jovan.erp_v1.response.ConfirmationDocumentResponse;
 import com.jovan.erp_v1.service.IConfirmationDocumentService;
 import com.jovan.erp_v1.service.PdfGeneratorService;
 
@@ -49,20 +51,20 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ConfirmationDocumentController {
 
-	private final IConfirmationDocumentService confirmationDocumentService;
-	private final PdfGeneratorService pdfGeneratorService;
-	private final UserRepository userRepository;
+    private final IConfirmationDocumentService confirmationDocumentService;
+    private final PdfGeneratorService pdfGeneratorService;
+    private final UserRepository userRepository;
     private final ShiftRepository shiftRepository;
-	
+
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
-	@PostMapping("/create/new-confirm-document")
-	public ResponseEntity<ConfirmationDocument> create(@Valid @RequestBody ConfirmationDocument document) {
-        ConfirmationDocument saved = confirmationDocumentService.saveDocument(document);
-        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+    @PostMapping("/create/new-confirm-document")
+    public ResponseEntity<ConfirmationDocumentResponse> create(
+            @Valid @RequestBody ConfirmationDocumentRequest request) {
+        ConfirmationDocument saved = confirmationDocumentService.saveDocument(request);
+        return new ResponseEntity<>(new ConfirmationDocumentResponse(saved), HttpStatus.CREATED);
     }
-	
-	
-	@GetMapping("/get-one/{id}")
+
+    @GetMapping("/get-one/{id}")
     public ResponseEntity<ConfirmationDocument> getById(@PathVariable Long id) {
         return confirmationDocumentService.getDocumentById(id)
                 .map(ResponseEntity::ok)
@@ -70,8 +72,12 @@ public class ConfirmationDocumentController {
     }
 
     @GetMapping("/get-all")
-    public ResponseEntity<List<ConfirmationDocument>> getAll() {
-        return ResponseEntity.ok(confirmationDocumentService.getAllDocuments());
+    public ResponseEntity<List<ConfirmationDocumentResponse>> getAll() {
+        List<ConfirmationDocument> docs = confirmationDocumentService.getAllDocuments();
+        List<ConfirmationDocumentResponse> response = docs.stream()
+                .map(ConfirmationDocumentResponse::new)
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/by-user/{userId}")
@@ -80,7 +86,8 @@ public class ConfirmationDocumentController {
     }
 
     @GetMapping("/created-after/{date}")
-    public ResponseEntity<List<ConfirmationDocument>> getAfter(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
+    public ResponseEntity<List<ConfirmationDocument>> getAfter(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
         return ResponseEntity.ok(confirmationDocumentService.getDocumentsCreatedAfter(date));
     }
 
@@ -90,35 +97,34 @@ public class ConfirmationDocumentController {
         confirmationDocumentService.deleteDocument(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadDocument(@RequestParam("file") MultipartFile file,@RequestParam("userId") Long userId,
-    		@RequestParam("shiftId") Long shiftId){
-    	try {
-    		ConfirmationDocument saved = confirmationDocumentService.uploadDocument(file, userId, shiftId);
-    		return ResponseEntity.ok("Document uploaded successfully. Document ID: "+saved.getId());
-    	}
-    	catch (IOException e) {
+    public ResponseEntity<String> uploadDocument(@RequestParam("file") MultipartFile file,
+            @RequestParam("userId") Long userId,
+            @RequestParam("shiftId") Long shiftId) {
+        try {
+            ConfirmationDocument saved = confirmationDocumentService.uploadDocument(file, userId, shiftId);
+            return ResponseEntity.ok("Document uploaded successfully. Document ID: " + saved.getId());
+        } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to upload document: " + e.getMessage());
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body("Invalid input: " + e.getMessage());
         }
     }
-    
-    
+
     @GetMapping("/download/{id}")
-    public ResponseEntity<Resource> downloadDocument(@PathVariable Long id){
-    	Optional<ConfirmationDocument> optDoc = confirmationDocumentService.getDocumentById(id);
-    	if(optDoc.isEmpty()) {
-    		return ResponseEntity.notFound().build();
-    	}
-    	ConfirmationDocument document = optDoc.get();
-    	Path filePath = Paths.get(document.getFilePath());
-    	if(!Files.exists(filePath)) {
-    		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-    	}
-    	try {
+    public ResponseEntity<Resource> downloadDocument(@PathVariable Long id) {
+        Optional<ConfirmationDocument> optDoc = confirmationDocumentService.getDocumentById(id);
+        if (optDoc.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        ConfirmationDocument document = optDoc.get();
+        Path filePath = Paths.get(document.getFilePath());
+        if (!Files.exists(filePath)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        try {
             Resource resource = new UrlResource(filePath.toUri());
             String fileName = filePath.getFileName().toString();
 
@@ -130,48 +136,39 @@ public class ConfirmationDocumentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-    
+
     @PostMapping("/generate")
     public ResponseEntity<Resource> generateAndSaveDocument(@RequestBody GoodsDispatchDTO dto) throws Exception {
         // 1. Generiši PDF
         byte[] pdfBytes = pdfGeneratorService.generateDispatchConfirmation(dto);
-
         // 2. Snimi fajl na disk
         String folderPath = "generated-docs/";
-        Files.createDirectories(Paths.get(folderPath)); // kreiraj folder ako ne postoji
-
+        Files.createDirectories(Paths.get(folderPath)); // Kreiraj folder ako ne postoji
         String filename = "confirmation_" + System.currentTimeMillis() + ".pdf";
         Path path = Paths.get(folderPath + filename);
         Files.write(path, pdfBytes);
-
-        // 3. Nađi korisnika i smenu (ovde koristiš stvarne ID-jeve iz DTO-a ili drugih servisa)
-        User user = userRepository.findById(dto.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Shift shift = shiftRepository.findById(dto.getShiftId())
-                .orElseThrow(() -> new NoSuchShiftErrorException("Shift not found"));
-
-        // 4. Sačuvaj info o dokumentu u bazi
-        ConfirmationDocument doc = new ConfirmationDocument();
-        doc.setCreatedAt(LocalDateTime.now());
-        doc.setCreatedBy(user);
-        doc.setShift(shift);
-        doc.setFilePath(path.toString());
-        confirmationDocumentService.saveDocument(doc);
-
-        // 5. Vrati PDF korisniku za preuzimanje
+        // 3. Pripremi DTO i pozovi servis
+        ConfirmationDocumentRequest request = new ConfirmationDocumentRequest(
+                null, // ID postavlja JPA
+                path.toString(), // Putanja do fajla
+                LocalDateTime.now(), // Vreme kreiranja
+                dto.getEmployeeId(), // ID korisnika iz DTO
+                dto.getShiftId() // ID smene iz DTO
+        );
+        confirmationDocumentService.saveDocument(request);
+        // 4. Vrati PDF korisniku za preuzimanje
         ByteArrayResource resource = new ByteArrayResource(pdfBytes);
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
-
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(resource);
     }
-    
+
     @ExceptionHandler(ConfirmationDocumentNotFoundException.class)
-    public ResponseEntity<String> handleConfirmationDocumentNotFoundException(ConfirmationDocumentNotFoundException err){
-    	return ResponseEntity.badRequest().body(err.getMessage());
+    public ResponseEntity<String> handleConfirmationDocumentNotFoundException(
+            ConfirmationDocumentNotFoundException err) {
+        return ResponseEntity.badRequest().body(err.getMessage());
     }
 }

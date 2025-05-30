@@ -20,6 +20,7 @@ import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.ConfirmationDocumentRepository;
 import com.jovan.erp_v1.repository.ShiftRepository;
 import com.jovan.erp_v1.repository.UserRepository;
+import com.jovan.erp_v1.request.ConfirmationDocumentRequest;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -74,6 +75,24 @@ public class ConfirmationDocumentService implements IConfirmationDocumentService
 		ConfirmationDocument document = new ConfirmationDocument();
 		document.setFilePath(fileName);
 		document.setCreatedAt(LocalDateTime.now());
+		document.setCreatedBy(user);
+		document.setShift(shift);
+		return confirmationDocumentRepository.save(document);
+	}
+
+	private Path resolveFilePath(String fileName) {
+		return Paths.get(FILE_DIRECTORY, fileName);
+	}
+
+	@Transactional
+	public ConfirmationDocument saveDocument(ConfirmationDocumentRequest request) {
+		User user = userRepository.findById(request.userId())
+				.orElseThrow(() -> new UserNotFoundException("User not found"));
+		Shift shift = shiftRepository.findById(request.shiftId())
+				.orElseThrow(() -> new NoSuchShiftErrorException("Shift not found"));
+		ConfirmationDocument document = new ConfirmationDocument();
+		document.setFilePath(request.filePath()); // Ako dolazi putanja iz requesta (npr. ako je klijent već uploadovao)
+		document.setCreatedAt(request.createdAt() != null ? request.createdAt() : LocalDateTime.now());
 		document.setCreatedBy(user);
 		document.setShift(shift);
 		return confirmationDocumentRepository.save(document);
