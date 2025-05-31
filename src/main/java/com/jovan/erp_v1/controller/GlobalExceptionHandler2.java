@@ -86,7 +86,9 @@ public class GlobalExceptionHandler2 {
             OptionErrorException.class,
             FileOptErrorException.class,
             EditOptErrorException.class,
-            PermissionErrorException.class
+            PermissionErrorException.class,
+            SystemStateErrorException.class,
+            SecuritySettingErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

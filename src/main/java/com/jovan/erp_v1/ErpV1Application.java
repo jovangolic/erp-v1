@@ -1,9 +1,17 @@
 package com.jovan.erp_v1;
 
+import java.time.LocalDateTime;
+
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
+
+import com.jovan.erp_v1.enumeration.SystemStatus;
+import com.jovan.erp_v1.model.SystemState;
+import com.jovan.erp_v1.repository.SystemStateRepository;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -24,6 +32,21 @@ public class ErpV1Application {
 		 */
 
 		SpringApplication.run(ErpV1Application.class, args);
+	}
+
+	@Bean
+	public CommandLineRunner initSystemState(SystemStateRepository repo) {
+		return args -> {
+			if (repo.count() == 0) {
+				SystemState initial = new SystemState();
+				initial.setMaintenanceMode(false);
+				initial.setRegistrationEnabled(true);
+				initial.setLastRestartTime(LocalDateTime.now());
+				initial.setSystemVersion("1.0.0");
+				initial.setStatusMessage(SystemStatus.RUNNING); // Enum se koristi ovde
+				repo.save(initial);
+			}
+		};
 	}
 
 }
