@@ -88,7 +88,8 @@ public class GlobalExceptionHandler2 {
             EditOptErrorException.class,
             PermissionErrorException.class,
             SystemStateErrorException.class,
-            SecuritySettingErrorException.class
+            SecuritySettingErrorException.class,
+            EmailSettingNotFoundException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {
