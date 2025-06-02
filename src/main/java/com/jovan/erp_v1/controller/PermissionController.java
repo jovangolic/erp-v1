@@ -14,6 +14,7 @@ import com.jovan.erp_v1.request.PermissionRequest;
 import com.jovan.erp_v1.response.PermissionResponse;
 import com.jovan.erp_v1.service.IPermissionService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -27,7 +28,7 @@ public class PermissionController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
-    public ResponseEntity<PermissionResponse> create(@RequestBody PermissionRequest request) {
+    public ResponseEntity<PermissionResponse> create(@Valid @RequestBody PermissionRequest request) {
         PermissionResponse response = permissionService.create(request);
         return ResponseEntity.ok(response);
     }

@@ -1,5 +1,8 @@
 package com.jovan.erp_v1.response;
 
+import com.jovan.erp_v1.enumeration.LanguageCodeType;
+import com.jovan.erp_v1.enumeration.LanguageNameType;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,6 +13,6 @@ import lombok.NoArgsConstructor;
 public class LanguageResponse {
 
     private Long id;
-    private String languageCodeType;
-    private String languageNameType;
+    private LanguageCodeType languageCodeType; // EN, RS, ...
+    private LanguageNameType languageNameType;
 }

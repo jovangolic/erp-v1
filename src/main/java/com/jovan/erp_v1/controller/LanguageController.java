@@ -13,19 +13,19 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.request.LanguageRequest;
 import com.jovan.erp_v1.response.LanguageResponse;
 import com.jovan.erp_v1.service.ILanguageService;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/laguage")
+@RequestMapping("/language")
 public class LanguageController {
 
     private final ILanguageService languageService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
-    public ResponseEntity<LanguageResponse> create(@RequestBody LanguageRequest request) {
+    public ResponseEntity<LanguageResponse> create(@Valid @RequestBody LanguageRequest request) {
         LanguageResponse response = languageService.create(request);
         return ResponseEntity.ok(response);
     }

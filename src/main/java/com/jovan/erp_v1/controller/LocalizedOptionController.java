@@ -14,6 +14,7 @@ import com.jovan.erp_v1.request.LocalizedOptionRequest;
 import com.jovan.erp_v1.response.LocalizedOptionResponse;
 import com.jovan.erp_v1.service.ILocalizedOptionService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -25,7 +26,7 @@ public class LocalizedOptionController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<LocalizedOptionResponse> create(@RequestBody LocalizedOptionRequest request) {
+    public ResponseEntity<LocalizedOptionResponse> create(@Valid @RequestBody LocalizedOptionRequest request) {
         return ResponseEntity.ok(localizedOptionService.create(request));
     }
 

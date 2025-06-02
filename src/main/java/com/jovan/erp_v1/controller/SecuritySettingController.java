@@ -32,9 +32,9 @@ public class SecuritySettingController {
     }
 
     @PutMapping
-    public ResponseEntity<Void> updateSetting(@RequestBody SecuritySettingRequest request) {
-        securitySettingService.updateSetting(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<SecuritySettingResponse> updateSetting(@RequestBody SecuritySettingRequest request) {
+        SecuritySettingResponse updated = securitySettingService.updateSetting(request);
+        return ResponseEntity.ok(updated);
     }
 
     @GetMapping

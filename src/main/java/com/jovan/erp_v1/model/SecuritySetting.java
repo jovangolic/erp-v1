@@ -19,7 +19,7 @@ public class SecuritySetting {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String settingName; // Npr. "PASSWORD_POLICY", "TWO_FACTOR_AUTH"
 
     @Column(nullable = false)

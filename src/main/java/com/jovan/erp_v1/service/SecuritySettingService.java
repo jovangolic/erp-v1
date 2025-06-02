@@ -28,13 +28,15 @@ public class SecuritySettingService implements ISecuritySettingService {
     }
 
     @Override
-    public void updateSetting(SecuritySettingRequest request) {
+    public SecuritySettingResponse updateSetting(SecuritySettingRequest request) {
         SecuritySetting setting = settingRepository.findBySettingName(request.settingName())
                 .orElseThrow(() -> new SecuritySettingErrorException(
                         "Setting not found with name: " + request.settingName()));
 
         setting.setValue(request.value());
-        settingRepository.save(setting);
+        SecuritySetting updated = settingRepository.save(setting);
+
+        return SecuritySettingMapper.toResponse(updated);
     }
 
     @Override
