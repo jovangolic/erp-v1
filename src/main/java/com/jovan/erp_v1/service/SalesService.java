@@ -132,4 +132,11 @@ public class SalesService implements ISalesService {
 		return salesMapper.toResponseList(sales);
 	}
 
+	@Override
+	public List<SalesResponse> getAllSales() {
+		return salesRepository.findAll().stream()
+				.map(salesMapper::toResponse)
+				.collect(Collectors.toList());
+	}
+
 }

@@ -27,4 +27,5 @@ public interface IConfirmationDocumentService {
 
 	ConfirmationDocument uploadDocument(MultipartFile file, Long userId, Long shiftId) throws IOException;
 
+	ConfirmationDocument update(Long id, ConfirmationDocumentRequest request);
 }

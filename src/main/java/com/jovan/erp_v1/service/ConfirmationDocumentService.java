@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.jovan.erp_v1.exception.ConfirmationDocumentNotFoundException;
 import com.jovan.erp_v1.exception.NoSuchShiftErrorException;
 import com.jovan.erp_v1.exception.UserNotFoundException;
 import com.jovan.erp_v1.model.ConfirmationDocument;
@@ -96,5 +97,21 @@ public class ConfirmationDocumentService implements IConfirmationDocumentService
 		document.setCreatedBy(user);
 		document.setShift(shift);
 		return confirmationDocumentRepository.save(document);
+	}
+
+	@Transactional
+	@Override
+	public ConfirmationDocument update(Long id, ConfirmationDocumentRequest request) {
+		ConfirmationDocument doc = confirmationDocumentRepository.findById(id)
+				.orElseThrow(() -> new ConfirmationDocumentNotFoundException("Document not found" + id));
+		User user = userRepository.findById(request.userId())
+				.orElseThrow(() -> new UserNotFoundException("User not found"));
+		Shift shift = shiftRepository.findById(request.shiftId())
+				.orElseThrow(() -> new NoSuchShiftErrorException("Shift not found"));
+		doc.setFilePath(request.filePath());
+		doc.setCreatedAt(request.createdAt());
+		doc.setCreatedBy(user);
+		doc.setShift(shift);
+		return confirmationDocumentRepository.save(doc);
 	}
 }

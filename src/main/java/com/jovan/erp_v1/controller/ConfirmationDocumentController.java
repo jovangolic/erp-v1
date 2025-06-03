@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -164,6 +165,13 @@ public class ConfirmationDocumentController {
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(resource);
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateConfirmationDocument(@PathVariable Long id,
+            @RequestBody ConfirmationDocumentRequest request) {
+        ConfirmationDocument doc = confirmationDocumentService.update(id, request);
+        return ResponseEntity.ok(doc);
     }
 
     @ExceptionHandler(ConfirmationDocumentNotFoundException.class)

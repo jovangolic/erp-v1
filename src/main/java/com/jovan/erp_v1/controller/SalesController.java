@@ -38,64 +38,70 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin("http://localhost:5173")
 public class SalesController {
 
-	
 	private final ISalesService salesService;
 	private final SalesMapper salesMapper;
 	private final BuyerRepository buyerRepository;
-	
+
 	@PostMapping("/create/new-sale")
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
-	public ResponseEntity<SalesResponse> createSales(@Valid @RequestBody SalesRequest request){
+	public ResponseEntity<SalesResponse> createSales(@Valid @RequestBody SalesRequest request) {
 		SalesResponse response = salesService.createSales(request);
 		return ResponseEntity.ok(response);
 	}
-	
-	
+
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
 	@PutMapping("update/{id}")
-	public ResponseEntity<SalesResponse> updateSales(@PathVariable Long id, @Valid @RequestBody SalesRequest request){
+	public ResponseEntity<SalesResponse> updateSales(@PathVariable Long id, @Valid @RequestBody SalesRequest request) {
 		SalesResponse updated = salesService.updateSales(id, request);
 		return ResponseEntity.ok(updated);
 	}
-	
+
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
 	@DeleteMapping("/delete/sale/{id}")
-	public ResponseEntity<Void> deleteSales(@PathVariable Long id){
+	public ResponseEntity<Void> deleteSales(@PathVariable Long id) {
 		salesService.deleteSales(id);
 		return ResponseEntity.noContent().build();
 	}
-	
+
 	@GetMapping("/between-dates")
-	public ResponseEntity<List<SalesResponse>> getByCreatedAtBetween(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-			@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate){
+	public ResponseEntity<List<SalesResponse>> getByCreatedAtBetween(
+			@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+			@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
 		List<SalesResponse> responses = salesService.getByCreatedAtBetween(startDate, endDate);
 		return ResponseEntity.ok(responses);
 	}
-	
+
 	@GetMapping("/get-by-buyer")
-	public ResponseEntity<List<SalesResponse>> getSalesByBuyer(@RequestParam("buyerId") Long buyerId){
-		Buyer buyer = buyerRepository.findById(buyerId).orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: "+buyerId));
+	public ResponseEntity<List<SalesResponse>> getSalesByBuyer(@RequestParam("buyerId") Long buyerId) {
+		Buyer buyer = buyerRepository.findById(buyerId)
+				.orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: " + buyerId));
 		List<SalesResponse> responses = salesService.getByBuyer(buyer);
 		return ResponseEntity.ok(responses);
 	}
-	
+
 	@GetMapping("/sale/total-price")
 	public ResponseEntity<List<SalesResponse>> getByTotalPrice(@RequestParam("totalPrice") BigDecimal totalPrice) {
-	    List<SalesResponse> responses = salesService.getByTotalPrice(totalPrice);
-	    return ResponseEntity.ok(responses);
+		List<SalesResponse> responses = salesService.getByTotalPrice(totalPrice);
+		return ResponseEntity.ok(responses);
 	}
-	
+
 	@GetMapping("sale/{salesId}")
-	public ResponseEntity<SalesResponse> findBySalesId(@PathVariable Long salesId){
+	public ResponseEntity<SalesResponse> findBySalesId(@PathVariable Long salesId) {
 		SalesResponse id = salesService.getBySalesId(salesId);
 		return ResponseEntity.ok(id);
 	}
-	
+
 	@GetMapping("/sale-by-date")
 	public ResponseEntity<List<SalesResponse>> getSalesByDate(
-	    @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-	    List<SalesResponse> responses = salesService.getSalesByDate(date);
-	    return ResponseEntity.ok(responses);
+			@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+		List<SalesResponse> responses = salesService.getSalesByDate(date);
+		return ResponseEntity.ok(responses);
 	}
-	
+
+	@GetMapping("/get-all-sales")
+	public ResponseEntity<List<SalesResponse>> getAllSales() {
+		List<SalesResponse> responses = salesService.getAllSales();
+		return ResponseEntity.ok(responses);
+	}
+
 }
