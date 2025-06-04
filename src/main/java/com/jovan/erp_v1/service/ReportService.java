@@ -4,12 +4,16 @@ import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 
+import com.jovan.erp_v1.enumeration.ReportType;
+import com.jovan.erp_v1.exception.ReportErrorException;
 import com.jovan.erp_v1.mapper.ReportMapper;
 import com.jovan.erp_v1.model.Report;
 import com.jovan.erp_v1.repository.ReportRepository;
@@ -50,5 +54,31 @@ public class ReportService implements IReportService {
         } catch (MalformedURLException e) {
             throw new RuntimeException("File not found", e);
         }
+    }
+
+    @Override
+    public ReportResponse getReportById(Long id) {
+        Report report = reportRepository.findById(id)
+                .orElseThrow(() -> new ReportErrorException("Report not found with ID: " + id));
+        return new ReportResponse(report);
+    }
+
+    @Override
+    public List<ReportResponse> getReportsByType(ReportType type) {
+        return reportRepository.findByType(type)
+                .stream()
+                .map(ReportResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ReportResponse> getReportsBetweenDates(LocalDateTime from, LocalDateTime to) {
+        return reportRepository.findAll()
+                .stream()
+                .filter(report -> report.getGeneratedAt() != null &&
+                        !report.getGeneratedAt().isBefore(from) &&
+                        !report.getGeneratedAt().isAfter(to))
+                .map(ReportResponse::new)
+                .collect(Collectors.toList());
     }
 }

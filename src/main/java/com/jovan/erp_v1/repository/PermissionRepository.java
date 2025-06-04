@@ -12,4 +12,8 @@ import com.jovan.erp_v1.model.Permission;
 public interface PermissionRepository extends JpaRepository<Permission, Long> {
 
     Optional<Permission> findByPermissionType(PermissionType type);
+
+    boolean existsByPermissionType(PermissionType type);
+
+    Optional<Permission> findById(Long id);
 }

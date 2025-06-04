@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.response;
 
+import com.jovan.erp_v1.enumeration.PermissionType;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class PermissionResponse {
 
     private Long id;
-    private String permissionType;
+    private PermissionType permissionType;
 }

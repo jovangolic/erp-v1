@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.FileAction;
 import com.jovan.erp_v1.enumeration.FileExtension;
 import com.jovan.erp_v1.request.FileOptRequest;
 import com.jovan.erp_v1.response.FileOptResponse;
@@ -67,6 +68,12 @@ public class FileOptController {
     @GetMapping("/by-extension/{extension}")
     public ResponseEntity<List<FileOptResponse>> getByExtension(@PathVariable FileExtension extension) {
         List<FileOptResponse> responses = fileOptService.getByExtension(extension);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/by-availableActions/{action}")
+    public ResponseEntity<List<FileOptResponse>> getByAction(@PathVariable FileAction action) {
+        List<FileOptResponse> responses = fileOptService.getByAction(action);
         return ResponseEntity.ok(responses);
     }
 

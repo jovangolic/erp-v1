@@ -1,10 +1,12 @@
 package com.jovan.erp_v1.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jovan.erp_v1.enumeration.FileAction;
 import com.jovan.erp_v1.enumeration.FileExtension;
 import com.jovan.erp_v1.exception.FileOptErrorException;
 import com.jovan.erp_v1.mapper.FileOptMapper;
@@ -75,5 +77,13 @@ public class FileOptService implements IFileOptService {
                 .stream()
                 .map(fileOptMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<FileOptResponse> getByAction(FileAction action) {
+        return fileOptRepository.findByAvailableActions(action)
+                .stream().map(fileOptMapper::toResponse)
+                .collect(Collectors.toList());
     }
 }

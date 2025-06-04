@@ -11,12 +11,11 @@ public class PermissionMapper {
 
     public Permission toEntity(PermissionRequest request) {
         Permission entity = new Permission();
-        entity.setPermissionType(PermissionType.valueOf(request.getPermissionType()));
+        entity.setPermissionType(request.getPermissionType());
         return entity;
     }
 
     public PermissionResponse toResponse(Permission entity) {
-        return new PermissionResponse(entity.getId(), entity.getPermissionType().name());
+        return new PermissionResponse(entity.getId(), entity.getPermissionType());
     }
-
 }

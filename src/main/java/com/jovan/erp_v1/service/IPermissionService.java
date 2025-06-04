@@ -10,4 +10,10 @@ public interface IPermissionService {
     PermissionResponse create(PermissionRequest request);
 
     List<PermissionResponse> getAll();
+
+    PermissionResponse getById(Long id);
+
+    void delete(Long id);
+
+    PermissionResponse update(Long id, PermissionRequest request);
 }

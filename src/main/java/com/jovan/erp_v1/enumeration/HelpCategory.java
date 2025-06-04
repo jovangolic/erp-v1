@@ -27,5 +27,6 @@ public enum HelpCategory {
     TOKEN,
     SUPPLY_ITEM,
     INVENTORY_ITEMS,
-    SHIFT_REPORT
+    SHIFT_REPORT,
+    BARCODE
 }
