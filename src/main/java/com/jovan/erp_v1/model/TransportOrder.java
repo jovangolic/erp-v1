@@ -34,7 +34,7 @@ public class TransportOrder {
     private Vehicle vehicle;
 
     @ManyToOne
-    private Drivers drivers; // misli se na jedninu da se ne bi sudaralo sa kljucnom recju Driver
+    private Driver drivers; // misli se na jedninu da se ne bi sudaralo sa kljucnom recju Driver
 
     @Enumerated(EnumType.STRING)
     private TransportStatus status;

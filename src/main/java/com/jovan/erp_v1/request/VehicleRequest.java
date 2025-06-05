@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
 public record VehicleRequest(
-        @NotBlank String registrationNumber,
-        @NotEmpty String model) {
+                Long id,
+                @NotBlank String registrationNumber,
+                @NotEmpty String model) {
 }

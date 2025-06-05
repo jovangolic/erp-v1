@@ -93,7 +93,8 @@ public class GlobalExceptionHandler2 {
             ReportErrorException.class,
             InboundDeliveryErrorException.class,
             OutboundDeliveryErrorException.class,
-            DeliveryItemErrorException.class
+            DeliveryItemErrorException.class,
+            VehicleErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {
