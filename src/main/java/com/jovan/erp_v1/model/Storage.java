@@ -25,68 +25,79 @@ public class Storage {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@Column
 	private String name;
-	
+
 	@Column
 	private String location;
-	
+
 	@Column
 	private Double capacity;
-	
+
 	@Enumerated(EnumType.STRING)
 	@Column
 	private StorageType type;
-	
+
 	@OneToMany(mappedBy = "storage", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Goods> goods;
-	
-	@OneToMany(mappedBy = "storage",cascade = CascadeType.ALL,orphanRemoval = true)
+
+	@OneToMany(mappedBy = "storage", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Shelf> shelves;
-	
+
+	@OneToMany(mappedBy = "originStorage")
+	private List<Shipment> outgoingShipments;
+
+	@OneToMany(mappedBy = "fromStorage")
+	private List<StockTransfer> outgoingTransfers;
+
+	@OneToMany(mappedBy = "toStorage")
+	private List<StockTransfer> incomingTransfers;
+
 	public Storage() {
-	    this.goods = new ArrayList<>();
-	    this.shelves = new ArrayList<>();
+		this.goods = new ArrayList<>();
+		this.shelves = new ArrayList<>();
 	}
-	
+
 	public void addShelf(Shelf shelf) {
-	    if (shelves == null) {
-	        shelves = new ArrayList<>();
-	    }
-	    shelves.add(shelf);
-	    shelf.setStorage(this);
+		if (shelves == null) {
+			shelves = new ArrayList<>();
+		}
+		shelves.add(shelf);
+		shelf.setStorage(this);
 	}
-	
-	/*public void addGoods(Goods good, String scannedBy) {
-		if(goods == null) {
+
+	/*
+	 * public void addGoods(Goods good, String scannedBy) {
+	 * if(goods == null) {
+	 * goods = new ArrayList<>();
+	 * }
+	 * goods.add(good);
+	 * good.setStorage(this);
+	 * BarCode barCode = new BarCode();
+	 * barCode.setCode(BarCodeGenerator.generate());
+	 * barCode.setScannedAt(LocalDateTime.now());
+	 * barCode.setScannedBy(scannedBy);
+	 * barCode.setGoods(good);
+	 * if(good.getBarCodes() == null) {
+	 * good.setBarCodes(new ArrayList<BarCode>());
+	 * }
+	 * good.getBarCodes().add(barCode);
+	 * }
+	 */
+
+	public void addGoods(Goods good, String scannedBy) {
+		if (goods == null) {
 			goods = new ArrayList<>();
 		}
 		goods.add(good);
 		good.setStorage(this);
-		BarCode barCode = new BarCode();
-		barCode.setCode(BarCodeGenerator.generate());
-		barCode.setScannedAt(LocalDateTime.now());
-		barCode.setScannedBy(scannedBy);
-		barCode.setGoods(good);
-		if(good.getBarCodes() == null) {
-			good.setBarCodes(new ArrayList<BarCode>());
-		}
-		good.getBarCodes().add(barCode);
-	}*/
-	
-	public void addGoods(Goods good, String scannedBy) {
-        if (goods == null) {
-            goods = new ArrayList<>();
-        }
-        goods.add(good);
-        good.setStorage(this);
-        BarCode barCode = BarCode.builder()
-            .code(BarCodeGenerator.generate())
-            .scannedAt(LocalDateTime.now())
-            .scannedBy(scannedBy)
-            .goods(good)
-            .build();
-        good.addBarCode(barCode);
-    }
+		BarCode barCode = BarCode.builder()
+				.code(BarCodeGenerator.generate())
+				.scannedAt(LocalDateTime.now())
+				.scannedBy(scannedBy)
+				.goods(good)
+				.build();
+		good.addBarCode(barCode);
+	}
 }

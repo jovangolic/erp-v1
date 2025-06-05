@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,5 +34,20 @@ public class LocalizedOptionController {
     @GetMapping
     public ResponseEntity<List<LocalizedOptionResponse>> getAll() {
         return ResponseEntity.ok(localizedOptionService.getAll());
+    }
+
+    @GetMapping("/option/{optionId}/translations")
+    public ResponseEntity<List<LocalizedOptionResponse>> getTranslationsForOption(@PathVariable Long optionId) {
+        List<LocalizedOptionResponse> translations = localizedOptionService.getTranslationsForOption(optionId);
+        return ResponseEntity.ok(translations);
+    }
+
+    // Dodavanje novog prevoda za konkretnu opciju
+    @PostMapping("/option/{optionId}/translations")
+    public ResponseEntity<LocalizedOptionResponse> addTranslationForOption(
+            @PathVariable Long optionId,
+            @Valid @RequestBody LocalizedOptionRequest request) {
+        LocalizedOptionResponse createdTranslation = localizedOptionService.addTranslationForOption(optionId, request);
+        return ResponseEntity.ok(createdTranslation);
     }
 }
