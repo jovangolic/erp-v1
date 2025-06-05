@@ -90,7 +90,10 @@ public class GlobalExceptionHandler2 {
             SystemStateErrorException.class,
             SecuritySettingErrorException.class,
             EmailSettingNotFoundException.class,
-            ReportErrorException.class
+            ReportErrorException.class,
+            InboundDeliveryErrorException.class,
+            OutboundDeliveryErrorException.class,
+            DeliveryItemErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {
