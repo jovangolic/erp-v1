@@ -5,9 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
 public record LogisticsProviderRequest(
-        @NotBlank String name,
-        @NotEmpty String contactPhone,
-        @NotBlank @Email String email,
-        String website) {
+                Long id,
+                @NotBlank String name,
+                @NotEmpty String contactPhone,
+                @NotBlank @Email String email,
+                String website) {
 
 }
