@@ -68,13 +68,6 @@ public class VehicleService implements IVehicleService {
     }
 
     @Override
-    public VehicleResponse findBy_Model(String model) {
-        Vehicle vehicle = vehicleRepository.findBy_Model(model)
-                .orElseThrow(() -> new VehicleErrorException("Vehicle model not found" + model));
-        return new VehicleResponse(vehicle);
-    }
-
-    @Override
     public VehicleResponse findByRegistrationNumber(String registrationNumber) {
         Vehicle vehicle = vehicleRepository.findByRegistrationNumber(registrationNumber)
                 .orElseThrow(() -> new VehicleErrorException("Vehicle with that registration number not found"));
@@ -117,6 +110,13 @@ public class VehicleService implements IVehicleService {
     @Override
     public List<VehicleResponse> findByModelAndStatus(String model, VehicleStatus status) {
         return vehicleRepository.findByModelAndStatus(model, status).stream()
+                .map(VehicleResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<VehicleResponse> findByModel(String model) {
+        return vehicleRepository.findByModel(model).stream()
                 .map(VehicleResponse::new)
                 .collect(Collectors.toList());
     }

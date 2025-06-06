@@ -12,10 +12,6 @@ import com.jovan.erp_v1.model.Vehicle;
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
-    Optional<Vehicle> findBy_Model(String model);
-
-    Optional<Vehicle> findByDistinctRegistrationNumber(String registrationNumber);
-
     List<Vehicle> findByModel(String model);
 
     List<Vehicle> findByStatus(VehicleStatus status);

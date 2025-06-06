@@ -18,7 +18,7 @@ public interface IVehicleService {
 
     List<VehicleResponse> findAll();
 
-    VehicleResponse findBy_Model(String model);
+    List<VehicleResponse> findByModel(String model);
 
     VehicleResponse findByRegistrationNumber(String registrationNumber);
 

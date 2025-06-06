@@ -61,8 +61,8 @@ public class VehicleController {
     }
 
     @GetMapping("/find-by-model")
-    public ResponseEntity<VehicleResponse> findByModel(@RequestParam("model") String model) {
-        VehicleResponse response = vehicleService.findBy_Model(model);
+    public ResponseEntity<List<VehicleResponse>> findByModel(@RequestParam("model") String model) {
+        List<VehicleResponse> response = vehicleService.findByModel(model);
         return ResponseEntity.ok(response);
     }
 
