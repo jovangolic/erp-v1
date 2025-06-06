@@ -2,6 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.util.List;
 
+import com.jovan.erp_v1.enumeration.VehicleStatus;
 import com.jovan.erp_v1.request.VehicleRequest;
 import com.jovan.erp_v1.response.VehicleResponse;
 
@@ -17,7 +18,15 @@ public interface IVehicleService {
 
     List<VehicleResponse> findAll();
 
-    VehicleResponse findByModel(String model);
+    VehicleResponse findBy_Model(String model);
 
-    VehicleResponse findByDistinctRegistrationNumber(String registrationNumber);
+    VehicleResponse findByRegistrationNumber(String registrationNumber);
+
+    List<VehicleResponse> filterVehicles(String model, String status);
+
+    List<VehicleResponse> search(String keyword);
+
+    List<VehicleResponse> findByStatus(VehicleStatus status);
+
+    List<VehicleResponse> findByModelAndStatus(String model, VehicleStatus status);
 }

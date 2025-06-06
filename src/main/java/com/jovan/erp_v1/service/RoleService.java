@@ -1,12 +1,17 @@
 package com.jovan.erp_v1.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.mapper.RoleMapper;
+import com.jovan.erp_v1.model.Permission;
 import com.jovan.erp_v1.model.Role;
 import com.jovan.erp_v1.model.User;
+import com.jovan.erp_v1.repository.PermissionRepository;
 import com.jovan.erp_v1.repository.RoleRepository;
 import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.RoleRequest;
@@ -22,6 +27,7 @@ public class RoleService implements IRoleService {
     private final RoleRepository roleRepository;
     private final RoleMapper roleMapper;
     private final UserRepository userRepository;
+    private final PermissionRepository permissionRepository;
 
     @Transactional
     @Override
@@ -30,7 +36,15 @@ public class RoleService implements IRoleService {
         if (roleRepository.existsByName(roleName)) {
             throw new RuntimeException("Role already exists with name: " + roleName);
         }
-        Role role = new Role(roleName);
+        Set<Permission> permissions = new HashSet<>();
+        if (request.getPermissionIds() != null) {
+            permissions = request.getPermissionIds().stream()
+                    .map(id -> permissionRepository.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Permission not found with ID: " + id)))
+                    .collect(Collectors.toSet());
+        }
+        Role role = roleMapper.toEntity(request, permissions);
+        role.setName(roleName); // Setujemo finalni naziv s "ROLE_" prefiksom
         Role savedRole = roleRepository.save(role);
         return roleMapper.toResponse(savedRole);
     }
@@ -40,8 +54,21 @@ public class RoleService implements IRoleService {
     public RoleResponse updateRole(Long roleId, RoleRequest updatedRequest) {
         Role existingRole = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
+        // mapiranje ID-jeva u entitete
+        Set<Permission> permissions = new HashSet<>();
+        if (updatedRequest.getPermissionIds() != null) {
+            permissions = updatedRequest.getPermissionIds().stream()
+                    .map(id -> permissionRepository.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Permission not found with ID: " + id)))
+                    .collect(Collectors.toSet());
+        }
 
+        // ažuriraj osnovna polja
         roleMapper.updateRole(updatedRequest, existingRole);
+
+        // postavi permissions
+        existingRole.setPermissions(permissions);
+
         Role updated = roleRepository.save(existingRole);
         return roleMapper.toResponse(updated);
     }

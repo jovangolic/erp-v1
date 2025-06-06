@@ -1,19 +1,37 @@
 package com.jovan.erp_v1.mapper;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.mapstruct.Mapper;
+import org.springframework.stereotype.Component;
 
 import com.jovan.erp_v1.model.Vehicle;
 import com.jovan.erp_v1.request.VehicleRequest;
 import com.jovan.erp_v1.response.VehicleResponse;
 
-@Mapper(componentModel = "Spring")
-public interface VehicleMapper {
+import lombok.RequiredArgsConstructor;
 
-    public Vehicle toEntity(VehicleRequest request);
+@Component
+@RequiredArgsConstructor
+public class VehicleMapper {
 
-    public VehicleResponse toResponse(Vehicle vehicle);
+    public Vehicle toEntity(VehicleRequest request) {
+        Vehicle v = new Vehicle();
+        v.setModel(request.model());
+        v.setRegistrationNumber(request.registrationNumber());
+        v.setStatus(request.status());
+        return v;
+    }
 
-    public List<VehicleResponse> toResponseList(List<Vehicle> vehicles);
+    public VehicleResponse toResponse(Vehicle vehicle) {
+        VehicleResponse response = new VehicleResponse();
+        response.setModel(vehicle.getModel());
+        response.setRegistrationNumber(vehicle.getRegistrationNumber());
+        response.setStatus(vehicle.getStatus());
+        return response;
+    }
+
+    public List<VehicleResponse> toResponseList(List<Vehicle> vs) {
+        return vs.stream().map(this::toResponse).collect(Collectors.toList());
+    }
 }

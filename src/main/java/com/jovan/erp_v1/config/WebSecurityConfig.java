@@ -47,7 +47,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
             "/vendor/**", "/goods/**", "/invoice/**", "/storage/**",
             "/rawMaterial/**", "/confirmationDocument/**",
             "/sales/**", "/supply/**", "/salesOrder/**",
-            "/inventory/**", "/inventoryItems/**"
+            "/inventory/**", "/inventoryItems/**", "/driver/**", "/vehicle/**", ",deliveryItem/**"
     };
 
     private static final String[] STORAGE_FOREMAN_ENDPOINTS = {
@@ -55,7 +55,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
             "/itemSales/**", "/payment/**", "/product/**", "/procurement/**",
             "/rawMaterial/**", "/sales/**", "/salesOrder/**", "/storage/**",
             "/supply/**", "/supplyitem/**", "/vendor/**", "/shift/**",
-            "/shiftReport/**", "/inventory/**", "/inventoryItems/**", "/shelf/**"
+            "/shiftReport/**", "/inventory/**", "/inventoryItems/**", "/shelf/**", "/driver/**", "/vehicle/**",
+            ",deliveryItem/**"
     };
 
     @Override
