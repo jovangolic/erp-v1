@@ -95,7 +95,8 @@ public class GlobalExceptionHandler2 {
             OutboundDeliveryErrorException.class,
             DeliveryItemErrorException.class,
             VehicleErrorException.class,
-            LogisticsProviderErrorException.class
+            LogisticsProviderErrorException.class,
+            RouteNotFoundException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {
