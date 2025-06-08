@@ -22,4 +22,6 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     List<Vehicle> findByRegistrationNumberContainingIgnoreCaseOrModelContainingIgnoreCase(String keyword1,
             String keyword2);
+
+    List<Vehicle> findByModelContainingIgnoreCase(String modelFragment);
 }

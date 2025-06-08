@@ -70,14 +70,14 @@ public class DeliveryItemController {
         return ResponseEntity.ok(responses);
     }
 
-    @GetMapping("quantity-greater-than")
+    @GetMapping("/quantity-greater-than")
     public ResponseEntity<List<DeliveryItemResponse>> findByQuantityGreaterThan(
             @RequestParam("quantity") Double quantity) {
         List<DeliveryItemResponse> responses = deliveryItemService.findByQuantityGreaterThan(quantity);
         return ResponseEntity.ok(responses);
     }
 
-    @GetMapping("quantity-less-than")
+    @GetMapping("/quantity-less-than")
     public ResponseEntity<List<DeliveryItemResponse>> findByQuantityLessThan(
             @RequestParam("quantity") Double quantity) {
         List<DeliveryItemResponse> responses = deliveryItemService.findByQuantityLessThan(quantity);

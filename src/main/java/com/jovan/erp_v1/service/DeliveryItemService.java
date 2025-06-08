@@ -8,9 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.jovan.erp_v1.exception.DeliveryItemErrorException;
 import com.jovan.erp_v1.exception.InboundDeliveryErrorException;
-import com.jovan.erp_v1.exception.NoSuchProductException;
 import com.jovan.erp_v1.exception.OutboundDeliveryErrorException;
-import com.jovan.erp_v1.mapper.DeliveryItemMapper;
+import com.jovan.erp_v1.exception.ProductNotFoundException;
 import com.jovan.erp_v1.model.DeliveryItem;
 import com.jovan.erp_v1.model.InboundDelivery;
 import com.jovan.erp_v1.model.OutboundDelivery;
@@ -28,152 +27,138 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DeliveryItemService implements IDeliveryItemService {
 
-    private final DeliveryItemRepository itemRepository;
-    private final OutboundDeliveryRepository outboundDeliveryRepository;
-    private final InboundDeliveryRepository inboundDeliveryRepository;
+    private final DeliveryItemRepository deliveryItemRepository;
     private final ProductRepository productRepository;
-    private final DeliveryItemMapper deliveryItemMapper;
+    private final InboundDeliveryRepository inboundDeliveryRepository;
+    private final OutboundDeliveryRepository outboundDeliveryRepository;
 
     @Transactional
     @Override
     public DeliveryItemResponse create(DeliveryItemRequest request) {
         Product product = productRepository.findById(request.productId())
-                .orElseThrow(() -> new NoSuchProductException("Product not found" + request.productId()));
-        InboundDelivery inboundDelivery = null;
-        if (request.inboundDeliveryId() != null) {
-            inboundDelivery = inboundDeliveryRepository.findById(request.inboundDeliveryId())
-                    .orElseThrow(() -> new InboundDeliveryErrorException("InboundDelivery not found"));
-        }
-        OutboundDelivery outboundDelivery = null;
-        if (request.outboundDeliveryId() != null) {
-            outboundDelivery = outboundDeliveryRepository.findById(request.outboundDeliveryId())
-                    .orElseThrow(() -> new OutboundDeliveryErrorException("OutboundDelivery not found"));
-        }
+                .orElseThrow(() -> new ProductNotFoundException("Product not found " + request.productId()));
+        InboundDelivery inbound = inboundDeliveryRepository.findById(request.inboundDeliveryId())
+                .orElseThrow(() -> new InboundDeliveryErrorException(
+                        "InboundDelivery not found" + request.inboundDeliveryId()));
+        OutboundDelivery outbound = outboundDeliveryRepository.findById(request.outboundDeliveryId())
+                .orElseThrow(() -> new OutboundDeliveryErrorException(
+                        "OutboundDelivery not found " + request.outboundDeliveryId()));
         DeliveryItem item = DeliveryItem.builder()
                 .product(product)
+                .inboundDelivery(inbound)
+                .outboundDelivery(outbound)
                 .quantity(request.quantity())
-                .inboundDelivery(inboundDelivery)
-                .outboundDelivery(outboundDelivery)
                 .build();
-        return deliveryItemMapper.toResponse(itemRepository.save(item));
+        DeliveryItem saved = deliveryItemRepository.save(item);
+        return new DeliveryItemResponse(saved);
     }
 
     @Transactional
     @Override
     public DeliveryItemResponse update(Long id, DeliveryItemRequest request) {
-        DeliveryItem item = itemRepository.findById(id)
-                .orElseThrow(() -> new DeliveryItemErrorException("DeliveryItem not found" + id));
+        DeliveryItem item = deliveryItemRepository.findById(id)
+                .orElseThrow(() -> new DeliveryItemErrorException("DeliveryItem not found " + id));
+        Product product = productRepository.findById(request.productId())
+                .orElseThrow(() -> new ProductNotFoundException("Product not found " + request.productId()));
+        InboundDelivery inbound = inboundDeliveryRepository.findById(request.inboundDeliveryId())
+                .orElseThrow(() -> new InboundDeliveryErrorException(
+                        "InboundDelivery not found" + request.inboundDeliveryId()));
+        OutboundDelivery outbound = outboundDeliveryRepository.findById(request.outboundDeliveryId())
+                .orElseThrow(() -> new OutboundDeliveryErrorException(
+                        "OutboundDelivery not found " + request.outboundDeliveryId()));
         item.setQuantity(request.quantity());
-        InboundDelivery inboundDelivery = null;
-        if (request.inboundDeliveryId() != null) {
-            inboundDelivery = inboundDeliveryRepository.findById(request.inboundDeliveryId())
-                    .orElseThrow(() -> new InboundDeliveryErrorException("InboundDelivery not found"));
-        }
-        item.setInboundDelivery(inboundDelivery);
-        OutboundDelivery outboundDelivery = null;
-        if (request.outboundDeliveryId() != null) {
-            outboundDelivery = outboundDeliveryRepository.findById(request.outboundDeliveryId())
-                    .orElseThrow(() -> new OutboundDeliveryErrorException("OutboundDelivery not found"));
-        }
-        item.setOutboundDelivery(outboundDelivery);
-        Product product = null;
-        if (request.productId() != null) {
-            product = productRepository.findById(request.productId())
-                    .orElseThrow(() -> new NoSuchProductException("Product not found"));
-        }
+        item.setInboundDelivery(inbound);
+        item.setOutboundDelivery(outbound);
         item.setProduct(product);
-        return deliveryItemMapper.toResponse(itemRepository.save(item));
+        DeliveryItem updated = deliveryItemRepository.save(item);
+        return new DeliveryItemResponse(updated);
     }
 
     @Transactional
     @Override
     public void delete(Long id) {
-        if (!itemRepository.existsById(id)) {
-            throw new DeliveryItemErrorException("Delivery-Item not found " + id);
+        if (!deliveryItemRepository.existsById(id)) {
+            throw new DeliveryItemErrorException("DeliveryItem not found " + id);
         }
-        itemRepository.deleteById(id);
+        deliveryItemRepository.deleteById(id);
     }
 
     @Override
     public DeliveryItemResponse findById(Long id) {
-        DeliveryItem item = itemRepository.findById(id)
-                .orElseThrow(() -> new DeliveryItemErrorException("Delivery-Item not found" + id));
+        DeliveryItem item = deliveryItemRepository.findById(id)
+                .orElseThrow(() -> new DeliveryItemErrorException("DeliveryItem not found " + id));
         return new DeliveryItemResponse(item);
     }
 
     @Override
     public List<DeliveryItemResponse> findAll() {
-        return itemRepository.findAll().stream()
+        return deliveryItemRepository.findAll().stream()
                 .map(DeliveryItemResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<DeliveryItemResponse> findByQuantity(Double quantity) {
-        return itemRepository.findByQuantity(quantity).stream()
+        return deliveryItemRepository.findByQuantity(quantity).stream()
                 .map(DeliveryItemResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<DeliveryItemResponse> findByQuantityGreaterThan(Double quantity) {
-        return itemRepository.findByQuantity(quantity).stream()
+        return deliveryItemRepository.findByQuantityGreaterThan(quantity).stream()
                 .map(DeliveryItemResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<DeliveryItemResponse> findByQuantityLessThan(Double quantity) {
-        return itemRepository.findByQuantityLessThan(quantity).stream()
+        return deliveryItemRepository.findByQuantityLessThan(quantity).stream()
                 .map(DeliveryItemResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<DeliveryItemResponse> findByInboundDelivery_DeliveryDateBetween(LocalDate start, LocalDate end) {
-        return itemRepository.findByInboundDelivery_DeliveryDateBetween(start, end).stream()
-                .filter(item -> item.getInboundDelivery() != null &&
-                        !item.getInboundDelivery().getDeliveryDate().isBefore(start) &&
-                        !item.getInboundDelivery().getDeliveryDate().isAfter(end))
+        return deliveryItemRepository.findByOutboundDelivery_DeliveryDateBetween(start, end).stream()
                 .map(DeliveryItemResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<DeliveryItemResponse> findByOutboundDelivery_DeliveryDateBetween(LocalDate start, LocalDate end) {
-        return itemRepository.findByOutboundDelivery_DeliveryDateBetween(start, end).stream()
-                .filter(item -> item.getOutboundDelivery() != null &&
-                        !item.getOutboundDelivery().getDeliveryDate().isBefore(start) &&
-                        !item.getOutboundDelivery().getDeliveryDate().isAfter(end))
-                .map(deliveryItemMapper::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<DeliveryItemResponse> findByProduct_Name(String name) {
-        return itemRepository.findByProduct_Name(name).stream()
-                .map(deliveryItemMapper::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<DeliveryItemResponse> findByInboundDeliveryId(Long inboundId) {
-        return itemRepository.findByInboundDeliveryId(inboundId).stream()
-                .map(DeliveryItemResponse::new)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<DeliveryItemResponse> findByOutboundDeliveryId(Long outboundId) {
-        return itemRepository.findByOutboundDeliveryId(outboundId).stream()
+        return deliveryItemRepository.findByOutboundDelivery_DeliveryDateBetween(start, end).stream()
                 .map(DeliveryItemResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public DeliveryItemResponse findByProduct(Long productId) {
-        DeliveryItem item = itemRepository.findByProductId(productId);
-        return deliveryItemMapper.toResponse(item);
+        DeliveryItem item = deliveryItemRepository.findByProductId(productId);
+        if (item == null) {
+            throw new ProductNotFoundException("Product not found " + productId);
+        }
+        return new DeliveryItemResponse(item);
     }
 
+    @Override
+    public List<DeliveryItemResponse> findByInboundDeliveryId(Long inboundId) {
+        return deliveryItemRepository.findByInboundDeliveryId(inboundId).stream()
+                .map(DeliveryItemResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DeliveryItemResponse> findByOutboundDeliveryId(Long outboundId) {
+        return deliveryItemRepository.findByOutboundDeliveryId(outboundId).stream()
+                .map(DeliveryItemResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DeliveryItemResponse> findByProduct_Name(String name) {
+        return deliveryItemRepository.findByProduct_Name(name).stream()
+                .map(DeliveryItemResponse::new)
+                .collect(Collectors.toList());
+    }
 }

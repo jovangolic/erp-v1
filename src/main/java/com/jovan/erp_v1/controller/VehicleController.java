@@ -99,4 +99,11 @@ public class VehicleController {
                 status != null ? status.name() : null);
         return ResponseEntity.ok(responses);
     }
+
+    @GetMapping("/modelFragment")
+    public ResponseEntity<List<VehicleResponse>> findByModelContainingIgnoreCase(
+            @RequestParam("modelFragment") String modelFragment) {
+        List<VehicleResponse> responses = vehicleService.findByModelContainingIgnoreCase(modelFragment);
+        return ResponseEntity.ok(responses);
+    }
 }

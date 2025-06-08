@@ -13,6 +13,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -33,7 +34,8 @@ public class OutboundDelivery {
     private LocalDate deliveryDate;
 
     @ManyToOne
-    private User user; // Možeš dodati entitet Customer
+    @JoinColumn(name = "buyer_id")
+    private Buyer buyer;
 
     @Column
     @Enumerated(EnumType.STRING)

@@ -120,4 +120,11 @@ public class VehicleService implements IVehicleService {
                 .map(VehicleResponse::new)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<VehicleResponse> findByModelContainingIgnoreCase(String modelFragment) {
+        return vehicleRepository.findByModelContainingIgnoreCase(modelFragment).stream()
+                .map(VehicleResponse::new)
+                .collect(Collectors.toList());
+    }
 }

@@ -13,6 +13,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -33,7 +34,8 @@ public class InboundDelivery {
     private LocalDate deliveryDate;
 
     @ManyToOne
-    private Supply supplier; // Možeš dodati entitet Supplier
+    @JoinColumn(name = "supply_id")
+    private Supply supply; // Možeš dodati entitet Supplier
 
     @Enumerated(EnumType.STRING)
     private DeliveryStatus status;

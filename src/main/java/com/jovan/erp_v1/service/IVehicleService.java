@@ -29,4 +29,6 @@ public interface IVehicleService {
     List<VehicleResponse> findByStatus(VehicleStatus status);
 
     List<VehicleResponse> findByModelAndStatus(String model, VehicleStatus status);
+
+    List<VehicleResponse> findByModelContainingIgnoreCase(String modelFragment);
 }
