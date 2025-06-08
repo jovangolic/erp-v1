@@ -24,7 +24,7 @@ public interface IShipmentService {
 
     List<ShipmentResponse> findByShipmentDateBetween(LocalDate from, LocalDate to);
 
-    List<ShipmentResponse> findByProvideId(Long providerId);
+    List<ShipmentResponse> findByProviderId(Long providerId);
 
     List<ShipmentResponse> findByProvider_NameContainingIgnoreCase(String name);
 

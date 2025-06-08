@@ -92,8 +92,8 @@ public class ShipmentController {
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/provider/{providerId}")
-    public ResponseEntity<List<ShipmentResponse>> findByProvideId(@PathVariable Long providerId) {
-        List<ShipmentResponse> responses = shipmentService.findByProvideId(providerId);
+    public ResponseEntity<List<ShipmentResponse>> findByProviderId(@PathVariable Long providerId) {
+        List<ShipmentResponse> responses = shipmentService.findByProviderId(providerId);
         return ResponseEntity.ok(responses);
     }
 

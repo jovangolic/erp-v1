@@ -19,7 +19,7 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
     List<Shipment> findByShipmentDateBetween(LocalDate from, LocalDate to);
 
-    List<Shipment> findByProvideId(Long providerId);
+    List<Shipment> findByProviderId(Long providerId);
 
     List<Shipment> findByProvider_NameContainingIgnoreCase(String name);
 
