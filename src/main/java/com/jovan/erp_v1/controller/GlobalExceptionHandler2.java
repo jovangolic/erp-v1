@@ -99,7 +99,8 @@ public class GlobalExceptionHandler2 {
             RouteNotFoundException.class,
             TrackingInfoErrorException.class,
             ShipmentNotFoundException.class,
-            TransportOrderErrorException.class
+            TransportOrderErrorException.class,
+            StockTransferErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {
