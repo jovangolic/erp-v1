@@ -59,6 +59,7 @@ public class ShipmentService implements IShipmentService {
                 info.setEstimatedDelivery(infoReq.estimatedDelivery());
                 info.setCurrentStatus(infoReq.currentStatus());
                 info.setShipment(ship);
+                ship.setTrackingInfo(info);
                 Shipment saved = shipmentRepository.save(ship);
                 return new ShipmentResponse(saved);
         }
@@ -80,12 +81,16 @@ public class ShipmentService implements IShipmentService {
                 ship.setOriginStorage(storage);
                 ship.setOutboundDelivery(out);
                 TrackingInfoRequest infoReq = request.trackingInfo();
-                TrackingInfo info = new TrackingInfo();
+                TrackingInfo info = ship.getTrackingInfo();
+                if (info == null) {
+                        info = new TrackingInfo();
+                        info.setShipment(ship);
+                }
                 info.setTrackingNumber(infoReq.trackingNumber());
                 info.setCurrentLocation(infoReq.currentLocation());
                 info.setEstimatedDelivery(infoReq.estimatedDelivery());
                 info.setCurrentStatus(infoReq.currentStatus());
-                info.setShipment(ship);
+                ship.setTrackingInfo(info);
                 Shipment saved = shipmentRepository.save(ship);
                 return new ShipmentResponse(saved);
         }

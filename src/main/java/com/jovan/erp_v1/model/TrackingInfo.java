@@ -1,6 +1,10 @@
 package com.jovan.erp_v1.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import com.jovan.erp_v1.enumeration.ShipmentStatus;
 
@@ -42,4 +46,11 @@ public class TrackingInfo {
     @OneToOne
     @JoinColumn(name = "shipment_id")
     private Shipment shipment;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

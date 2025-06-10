@@ -29,28 +29,25 @@ public class ShipmentMapper {
     private final StorageRepository storageRepository;
 
     public Shipment toEntity(ShipmentRequest request) {
-        Shipment sh = new Shipment();
-        sh.setShipmentDate(request.shipmentDate());
-        sh.setStatus(request.status());
-        LogisticsProvider provider = logisticsProviderRepository.findById(request.providerId())
-                .orElseThrow(() -> new LogisticsProviderErrorException("Logistics-provider not found"));
-        sh.setProvider(provider);
-        OutboundDelivery delivery = out.findById(request.outboundDeliveryId())
-                .orElseThrow(() -> new OutboundDeliveryErrorException("OuboundDelivery not found"));
-        sh.setOutboundDelivery(delivery);
-        TrackingInfoRequest infoReq = request.trackingInfo();
-        TrackingInfo info = new TrackingInfo();
-        info.setTrackingNumber(infoReq.trackingNumber());
-        info.setCurrentLocation(infoReq.currentLocation());
-        info.setEstimatedDelivery(infoReq.estimatedDelivery());
-        info.setCurrentStatus(infoReq.currentStatus());
-        info.setShipment(sh); // važno: povezivanje shipment i trackingInfo dvosmerno
-        sh.setTrackingInfo(info);
-        Storage store = storageRepository.findById(request.originStorageId())
-                .orElseThrow(() -> new StorageEmployeeNotFoundException("Storage not found"));
-        sh.setOriginStorage(store);
-        return sh;
-    }
+		Shipment sh = new Shipment();
+		sh.setShipmentDate(request.shipmentDate());
+		sh.setStatus(request.status());
+		LogisticsProvider provider = logisticsProviderRepository.findById(request.providerId()).orElseThrow(() -> new LogisticsProviderErrorException("Logistics-provider not found"));
+		sh.setProvider(provider);
+		OutboundDelivery delivery = out.findById(request.outboundDeliveryId()).orElseThrow(() -> new OutboundDeliveryErrorException("OuboundDelivery not found"));
+		sh.setOutboundDelivery(delivery);
+		TrackingInfoRequest infoReq = request.trackingInfo();
+	    TrackingInfo info = new TrackingInfo();
+	    info.setTrackingNumber(infoReq.trackingNumber());
+	    info.setCurrentLocation(infoReq.currentLocation());
+	    info.setEstimatedDelivery(infoReq.estimatedDelivery());
+	    info.setCurrentStatus(infoReq.currentStatus());
+	    info.setShipment(sh); //važno: povezivanje shipment i trackingInfo dvosmerno
+	    sh.setTrackingInfo(info);
+		Storage store = storageRepository.findById(request.originStorageId()).orElseThrow(() -> new StorageEmployeeNotFoundException("Storage not found"));
+		sh.setOriginStorage(store);
+		return sh;
+	}
 
     public ShipmentResponse toResponse(Shipment ship) {
         return new ShipmentResponse(ship);
