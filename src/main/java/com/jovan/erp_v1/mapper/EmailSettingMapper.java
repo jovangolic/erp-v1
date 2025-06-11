@@ -23,12 +23,13 @@ public class EmailSettingMapper {
     }
 
     public EmailSettingResponse toResponse(EmailSetting email) {
-        return new EmailSettingResponse(
-                email.getId(),
+        return new EmailSettingResponse(email.getId(),
                 email.getSmtpServer(),
                 email.getSmtpPort(),
                 email.getFromEmail(),
-                email.getFromName());
+                email.getFromName(),
+                email.getCreatedAt(),
+                email.getCreatedBy());
     }
 
     public List<EmailSettingResponse> toResponseList(List<EmailSetting> emails) {

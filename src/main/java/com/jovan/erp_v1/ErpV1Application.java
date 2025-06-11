@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import com.jovan.erp_v1.enumeration.SystemStatus;
@@ -18,6 +19,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 @SpringBootApplication(scanBasePackages = "com.jovan.erp_v1")
 @EnableAsync
 @EnableCaching
+@EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class ErpV1Application {
 
 	public static void main(String[] args) {
