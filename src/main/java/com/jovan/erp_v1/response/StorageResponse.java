@@ -22,6 +22,9 @@ public class StorageResponse {
 	private StorageType type;
 	private List<GoodsResponse> goods;
 	private List<ShelfResponse> shelves;
+	private List<ShipmentResponse> outgoingShipments;
+	private List<StockTransferResponse> outgoingTransfers;
+	private List<StockTransferResponse> incomingTransfers;
 
 	public StorageResponse(Storage storage) {
 		this.id = storage.getId();
@@ -36,6 +39,20 @@ public class StorageResponse {
 		this.shelves = storage.getShelves()
 				.stream()
 				.map(ShelfResponse::new)
+				.collect(Collectors.toList());
+		this.outgoingShipments = storage.getOutgoingShipments()
+				.stream()
+				.map(ShipmentResponse::new)
+				.collect(Collectors.toList());
+
+		this.outgoingTransfers = storage.getOutgoingTransfers()
+				.stream()
+				.map(StockTransferResponse::new)
+				.collect(Collectors.toList());
+
+		this.incomingTransfers = storage.getIncomingTransfers()
+				.stream()
+				.map(StockTransferResponse::new)
 				.collect(Collectors.toList());
 	}
 }
