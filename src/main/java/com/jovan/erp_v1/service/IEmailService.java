@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import org.springframework.scheduling.annotation.Async;
 
 import com.jovan.erp_v1.enumeration.RoleTypes;
-import com.jovan.erp_v1.request.EmployeeEmailDTO;
+import com.jovan.erp_v1.request.CompanyEmailDTO;
 
 public interface IEmailService {
 
@@ -26,5 +26,5 @@ public interface IEmailService {
 	CompletableFuture<String> createAccountWithCompanyEmail(String firstName, String lastName, RoleTypes role);
 
 	@Async
-	CompletableFuture<Void> createAllCompanyEmails(List<EmployeeEmailDTO> users);
+	CompletableFuture<Void> createAllCompanyEmails(List<CompanyEmailDTO> users);
 }

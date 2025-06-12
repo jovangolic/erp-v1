@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.request.EmailGroupRequest;
 import com.jovan.erp_v1.request.EmailRequest;
-import com.jovan.erp_v1.request.EmployeeEmailDTO;
+import com.jovan.erp_v1.request.CompanyEmailDTO;
 import com.jovan.erp_v1.service.IEmailService;
 
 import jakarta.validation.Valid;
@@ -54,7 +54,7 @@ public class EmailController {
 
 	// Kreiranje jednog kompanijskog email-a
 	@PostMapping("/create-company-email")
-	public ResponseEntity<String> createCompanyEmail(@Valid @RequestBody EmployeeEmailDTO employeeEmailDTO) {
+	public ResponseEntity<String> createCompanyEmail(@Valid @RequestBody CompanyEmailDTO employeeEmailDTO) {
 		try {
 			String email = emailService.createAccountWithCompanyEmail(
 					employeeEmailDTO.firstName(),
@@ -69,7 +69,7 @@ public class EmailController {
 
 	// Kreiranje više kompanijskih emailova
 	@PostMapping("/create-company-emails")
-	public ResponseEntity<String> createAllCompanyEmails(@Valid @RequestBody List<EmployeeEmailDTO> users) {
+	public ResponseEntity<String> createAllCompanyEmails(@Valid @RequestBody List<CompanyEmailDTO> users) {
 		try {
 			emailService.createAllCompanyEmails(users).join(); // CompletableFuture<Void>
 			return ResponseEntity.ok("All company emails created successfully.");

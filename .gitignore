@@ -33,3 +33,6 @@ build/
 ### VS Code ###
 .vscode/
 
+
+# Ignoriši development konfiguraciju
+src/main/resources/application-dev.properties

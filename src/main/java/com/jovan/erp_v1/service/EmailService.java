@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import com.jovan.erp_v1.enumeration.RoleTypes;
 import com.jovan.erp_v1.repository.EmailSettingRepository;
 import com.jovan.erp_v1.repository.UserRepository;
-import com.jovan.erp_v1.request.EmployeeEmailDTO;
+import com.jovan.erp_v1.request.CompanyEmailDTO;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -111,7 +111,7 @@ public class EmailService implements IEmailService {
 
     @Override
     @Async
-    public CompletableFuture<Void> createAllCompanyEmails(List<EmployeeEmailDTO> users) {
+    public CompletableFuture<Void> createAllCompanyEmails(List<CompanyEmailDTO> users) {
         List<CompletableFuture<Void>> futures = users.stream()
                 .map(dto -> createAccountWithCompanyEmail(dto.firstName(), dto.lastName(), dto.types())
                         .thenAccept(email -> {

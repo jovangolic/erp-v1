@@ -97,6 +97,10 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                         // 🔒 Pristup prema ulogama
                         .requestMatchers("/admin/**", "/users/create-admin/**").hasRole("SUPERADMIN")
                         .requestMatchers("/user/**", "/role/**", "/users/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/email/**").hasRole("ADMIN")
+                        .requestMatchers("/email/**").hasRole("SUPERADMIN")
+                        .requestMatchers("/companyEmail/**").hasRole("ADMIN")
+                        .requestMatchers("/companyEmail/**").hasRole("SUPERADMIN")
                         .requestMatchers(STORAGE_EMPLOYEE_ENDPOINTS).hasRole("STORAGE_EMPLOYEE")
                         .requestMatchers(STORAGE_FOREMAN_ENDPOINTS).hasRole("STORAGE_FOREMAN")
 
