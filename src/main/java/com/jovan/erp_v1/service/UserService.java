@@ -1,11 +1,13 @@
 package com.jovan.erp_v1.service;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,8 +27,12 @@ import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.RoleRepository;
 import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.UserRequest;
+import com.jovan.erp_v1.request.UserRequestForEmployees;
+import com.jovan.erp_v1.request.UserRequestForEmployeesDetails;
 import com.jovan.erp_v1.response.UserResponse;
+import com.jovan.erp_v1.response.UserResponseForEmployees;
 import com.jovan.erp_v1.security.JwtAuthenticationFilter;
+import com.jovan.erp_v1.util.CredentialGenerator;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +48,7 @@ public class UserService implements IUserService {
 	private final RoleRepository roleRepository;
 	private final PasswordEncoder passwordEncoder;
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+	private final CredentialGenerator credentialGenerator;
 
 	@Override
 	@Transactional
@@ -207,7 +214,9 @@ public class UserService implements IUserService {
 		user.setLastName(request.lastName());
 		user.setEmail(request.email());
 		user.setUsername(request.username());
-		user.setPassword(passwordEncoder.encode(request.password()));
+		// user.setPassword(passwordEncoder.encode(request.password()));
+		String userPass = generateRandomString(10);
+		user.setPassword(userPass);
 		user.setPhoneNumber(request.phoneNumber());
 		user.setAddress(request.address());
 		user.setRoles(roles);
@@ -215,6 +224,59 @@ public class UserService implements IUserService {
 		User savedUser = userRepository.save(user);
 		// 5. Vrati UserResponse DTO
 		return new UserResponse(savedUser);
+	}
+
+	@Transactional
+	@Override
+	public UserResponseForEmployees createEmployeesByAdmin(UserRequestForEmployees reqEmpo) {
+		// 1. Dohvati role po ID-jevima
+		Set<Role> roles = reqEmpo.roleIds().stream()
+				.map(roleId -> roleRepository.findById(roleId)
+						.orElseThrow(() -> new IllegalArgumentException("Rola sa ID " + roleId + " ne postoji")))
+				.collect(Collectors.toSet());
+		// 2. Generiši kredencijale
+		// String email = credentialGenerator.generateEmail(reqEmpo.firstName(),
+		// reqEmpo.lastName());
+		// String username = credentialGenerator.generateUsername(reqEmpo.firstName(),
+		// reqEmpo.lastName());
+		String rawPassword = credentialGenerator.generateRandomPassword(); // Možeš je sačuvati ako želiš poslati
+																			// korisniku
+		String encodedPassword = passwordEncoder.encode(rawPassword);
+		// 3. Kreiraj novog korisnika
+		User user = new User();
+		user.setFirstName(reqEmpo.firstName());
+		user.setLastName(reqEmpo.lastName());
+		user.setPhoneNumber(reqEmpo.phoneNumber());
+		user.setAddress(reqEmpo.address());
+		user.setEmail(reqEmpo.email());
+		// user.setUsername(username);
+		user.setPassword(encodedPassword);
+		user.setRoles(roles);
+		// 4. Sačuvaj korisnika
+		User savedUser = userRepository.save(user);
+		// (opciono) Loguj šifru za testiranje – samo za development
+		// System.out.println("Nalog kreiran: " + username + " / " + rawPassword);
+		System.out.println("Nalog kreiran: " + " / " + rawPassword);
+		return new UserResponseForEmployees(savedUser);
+	}
+
+	@Transactional
+	@Override
+	public UserResponseForEmployees updateEmployeeDetails(Long userId, UserRequestForEmployeesDetails req) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("Korisnik sa ID " + userId + " ne postoji"));
+
+		user.setPhoneNumber(req.phoneNumber());
+		user.setAddress(req.address());
+
+		Set<Role> roles = req.roleIds().stream()
+				.map(id -> roleRepository.findById(id)
+						.orElseThrow(() -> new IllegalArgumentException("Rola sa ID " + id + " ne postoji")))
+				.collect(Collectors.toSet());
+		user.setRoles(roles);
+
+		User saved = userRepository.save(user);
+		return new UserResponseForEmployees(saved);
 	}
 
 	@Override
@@ -291,4 +353,16 @@ public class UserService implements IUserService {
 		return userRepository.findByUsername(username)
 				.orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 	}
+
+	private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	private static final SecureRandom RANDOM = new SecureRandom();
+
+	public static String generateRandomString(int length) {
+		StringBuilder sb = new StringBuilder(length);
+		for (int i = 0; i < length; i++) {
+			sb.append(CHARACTERS.charAt(RANDOM.nextInt(CHARACTERS.length())));
+		}
+		return sb.toString();
+	}
+
 }

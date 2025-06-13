@@ -8,5 +8,7 @@ import jakarta.validation.constraints.NotNull;
 public record CompanyEmailDTO(
         @NotBlank String firstName,
         @NotBlank String lastName,
+        @NotBlank String address,
+        @NotBlank String phoneNumber,
         @NotNull RoleTypes types) {
 }

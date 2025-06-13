@@ -23,7 +23,10 @@ import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.RoleRepository;
 import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.UserRequest;
+import com.jovan.erp_v1.request.UserRequestForEmployees;
+import com.jovan.erp_v1.request.UserRequestForEmployeesDetails;
 import com.jovan.erp_v1.response.UserResponse;
+import com.jovan.erp_v1.response.UserResponseForEmployees;
 import com.jovan.erp_v1.service.IUserService;
 
 import jakarta.validation.Valid;
@@ -57,6 +60,29 @@ public class UserController {
 	public ResponseEntity<UserResponse> createUserByAdmin(@Valid @RequestBody UserRequest request) {
 		UserResponse createdUser = userService.createUserByAdmin(request);
 		return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+	}
+
+	/**
+	 * Ova metoda ne koristi polja email,password i username, jer se pre kreiranju
+	 * zaposlenog
+	 * prvo kreira njegov email, password i username, pa tek onda se kreira novi
+	 * zaposleni
+	 */
+	@PostMapping("/admin/create-employee")
+	public ResponseEntity<UserResponseForEmployees> createEmployeeByAdmin(
+			@RequestBody @Valid UserRequestForEmployees request) {
+
+		UserResponseForEmployees response = userService.createEmployeesByAdmin(request);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+
+	@PutMapping("/employee-details/{id}")
+	public ResponseEntity<UserResponseForEmployees> updateEmployeeDetails(
+			@PathVariable Long id,
+			@RequestBody @Valid UserRequestForEmployeesDetails req) {
+
+		UserResponseForEmployees response = userService.updateEmployeeDetails(id, req);
+		return ResponseEntity.ok(response);
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")

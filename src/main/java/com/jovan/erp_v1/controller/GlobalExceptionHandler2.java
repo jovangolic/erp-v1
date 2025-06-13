@@ -101,7 +101,8 @@ public class GlobalExceptionHandler2 {
             ShipmentNotFoundException.class,
             TransportOrderErrorException.class,
             StockTransferErrorException.class,
-            StockTransferItemErrorException.class
+            StockTransferItemErrorException.class,
+            CompanyEmailErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

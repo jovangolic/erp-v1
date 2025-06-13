@@ -7,7 +7,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.request.UserRequest;
+import com.jovan.erp_v1.request.UserRequestForEmployees;
+import com.jovan.erp_v1.request.UserRequestForEmployeesDetails;
 import com.jovan.erp_v1.response.UserResponse;
+import com.jovan.erp_v1.response.UserResponseForEmployees;
 
 public interface IUserService extends UserDetailsService {
 	// Registracija i kreiranje korisnika
@@ -18,6 +21,10 @@ public interface IUserService extends UserDetailsService {
 	UserResponse createAdmin(UserRequest userRequest);
 
 	UserResponse createSuperAdmin(UserRequest request);
+
+	UserResponseForEmployees createEmployeesByAdmin(UserRequestForEmployees reqEmpo);
+
+	UserResponseForEmployees updateEmployeeDetails(Long userId, UserRequestForEmployeesDetails req);
 
 	// Dohvat korisnika
 	User getUserById(Long id);
