@@ -83,18 +83,16 @@ public class CompanyEmailService implements ICompanyEmailService {
         if (userRepository.existsByEmail(email)) {
             return CompletableFuture.failedFuture(new IllegalStateException("Email already exists: " + email));
         }
-        // Mapiranje RoleTypes u Role entitet
         Role role = roleRepository.findByName("ROLE_" + dto.types().name())
                 .orElseThrow(() -> new IllegalArgumentException("Rola ne postoji: " + dto.types().name()));
-
         String username = (dto.firstName() + "." + dto.lastName()).toLowerCase();
-        String randomPassword = RandomUtil.generateRandomString(10); // ili koristi encoder ako želiš
+        String randomPassword = RandomUtil.generateRandomString(10);
         User user = new User();
         user.setFirstName(dto.firstName());
         user.setLastName(dto.lastName());
         user.setEmail(email);
         user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(randomPassword)); // ili passwordEncoder.encode(randomPassword)
+        user.setPassword(passwordEncoder.encode(randomPassword));
         user.setAddress(dto.address());
         user.setPhoneNumber(dto.phoneNumber());
         user.setRoles(Set.of(role));
@@ -105,31 +103,16 @@ public class CompanyEmailService implements ICompanyEmailService {
         companyEmail.setLastName(dto.lastName());
         companyEmail.setRole(dto.types());
         companyEmail.setUser(savedUser);
-        // Sačuvaj CompanyEmail ako koristiš repozitorijum za njega
-        /*
-         * return emailService.sendEmail(
-         * email,
-         * "Dobrodošli u ERP",
-         * "Vaš nalog je kreiran sa rolom: " + roleType.name() + "\nKorisničko ime: " +
-         * username + "\nLozinka: "
-         * + randomPassword)
-         * .thenApply(v -> {
-         * log.info("Nalog kreiran za: {}", email);
-         * return email;
-         * });
-         */
-        return emailService.sendEmail(email,
+        companyEmailRepository.save(companyEmail);
+        return emailService.sendEmail(
+                email,
                 "Dobrodošli u ERP",
-                "Vaš nalog je kreiran sa rolom: " + dto.types().name() + "\nKorisničko ime: " + username + "\nLozinka: "
-                        + randomPassword)
+                "Vaš nalog je kreiran sa rolom: " + dto.types().name() +
+                        "\nKorisničko ime: " + username +
+                        "\nLozinka: " + randomPassword)
                 .thenApply(v -> {
                     log.info("Nalog kreiran za: {}", email);
-                    return new CompanyEmailResponse(
-                            email,
-                            dto.firstName(),
-                            dto.lastName(),
-                            dto.types(),
-                            LocalDateTime.now());
+                    return mapToResponse(companyEmail, randomPassword);
                 });
     }
 
@@ -148,14 +131,14 @@ public class CompanyEmailService implements ICompanyEmailService {
         return CompletableFuture.supplyAsync(() -> {
             CompanyEmail companyEmail = companyEmailRepository.findByEmail(email)
                     .orElseThrow(() -> new CompanyEmailErrorException("Company email not found: " + email));
-            return mapToResponse(companyEmail);
+            return mapToResponse(companyEmail, "N/A"); // lozinka se ne čuva u entitetu
         });
     }
 
     @Override
     public CompletableFuture<List<CompanyEmailResponse>> findAll() {
         return CompletableFuture.supplyAsync(() -> companyEmailRepository.findAll().stream()
-                .map(this::mapToResponse)
+                .map(c -> mapToResponse(c, "N/A"))
                 .toList());
     }
 
@@ -168,12 +151,14 @@ public class CompanyEmailService implements ICompanyEmailService {
         });
     }
 
-    private CompanyEmailResponse mapToResponse(CompanyEmail companyEmail) {
+    private CompanyEmailResponse mapToResponse(CompanyEmail companyEmail, String rawPassword) {
         return new CompanyEmailResponse(
                 companyEmail.getEmail(),
                 companyEmail.getFirstName(),
                 companyEmail.getLastName(),
                 companyEmail.getRole(),
-                companyEmail.getCreatedAt());
+                companyEmail.getCreatedAt(),
+                rawPassword);
     }
+
 }

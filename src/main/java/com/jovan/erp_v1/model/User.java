@@ -25,7 +25,7 @@ import lombok.Setter;
 
 @Entity
 @Data
-//@NoArgsConstructor
+// @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
@@ -35,43 +35,35 @@ public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
-	
+
 	@Column(nullable = false)
 	private String firstName;
-	
-	
+
 	@Column(nullable = false)
 	private String lastName;
-	
+
 	@Email
-    @Column(unique = true)
+	@Column(unique = true)
 	private String email;
-	
-	
+
 	@Column(nullable = false)
 	private String password;
-	
-	
+
 	@Column(nullable = false)
-    private String phoneNumber;
-	
-	
+	private String phoneNumber;
+
 	@Column(nullable = false)
-    private String address;
-	
-	@ManyToMany(fetch = FetchType.EAGER,
-            cascade = {CascadeType.PERSIST,
-                    CascadeType.MERGE, CascadeType.DETACH})
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
-    inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+	private String address;
+
+	@ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST,
+			CascadeType.MERGE, CascadeType.DETACH })
+	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
 	@Builder.Default
 	private Collection<Role> roles = new HashSet<>();
-	
+
 	@Column(unique = true, nullable = false)
 	private String username;
-	
+
 	@OneToMany(mappedBy = "storageEmployee")
 	@Builder.Default
 	private Set<Inventory> employeeInventories = new HashSet<>();
@@ -79,14 +71,14 @@ public class User {
 	@OneToMany(mappedBy = "storageForeman")
 	@Builder.Default
 	private Set<Inventory> foremanInventories = new HashSet<>();
-	
+
 	public User() {
 		this.roles = new HashSet<>();
 		this.employeeInventories = new HashSet<>();
 		this.foremanInventories = new HashSet<>();
 	}
-	
-	//ovaj konstruktor je za DataInitializer
+
+	// ovaj konstruktor je za DataInitializer
 	public User(String username, String email, String password) {
 		this.username = username;
 		this.email = email;

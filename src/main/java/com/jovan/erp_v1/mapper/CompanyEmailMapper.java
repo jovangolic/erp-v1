@@ -25,6 +25,6 @@ public class CompanyEmailMapper {
 
     public CompanyEmailResponse toCompanyEmailResponse(CompanyEmail email) {
         return new CompanyEmailResponse(email.getEmail(), email.getFirstName(), email.getLastName(),
-                email.getRole(), email.getCreatedAt());
+                email.getRole(), email.getCreatedAt(), "N/A");
     }
 }
