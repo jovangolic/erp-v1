@@ -105,7 +105,8 @@ public class TransportOrderController {
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/outboundDelivery/{outboundDeliveryId}")
-    public ResponseEntity<List<TransportOrderResponse>> findByOutboundDelivery_Id(Long outboundDeliveryId) {
+    public ResponseEntity<List<TransportOrderResponse>> findByOutboundDelivery_Id(
+            @PathVariable Long outboundDeliveryId) {
         List<TransportOrderResponse> responses = transportOrderService.findByOutboundDelivery_Id(outboundDeliveryId);
         return ResponseEntity.ok(responses);
     }

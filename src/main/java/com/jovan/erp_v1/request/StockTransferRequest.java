@@ -9,10 +9,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 public record StockTransferRequest(
-        Long id,
-        @NotNull LocalDate transferDate,
-        @NotNull Long fromStorageId,
-        @NotNull Long toStorageId,
-        @NotNull TransferStatus status,
-        @Valid List<StockTransferItemRequest> itemRequest) {
+                Long id,
+                @NotNull LocalDate transferDate,
+                @NotNull Long fromStorageId,
+                @NotNull Long toStorageId,
+                @NotNull TransferStatus status,
+                @Valid List<StockTransferItemRequest> itemRequest) {
 }

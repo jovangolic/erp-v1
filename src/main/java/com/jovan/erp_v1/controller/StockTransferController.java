@@ -73,7 +73,7 @@ public class StockTransferController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STORAGE_FOREMAN', 'STORAGE_EMPLOYEE')")
     @GetMapping("/by-status")
-    public ResponseEntity<List<StockTransferResponse>> findByStatus(TransferStatus status) {
+    public ResponseEntity<List<StockTransferResponse>> findByStatus(@RequestParam("status") TransferStatus status) {
         List<StockTransferResponse> responses = stockTransferService.findByStatus(status);
         return ResponseEntity.ok(responses);
     }
@@ -97,63 +97,70 @@ public class StockTransferController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STORAGE_FOREMAN', 'STORAGE_EMPLOYEE')")
     @GetMapping("/storage/{fromStorageId}")
-    public ResponseEntity<List<StockTransferResponse>> findByFromStorageId(Long fromStorageId) {
+    public ResponseEntity<List<StockTransferResponse>> findByFromStorageId(@PathVariable Long fromStorageId) {
         List<StockTransferResponse> responses = stockTransferService.findByFromStorageId(fromStorageId);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STORAGE_FOREMAN', 'STORAGE_EMPLOYEE')")
     @GetMapping("/storage/{toStorageId}")
-    public ResponseEntity<List<StockTransferResponse>> findByToStorageId(Long toStorageId) {
+    public ResponseEntity<List<StockTransferResponse>> findByToStorageId(@PathVariable Long toStorageId) {
         List<StockTransferResponse> responses = stockTransferService.findByToStorageId(toStorageId);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STORAGE_FOREMAN', 'STORAGE_EMPLOYEE')")
     @GetMapping("/fromStorageName")
-    public ResponseEntity<List<StockTransferResponse>> findByFromStorage_Name(String fromStorageName) {
+    public ResponseEntity<List<StockTransferResponse>> findByFromStorage_Name(
+            @RequestParam("fromStorageName") String fromStorageName) {
         List<StockTransferResponse> responses = stockTransferService.findByFromStorage_Name(fromStorageName);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STORAGE_FOREMAN', 'STORAGE_EMPLOYEE')")
     @GetMapping("/fromLocation")
-    public ResponseEntity<List<StockTransferResponse>> findByFromStorage_Location(String fromLocation) {
+    public ResponseEntity<List<StockTransferResponse>> findByFromStorage_Location(
+            @RequestParam("fromLocation") String fromLocation) {
         List<StockTransferResponse> responses = stockTransferService.findByFromStorage_Location(fromLocation);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STORAGE_FOREMAN', 'STORAGE_EMPLOYEE')")
     @GetMapping("/toStorageName")
-    public ResponseEntity<List<StockTransferResponse>> findByToStorage_Name(String toStorageName) {
+    public ResponseEntity<List<StockTransferResponse>> findByToStorage_Name(
+            @RequestParam("toStorageName") String toStorageName) {
         List<StockTransferResponse> responses = stockTransferService.findByToStorage_Name(toStorageName);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STORAGE_FOREMAN', 'STORAGE_EMPLOYEE')")
     @GetMapping("/toLocation")
-    public ResponseEntity<List<StockTransferResponse>> findByToStorage_Location(String toLocation) {
+    public ResponseEntity<List<StockTransferResponse>> findByToStorage_Location(
+            @RequestParam("toLocation") String toLocation) {
         List<StockTransferResponse> responses = stockTransferService.findByToStorage_Location(toLocation);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STORAGE_FOREMAN', 'STORAGE_EMPLOYEE')")
     @GetMapping("/fromStorageType")
-    public ResponseEntity<List<StockTransferResponse>> findByFromStorage_Type(StorageType fromStorageType) {
+    public ResponseEntity<List<StockTransferResponse>> findByFromStorage_Type(
+            @RequestParam("fromStorageType") StorageType fromStorageType) {
         List<StockTransferResponse> responses = stockTransferService.findByFromStorage_Type(fromStorageType);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STORAGE_FOREMAN', 'STORAGE_EMPLOYEE')")
     @GetMapping("/toStorageType")
-    public ResponseEntity<List<StockTransferResponse>> findByToStorage_Type(StorageType toStorageType) {
+    public ResponseEntity<List<StockTransferResponse>> findByToStorage_Type(
+            @RequestParam("toStorageType") StorageType toStorageType) {
         List<StockTransferResponse> responses = stockTransferService.findByToStorage_Type(toStorageType);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STORAGE_FOREMAN', 'STORAGE_EMPLOYEE')")
     @GetMapping("/status-and-date-range")
-    public ResponseEntity<List<StockTransferResponse>> findByStatusAndDateRange(TransferStatus status,
+    public ResponseEntity<List<StockTransferResponse>> findByStatusAndDateRange(
+            @RequestParam("status") TransferStatus status,
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate start,
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate end) {
         List<StockTransferResponse> responses = stockTransferService.findByStatusAndDateRange(status, start, end);
@@ -162,16 +169,18 @@ public class StockTransferController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STORAGE_FOREMAN', 'STORAGE_EMPLOYEE')")
     @GetMapping("/fromType-toType")
-    public ResponseEntity<List<StockTransferResponse>> findByFromAndToStorageType(StorageType fromType,
-            StorageType toType) {
+    public ResponseEntity<List<StockTransferResponse>> findByFromAndToStorageType(
+            @RequestParam("fromType") StorageType fromType,
+            @RequestParam("toType") StorageType toType) {
         List<StockTransferResponse> responses = stockTransferService.findByFromAndToStorageType(fromType, toType);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STORAGE_FOREMAN', 'STORAGE_EMPLOYEE')")
     @GetMapping("/name-and-location")
-    public ResponseEntity<List<StockTransferResponse>> searchFromStorageByNameAndLocation(String name,
-            String location) {
+    public ResponseEntity<List<StockTransferResponse>> searchFromStorageByNameAndLocation(
+            @RequestParam("name") String name,
+            @RequestParam("location") String location) {
         List<StockTransferResponse> responses = stockTransferService.searchFromStorageByNameAndLocation(name, location);
         return ResponseEntity.ok(responses);
     }

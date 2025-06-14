@@ -76,7 +76,7 @@ public class ShipmentController {
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/shipment-status")
-    public ResponseEntity<List<ShipmentResponse>> findByStatus(ShipmentStatus status) {
+    public ResponseEntity<List<ShipmentResponse>> findByStatus(@RequestParam("status") ShipmentStatus status) {
         List<ShipmentResponse> responses = shipmentService.findByStatus(status);
         return ResponseEntity.ok(responses);
     }
@@ -99,14 +99,16 @@ public class ShipmentController {
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/provider-name")
-    public ResponseEntity<List<ShipmentResponse>> findByProvider_NameContainingIgnoreCase(String name) {
+    public ResponseEntity<List<ShipmentResponse>> findByProvider_NameContainingIgnoreCase(
+            @RequestParam("name") String name) {
         List<ShipmentResponse> responses = shipmentService.findByProvider_NameContainingIgnoreCase(name);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/trackingInfo-status")
-    public ResponseEntity<List<ShipmentResponse>> findByTrackingInfo_CurrentStatus(ShipmentStatus status) {
+    public ResponseEntity<List<ShipmentResponse>> findByTrackingInfo_CurrentStatus(
+            @RequestParam("status") ShipmentStatus status) {
         List<ShipmentResponse> responses = shipmentService.findByTrackingInfo_CurrentStatus(status);
         return ResponseEntity.ok(responses);
     }
@@ -127,29 +129,30 @@ public class ShipmentController {
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/storage-name")
-    public ResponseEntity<List<ShipmentResponse>> findByOriginStorage_Name(String name) {
+    public ResponseEntity<List<ShipmentResponse>> findByOriginStorage_Name(@RequestParam("name") String name) {
         List<ShipmentResponse> responses = shipmentService.findByOriginStorage_Name(name);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/storage-location")
-    public ResponseEntity<List<ShipmentResponse>> findByOriginStorage_Location(String location) {
+    public ResponseEntity<List<ShipmentResponse>> findByOriginStorage_Location(
+            @RequestParam("location") String location) {
         List<ShipmentResponse> responses = shipmentService.findByOriginStorage_Location(location);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/storage-type")
-    public ResponseEntity<List<ShipmentResponse>> findByOriginStorage_Type(StorageType type) {
+    public ResponseEntity<List<ShipmentResponse>> findByOriginStorage_Type(@RequestParam("type") StorageType type) {
         List<ShipmentResponse> responses = shipmentService.findByOriginStorage_Type(type);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/storage-and-status")
-    public ResponseEntity<List<ShipmentResponse>> findByOriginStorageIdAndStatus(Long storageId,
-            ShipmentStatus status) {
+    public ResponseEntity<List<ShipmentResponse>> findByOriginStorageIdAndStatus(@RequestParam Long storageId,
+            @RequestParam ShipmentStatus status) {
         List<ShipmentResponse> responses = shipmentService.findByOriginStorageIdAndStatus(storageId, status);
         return ResponseEntity.ok(responses);
     }
@@ -164,7 +167,7 @@ public class ShipmentController {
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/tracking-info-location")
     public ResponseEntity<List<ShipmentResponse>> findByTrackingInfo_CurrentLocationContainingIgnoreCase(
-            String location) {
+            @RequestParam("location") String location) {
         List<ShipmentResponse> responses = shipmentService
                 .findByTrackingInfo_CurrentLocationContainingIgnoreCase(location);
         return ResponseEntity.ok(responses);

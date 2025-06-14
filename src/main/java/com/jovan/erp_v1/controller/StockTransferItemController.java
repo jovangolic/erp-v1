@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.request.StockTransferItemRequest;
@@ -65,21 +66,22 @@ public class StockTransferItemController {
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/product/{productId}")
-    public ResponseEntity<List<StockTransferItemResponse>> findByProductId(Long productId) {
+    public ResponseEntity<List<StockTransferItemResponse>> findByProductId(@PathVariable Long productId) {
         List<StockTransferItemResponse> responses = stockTransferItemService.findByProductId(productId);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/by-name")
-    public ResponseEntity<List<StockTransferItemResponse>> findByProduct_Name(String name) {
+    public ResponseEntity<List<StockTransferItemResponse>> findByProduct_Name(@RequestParam("name") String name) {
         List<StockTransferItemResponse> responses = stockTransferItemService.findByProduct_Name(name);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/by-currentQuantity")
-    public ResponseEntity<List<StockTransferItemResponse>> findByProduct_CurrentQuantity(Double currentQuantity) {
+    public ResponseEntity<List<StockTransferItemResponse>> findByProduct_CurrentQuantity(
+            @RequestParam("currentQuantity") Double currentQuantity) {
         List<StockTransferItemResponse> responses = stockTransferItemService
                 .findByProduct_CurrentQuantity(currentQuantity);
         return ResponseEntity.ok(responses);
@@ -87,35 +89,38 @@ public class StockTransferItemController {
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/by-quantity")
-    public ResponseEntity<List<StockTransferItemResponse>> findByQuantity(Double quantity) {
+    public ResponseEntity<List<StockTransferItemResponse>> findByQuantity(@RequestParam("quantity") Double quantity) {
         List<StockTransferItemResponse> responses = stockTransferItemService.findByQuantity(quantity);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/by-less-quantity")
-    public ResponseEntity<List<StockTransferItemResponse>> findByQuantityLessThan(Double quantity) {
+    public ResponseEntity<List<StockTransferItemResponse>> findByQuantityLessThan(
+            @RequestParam("quantity") Double quantity) {
         List<StockTransferItemResponse> responses = stockTransferItemService.findByQuantityLessThan(quantity);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/by-greater-quantity")
-    public ResponseEntity<List<StockTransferItemResponse>> findByQuantityGreaterThan(Double quantity) {
+    public ResponseEntity<List<StockTransferItemResponse>> findByQuantityGreaterThan(
+            @RequestParam("quantity") Double quantity) {
         List<StockTransferItemResponse> responses = stockTransferItemService.findByQuantityGreaterThan(quantity);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/stockTransfer/{stockTransferId}")
-    public ResponseEntity<List<StockTransferItemResponse>> findByStockTransferId(Long stockTransferId) {
+    public ResponseEntity<List<StockTransferItemResponse>> findByStockTransferId(@PathVariable Long stockTransferId) {
         List<StockTransferItemResponse> responses = stockTransferItemService.findByStockTransferId(stockTransferId);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/storage/{fromStorageId}")
-    public ResponseEntity<List<StockTransferItemResponse>> findByStockTransfer_FromStorageId(Long fromStorageId) {
+    public ResponseEntity<List<StockTransferItemResponse>> findByStockTransfer_FromStorageId(
+            @PathVariable Long fromStorageId) {
         List<StockTransferItemResponse> responses = stockTransferItemService
                 .findByStockTransfer_FromStorageId(fromStorageId);
         return ResponseEntity.ok(responses);
@@ -123,7 +128,8 @@ public class StockTransferItemController {
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/storage/{toStorageId}")
-    public ResponseEntity<List<StockTransferItemResponse>> findByStockTransfer_ToStorageId(Long toStorageId) {
+    public ResponseEntity<List<StockTransferItemResponse>> findByStockTransfer_ToStorageId(
+            @PathVariable Long toStorageId) {
         List<StockTransferItemResponse> responses = stockTransferItemService
                 .findByStockTransfer_ToStorageId(toStorageId);
         return ResponseEntity.ok(responses);

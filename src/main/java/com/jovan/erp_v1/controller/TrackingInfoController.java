@@ -94,8 +94,9 @@ public class TrackingInfoController {
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/by-location-status")
-    public ResponseEntity<List<TrackingInfoResponse>> findByCurrentLocationAndCurrentStatus(String location,
-            ShipmentStatus status) {
+    public ResponseEntity<List<TrackingInfoResponse>> findByCurrentLocationAndCurrentStatus(
+            @RequestParam("location") String location,
+            @RequestParam("status") ShipmentStatus status) {
         List<TrackingInfoResponse> responses = trackingInfoService.findByCurrentLocationAndCurrentStatus(location,
                 status);
         return ResponseEntity.ok(responses);
