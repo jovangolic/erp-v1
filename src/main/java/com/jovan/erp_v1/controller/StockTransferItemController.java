@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping
+@RequestMapping("/stockTransferItems")
 @CrossOrigin("http://localhost:5173")
 @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN')")
 public class StockTransferItemController {
