@@ -6,17 +6,15 @@ import jakarta.validation.constraints.Size;
 
 public record ShiftReportRequest(
 		Long id,
-		@NotBlank(message = "Opis je obavezan")
-	    String description,
+		@NotBlank(message = "Opis je obavezan") String description,
 
-	    @NotNull(message = "ID osobe koja kreira izveštaj je obavezan")
-	    Long createdById,
+		@NotNull(message = "ID osobe koja kreira izveštaj je obavezan") Long createdById,
 
-	    @NotNull(message = "ID smene na koju se izveštaj odnosi je obavezan")
-	    Long relatedShiftId,
+		@NotNull(message = "ID smene na koju se izveštaj odnosi je obavezan") Long relatedShiftId,
 
-	    @Size(max = 255, message = "Putanja fajla ne sme biti duža od 255 karaktera")
-	    String filePath// opcionalno ako odmah upisuješ putanju
-		) {
-
+		@Size(max = 255, message = "Putanja fajla ne sme biti duža od 255 karaktera") String filePath// opcionalno ako
+																										// odmah
+																										// upisuješ
+																										// putanju
+) {
 }
