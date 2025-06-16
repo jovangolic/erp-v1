@@ -53,6 +53,18 @@ public class ShelfController {
 		return ResponseEntity.noContent().build();
 	}
 
+	@GetMapping("/find-one/{id}")
+	public ResponseEntity<ShelfResponse> findOne(@PathVariable Long id) {
+		ShelfResponse response = shelfService.findOne(id);
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/find-all")
+	public ResponseEntity<List<ShelfResponse>> findAll() {
+		List<ShelfResponse> responses = shelfService.findAll();
+		return ResponseEntity.ok(responses);
+	}
+
 	@GetMapping("/storage/{storageId}/rowCount/{rowCount}/exists")
 	public ResponseEntity<Boolean> existsByRowCountAndStorageId(@PathVariable Long storageId,
 			@PathVariable Integer rowCount) {

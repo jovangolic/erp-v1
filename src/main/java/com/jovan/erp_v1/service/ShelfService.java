@@ -143,4 +143,18 @@ public class ShelfService implements IShelfService {
 				goodsResponses);
 	}
 
+	@Override
+	public ShelfResponse findOne(Long id) {
+		Shelf shelf = shelfRepository.findById(id)
+				.orElseThrow(() -> new ShelfNotFoundException("Shelf not found with id: " + id));
+		return new ShelfResponse(shelf);
+	}
+
+	@Override
+	public List<ShelfResponse> findAll() {
+		return shelfRepository.findAll().stream()
+				.map(ShelfResponse::new)
+				.collect(Collectors.toList());
+	}
+
 }

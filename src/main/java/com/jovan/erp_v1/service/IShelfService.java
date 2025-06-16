@@ -15,6 +15,10 @@ public interface IShelfService {
 
     void deleteShelf(Long id);
 
+    ShelfResponse findOne(Long id);
+
+    List<ShelfResponse> findAll();
+
     // Provere postojanja
     boolean existsByRowCountAndStorageId(Integer rows, Long storageId);
 
