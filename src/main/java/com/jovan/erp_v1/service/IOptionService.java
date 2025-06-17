@@ -14,6 +14,8 @@ public interface IOptionService {
 
     void delete(Long id);
 
+    OptionResponse getOne(Long id);
+
     List<OptionResponse> getAll();
 
     List<OptionResponse> getByCategory(OptionCategory category);

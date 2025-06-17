@@ -49,6 +49,12 @@ public class OptionController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/get-one/{id}")
+    public ResponseEntity<OptionResponse> getOne(@PathVariable Long id) {
+        OptionResponse response = optionService.getOne(id);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/get-all")
     public ResponseEntity<List<OptionResponse>> getAll() {
         return ResponseEntity.ok(optionService.getAll());

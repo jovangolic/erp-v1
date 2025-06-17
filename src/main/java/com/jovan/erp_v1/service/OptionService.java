@@ -58,4 +58,11 @@ public class OptionService implements IOptionService {
                 .map(optionMapper::toResponse)
                 .toList();
     }
+
+    @Override
+    public OptionResponse getOne(Long id) {
+        Option opt = optionRepository.findById(id)
+                .orElseThrow(() -> new OptionErrorException("Option not found " + id));
+        return new OptionResponse(opt.getId(), opt.getLabel(), opt.getValue(), opt.getCategory(), opt.isActive());
+    }
 }

@@ -102,7 +102,9 @@ public class GlobalExceptionHandler2 {
             TransportOrderErrorException.class,
             StockTransferErrorException.class,
             StockTransferItemErrorException.class,
-            CompanyEmailErrorException.class
+            CompanyEmailErrorException.class,
+            LocalizedOptionErrorException.class,
+            LanguageErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

@@ -4,12 +4,15 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.service.annotation.PutExchange;
 
 import com.jovan.erp_v1.request.LocalizedOptionRequest;
 import com.jovan.erp_v1.response.LocalizedOptionResponse;
@@ -21,17 +24,17 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/localizedOption")
+@PreAuthorize("hasRole('ADMIN','SUPERADMIN')")
 public class LocalizedOptionController {
 
     private final ILocalizedOptionService localizedOptionService;
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
+    @PostMapping("/create/new-localizedOption")
     public ResponseEntity<LocalizedOptionResponse> create(@Valid @RequestBody LocalizedOptionRequest request) {
         return ResponseEntity.ok(localizedOptionService.create(request));
     }
 
-    @GetMapping
+    @GetMapping("/find-all")
     public ResponseEntity<List<LocalizedOptionResponse>> getAll() {
         return ResponseEntity.ok(localizedOptionService.getAll());
     }
@@ -49,5 +52,37 @@ public class LocalizedOptionController {
             @Valid @RequestBody LocalizedOptionRequest request) {
         LocalizedOptionResponse createdTranslation = localizedOptionService.addTranslationForOption(optionId, request);
         return ResponseEntity.ok(createdTranslation);
+    }
+
+    @DeleteMapping("/deleteAll-option/{optionId}")
+    public ResponseEntity<Void> deleteAllByOptionId(@PathVariable Long optionId) {
+        localizedOptionService.deleteAllByOptionId(optionId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/option/{optionId}/language/{languageId}")
+    public ResponseEntity<LocalizedOptionResponse> getTranslation(@PathVariable Long optionId,
+            @PathVariable Long languageId) {
+        LocalizedOptionResponse response = localizedOptionService.getTranslation(optionId, languageId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/translations/language/{languageId}")
+    public ResponseEntity<List<LocalizedOptionResponse>> getAllByLanguage(@PathVariable Long languageId) {
+        List<LocalizedOptionResponse> responses = localizedOptionService.getAllByLanguage(languageId);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/find-one/{id}")
+    public ResponseEntity<LocalizedOptionResponse> findOne(@PathVariable Long id) {
+        LocalizedOptionResponse response = localizedOptionService.findOne(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<LocalizedOptionResponse> update(@PathVariable Long id,
+            @Valid @RequestBody LocalizedOptionRequest request) {
+        LocalizedOptionResponse response = localizedOptionService.update(id, request);
+        return ResponseEntity.ok(response);
     }
 }

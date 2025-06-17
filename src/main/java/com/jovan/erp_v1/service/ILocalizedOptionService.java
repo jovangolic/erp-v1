@@ -14,4 +14,16 @@ public interface ILocalizedOptionService {
     List<LocalizedOptionResponse> getTranslationsForOption(Long optionId);
 
     LocalizedOptionResponse addTranslationForOption(Long optionId, LocalizedOptionRequest request);
+
+    void delete(Long id);
+
+    LocalizedOptionResponse update(Long id, LocalizedOptionRequest request);
+
+    void deleteAllByOptionId(Long optionId);
+
+    LocalizedOptionResponse getTranslation(Long optionId, Long languageId);
+
+    List<LocalizedOptionResponse> getAllByLanguage(Long languageId);
+
+    LocalizedOptionResponse findOne(Long id);
 }
