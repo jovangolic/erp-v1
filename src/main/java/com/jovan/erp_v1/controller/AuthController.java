@@ -45,28 +45,26 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 
-	
-	private final IUserService userService;
-	private final ITokenService tokenService;
-	private final AuthenticationManager authenticationManager;
-	private final JwtService jwtService;
-	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final RoleRepository roleRepository;
-	
-	
-	@PostMapping("/register-user")
-	public ResponseEntity<?> registerUser(@Valid @RequestBody UserRequest request) {
-	    try {
-	        UserResponse registeredUser = userService.registerUser(request);
-	        return ResponseEntity.ok(registeredUser); // ili poruka ako ne želiš vraćanje usera
-	    } catch (IllegalArgumentException e) {
-	        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-	    }
-	}
-	
-	@PreAuthorize("hasRole('ADMIN')")
-	@PostMapping("/register")
+    private final IUserService userService;
+    private final ITokenService tokenService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+
+    @PostMapping("/register-user")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRequest request) {
+        try {
+            UserResponse registeredUser = userService.registerUser(request);
+            return ResponseEntity.ok(registeredUser); // ili poruka ako ne želiš vraćanje usera
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserRequest userRequest) {
         if (userRepository.existsByUsername(userRequest.username())) {
             return ResponseEntity.badRequest().body("Username is already taken!");
@@ -77,8 +75,8 @@ public class AuthController {
         userService.createUserByAdmin(userRequest);
         return ResponseEntity.ok("User registered successfully.");
     }
-	
-	@PreAuthorize("hasRole('ADMIN')")
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create-user")
     public ResponseEntity<?> createUserByAdmin(@RequestBody UserRequest userRequest) {
         try {
@@ -92,8 +90,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.identifier(), request.password())
-        );
+                new UsernamePasswordAuthenticationToken(request.identifier(), request.password()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         System.out.println("Username: " + authentication.getName());
         System.out.println("Authorities: " + authentication.getAuthorities());
@@ -103,34 +100,33 @@ public class AuthController {
         String refreshToken = jwtService.generateRefreshToken(userDetails);
         tokenService.saveTokenForUser(user, jwtToken);
         return ResponseEntity.ok(
-            new AuthResponse(
-                user.getId(),
-                user.getEmail(),
-                jwtToken,
-                refreshToken,
-                user.getRoles().stream().map(Role::getName).toList()
-            )
-        );
+                new AuthResponse(
+                        user.getId(),
+                        user.getEmail(),
+                        jwtToken,
+                        refreshToken,
+                        user.getRoles().stream().map(Role::getName).toList()));
     }
-	    @PostMapping("/refresh")
-	    public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
-	        TokenResponse tokenResponse = tokenService.refreshToken(request.getRefreshToken());
-	        return ResponseEntity.ok(tokenResponse);
-	    }
-	    
-	    @PostMapping("/reset-password-test")
-	    public ResponseEntity<?> resetPasswordTest(@RequestParam String email, @RequestParam String newPassword) {
-	        User user = userRepository.findByEmail(email)
-	            .orElseThrow(() -> new RuntimeException("User not found"));
-	        user.setPassword(passwordEncoder.encode(newPassword));
-	        userRepository.save(user);
-	        return ResponseEntity.ok("Password updated");
-	    }
-	    
-	    @GetMapping("/test-password")
-	    public void testPassword() {
-	        PasswordEncoder encoder = new BCryptPasswordEncoder();
-	        boolean matches = encoder.matches("milan10", "$2a$10$zhPfNbyXtUjGfMDGyxknweFamuGCdDguXKaF7sqyjooby2pynQAPK");
-	        System.out.println("Password match? " + matches);
-	    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        TokenResponse tokenResponse = tokenService.refreshToken(request.getRefreshToken());
+        return ResponseEntity.ok(tokenResponse);
+    }
+
+    @PostMapping("/reset-password-test")
+    public ResponseEntity<?> resetPasswordTest(@RequestParam String email, @RequestParam String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return ResponseEntity.ok("Password updated");
+    }
+
+    @GetMapping("/test-password")
+    public void testPassword() {
+        PasswordEncoder encoder = new BCryptPasswordEncoder();
+        boolean matches = encoder.matches("milan10", "$2a$10$zhPfNbyXtUjGfMDGyxknweFamuGCdDguXKaF7sqyjooby2pynQAPK");
+        System.out.println("Password match? " + matches);
+    }
 }
