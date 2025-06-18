@@ -10,4 +10,8 @@ public interface ISystemStateService {
     void updateState(SystemStateRequest request);
 
     void updateRestartTime();
+
+    void setMaintenanceMode(boolean enabled);
+
+    void setRegistrationEnabled(boolean enabled);
 }

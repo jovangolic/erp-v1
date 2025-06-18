@@ -19,4 +19,6 @@ public interface ISystemSetting {
     SystemSettingResponse update(SystemSettingUpdateRequest request);
 
     void delete(Long id);
+
+    SystemSettingResponse getOneById(Long id);
 }

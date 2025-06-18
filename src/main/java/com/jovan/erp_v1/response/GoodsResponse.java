@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.BarCode;
 import com.jovan.erp_v1.model.Goods;
 
@@ -19,19 +20,19 @@ public class GoodsResponse {
 	private Long id;
 	private String name;
 	private List<BarCodeResponse> barCodes;
-	private String unitMeasure;
+	private UnitMeasure unitMeasure;
 	private SupplierType supplierType;
 	private StorageType storageType;
 	private GoodsType goodsType;
 	private String storageName;
 	private Long supplyId;
-	
+
 	public GoodsResponse(Goods goods) {
 		this.id = goods.getId();
 		this.name = goods.getName();
 		this.barCodes = goods.getBarCodes().stream()
-		        .map(BarCodeResponse::new)
-		        .collect(Collectors.toList());
+				.map(BarCodeResponse::new)
+				.collect(Collectors.toList());
 		this.unitMeasure = goods.getUnitMeasure();
 		this.supplierType = goods.getSupplierType();
 		this.storageType = goods.getStorageType();
@@ -40,6 +41,3 @@ public class GoodsResponse {
 		this.supplyId = goods.getSupply() != null ? goods.getSupply().getId() : null; // sigurnosna provera
 	}
 }
-
-
-

@@ -91,4 +91,11 @@ public class SystemSettingService implements ISystemSetting {
         }
         settingRepository.deleteById(id);
     }
+
+    @Override
+    public SystemSettingResponse getOneById(Long id) {
+        SystemSetting sys = settingRepository.findById(id)
+                .orElseThrow(() -> new SystemSettingErrorNotFoundException("SystemSetting not found " + id));
+        return new SystemSettingResponse(sys);
+    }
 }

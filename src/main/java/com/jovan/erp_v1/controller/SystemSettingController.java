@@ -49,6 +49,12 @@ public class SystemSettingController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/get-one/{id}")
+    public ResponseEntity<SystemSettingResponse> getOneById(@PathVariable Long id) {
+        SystemSettingResponse response = settings.getOneById(id);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{key}")
     public ResponseEntity<SystemSettingResponse> getByKey(@PathVariable String key) {
         SystemSettingResponse response = settings.getByKey(key);

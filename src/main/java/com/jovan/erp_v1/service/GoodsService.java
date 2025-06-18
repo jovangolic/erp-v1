@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.exception.GoodsNotFoundException;
 import com.jovan.erp_v1.mapper.ProductMapper;
 import com.jovan.erp_v1.mapper.RawMaterialMapper;
@@ -58,7 +59,7 @@ public class GoodsService implements IGoodsService {
     }
 
     @Override
-    public List<GoodsResponse> findByUnitMeasure(String unitMeasure) {
+    public List<GoodsResponse> findByUnitMeasure(UnitMeasure unitMeasure) {
         List<GoodsResponse> products = productMapper
                 .toGoodsResponseList(productRepository.findByUnitMeasure(unitMeasure));
         List<GoodsResponse> rawMaterials = rawMaterialMapper

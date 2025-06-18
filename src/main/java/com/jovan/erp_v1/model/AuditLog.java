@@ -33,5 +33,4 @@ public class AuditLog {
 
     @Column
     private String details;
-
 }

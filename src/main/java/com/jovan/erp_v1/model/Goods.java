@@ -1,12 +1,12 @@
 package com.jovan.erp_v1.model;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -29,13 +29,14 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-//@DiscriminatorColumn(name = "goods_type", discriminatorType = DiscriminatorType.STRING)
+// @DiscriminatorColumn(name = "goods_type", discriminatorType =
+// DiscriminatorType.STRING)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public abstract class Goods {
 
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -44,9 +45,10 @@ public abstract class Goods {
 
     @OneToMany(mappedBy = "goods", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BarCode> barCodes;
-    
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String unitMeasure;
+    private UnitMeasure unitMeasure;
 
     @Enumerated(EnumType.STRING)
     @Column
@@ -55,25 +57,27 @@ public abstract class Goods {
     @Enumerated(EnumType.STRING)
     @Column
     private StorageType storageType;
-    
-    /*@Column(name = "goods_enum_type", nullable = false)
-    private GoodsType goodsType;*/
+
+    /*
+     * @Column(name = "goods_enum_type", nullable = false)
+     * private GoodsType goodsType;
+     */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private GoodsType goodsType;
-    
+
     @ManyToOne
-    @JoinColumn(name="storage_id")
+    @JoinColumn(name = "storage_id")
     private Storage storage;
-    
+
     @ManyToOne
     @JoinColumn(name = "supply_id")
     private Supply supply;
-    
+
     @ManyToOne
-    @JoinColumn(name="shelf_id")
+    @JoinColumn(name = "shelf_id")
     private Shelf shelf;
-    
+
     public void addBarCode(BarCode barCode) {
         if (this.barCodes == null) {
             this.barCodes = new ArrayList<>();

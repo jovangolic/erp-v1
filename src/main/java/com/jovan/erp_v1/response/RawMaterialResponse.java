@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.BarCode;
 import com.jovan.erp_v1.model.RawMaterial;
 
@@ -16,10 +17,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RawMaterialResponse {
 
-	private Long id;
+    private Long id;
     private String name;
     private List<BarCodeResponse> barCodes;
-    private String unitMeasure;
+    private UnitMeasure unitMeasure;
     private SupplierType supplierType;
     private StorageType storageType;
     private GoodsType goodsType;
@@ -60,5 +61,5 @@ public class RawMaterialResponse {
             this.productName = rawMaterial.getProduct().getName();
         }
     }
-	
+
 }

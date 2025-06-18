@@ -14,6 +14,7 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.model.Goods;
 import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.response.GoodsResponse;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
 
 @Repository
 public interface GoodsRepository extends JpaRepository<Goods, Long> {
@@ -41,8 +42,11 @@ public interface GoodsRepository extends JpaRepository<Goods, Long> {
     @Query("SELECT g FROM Goods g WHERE g.supply.id = :supplyId")
     List<Goods> findBySupplyId(@Param("supplyId") Long supplyId);
 
-    @Query("SELECT g FROM Goods g WHERE g.unitMeasure = :unitMeasure")
-    List<Goods> findByUnitMeasure(@Param("unitMeasure") String unitMeasure);
+    /*
+     * @Query("SELECT g FROM Goods g WHERE g.unitMeasure = :unitMeasure")
+     * List<Goods> findByUnitMeasure(@Param("unitMeasure") String unitMeasure);
+     */
+    List<Goods> findByUnitMeasure(UnitMeasure unitMeasure);
 
     @Query("SELECT g FROM Goods g JOIN g.barCodes b WHERE b.code = :barCode")
     List<Goods> findAllByBarCodes(@Param("barCode") String barCode);

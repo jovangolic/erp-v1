@@ -17,13 +17,14 @@ import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.response.GoodsResponse;
 import com.jovan.erp_v1.response.ProductResponse;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-	List<Product> findByName(String name);
+    List<Product> findByName(String name);
 
-	@Query("SELECT p FROM Product p JOIN p.barCodes b WHERE b.code = :code")
+    @Query("SELECT p FROM Product p JOIN p.barCodes b WHERE b.code = :code")
     Optional<Product> findByBarCodes(@Param("code") String code);
 
     @Query("select p from Product p where p.storage.name = :storageName")
@@ -46,13 +47,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("select p from Product p where p.goodsType = :gType")
     List<Product> findByGoodsType(@Param("gType") GoodsType goodsType);
-    
-    @Query("select p from Product p where p.unitMeasure = :unitMeasure")
-    List<Product> findByUnitMeasure(@Param("unitMeasure") String unitMeasure);
+
+    /*
+     * @Query("select p from Product p where p.unitMeasure = :unitMeasure")
+     * List<Product> findByUnitMeasure(@Param("unitMeasure") String unitMeasure);
+     */
+    List<Product> findByUnitMeasure(UnitMeasure unitMeasure);
 
     @Query("select p from Product p where p.supply.id = :supplyId")
     List<Product> findBySupplyId(@Param("supplyId") Long supplyId);
-    
+
     @Query("select p from Product p where p.storage = :storage")
     List<Product> findByStorage(@Param("storage") Storage storage);
 }

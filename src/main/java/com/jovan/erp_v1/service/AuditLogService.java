@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.mapper.AuditLogMapper;
@@ -63,5 +64,26 @@ public class AuditLogService implements IAuditLogService {
     public Optional<AuditLogResponse> getById(Long id) {
         return auditLogRepository.findById(id)
                 .map(auditLogMapper::toResponse);
+    }
+
+    @Override
+    public List<AuditLogResponse> searchLogs(Long userId, String action, LocalDateTime start, LocalDateTime end) {
+        Specification<AuditLog> spec = Specification.where(null);
+        if (userId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("user").get("id"), userId));
+        }
+        if (action != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("action"), action));
+        }
+        if (start != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("timestamp"), start));
+        }
+        if (end != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("timestamp"), end));
+        }
+        List<AuditLog> logs = auditLogRepository.findAll(spec);
+        return logs.stream()
+                .map(AuditLogResponse::new)
+                .collect(Collectors.toList());
     }
 }

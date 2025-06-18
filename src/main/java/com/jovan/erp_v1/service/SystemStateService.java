@@ -13,6 +13,7 @@ import com.jovan.erp_v1.repository.SystemStateRepository;
 import com.jovan.erp_v1.request.SystemStateRequest;
 import com.jovan.erp_v1.response.SystemStateResponse;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -31,10 +32,14 @@ public class SystemStateService implements ISystemStateService {
 
     @Override
     public void updateState(SystemStateRequest request) {
-        SystemState state = systemStateRepository.findTopByOrderByIdDesc()
-                .orElseThrow(() -> new SystemStateErrorException("System state not found."));
-        mapper.updateFromRequest(state, request);
-        systemStateRepository.save(state);
+        SystemState currentState = systemStateRepository.findTopByOrderByIdDesc()
+                .orElseThrow(() -> new SystemStateErrorException("No system state found."));
+        currentState.setMaintenanceMode(request.maintenanceMode());
+        currentState.setRegistrationEnabled(request.registrationEnabled());
+        currentState.setSystemVersion(request.systemVersion());
+        currentState.setStatusMessage(request.statusMessage());
+
+        systemStateRepository.save(currentState);
     }
 
     @Override
@@ -44,6 +49,20 @@ public class SystemStateService implements ISystemStateService {
                 .orElseThrow(() -> new SystemStateErrorException("System state not initialized"));
         state.setLastRestartTime(LocalDateTime.now());
         state.setStatusMessage(SystemStatus.RESTARTING); // ako koristiš enum
+        systemStateRepository.save(state);
+    }
+
+    @Override
+    public void setMaintenanceMode(boolean enabled) {
+        SystemState state = systemStateRepository.findTopByOrderByIdDesc().orElseThrow();
+        state.setMaintenanceMode(enabled);
+        systemStateRepository.save(state);
+    }
+
+    @Override
+    public void setRegistrationEnabled(boolean enabled) {
+        SystemState state = systemStateRepository.findTopByOrderByIdDesc().orElseThrow();
+        state.setRegistrationEnabled(enabled);
         systemStateRepository.save(state);
     }
 }

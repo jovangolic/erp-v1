@@ -20,4 +20,6 @@ public interface IAuditLogService {
     List<AuditLogResponse> getLogsBetweenDates(LocalDateTime start, LocalDateTime end);
 
     Optional<AuditLogResponse> getById(Long id);
+
+    List<AuditLogResponse> searchLogs(Long userId, String action, LocalDateTime start, LocalDateTime end);
 }

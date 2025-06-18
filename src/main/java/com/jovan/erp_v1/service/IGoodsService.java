@@ -5,7 +5,7 @@ import java.util.List;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
-
+import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.response.GoodsResponse;
 
 public interface IGoodsService {
@@ -14,7 +14,7 @@ public interface IGoodsService {
 
     List<GoodsResponse> findByBarCodes(String barCode);
 
-    List<GoodsResponse> findByUnitMeasure(String unitMeasure);
+    List<GoodsResponse> findByUnitMeasure(UnitMeasure unitMeasure);
 
     List<GoodsResponse> findBySupplierType(SupplierType type);
 
