@@ -104,7 +104,10 @@ public class GlobalExceptionHandler2 {
             StockTransferItemErrorException.class,
             CompanyEmailErrorException.class,
             LocalizedOptionErrorException.class,
-            LanguageErrorException.class
+            LanguageErrorException.class,
+            AccountNotFoundErrorException.class,
+            FiscalYearErrorException.class,
+            FiscalQuarterErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

@@ -1,0 +1,35 @@
+package com.jovan.erp_v1.service;
+
+import java.time.LocalDate;
+import java.util.List;
+import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
+import com.jovan.erp_v1.model.FiscalYear;
+import com.jovan.erp_v1.request.FiscalQuarterRequest;
+import com.jovan.erp_v1.request.FiscalQuarterResponse;
+
+public interface IFiscalQuarterService {
+
+    FiscalQuarterResponse create(FiscalQuarterRequest request);
+
+    FiscalQuarterResponse update(Long id, FiscalQuarterRequest request);
+
+    void delete(Long id);
+
+    FiscalQuarterResponse findOne(Long id);
+
+    List<FiscalQuarterResponse> findAll();
+
+    List<FiscalQuarterResponse> findByFiscalYear(FiscalYear fiscalYear);
+
+    List<FiscalQuarterResponse> findByQuarterStatus(FiscalQuarterStatus status);
+
+    List<FiscalQuarterResponse> findByStartDateBetween(LocalDate start, LocalDate end);
+
+    List<FiscalQuarterResponse> findByFiscalYearAndQuarterStatus(FiscalYear fiscalYear, FiscalQuarterStatus status);
+
+    List<FiscalQuarterResponse> findByStartDateAfter(LocalDate date);
+
+    List<FiscalQuarterResponse> findByStartDateBefore(LocalDate date);
+
+    List<FiscalQuarterResponse> findByFiscalYear_Year(int year);
+}
