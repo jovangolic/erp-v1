@@ -33,7 +33,7 @@ public interface IBalanceSheetService {
 
     List<BalanceSheetResponse> findByFiscalYear_Id(Long id);
 
-    List<BalanceSheetResponse> findByFiscalYear_Year(int year);
+    List<BalanceSheetResponse> findByFiscalYear_Year(Integer year);
 
     List<BalanceSheetResponse> findByFiscalYear_YearStatus(FiscalYearStatus yearStatus);
 
