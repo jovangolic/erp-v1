@@ -107,7 +107,8 @@ public class GlobalExceptionHandler2 {
             LanguageErrorException.class,
             AccountNotFoundErrorException.class,
             FiscalYearErrorException.class,
-            FiscalQuarterErrorException.class
+            FiscalQuarterErrorException.class,
+            BalanceSheetErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

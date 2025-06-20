@@ -25,7 +25,7 @@ public interface FiscalYearRepository extends JpaRepository<FiscalYear, Long> {
     Optional<FiscalYear> findByYear(int year);
 
     // Po statusu i godini
-    Optional<FiscalYear> findByStatusAndYear(FiscalYearStatus status, int year);
+    Optional<FiscalYear> findByStatusAndYear(FiscalYearStatus status, Integer year);
 
     // Trenutno otvorena fiskalna godina
     Optional<FiscalYear> findFirstByStatusOrderByStartDateDesc(FiscalYearStatus status);

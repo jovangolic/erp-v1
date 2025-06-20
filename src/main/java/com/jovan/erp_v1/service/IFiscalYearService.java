@@ -26,7 +26,7 @@ public interface IFiscalYearService {
 
     FiscalYearResponse findByYear(int year);
 
-    FiscalYearResponse findByStatusAndYear(FiscalYearStatus status, int year);
+    FiscalYearResponse findByStatusAndYear(FiscalYearStatus status, Integer year);
 
     FiscalYearResponse findFirstByStatusOrderByStartDateDesc(FiscalYearStatus status);
 

@@ -10,7 +10,6 @@ import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.model.FiscalQuarter;
 import com.jovan.erp_v1.model.FiscalYear;
-import com.jovan.erp_v1.request.FiscalQuarterResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,7 +21,7 @@ import lombok.NoArgsConstructor;
 public class FiscalYearResponse {
 
     private Long id;
-    private int year;
+    private Integer year;
     private LocalDate startDate;
     private LocalDate endDate;
     private FiscalYearStatus yearStatus;
@@ -40,7 +39,7 @@ public class FiscalYearResponse {
                 .collect(Collectors.toList());
     }
 
-    public FiscalYearResponse(Long id, int year, LocalDate startDate, LocalDate endDate,
+    public FiscalYearResponse(Long id, Integer year, LocalDate startDate, LocalDate endDate,
             FiscalYearStatus yearStatus, FiscalQuarterStatus quarterStatus,
             List<FiscalQuarterResponse> quarters) {
         this.id = id;

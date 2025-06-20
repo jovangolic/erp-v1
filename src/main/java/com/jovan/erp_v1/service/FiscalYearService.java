@@ -83,7 +83,7 @@ public class FiscalYearService implements IFiscalYearService {
     }
 
     @Override
-    public FiscalYearResponse findByStatusAndYear(FiscalYearStatus status, int year) {
+    public FiscalYearResponse findByStatusAndYear(FiscalYearStatus status, Integer year) {
         FiscalYear y = fiscalYearRepository.findByStatusAndYear(status, year)
                 .orElseThrow(() -> new FiscalYearErrorException("Status and year not found"));
         return fiscalYearMapper.toResponse(y);

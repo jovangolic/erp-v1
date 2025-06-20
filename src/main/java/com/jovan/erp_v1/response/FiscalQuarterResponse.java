@@ -1,4 +1,4 @@
-package com.jovan.erp_v1.request;
+package com.jovan.erp_v1.response;
 
 import java.time.LocalDate;
 

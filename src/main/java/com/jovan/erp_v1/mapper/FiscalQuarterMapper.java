@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.jovan.erp_v1.model.FiscalQuarter;
 import com.jovan.erp_v1.request.FiscalQuarterRequest;
-import com.jovan.erp_v1.request.FiscalQuarterResponse;
+import com.jovan.erp_v1.response.FiscalQuarterResponse;
 
 import lombok.RequiredArgsConstructor;
 

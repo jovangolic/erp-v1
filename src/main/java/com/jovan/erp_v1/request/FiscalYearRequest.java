@@ -10,11 +10,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record FiscalYearRequest(
-        Long id,
-        @NotNull @Positive int year,
-        @NotNull LocalDate startDate,
-        @NotNull LocalDate endDate,
-        @NotNull FiscalYearStatus yearStatus,
-        @NotNull FiscalQuarterStatus quarterStatus,
-        @NotNull List<FiscalQuarterRequest> quarters) {
+                Long id,
+                @NotNull @Positive Integer year,
+                @NotNull LocalDate startDate,
+                @NotNull LocalDate endDate,
+                @NotNull FiscalYearStatus yearStatus,
+                @NotNull FiscalQuarterStatus quarterStatus,
+                @NotNull List<FiscalQuarterRequest> quarters) {
 }

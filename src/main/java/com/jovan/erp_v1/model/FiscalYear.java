@@ -31,7 +31,7 @@ public class FiscalYear {
     private Long id;
 
     @Column
-    private int year;
+    private Integer year;
 
     @Column
     private LocalDate startDate;

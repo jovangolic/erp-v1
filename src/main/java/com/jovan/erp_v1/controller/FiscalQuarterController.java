@@ -1,7 +1,9 @@
 package com.jovan.erp_v1.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,10 +13,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
+import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.request.FiscalQuarterRequest;
-import com.jovan.erp_v1.request.FiscalQuarterResponse;
+import com.jovan.erp_v1.response.FiscalQuarterResponse;
 import com.jovan.erp_v1.service.IFiscalQuarterService;
 
 import jakarta.validation.Valid;
@@ -56,6 +61,56 @@ public class FiscalQuarterController {
     @GetMapping("/find-all")
     public ResponseEntity<List<FiscalQuarterResponse>> findAll() {
         List<FiscalQuarterResponse> responses = fiscalQuarterService.findAll();
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/by-fiscalYear")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear(
+            @RequestParam("fiscalYear") FiscalYear fiscalYear) {
+        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear(fiscalYear);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/quarterStatus")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByQuarterStatus(
+            @RequestParam("status") FiscalQuarterStatus status) {
+        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByQuarterStatus(status);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/startDateBetween")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByStartDateBetween(
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByStartDateBetween(start, end);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/fiscalYear-status")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearAndQuarterStatus(
+            @RequestParam("fiscalYear") FiscalYear fiscalYear, @RequestParam("status") FiscalQuarterStatus status) {
+        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearAndQuarterStatus(fiscalYear,
+                status);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/startDateAfter")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByStartDateAfter(
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByStartDateAfter(date);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/startDateBefore")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByStartDateBefore(
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByStartDateBefore(date);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/specific-fiscalYear")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear_Year(@RequestParam("year") Integer year) {
+        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear_Year(year);
         return ResponseEntity.ok(responses);
     }
 

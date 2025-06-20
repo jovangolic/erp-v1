@@ -14,7 +14,7 @@ import com.jovan.erp_v1.model.FiscalQuarter;
 import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.repository.FiscalQuarterRepository;
 import com.jovan.erp_v1.request.FiscalQuarterRequest;
-import com.jovan.erp_v1.request.FiscalQuarterResponse;
+import com.jovan.erp_v1.response.FiscalQuarterResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -109,7 +109,7 @@ public class FiscalQuarterService implements IFiscalQuarterService {
     }
 
     @Override
-    public List<FiscalQuarterResponse> findByFiscalYear_Year(int year) {
+    public List<FiscalQuarterResponse> findByFiscalYear_Year(Integer year) {
         return fiscalQuarterRepository.findByFiscalYear_Year(year).stream()
                 .map(FiscalQuarterResponse::new)
                 .collect(Collectors.toList());

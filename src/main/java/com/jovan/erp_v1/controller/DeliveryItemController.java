@@ -86,8 +86,8 @@ public class DeliveryItemController {
 
     @GetMapping("/inbound-date-range")
     public ResponseEntity<List<DeliveryItemResponse>> findByInboundDelivery_DeliveryDateBetween(
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate start,
-            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate end) {
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
         List<DeliveryItemResponse> responses = deliveryItemService.findByInboundDelivery_DeliveryDateBetween(start,
                 end);
         return ResponseEntity.ok(responses);
@@ -95,8 +95,8 @@ public class DeliveryItemController {
 
     @GetMapping("/outbound-date-range")
     public ResponseEntity<List<DeliveryItemResponse>> findByOutboundDelivery_DeliveryDateBetween(
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate start,
-            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate end) {
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
         List<DeliveryItemResponse> responses = deliveryItemService.findByOutboundDelivery_DeliveryDateBetween(start,
                 end);
         return ResponseEntity.ok(responses);

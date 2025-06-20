@@ -5,7 +5,7 @@ import java.util.List;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.request.FiscalQuarterRequest;
-import com.jovan.erp_v1.request.FiscalQuarterResponse;
+import com.jovan.erp_v1.response.FiscalQuarterResponse;
 
 public interface IFiscalQuarterService {
 
@@ -31,5 +31,5 @@ public interface IFiscalQuarterService {
 
     List<FiscalQuarterResponse> findByStartDateBefore(LocalDate date);
 
-    List<FiscalQuarterResponse> findByFiscalYear_Year(int year);
+    List<FiscalQuarterResponse> findByFiscalYear_Year(Integer year);
 }
