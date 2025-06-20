@@ -27,10 +27,10 @@ public class JournalItem {
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @Column
+    @Column(nullable = false)
     private BigDecimal debit;
 
-    @Column
+    @Column(nullable = false)
     private BigDecimal credit;
 
     @ManyToOne

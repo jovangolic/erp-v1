@@ -1,11 +1,12 @@
-package com.jovan.erp_v1.model;
+package com.jovan.erp_v1.mapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.jovan.erp_v1.mapper.FiscalQuarterMapper;
+import com.jovan.erp_v1.model.FiscalQuarter;
+import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.request.FiscalYearRequest;
 import com.jovan.erp_v1.response.FiscalYearResponse;
 

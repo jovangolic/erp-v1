@@ -110,7 +110,10 @@ public class GlobalExceptionHandler2 {
             FiscalQuarterErrorException.class,
             BalanceSheetErrorException.class,
             TaxRateErrorException.class,
-            LedgerEntryErrorException.class
+            LedgerEntryErrorException.class,
+            IncomeStatementErrorException.class,
+            JournalEntryErrorException.class,
+            JournalItemErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

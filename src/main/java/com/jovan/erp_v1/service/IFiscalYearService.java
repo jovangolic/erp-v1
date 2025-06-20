@@ -20,15 +20,15 @@ public interface IFiscalYearService {
 
     List<FiscalYearResponse> findAll();
 
-    List<FiscalYearResponse> findByStatus(FiscalYearStatus status);
+    // List<FiscalYearResponse> findByStatus(FiscalYearStatus status);
 
     List<FiscalYearResponse> findBetweenStartAndEndDates(LocalDate start, LocalDate end);
 
     FiscalYearResponse findByYear(int year);
 
-    FiscalYearResponse findByStatusAndYear(FiscalYearStatus status, Integer year);
+    FiscalYearResponse findByYearStatusAndYear(FiscalYearStatus status, Integer year);
 
-    FiscalYearResponse findFirstByStatusOrderByStartDateDesc(FiscalYearStatus status);
+    FiscalYearResponse findFirstByYearStatusOrderByStartDateDesc(FiscalYearStatus status);
 
     List<FiscalYearResponse> findByStartDateAfter(LocalDate date);
 

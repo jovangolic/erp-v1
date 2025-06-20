@@ -53,9 +53,25 @@ public interface TaxRateRepository extends JpaRepository<TaxRate, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    List<TaxRate> findByTypeAndPeriod(TaxType type, LocalDate startDate, LocalDate endDate);
+    @Query("""
+            SELECT t FROM TaxRate t
+            WHERE t.type = :type
+            AND t.startDate <= :endDate
+            AND t.endDate >= :startDate
+            """)
+    List<TaxRate> findByTypeAndPeriod(@Param("type") TaxType type,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 
-    List<TaxRate> findByTypeAndDateRange(TaxType type, LocalDate startDate, LocalDate endDate);
+    @Query("""
+                SELECT t FROM TaxRate t
+                WHERE t.type = :type
+                AND t.startDate <= :endDate
+                AND t.endDate >= :startDate
+            """)
+    List<TaxRate> findByTypeAndDateRange(@Param("type") TaxType type,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 
     List<TaxRate> findByTypeAndStartDateLessThanEqualAndEndDateGreaterThanEqual(TaxType type, LocalDate date1,
             LocalDate date2);

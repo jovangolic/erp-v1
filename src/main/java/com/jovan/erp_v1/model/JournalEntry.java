@@ -30,6 +30,6 @@ public class JournalEntry {
     @Column
     private String description;
 
-    @OneToMany(mappedBy = "journalEntry", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "journalEntry", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JournalItem> items;
 }

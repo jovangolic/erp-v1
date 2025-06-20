@@ -17,7 +17,7 @@ import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 @Repository
 public interface FiscalYearRepository extends JpaRepository<FiscalYear, Long> {
 
-    List<FiscalYear> findByStatus(FiscalYearStatus status);
+    // List<FiscalYear> findByStatus(FiscalYearStatus status);
 
     @Query("SELECT fy FROM FiscalYear fy WHERE fy.startDate >= :start AND fy.endDate <= :end")
     List<FiscalYear> findBetweenStartAndEndDates(@Param("start") LocalDate start, @Param("end") LocalDate end);
@@ -25,10 +25,10 @@ public interface FiscalYearRepository extends JpaRepository<FiscalYear, Long> {
     Optional<FiscalYear> findByYear(int year);
 
     // Po statusu i godini
-    Optional<FiscalYear> findByStatusAndYear(FiscalYearStatus status, Integer year);
+    Optional<FiscalYear> findByYearStatusAndYear(FiscalYearStatus status, Integer year);
 
     // Trenutno otvorena fiskalna godina
-    Optional<FiscalYear> findFirstByStatusOrderByStartDateDesc(FiscalYearStatus status);
+    Optional<FiscalYear> findFirstByYearStatusOrderByStartDateDesc(FiscalYearStatus status);
 
     // Sve koje počinju posle određenog datuma
     List<FiscalYear> findByStartDateAfter(LocalDate date);

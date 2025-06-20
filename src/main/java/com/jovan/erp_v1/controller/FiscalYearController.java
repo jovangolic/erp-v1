@@ -63,11 +63,14 @@ public class FiscalYearController {
         return ResponseEntity.ok(responses);
     }
 
-    @GetMapping("/by-fiscalYear-status")
-    public ResponseEntity<List<FiscalYearResponse>> findByStatus(@RequestParam("status") FiscalYearStatus status) {
-        List<FiscalYearResponse> responses = fiscalYearService.findByStatus(status);
-        return ResponseEntity.ok(responses);
-    }
+    /*
+     * @GetMapping("/by-fiscalYear-status")
+     * public ResponseEntity<List<FiscalYearResponse>>
+     * findByStatus(@RequestParam("status") FiscalYearStatus status) {
+     * List<FiscalYearResponse> responses = fiscalYearService.findByStatus(status);
+     * return ResponseEntity.ok(responses);
+     * }
+     */
 
     @GetMapping("/date-range")
     public ResponseEntity<List<FiscalYearResponse>> findBetweenStartAndEndDates(
@@ -84,16 +87,16 @@ public class FiscalYearController {
     }
 
     @GetMapping("/by-status-and-year")
-    public ResponseEntity<FiscalYearResponse> findByStatusAndYear(@RequestParam("status") FiscalYearStatus status,
+    public ResponseEntity<FiscalYearResponse> findByYearStatusAndYear(@RequestParam("status") FiscalYearStatus status,
             @RequestParam("year") Integer year) {
-        FiscalYearResponse response = fiscalYearService.findByStatusAndYear(status, year);
+        FiscalYearResponse response = fiscalYearService.findByYearStatusAndYear(status, year);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/by-status-order")
-    public ResponseEntity<FiscalYearResponse> findFirstByStatusOrderByStartDateDesc(
+    public ResponseEntity<FiscalYearResponse> findFirstByYearStatusOrderByStartDateDesc(
             @RequestParam("status") FiscalYearStatus status) {
-        FiscalYearResponse response = fiscalYearService.findFirstByStatusOrderByStartDateDesc(status);
+        FiscalYearResponse response = fiscalYearService.findFirstByYearStatusOrderByStartDateDesc(status);
         return ResponseEntity.ok(response);
     }
 

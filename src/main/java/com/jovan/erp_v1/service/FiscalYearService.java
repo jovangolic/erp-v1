@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.exception.FiscalYearErrorException;
+import com.jovan.erp_v1.mapper.FiscalYearMapper;
 import com.jovan.erp_v1.model.FiscalYear;
-import com.jovan.erp_v1.model.FiscalYearMapper;
 import com.jovan.erp_v1.repository.FiscalYearRepository;
 import com.jovan.erp_v1.request.FiscalYearRequest;
 import com.jovan.erp_v1.response.FiscalYearResponse;
@@ -61,12 +61,14 @@ public class FiscalYearService implements IFiscalYearService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<FiscalYearResponse> findByStatus(FiscalYearStatus status) {
-        return fiscalYearRepository.findByStatus(status).stream()
-                .map(FiscalYearResponse::new)
-                .collect(Collectors.toList());
-    }
+    /*
+     * @Override
+     * public List<FiscalYearResponse> findByStatus(FiscalYearStatus status) {
+     * return fiscalYearRepository.findByStatus(status).stream()
+     * .map(FiscalYearResponse::new)
+     * .collect(Collectors.toList());
+     * }
+     */
 
     @Override
     public List<FiscalYearResponse> findBetweenStartAndEndDates(LocalDate start, LocalDate end) {
@@ -83,15 +85,15 @@ public class FiscalYearService implements IFiscalYearService {
     }
 
     @Override
-    public FiscalYearResponse findByStatusAndYear(FiscalYearStatus status, Integer year) {
-        FiscalYear y = fiscalYearRepository.findByStatusAndYear(status, year)
+    public FiscalYearResponse findByYearStatusAndYear(FiscalYearStatus status, Integer year) {
+        FiscalYear y = fiscalYearRepository.findByYearStatusAndYear(status, year)
                 .orElseThrow(() -> new FiscalYearErrorException("Status and year not found"));
         return fiscalYearMapper.toResponse(y);
     }
 
     @Override
-    public FiscalYearResponse findFirstByStatusOrderByStartDateDesc(FiscalYearStatus status) {
-        FiscalYear year = fiscalYearRepository.findFirstByStatusOrderByStartDateDesc(status)
+    public FiscalYearResponse findFirstByYearStatusOrderByStartDateDesc(FiscalYearStatus status) {
+        FiscalYear year = fiscalYearRepository.findFirstByYearStatusOrderByStartDateDesc(status)
                 .orElseThrow(() -> new FiscalYearErrorException("FiscalYear status not found " + status));
         return new FiscalYearResponse(year);
     }
