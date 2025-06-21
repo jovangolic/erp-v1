@@ -70,49 +70,52 @@ public class AccountController {
     }
 
     @GetMapping("/by-balance")
-    public ResponseEntity<List<AccountResponse>> findByBalance(BigDecimal balance) {
+    public ResponseEntity<List<AccountResponse>> findByBalance(@RequestParam("balance") BigDecimal balance) {
         List<AccountResponse> responses = accountService.findByBalance(balance);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/balance-between")
-    public ResponseEntity<List<AccountResponse>> findByBalanceBetween(BigDecimal min, BigDecimal max) {
+    public ResponseEntity<List<AccountResponse>> findByBalanceBetween(@RequestParam("min") BigDecimal min,
+            @RequestParam("max") BigDecimal max) {
         List<AccountResponse> responses = accountService.findByBalanceBetween(min, max);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/balance-greater-than")
-    public ResponseEntity<List<AccountResponse>> findByBalanceGreaterThan(BigDecimal amount) {
+    public ResponseEntity<List<AccountResponse>> findByBalanceGreaterThan(@RequestParam("amount") BigDecimal amount) {
         List<AccountResponse> responses = accountService.findByBalanceGreaterThan(amount);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/balance-less-than")
-    public ResponseEntity<List<AccountResponse>> findByBalanceLessThan(BigDecimal amount) {
+    public ResponseEntity<List<AccountResponse>> findByBalanceLessThan(@RequestParam("amount") BigDecimal amount) {
         List<AccountResponse> responses = accountService.findByBalanceLessThan(amount);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/by-accountName")
-    public ResponseEntity<AccountResponse> findByAccountName(String accountName) {
+    public ResponseEntity<AccountResponse> findByAccountName(@RequestParam("accountName") String accountName) {
         AccountResponse response = accountService.findByAccountName(accountName);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/by-accName-ignoreCase")
-    public ResponseEntity<AccountResponse> findByAccountNameIgnoreCase(String accountName) {
+    public ResponseEntity<AccountResponse> findByAccountNameIgnoreCase(
+            @RequestParam("accountName") String accountName) {
         AccountResponse response = accountService.findByAccountNameIgnoreCase(accountName);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/by-accountNumber")
-    public ResponseEntity<AccountResponse> findByAccountNumber(String accountNumber) {
+    public ResponseEntity<AccountResponse> findByAccountNumber(@RequestParam("accountNumber") String accountNumber) {
         AccountResponse response = accountService.findByAccountNumber(accountNumber);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/by-accNumber-and-accName")
-    public ResponseEntity<AccountResponse> findByAccountNameAndAccountNumber(String accountName, String accountNumber) {
+    public ResponseEntity<AccountResponse> findByAccountNameAndAccountNumber(
+            @RequestParam("accountName") String accountName, @RequestParam("accountNumber") String accountNumber) {
         AccountResponse response = accountService.findByAccountNameAndAccountNumber(accountName, accountNumber);
         return ResponseEntity.ok(response);
     }

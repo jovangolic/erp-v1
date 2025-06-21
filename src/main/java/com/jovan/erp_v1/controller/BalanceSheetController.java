@@ -80,6 +80,13 @@ public class BalanceSheetController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/totalAssets")
+    public ResponseEntity<List<BalanceSheetResponse>> findByTotalAssets(
+            @RequestParam("totalAssets") BigDecimal totalAssets) {
+        List<BalanceSheetResponse> responses = balanceSheetService.findByTotalAssets(totalAssets);
+        return ResponseEntity.ok(responses);
+    }
+
     @GetMapping("/totalLiabilities")
     public ResponseEntity<List<BalanceSheetResponse>> findByTotalLiabilities(
             @RequestParam("totalLiabilities") BigDecimal totalLiabilities) {
