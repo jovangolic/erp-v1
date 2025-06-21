@@ -87,9 +87,9 @@ public class FiscalQuarterService implements IFiscalQuarterService {
     }
 
     @Override
-    public List<FiscalQuarterResponse> findByFiscalYearAndQuarterStatus(FiscalYear fiscalYear,
+    public List<FiscalQuarterResponse> findByFiscalYearIdAndQuarterStatus(Long fiscalYearId,
             FiscalQuarterStatus status) {
-        return fiscalQuarterRepository.findByFiscalYearAndQuarterStatus(fiscalYear, status).stream()
+        return fiscalQuarterRepository.findByFiscalYearIdAndQuarterStatus(fiscalYearId, status).stream()
                 .map(FiscalQuarterResponse::new)
                 .collect(Collectors.toList());
     }
@@ -111,6 +111,13 @@ public class FiscalQuarterService implements IFiscalQuarterService {
     @Override
     public List<FiscalQuarterResponse> findByFiscalYear_Year(Integer year) {
         return fiscalQuarterRepository.findByFiscalYear_Year(year).stream()
+                .map(FiscalQuarterResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FiscalQuarterResponse> findByFiscalYearId(Long id) {
+        return fiscalQuarterRepository.findByFiscalYearId(id).stream()
                 .map(FiscalQuarterResponse::new)
                 .collect(Collectors.toList());
     }

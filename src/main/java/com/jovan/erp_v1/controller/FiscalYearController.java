@@ -102,14 +102,14 @@ public class FiscalYearController {
 
     @GetMapping("/startDate-after")
     public ResponseEntity<List<FiscalYearResponse>> findByStartDateAfter(
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate date) {
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         List<FiscalYearResponse> responses = fiscalYearService.findByStartDateAfter(date);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/endDate-before")
     public ResponseEntity<List<FiscalYearResponse>> findByEndDateBefore(
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate date) {
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         List<FiscalYearResponse> responses = fiscalYearService.findByEndDateBefore(date);
         return ResponseEntity.ok(responses);
     }

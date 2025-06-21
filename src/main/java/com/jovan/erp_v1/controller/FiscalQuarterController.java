@@ -64,10 +64,10 @@ public class FiscalQuarterController {
         return ResponseEntity.ok(responses);
     }
 
-    @GetMapping("/by-fiscalYear")
+    @GetMapping("/by-fiscalYear/{fiscalYearId}")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear(
-            @RequestParam("fiscalYear") FiscalYear fiscalYear) {
-        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear(fiscalYear);
+            @PathVariable Long fiscalYearId) {
+        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearId(fiscalYearId);
         return ResponseEntity.ok(responses);
     }
 
@@ -86,10 +86,10 @@ public class FiscalQuarterController {
         return ResponseEntity.ok(responses);
     }
 
-    @GetMapping("/fiscalYear-status")
+    @GetMapping("/fiscalYear/{fiscalYearId}/quarters")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearAndQuarterStatus(
-            @RequestParam("fiscalYear") FiscalYear fiscalYear, @RequestParam("status") FiscalQuarterStatus status) {
-        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearAndQuarterStatus(fiscalYear,
+            @PathVariable Long fiscalYearId, @RequestParam("status") FiscalQuarterStatus status) {
+        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearIdAndQuarterStatus(fiscalYearId,
                 status);
         return ResponseEntity.ok(responses);
     }

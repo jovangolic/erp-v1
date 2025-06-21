@@ -25,11 +25,13 @@ public interface IFiscalQuarterService {
 
     List<FiscalQuarterResponse> findByStartDateBetween(LocalDate start, LocalDate end);
 
-    List<FiscalQuarterResponse> findByFiscalYearAndQuarterStatus(FiscalYear fiscalYear, FiscalQuarterStatus status);
+    List<FiscalQuarterResponse> findByFiscalYearIdAndQuarterStatus(Long fiscalYearId, FiscalQuarterStatus status);
 
     List<FiscalQuarterResponse> findByStartDateAfter(LocalDate date);
 
     List<FiscalQuarterResponse> findByStartDateBefore(LocalDate date);
 
     List<FiscalQuarterResponse> findByFiscalYear_Year(Integer year);
+
+    List<FiscalQuarterResponse> findByFiscalYearId(Long id);
 }

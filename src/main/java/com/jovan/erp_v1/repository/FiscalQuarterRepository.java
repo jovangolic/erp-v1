@@ -23,7 +23,7 @@ public interface FiscalQuarterRepository extends JpaRepository<FiscalQuarter, Lo
     List<FiscalQuarter> findByStartDateBetween(LocalDate start, LocalDate end);
 
     // Pronađi kvartale određenog statusa unutar fiskalne godine
-    List<FiscalQuarter> findByFiscalYearAndQuarterStatus(FiscalYear fiscalYear, FiscalQuarterStatus status);
+    List<FiscalQuarter> findByFiscalYearIdAndQuarterStatus(Long fiscalYearId, FiscalQuarterStatus status);
 
     // Pronađi kvartale koji počinju posle datuma (greater than)
     List<FiscalQuarter> findByStartDateAfter(LocalDate date);
@@ -34,4 +34,6 @@ public interface FiscalQuarterRepository extends JpaRepository<FiscalQuarter, Lo
     // Opcionalno: po godini (ako želiš da filtriraš po int vrednosti iz
     // `FiscalYear`)
     List<FiscalQuarter> findByFiscalYear_Year(int year);
+
+    List<FiscalQuarter> findByFiscalYearId(Long fiscalYearId);
 }
