@@ -2,6 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.exception.JournalEntryErrorException;
+import com.jovan.erp_v1.mapper.JournalEntryMapper;
 import com.jovan.erp_v1.model.JournalEntry;
 import com.jovan.erp_v1.repository.JournalEntryRepository;
 import com.jovan.erp_v1.request.JournalEntryRequest;
@@ -21,19 +23,23 @@ import lombok.RequiredArgsConstructor;
 public class JournalEntryService implements IJournalEntryService {
 
     private final JournalEntryRepository journalEntryRepository;
+    private final JournalEntryMapper journalEntryMapper;
 
     @Transactional
     @Override
     public JournalEntryResponse create(JournalEntryRequest request) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'create'");
+        JournalEntry entry = journalEntryMapper.toEntity(request);
+        JournalEntry saved = journalEntryRepository.save(entry);
+        return journalEntryMapper.toResponse(saved);
     }
 
     @Transactional
     @Override
-    public JournalEntryResponse create(Long id, JournalEntryRequest request) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'create'");
+    public JournalEntryResponse update(Long id, JournalEntryRequest request) {
+        JournalEntry j = journalEntryRepository.findById(id)
+                .orElseThrow(() -> new JournalEntryErrorException("JournalEntry not found with id: " + id));
+        journalEntryMapper.toUpdateEntity(j, request);
+        return journalEntryMapper.toResponse(journalEntryRepository.save(j));
     }
 
     @Transactional
@@ -68,26 +74,38 @@ public class JournalEntryService implements IJournalEntryService {
 
     @Override
     public List<JournalEntryResponse> findByEntryDateBetween(LocalDateTime start, LocalDateTime end) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByEntryDateBetween'");
+        validateDateRange(start, end);
+        List<JournalEntry> entries = journalEntryRepository.findByEntryDateBetween(start, end);
+        return journalEntryMapper.toResponseList(entries);
     }
 
     @Override
     public List<JournalEntryResponse> findByEntryDateOn(LocalDate date) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByEntryDateOn'");
+        if (date == null) {
+            throw new JournalEntryErrorException("Date must be provided");
+        }
+        LocalDateTime startOfDay = date.atStartOfDay(); // 00:00:00
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX); // 23:59:59.999999999
+        List<JournalEntry> entries = journalEntryRepository.findByEntryDateBetween(startOfDay, endOfDay);
+        return journalEntryMapper.toResponseList(entries);
     }
 
     @Override
     public List<JournalEntryResponse> findByEntryDateBefore(LocalDateTime dateTime) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByEntryDateBefore'");
+        if (dateTime == null) {
+            throw new JournalEntryErrorException("Date and time must be provided");
+        }
+        List<JournalEntry> enteies = journalEntryRepository.findByEntryDateBefore(dateTime);
+        return journalEntryMapper.toResponseList(enteies);
     }
 
     @Override
     public List<JournalEntryResponse> findByEntryDateAfter(LocalDateTime dateTime) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByEntryDateAfter'");
+        if (dateTime == null) {
+            throw new JournalEntryErrorException("Date and time must be provided");
+        }
+        List<JournalEntry> entries = journalEntryRepository.findByEntryDateAfter(dateTime);
+        return journalEntryMapper.toResponseList(entries);
     }
 
     @Override
@@ -100,8 +118,22 @@ public class JournalEntryService implements IJournalEntryService {
     @Override
     public List<JournalEntryResponse> findByDescriptionAndEntryDateBetween(String description, LocalDateTime start,
             LocalDateTime end) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByDescriptionAndEntryDateBetween'");
+        if (description == null) {
+            throw new IllegalArgumentException("Description must be provided");
+        }
+        validateDateRange(start, end);
+        List<JournalEntry> entries = journalEntryRepository.findByDescriptionAndEntryDateBetween(description, start,
+                end);
+        return journalEntryMapper.toResponseList(entries);
+    }
+
+    private void validateDateRange(LocalDateTime start, LocalDateTime end) {
+        if (start == null || end == null) {
+            throw new JournalEntryErrorException("Date and time must be provided");
+        }
+        if (start.isAfter(end)) {
+            throw new JournalEntryErrorException("Start date and time must not be after end date and time");
+        }
     }
 
 }

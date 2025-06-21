@@ -29,4 +29,5 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
     List<JournalEntry> findByYear(@Param("year") Integer year);
 
     List<JournalEntry> findByDescriptionAndEntryDateBetween(String description, LocalDateTime start, LocalDateTime end);
+
 }

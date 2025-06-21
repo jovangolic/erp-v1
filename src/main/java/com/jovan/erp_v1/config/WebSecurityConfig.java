@@ -100,7 +100,11 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                         .requestMatchers("/email/**").hasRole("ADMIN")
                         .requestMatchers("/email/**").hasRole("SUPERADMIN")
                         .requestMatchers("/companyEmail/**").hasRole("ADMIN")
-                        .requestMatchers("/companyEmail/**").hasRole("SUPERADMIN")
+                        .requestMatchers("/email/**").hasRole("SUPERADMIN")
+                        .requestMatchers("/journalEntries/**", "/ledgerEntries/**", "/incomeStatements/**",
+                                "/fiscalYears/**", "/fiscalQuarters/**", "/balanceSheets/**",
+                                "/accounts/**", "/journalItems/**", "/taxRates/**")
+                        .hasAnyRole("ADMIN", "SUPERADMIN")
                         .requestMatchers(STORAGE_EMPLOYEE_ENDPOINTS).hasRole("STORAGE_EMPLOYEE")
                         .requestMatchers(STORAGE_FOREMAN_ENDPOINTS).hasRole("STORAGE_FOREMAN")
 

@@ -4,10 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-import com.jovan.erp_v1.model.JournalEntry;
 import com.jovan.erp_v1.request.JournalEntryRequest;
 import com.jovan.erp_v1.response.JournalEntryResponse;
 
@@ -15,7 +11,7 @@ public interface IJournalEntryService {
 
     JournalEntryResponse create(JournalEntryRequest request);
 
-    JournalEntryResponse create(Long id, JournalEntryRequest request);
+    JournalEntryResponse update(Long id, JournalEntryRequest request);
 
     void delete(Long id);
 

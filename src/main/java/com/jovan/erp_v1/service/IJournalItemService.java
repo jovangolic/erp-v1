@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.jovan.erp_v1.enumeration.AccountType;
 import com.jovan.erp_v1.request.JournalItemRequest;
+import com.jovan.erp_v1.request.JournalItemSearchRequest;
 import com.jovan.erp_v1.response.JournalItemResponse;
 
 public interface IJournalItemService {
@@ -40,4 +41,6 @@ public interface IJournalItemService {
     List<JournalItemResponse> findByCredit(BigDecimal credit);
 
     List<JournalItemResponse> findByJournalEntry_Id(Long journalEntryId);
+
+    List<JournalItemResponse> search(JournalItemSearchRequest request);
 }

@@ -21,7 +21,7 @@ public class JournalEntryMapper {
         JournalEntry j = new JournalEntry();
         j.setEntryDate(request.entryDate());
         j.setDescription(request.description());
-        j.getItems().clear();
+
         List<JournalItem> items = request.itemRequests().stream()
                 .map(itemReq -> {
                     JournalItem item = journalItemMapper.toEntity(itemReq);
