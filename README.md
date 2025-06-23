@@ -1,6 +1,6 @@
-# 🏭 ERP Backend System for Warehouse Management
+# 🏭 ERP Backend System for Storage,Logistics and Accounting Management
 
-This is the backend component of a modular ERP system tailored for **micro**, **small**, and **medium-sized enterprises (MSMEs)** to efficiently manage warehouse operations.  
+This is the backend component of a modular ERP system tailored for **micro**, **small**, and **medium-sized enterprises (MSMEs)** to efficiently manage warehouse operations. The name of the sistem is acronym SLAM which stands for Storage,Logistics and Accounting Management
 > ⚠️ *Disclaimer: This is not a copy of SAP.*
 
 ---
