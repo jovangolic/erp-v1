@@ -33,6 +33,8 @@ This is the backend component of a modular ERP system tailored for **micro**, **
 - **Warehouse Module** – Manages warehouses and products stored in them.
 - **Inventory Module** – Tracks inventory items and stock counts.
 - **Shift Reports** – Records employee shifts and activities.
+- **Logistics** - Managing logistisc items from on storage to other storage/storages
+- **Accounting** -For proccesssing the payment, invoices, balanceSheet etc.
 - **Authentication Module** – Manages token lifecycle and access control.
 
 ---
@@ -45,6 +47,8 @@ This is the backend component of a modular ERP system tailored for **micro**, **
 - **dto/ --> Data Transfer Objects
 - **security/ --> JWT handling and auth config
 - **mapper/ --> Custom mappers for DTO conversion
+- **config/ --> Which is for system confuguration
+- **util/ --> Which contatins apiMessages, CredentialGenerator,JsonUtil and more
 
 ---
 
@@ -130,22 +134,22 @@ Body:
 🧑‍💼 Superadmin Registration
 ```json
 {
-  "firstName": "Super",
-  "lastName": "Admin",
-  "email": "superadmin@example.com",
-  "username": "superadmin",
-  "password": "adminpassword",
-  "phoneNumber": "123456789",
-  "address": "Super Admin Address",
-  "roleIds": [1]
+    "firstName":"Milan",
+    "lastName":"Torbica",
+    "address":"Koste Racina 11, Novi Sad",
+    "phoneNumber":"0648888123",
+    "types":"SUPERADMIN"
 }
+When you populated necessary fields as superadmin using postman, in the postman body you'll get these answers as a response:
+generated an email address, generated an username and generated a random password, which is consists of 10 characters (including All caps Alphabet, small caps Alphabet, numbers 0-9, and special characters) mix together
+
 ```
 🔐 Login as Superadmin
 Endpoint: POST http://localhost:8080/auth/login
 ```json
 {
-  "identifier": "superadmin@example.com",
-  "password": "yourpassword"
+  "identifier": "milan.torbica@firma.rs",
+  "password": use the password which is generated in postman body after filling necessary fields
 }
 ```
 👤 Admin Registration
@@ -156,20 +160,17 @@ Body:
 {
   "firstName": "Dragan",
   "lastName": "Torbica",
-  "email": "dragan@gmail.com",
-  "username": "draganGolf",
-  "password": "dragan10",
   "phoneNumber": "0647654321",
   "address": "Detelinara 100, Novi Sad",
-  "roleIds": [2]
+  "types": ADMIN
 }
 ```
 🔐 Login as Admin
 Endpoint: POST http://localhost:8080/auth/login
 ```json
 {
-  "identifier": "dragan@gmail.com",
-  "password": "dragan10"
+  "identifier": "dragan.torbica@firma.rs",
+  "password": use the password which is generated in postman body after filling necessary fields
 }
 ```
 
@@ -186,12 +187,9 @@ For ROLE_STORAGE_FOREMAN
 {
     "firstName": "Djorje",
     "lastName": "Cvarkov",
-    "email": "cvarkov@gmail.com",
-    "username": "Papadubi",
-    "password": "pilicar10",
     "phoneNumber": "0641234123",
     "address": "Pejicevi salasi, Novosadski put 1",
-    "roleIds": [3]	
+    "types": STORAGE_FOREMAN
 }
 ```
 👥 Create Storage Employee (ROLE_STORAGE_EMPLOYEE)
@@ -203,12 +201,9 @@ Body:
 {
     "firstName": "Bosko",
     "lastName": "Boskic",
-    "email": "boskic@gmail.com",
-    "username": "boskicUDB",
-    "password": "boskic0",
     "phoneNumber": "0634567891",
     "address": "Vase Stajica 10, Novi Sad",
-    "roleIds": [4]	
+    "types": STORAGE_EMPLOYEE	
 }
 ```
 
