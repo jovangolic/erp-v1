@@ -10,21 +10,21 @@ This is the backend component of SLAM, a modular ERP system designed specificall
 
 ## 📦 Features
 
-- ✅ User authentication and role-based access control
+- 🔐 User authentication with role-based access control
 
-- ✅ Warehouse and inventory management
+- 🏬 Warehouse and inventory management
 
-- ✅ Product tracking and real-time stock monitoring
+- 📦 Product tracking with real-time stock monitoring
 
-- ✅ Shift and employee activity reporting
+- 📊 Employee shift reporting
 
-- ✅ Token-based session handling with refresh token support
+- 🔄 Token-based authentication (with refresh token support)
 
-- ✅ RESTful API endpoints for all major operations
+- 🌐 RESTful API endpoints for all modules
 
-- ✅ Logistics management — transport orders, shipments, vehicle tracking
+- 🚚 Logistics tracking: orders, vehicle dispatching, shipment management
 
-- ✅ Accounting module — invoices, payments, and financial reporting
+- 💰 Accounting features: invoicing, payment records, and reporting
 
 ---
 
@@ -74,23 +74,25 @@ This is the backend component of SLAM, a modular ERP system designed specificall
 
 This backend follows a **layered architecture**:
 
-- **Controller Layer (REST API)**  
-  Exposes endpoints for clients to interact with resources like users, products, inventories, etc.
+- The backend follows a layered architecture:
 
-- **Service Layer**  
-  Contains the business logic and orchestrates operations between controllers and repositories.
+- Controller Layer – Exposes RESTful endpoints for client communication
 
-- **Repository Layer**  
-  Interfaces with the database using Spring Data JPA.
+- Service Layer – Contains core business logic and orchestrates data flow
 
-- **Entity Layer**  
-  Contains all domain models that represent database tables (e.g., `User`, `Warehouse`, `InventoryItem`, `Token`, etc.)
+- Repository Layer – Interfaces with the DB using JPA/Hibernate
 
-🔐 The system enforces **secure role-based access control** using:
-- `ROLE_SUPERADMIN`
-- `ROLE_ADMIN`
-- `ROLE_STORAGE_FOREMAN`
-- `ROLE_STORAGE_EMPLOYEE`
+- Entity Layer – Models the domain with entities such as User, Warehouse, InventoryItem, etc.
+
+🔐 Role-based Access Control is enforced using:
+
+- ROLE_SUPERADMIN
+
+- ROLE_ADMIN
+
+- ROLE_STORAGE_FOREMAN
+
+- ROLE_STORAGE_EMPLOYEE
 
 ---
 
@@ -122,11 +124,122 @@ To interact with protected endpoints, you must first **authenticate using JWT**.
      - **Secret**: paste the copied JWT key
    - Leave other fields as default.
 
-3. **User Creation Flow**
-   - First, create a **Superadmin** account.
-   - Then use that role to create Admins and regular employees.
+3. **User Setup & Login Flow (using Postman)
+This section explains how to create users and log into the system using **Postman**.
 
-4. **Use the received JWT token**
+---
+
+### 1. **Create Superadmin**
+
+Use **Postman** to send a `POST` request to the appropriate user registration endpoint.
+
+In the request body (JSON format), provide the following fields:
+
+User Setup & Login Flow (using Postman)
+
+This section explains how to create users and log in using Postman.
+
+📍 Step 1: Create Superadmin
+
+Send a POST request to the superadmin creation endpoint:
+
+Endpoint: POST http://localhost:8080/users/create-superadmin
+
+Request Body:
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "address": "Main Street 1",
+  "phoneNumber": "0648888123",
+  "types": "SUPERADMIN"
+}
+
+📥 Response:
+
+You will receive:
+
+Auto-generated email (e.g., john.doe@firma.rs)
+
+Auto-generated username (e.g., john_doe123)
+
+Auto-generated password (10 characters, mix of uppercase, lowercase, digits, and symbols)
+
+⚠️ Passwords are hashed and not recoverable. Copy and store them securely.
+
+Step 2: Login as Superadmin
+
+Endpoint: POST http://localhost:8080/auth/login
+
+Request Body:
+{
+  "identifier": "john.doe@firma.rs",
+  "password": "<generated_password>"
+}
+Once logged in, copy the returned JWT token and add it to the Authorization header:
+Authorization: Bearer <your_token>
+
+Admin & Employee Creation
+
+Once logged in as Superadmin, you can create new users.
+
+🧑‍💼 Admin
+
+Endpoint: POST http://localhost:8080/users/create-admin
+```json
+{
+  "firstName": "Dragan",
+  "lastName": "Torbica",
+  "phoneNumber": "0647654321",
+  "address": "Detelinara 100, Novi Sad",
+  "types": "ADMIN"
+} 
+```
+
+Login as Admin
+
+Endpoint: POST http://localhost:8080/auth/login
+```json
+{
+  "identifier": "dragan.torbica@firma.rs",
+  "password": "<generated_password>"
+}
+```
+Create Storage Foreman
+
+Endpoint: POST http://localhost:8080/users/admin/create-user
+```json
+{
+  "firstName": "Djordje",
+  "lastName": "Cvarkov",
+  "phoneNumber": "0641234123",
+  "address": "Pejicevi salasi, Novosadski put 1",
+  "types": "STORAGE_FOREMAN"
+}
+```
+Create Storage Employee
+
+Endpoint: POST http://localhost:8080/users/admin/create-user
+```json
+{
+  "firstName": "Bosko",
+  "lastName": "Boskic",
+  "phoneNumber": "0634567891",
+  "address": "Vase Stajica 10, Novi Sad",
+  "types": "STORAGE_EMPLOYEE"
+}
+```
+2. **Postman Testing Summary
+
+All major user roles (SUPERADMIN, ADMIN, STORAGE_FOREMAN, STORAGE_EMPLOYEE) can be created via Postman
+
+JWT-based login is required to access protected endpoints
+
+Credentials are returned only once upon creation — store them securely
+
+Login uses identifier = generated email, and password = generated password
+
+3. **Use the received JWT token**
    - In every authorized request, set:
      ```
      Authorization: Bearer <your_token>
@@ -144,86 +257,6 @@ Clone the repository:
 https://github.com/jovangolic/erp-v1.git
 cd erp-v1
 
-🧪 Postman Examples
-👤 Superadmin Registration
-
-Endpoint: POST http://localhost:8080/users/create-superadmin
-Body:
-🧑‍💼 Superadmin Registration
-```json
-{
-    "firstName":"Milan",
-    "lastName":"Torbica",
-    "address":"Koste Racina 11, Novi Sad",
-    "phoneNumber":"0648888123",
-    "types":"SUPERADMIN"
-}
-When you populated necessary fields as superadmin using postman, in the postman body you'll get these answers as a response:
-generated an email address, generated an username and generated a random password, which is consists of 10 characters (including All caps Alphabet, small caps Alphabet, numbers 0-9, and special characters) mix together
-
-```
-🔐 Login as Superadmin
-Endpoint: POST http://localhost:8080/auth/login
-```json
-{
-  "identifier": "milan.torbica@firma.rs",
-  "password": use the password which is generated in postman body after filling necessary fields
-}
-```
-👤 Admin Registration
-
-Endpoint: POST http://localhost:8080/users/create-admin
-Body:
-```json
-{
-  "firstName": "Dragan",
-  "lastName": "Torbica",
-  "phoneNumber": "0647654321",
-  "address": "Detelinara 100, Novi Sad",
-  "types": ADMIN
-}
-```
-🔐 Login as Admin
-Endpoint: POST http://localhost:8080/auth/login
-```json
-{
-  "identifier": "dragan.torbica@firma.rs",
-  "password": use the password which is generated in postman body after filling necessary fields
-}
-```
-
-👥 Creating Employees (as Admin)
-
-You must be logged in as Admin to create users with other roles.
-
-📋 ROLE_STORAGE_FOREMAN
-
-Endpoint: POST http://localhost:8080/users/admin/create-user
-Body:
-For ROLE_STORAGE_FOREMAN
-```json
-{
-    "firstName": "Djorje",
-    "lastName": "Cvarkov",
-    "phoneNumber": "0641234123",
-    "address": "Pejicevi salasi, Novosadski put 1",
-    "types": STORAGE_FOREMAN
-}
-```
-👥 Create Storage Employee (ROLE_STORAGE_EMPLOYEE)
-
-Endpoint:
-POST http://localhost:8080/users/admin/create-user
-Body:
-```json
-{
-    "firstName": "Bosko",
-    "lastName": "Boskic",
-    "phoneNumber": "0634567891",
-    "address": "Vase Stajica 10, Novi Sad",
-    "types": STORAGE_EMPLOYEE	
-}
-```
 
 # Jovan Golić - Author of this project.
 
