@@ -29,19 +29,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SalesOrder {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	
-	@Column(nullable = false, unique = true)
-	private String orderNumber;
-	
-	private LocalDateTime orderDate;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String orderNumber;
+
+    private LocalDateTime orderDate;
 
     private BigDecimal totalAmount;
 
     @ManyToOne
-    @JoinColumn(name="buyer_id")
+    @JoinColumn(name = "buyer_id")
     private Buyer buyer;
 
     @OneToMany(mappedBy = "salesOrder", cascade = CascadeType.ALL)
@@ -54,5 +54,5 @@ public class SalesOrder {
     private OrderStatus status;
 
     private String note;
-    
+
 }

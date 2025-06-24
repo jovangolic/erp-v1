@@ -20,23 +20,27 @@ public class SwaggerConfig {
                 String securitySchemeName = "Bearer";
                 return new OpenAPI()
                                 .info(new Info()
-                                                .title("ERP System for Storage - v1.0")
-                                                .description("ERP sistem za upravljanje skladištem, prodajom, nabavkama, smenama i korisnicima.")
+                                                .title("ERP System for Storage, Logistics and Accounting - SLAM v1.0")
                                                 .version("v0.0.1")
+                                                .description("ERP sistem za upravljanje skladištem, logistikom, računovodstvom, prodajom, nabavkama, smenama i korisnicima.")
                                                 .termsOfService("https://example.com/terms")
                                                 .contact(new Contact()
                                                                 .name("Jovan Golić")
-                                                                .email("jovangolic19@gmail.com")
-                                                                .url("https://github.com/jovangolic"))
-                                                .license(new License().name("Apache 2.0").url("http://springdoc.org")))
+                                                                .url("https://github.com/jovangolic")
+                                                                .email("jovangolic19@gmail.com"))
+                                                .license(new License()
+                                                                .name("Apache 2.0")
+                                                                .url("http://springdoc.org")))
+                                .externalDocs(new ExternalDocumentation()
+                                                .description("Project Wiki (Detaljna tehnička dokumentacija)")
+                                                .url("https://github.com/jovangolic/erp-v1/wiki"))
                                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
-                                .components(
-                                                new Components()
-                                                                .addSecuritySchemes(securitySchemeName,
-                                                                                new SecurityScheme()
-                                                                                                .name(securitySchemeName)
-                                                                                                .type(SecurityScheme.Type.HTTP)
-                                                                                                .scheme("bearer")
-                                                                                                .bearerFormat("JWT")));
+                                .components(new Components()
+                                                .addSecuritySchemes(securitySchemeName,
+                                                                new SecurityScheme()
+                                                                                .name(securitySchemeName)
+                                                                                .type(SecurityScheme.Type.HTTP)
+                                                                                .scheme("bearer")
+                                                                                .bearerFormat("JWT")));
         }
 }
