@@ -1,18 +1,30 @@
-# 🏭 ERP Backend System for Storage,Logistics and Accounting Management
+ERP Backend System — SLAM (Storage, Logistics and Accounting Management)
 
-This is the backend component of a modular ERP system tailored for **micro**, **small**, and **medium-sized enterprises (MSMEs)** to efficiently manage warehouse operations. The name of the sistem is acronym SLAM which stands for Storage,Logistics and Accounting Management
-> ⚠️ *Disclaimer: This is not a copy of SAP.*
+This is the backend component of SLAM, a modular ERP system designed specifically for micro, small, and medium-sized enterprises (MSMEs) to streamline warehouse, logistics, and accounting operations.
+
+    ⚠️ Disclaimer: This system is not a copy of any existing ERP solution, including SAP. SLAM is an original software product designed and developed from scratch.
+
+    🎯 Slogan: “SLAM — Control your storage, move with logic, and balance with clarity.”
 
 ---
 
 ## 📦 Features
 
 - ✅ User authentication and role-based access control
+
 - ✅ Warehouse and inventory management
-- ✅ Product tracking and stock monitoring
+
+- ✅ Product tracking and real-time stock monitoring
+
 - ✅ Shift and employee activity reporting
-- ✅ Token-based session handling with support for refresh tokens
-- ✅ RESTful API endpoints for all core features
+
+- ✅ Token-based session handling with refresh token support
+
+- ✅ RESTful API endpoints for all major operations
+
+- ✅ Logistics management — transport orders, shipments, vehicle tracking
+
+- ✅ Accounting module — invoices, payments, and financial reporting
 
 ---
 
@@ -29,26 +41,32 @@ This is the backend component of a modular ERP system tailored for **micro**, **
 
 ## 🧩 Modules
 
-- **User & Role Management** – Handles users, roles, and permissions.
-- **Warehouse Module** – Manages warehouses and products stored in them.
-- **Inventory Module** – Tracks inventory items and stock counts.
-- **Shift Reports** – Records employee shifts and activities.
-- **Logistics** - Managing logistisc items from on storage to other storage/storages
-- **Accounting** -For proccesssing the payment, invoices, balanceSheet etc.
-- **Authentication Module** – Manages token lifecycle and access control.
+- 🔐 Authentication Module – Manages user login, token lifecycle, and access security
+
+- 👥 User & Role Management – Handles users, roles, and permission logic
+
+- 🏬 Warehouse Module – Manages physical storage units and stored products
+
+- 📦 Inventory Module – Tracks product quantities and locations
+
+- 🕒 Shift Reports – Records employee work shifts and warehouse activity
+
+- 🚚 Logistics Module – Handles transport orders, vehicle allocation, driver assignments, shipment tracking, and route planning
+
+- 💰 Accounting Module – Manages invoices, payments, expense tracking, and balance sheets
 
 ---
 
 ## 📁 Project Structure
-- **model/ --> JPA Entities (User, Warehouse, Product, Inventory...)
-- **controller/ --> REST API entry points
-- **service/ --> Business logic
-- **repository/ --> Spring Data JPA Repositories
-- **dto/ --> Data Transfer Objects
-- **security/ --> JWT handling and auth config
-- **mapper/ --> Custom mappers for DTO conversion
-- **config/ --> Which is for system confuguration
-- **util/ --> Which contatins apiMessages, CredentialGenerator,JsonUtil and more
+- 📁 model/         → JPA entities (User, Warehouse, Product, TransportOrder, Invoice...)
+- 📁 controller/    → REST API endpoints for external communication
+- 📁 service/       → Business logic and transaction handling
+- 📁 repository/    → Spring Data JPA interfaces
+- 📁 dto/           → Data Transfer Objects for safe data exchange
+- 📁 security/      → JWT utilities and security configuration
+- 📁 mapper/        → DTO <-> Entity mapping logic
+- 📁 config/        → Application and security configuration files
+- 📁 util/          → Utility classes (e.g., ApiMessages, CredentialGenerator, JsonUtil)
 
 ---
 
