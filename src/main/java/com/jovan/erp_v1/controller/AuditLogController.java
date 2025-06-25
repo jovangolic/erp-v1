@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.AuditActionType;
 import com.jovan.erp_v1.exception.UserNotFoundException;
 import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.UserRepository;
@@ -24,14 +25,14 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/audit-logs")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
 public class AuditLogController {
 
     private final IAuditLogService auditLogService;
     private final UserRepository userRepository;
 
     @PostMapping("/log")
-    public ResponseEntity<Void> log(@RequestParam("action") String action,
+    public ResponseEntity<Void> log(@RequestParam("action") AuditActionType action,
             @RequestParam("userId") Long userId,
             @RequestParam("details") String details) {
         // Dobavi User entitet iz baze
@@ -58,7 +59,7 @@ public class AuditLogController {
     }
 
     @GetMapping("/get-by-action")
-    public ResponseEntity<List<AuditLogResponse>> getLogsByAction(@RequestParam("action") String action) {
+    public ResponseEntity<List<AuditLogResponse>> getLogsByAction(@RequestParam("action") AuditActionType action) {
         List<AuditLogResponse> responses = auditLogService.getLogsByAction(action);
         return ResponseEntity.ok(responses);
     }
@@ -72,6 +73,18 @@ public class AuditLogController {
     @GetMapping("/get-all-logs")
     public ResponseEntity<List<AuditLogResponse>> getAllLogs() {
         return ResponseEntity.ok(auditLogService.getAllLogs());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<AuditLogResponse>> searchLogs(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) AuditActionType action,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+            @RequestParam(required = false) String ipAddress,
+            @RequestParam(required = false) String userAgent) {
+        List<AuditLogResponse> responses = auditLogService.searchLogs(userId, action, start, end, ipAddress, userAgent);
+        return ResponseEntity.ok(responses);
     }
 
 }

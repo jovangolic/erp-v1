@@ -2,6 +2,7 @@ package com.jovan.erp_v1.response;
 
 import java.time.LocalDateTime;
 
+import com.jovan.erp_v1.enumeration.AuditActionType;
 import com.jovan.erp_v1.model.AuditLog;
 
 import lombok.AllArgsConstructor;
@@ -16,9 +17,11 @@ public class AuditLogResponse {
     private Long id;
     private Long userId;
     private String username;
-    private String action;
+    private AuditActionType action;
     private LocalDateTime timestamp;
     private String detail;
+    private String ipAddress;
+    private String userAgent;
 
     public AuditLogResponse(AuditLog log) {
         this.id = log.getId();
@@ -27,5 +30,7 @@ public class AuditLogResponse {
         this.action = log.getAction();
         this.timestamp = log.getTimestamp();
         this.detail = log.getDetails();
+        this.ipAddress = log.getIpAddress();
+        this.userAgent = log.getUserAgent();
     }
 }

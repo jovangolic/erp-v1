@@ -54,6 +54,18 @@ public class Storage {
 	@OneToMany(mappedBy = "toStorage")
 	private List<StockTransfer> incomingTransfers;
 
+	@OneToMany(mappedBy = "storage", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Material> materials = new ArrayList<>();
+
+	@OneToMany(mappedBy = "fromStorage")
+	private List<MaterialMovement> outgoingMaterialMovements;
+
+	@OneToMany(mappedBy = "toStorage")
+	private List<MaterialMovement> incomingMaterialMovements;
+
+	@OneToMany(mappedBy = "localStorage")
+	private List<WorkCenter> workCenters;
+
 	public Storage() {
 		this.goods = new ArrayList<>();
 		this.shelves = new ArrayList<>();

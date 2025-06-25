@@ -10,20 +10,20 @@ import jakarta.annotation.PostConstruct;
 @Component
 public class RoleInitializer {
 
-	
-	private final RoleRepository roleRepository;
-	
-	public RoleInitializer(RoleRepository roleRepository) {
-		this.roleRepository = roleRepository;
-	}
-	
-	@PostConstruct
-	public void initRoles() {
-		addRoleIfNotExists("ROLE_SUPERADMIN");
+    private final RoleRepository roleRepository;
+
+    public RoleInitializer(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
+    }
+
+    @PostConstruct
+    public void initRoles() {
+        addRoleIfNotExists("ROLE_SUPERADMIN");
         addRoleIfNotExists("ROLE_ADMIN");
+        addRoleIfNotExists("ROLE_MANAGER");
         addRoleIfNotExists("ROLE_STORAGE_FOREMAN");
         addRoleIfNotExists("ROLE_STORAGE_EMPLOYEE");
-        
+
     }
 
     private void addRoleIfNotExists(String roleName) {

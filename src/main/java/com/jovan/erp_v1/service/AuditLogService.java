@@ -7,13 +7,17 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.jovan.erp_v1.enumeration.AuditActionType;
 import com.jovan.erp_v1.mapper.AuditLogMapper;
 import com.jovan.erp_v1.model.AuditLog;
 import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.AuditLogRepository;
 import com.jovan.erp_v1.response.AuditLogResponse;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -23,14 +27,41 @@ public class AuditLogService implements IAuditLogService {
     private final AuditLogRepository auditLogRepository;
     private final AuditLogMapper auditLogMapper;
 
-    public void log(String action, User user, String details) {
+    @Override
+    public void log(AuditActionType action, User user, String details) {
         AuditLog log = new AuditLog();
         log.setAction(action);
         log.setUser(user);
         log.setTimestamp(LocalDateTime.now());
         log.setDetails(details);
+
+        // Ako koristiš ServletRequest:
+        try {
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+                    .getRequest();
+            log.setIpAddress(request.getRemoteAddr());
+            log.setUserAgent(request.getHeader("User-Agent"));
+        } catch (Exception e) {
+            // fallback ako nije web kontekst
+            log.setIpAddress(null);
+            log.setUserAgent(null);
+        }
+
         auditLogRepository.save(log);
     }
+    /*
+     * public void log(AuditActionType action, User user, String details, String
+     * ipAddress, String userAgent) {
+     * AuditLog log = new AuditLog();
+     * log.setAction(action);
+     * log.setUser(user);
+     * log.setTimestamp(LocalDateTime.now());
+     * log.setDetails(details);
+     * log.setIpAddress(ipAddress);
+     * log.setUserAgent(userAgent);
+     * auditLogRepository.save(log);
+     * }
+     */
 
     @Override
     public List<AuditLogResponse> getAllLogs() {
@@ -47,7 +78,7 @@ public class AuditLogService implements IAuditLogService {
     }
 
     @Override
-    public List<AuditLogResponse> getLogsByAction(String action) {
+    public List<AuditLogResponse> getLogsByAction(AuditActionType action) {
         return auditLogRepository.findByAction(action).stream()
                 .map(AuditLogResponse::new)
                 .collect(Collectors.toList());
@@ -67,7 +98,8 @@ public class AuditLogService implements IAuditLogService {
     }
 
     @Override
-    public List<AuditLogResponse> searchLogs(Long userId, String action, LocalDateTime start, LocalDateTime end) {
+    public List<AuditLogResponse> searchLogs(Long userId, AuditActionType action, LocalDateTime start,
+            LocalDateTime end, String ipAddress, String userAgent) {
         Specification<AuditLog> spec = Specification.where(null);
         if (userId != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("user").get("id"), userId));
@@ -81,9 +113,17 @@ public class AuditLogService implements IAuditLogService {
         if (end != null) {
             spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("timestamp"), end));
         }
+        if (ipAddress != null && !ipAddress.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("ipAddress"), ipAddress));
+        }
+        if (userAgent != null && !userAgent.isBlank()) {
+            spec = spec.and(
+                    (root, query, cb) -> cb.like(cb.lower(root.get("userAgent")), "%" + userAgent.toLowerCase() + "%"));
+        }
         List<AuditLog> logs = auditLogRepository.findAll(spec);
         return logs.stream()
                 .map(AuditLogResponse::new)
                 .collect(Collectors.toList());
     }
+
 }

@@ -27,6 +27,8 @@ public class AuditLogMapper {
         log.setUser(user);
         log.setAction(request.action());
         log.setDetails(request.details());
+        log.setIpAddress(request.ipAddress());
+        log.setUserAgent(request.userAgent());
         return log;
     }
 
@@ -42,6 +44,8 @@ public class AuditLogMapper {
         response.setAction(log.getAction());
         response.setTimestamp(log.getTimestamp());
         response.setDetail(log.getDetails());
+        response.setIpAddress(log.getIpAddress());
+        response.setUserAgent(log.getUserAgent());
         return response;
     }
 

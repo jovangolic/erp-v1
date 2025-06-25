@@ -113,7 +113,8 @@ public class GlobalExceptionHandler2 {
             LedgerEntryErrorException.class,
             IncomeStatementErrorException.class,
             JournalEntryErrorException.class,
-            JournalItemErrorException.class
+            JournalItemErrorException.class,
+            WorkCenterErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {
