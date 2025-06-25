@@ -43,7 +43,7 @@ public class WorkCenterController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<WorkCenterResponse> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         workCenterService.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -114,7 +114,9 @@ public class GlobalExceptionHandler2 {
             IncomeStatementErrorException.class,
             JournalEntryErrorException.class,
             JournalItemErrorException.class,
-            WorkCenterErrorException.class
+            WorkCenterErrorException.class,
+            MaterialNotFoundException.class,
+            DuplicateCodeException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

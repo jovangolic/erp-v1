@@ -9,11 +9,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record MaterialRequest(
-        Long id,
-        @NotBlank String code,
-        @NotBlank String name,
-        @NotNull UnitOfMeasure unit,
-        @NotNull @DecimalMin("0.0") BigDecimal currentStock,
-        @NotNull Long storageId,
-        @NotNull @DecimalMin("0.0") BigDecimal reorderLevel) {
+                Long id,
+                @NotBlank String code,
+                @NotBlank String name,
+                @NotNull UnitOfMeasure unit,
+                @NotNull @DecimalMin(value = "0.0", inclusive = true) BigDecimal currentStock,
+                @NotNull Long storageId,
+                @NotNull @DecimalMin(value = "0.0", inclusive = true) BigDecimal reorderLevel) {
 }
