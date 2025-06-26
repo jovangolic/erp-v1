@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import jakarta.persistence.Column;
@@ -30,12 +31,12 @@ public class CapacityPlanning {
     @Column
     private LocalDate date;
 
-    @Column
-    private Integer availableCapacity;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal availableCapacity;
 
-    @Column
-    private Integer plannedLoad;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal plannedLoad;
 
-    @Column
-    private Integer remainingCapacity;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal remainingCapacity;
 }

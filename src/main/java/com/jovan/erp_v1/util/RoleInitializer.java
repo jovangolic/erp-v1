@@ -26,7 +26,6 @@ public class RoleInitializer {
         addRoleIfNotExists("ROLE_QUALITY_MANAGER");
         addRoleIfNotExists("ROLE_STORAGE_FOREMAN");
         addRoleIfNotExists("ROLE_STORAGE_EMPLOYEE");
-
     }
 
     private void addRoleIfNotExists(String roleName) {

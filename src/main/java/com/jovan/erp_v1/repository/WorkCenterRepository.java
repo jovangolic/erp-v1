@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,21 +13,21 @@ public interface WorkCenterRepository extends JpaRepository<WorkCenter, Long> {
 
     List<WorkCenter> findByName(String name);
 
-    List<WorkCenter> findByCapacity(Integer capacity);
+    List<WorkCenter> findByCapacity(BigDecimal capacity);
 
     List<WorkCenter> findByLocation(String location);
 
     List<WorkCenter> findByNameAndLocation(String name, String location);
 
-    List<WorkCenter> findByCapacityGreaterThan(Integer capacity);
+    List<WorkCenter> findByCapacityGreaterThan(BigDecimal capacity);
 
-    List<WorkCenter> findByCapacityLessThan(Integer capacity);
+    List<WorkCenter> findByCapacityLessThan(BigDecimal capacity);
 
     List<WorkCenter> findByNameContainingIgnoreCase(String name);
 
     List<WorkCenter> findByLocationContainingIgnoreCase(String location);
 
-    List<WorkCenter> findByCapacityBetween(Integer min, Integer max);
+    List<WorkCenter> findByCapacityBetween(BigDecimal min, BigDecimal max);
 
     List<WorkCenter> findByLocationOrderByCapacityDesc(String location);
 }

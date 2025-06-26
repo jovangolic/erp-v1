@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.response;
 
+import java.math.BigDecimal;
+
 import com.jovan.erp_v1.model.WorkCenter;
 
 import lombok.AllArgsConstructor;
@@ -14,7 +16,7 @@ public class WorkCenterResponse {
     private Long id;
     private String name;
     private String location;
-    private Integer capacity;
+    private BigDecimal capacity;
 
     public WorkCenterResponse(WorkCenter w) {
         this.id = w.getId();

@@ -37,83 +37,94 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 public class WebSecurityConfig implements WebMvcConfigurer {
 
-    private final JwtAuthenticationFilter jwtAuthFilter;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final UserDetailsService userDetailsService;
-    private final PasswordEncoder passwordEncoder;
+        private final JwtAuthenticationFilter jwtAuthFilter;
+        private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+        private final UserDetailsService userDetailsService;
+        private final PasswordEncoder passwordEncoder;
+        private final CustomAccessDeniedHandler accessDeniedHandler;
 
-    // Endpoint grupe za čitljivost i održavanje
-    private static final String[] STORAGE_EMPLOYEE_ENDPOINTS = {
-            "/vendor/**", "/goods/**", "/invoice/**", "/storage/**",
-            "/rawMaterial/**", "/confirmationDocument/**",
-            "/sales/**", "/supply/**", "/salesOrder/**",
-            "/inventory/**", "/inventoryItems/**", "/driver/**", "/vehicle/**", ",deliveryItem/**",
-            "/logisticsProvider/**", "inboundDelivery/**", "outboundDelivery/**",
-            "shipment/**", "stockTransfer/**", "stockTransferItem", "/transportOrder/**"
-    };
+        // Endpoint grupe za čitljivost i održavanje
+        private static final String[] STORAGE_EMPLOYEE_ENDPOINTS = {
+                        "/vendor/**", "/goods/**", "/invoice/**", "/storage/**",
+                        "/rawMaterial/**", "/confirmationDocument/**",
+                        "/sales/**", "/supply/**", "/salesOrder/**",
+                        "/inventory/**", "/inventoryItems/**", "/driver/**", "/vehicle/**", ",deliveryItem/**",
+                        "/logisticsProvider/**", "inboundDelivery/**", "outboundDelivery/**",
+                        "shipment/**", "stockTransfer/**", "stockTransferItem", "/transportOrder/**"
+        };
 
-    private static final String[] STORAGE_FOREMAN_ENDPOINTS = {
-            "/buyer/**", "/confirmationDocument/**", "/goods/**", "/invoice/**",
-            "/itemSales/**", "/payment/**", "/product/**", "/procurement/**",
-            "/rawMaterial/**", "/sales/**", "/salesOrder/**", "/storage/**",
-            "/supply/**", "/supplyitem/**", "/vendor/**", "/shift/**",
-            "/shiftReport/**", "/inventory/**", "/inventoryItems/**", "/shelf/**", "/driver/**", "/vehicle/**",
-            ",deliveryItem/**", "/logisticsProvider/**", "inboundDelivery/**", "outboundDelivery/**",
-            "shipment/**", "stockTransfer/**", "stockTransferItem/**", "/transportOrder/**"
-    };
+        private static final String[] STORAGE_FOREMAN_ENDPOINTS = {
+                        "/buyer/**", "/confirmationDocument/**", "/goods/**", "/invoice/**",
+                        "/itemSales/**", "/payment/**", "/product/**", "/procurement/**",
+                        "/rawMaterial/**", "/sales/**", "/salesOrder/**", "/storage/**",
+                        "/supply/**", "/supplyitem/**", "/vendor/**", "/shift/**",
+                        "/shiftReport/**", "/inventory/**", "/inventoryItems/**", "/shelf/**", "/driver/**",
+                        "/vehicle/**",
+                        ",deliveryItem/**", "/logisticsProvider/**", "inboundDelivery/**", "outboundDelivery/**",
+                        "shipment/**", "stockTransfer/**", "stockTransferItem/**", "/transportOrder/**"
+        };
 
-    @Override
-    public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(new StringToFileExtensionConverter());
-    }
+        @Override
+        public void addFormatters(FormatterRegistry registry) {
+                registry.addConverter(new StringToFileExtensionConverter());
+        }
 
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder);
-        return authProvider;
-    }
+        @Bean
+        public AuthenticationProvider authenticationProvider() {
+                DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+                authProvider.setUserDetailsService(userDetailsService);
+                authProvider.setPasswordEncoder(passwordEncoder);
+                return authProvider;
+        }
 
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+        @Bean
+        public AuthenticationManager authenticationManager(
+                        AuthenticationConfiguration authenticationConfiguration) throws Exception {
+                return authenticationConfiguration.getAuthenticationManager();
+        }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
-                .authenticationProvider(authenticationProvider())
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        // 🔓 Endpointi dostupni bez autentifikacije
-                        .requestMatchers("/auth/login", "/users/create-superadmin").permitAll()
-                        .requestMatchers("/auth/register").hasRole("ADMIN")
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .cors(Customizer.withDefaults())
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .authenticationProvider(authenticationProvider())
+                                .exceptionHandling(ex -> ex
+                                                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                                                .accessDeniedHandler(accessDeniedHandler))
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(auth -> auth
+                                                // 🔓 Endpointi dostupni bez autentifikacije
+                                                .requestMatchers("/auth/login", "/users/create-superadmin").permitAll()
+                                                .requestMatchers("/auth/register").hasRole("ADMIN")
 
-                        // 🔒 Pristup prema ulogama
-                        .requestMatchers("/admin/**", "/users/create-admin/**").hasRole("SUPERADMIN")
-                        .requestMatchers("/user/**", "/role/**", "/users/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/email/**").hasRole("ADMIN")
-                        .requestMatchers("/email/**").hasRole("SUPERADMIN")
-                        .requestMatchers("/companyEmail/**").hasRole("ADMIN")
-                        .requestMatchers("/email/**").hasRole("SUPERADMIN")
-                        .requestMatchers("/journalEntries/**", "/ledgerEntries/**", "/incomeStatements/**",
-                                "/fiscalYears/**", "/fiscalQuarters/**", "/balanceSheets/**",
-                                "/accounts/**", "/journalItems/**", "/taxRates/**")
-                        .hasAnyRole("ADMIN", "SUPERADMIN")
-                        .requestMatchers(STORAGE_EMPLOYEE_ENDPOINTS).hasRole("STORAGE_EMPLOYEE")
-                        .requestMatchers(STORAGE_FOREMAN_ENDPOINTS).hasRole("STORAGE_FOREMAN")
+                                                // 🔒 Pristup prema ulogama
+                                                .requestMatchers("/admin/**", "/users/create-admin/**")
+                                                .hasRole("SUPERADMIN")
+                                                .requestMatchers("/user/**", "/role/**", "/users/admin/**")
+                                                .hasRole("ADMIN")
+                                                .requestMatchers("/email/**").hasRole("ADMIN")
+                                                .requestMatchers("/email/**").hasRole("SUPERADMIN")
+                                                .requestMatchers("/companyEmail/**").hasRole("ADMIN")
+                                                .requestMatchers("/email/**").hasRole("SUPERADMIN")
+                                                .requestMatchers("/journalEntries/**", "/ledgerEntries/**",
+                                                                "/incomeStatements/**",
+                                                                "/fiscalYears/**", "/fiscalQuarters/**",
+                                                                "/balanceSheets/**",
+                                                                "/accounts/**", "/journalItems/**", "/taxRates/**")
+                                                .hasAnyRole("ADMIN", "SUPERADMIN")
+                                                .requestMatchers(STORAGE_EMPLOYEE_ENDPOINTS).hasRole("STORAGE_EMPLOYEE")
+                                                .requestMatchers(STORAGE_FOREMAN_ENDPOINTS).hasRole("STORAGE_FOREMAN")
 
-                        // ❗ Bilo koji drugi zahtev zahteva autentifikaciju
-                        .anyRequest().authenticated())
-                .logout(logout -> logout
-                        .logoutSuccessHandler(
-                                (request, response, authentication) -> response.setStatus(HttpServletResponse.SC_OK)));
-        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-        return http.build();
-    }
+                                                // ❗ Bilo koji drugi zahtev zahteva autentifikaciju
+                                                .anyRequest().authenticated())
+                                .logout(logout -> logout
+                                                .logoutSuccessHandler(
+                                                                (request, response, authentication) -> response
+                                                                                .setStatus(HttpServletResponse.SC_OK)));
+
+                http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                return http.build();
+        }
 }

@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,7 +74,7 @@ public class WorkCenterService implements IWorkCenterService {
     }
 
     @Override
-    public List<WorkCenterResponse> findByCapacity(Integer capacity) {
+    public List<WorkCenterResponse> findByCapacity(BigDecimal capacity) {
         return workCenterRepository.findByCapacity(capacity).stream()
                 .map(WorkCenterResponse::new)
                 .collect(Collectors.toList());
@@ -94,14 +95,14 @@ public class WorkCenterService implements IWorkCenterService {
     }
 
     @Override
-    public List<WorkCenterResponse> findByCapacityGreaterThan(Integer capacity) {
+    public List<WorkCenterResponse> findByCapacityGreaterThan(BigDecimal capacity) {
         return workCenterRepository.findByCapacityGreaterThan(capacity).stream()
                 .map(WorkCenterResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<WorkCenterResponse> findByCapacityLessThan(Integer capacity) {
+    public List<WorkCenterResponse> findByCapacityLessThan(BigDecimal capacity) {
         return workCenterRepository.findByCapacityLessThan(capacity).stream()
                 .map(WorkCenterResponse::new)
                 .collect(Collectors.toList());
@@ -122,7 +123,7 @@ public class WorkCenterService implements IWorkCenterService {
     }
 
     @Override
-    public List<WorkCenterResponse> findByCapacityBetween(Integer min, Integer max) {
+    public List<WorkCenterResponse> findByCapacityBetween(BigDecimal min, BigDecimal max) {
         return workCenterRepository.findByCapacityBetween(min, max).stream()
                 .map(WorkCenterResponse::new)
                 .collect(Collectors.toList());

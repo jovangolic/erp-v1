@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.response;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,9 @@ public class ProductResponse {
         // this.barCode = product.getBarCode();
         this.unitMeasure = product.getUnitMeasure();
         this.currentQuantity = product.getCurrentQuantity();
-        this.composition = product.getComposition().stream().map(RawMaterialResponse::new)
-                .collect(Collectors.toList());
+        this.composition = product.getComposition() == null ? new ArrayList<>()
+                : product.getComposition().stream()
+                        .map(RawMaterialResponse::new)
+                        .collect(Collectors.toList());
     }
 }

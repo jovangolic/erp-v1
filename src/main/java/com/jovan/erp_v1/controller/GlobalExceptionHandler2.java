@@ -116,7 +116,10 @@ public class GlobalExceptionHandler2 {
             JournalItemErrorException.class,
             WorkCenterErrorException.class,
             MaterialNotFoundException.class,
-            DuplicateCodeException.class
+            DuplicateCodeException.class,
+            ProductionOrderErrorException.class,
+            CapacityPlanningErrorException.class,
+            ShiftPlanningErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

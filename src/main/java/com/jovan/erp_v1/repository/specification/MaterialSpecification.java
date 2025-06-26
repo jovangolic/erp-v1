@@ -1,8 +1,9 @@
-package com.jovan.erp_v1.model;
+package com.jovan.erp_v1.repository.specification;
 
 import org.springframework.data.jpa.domain.Specification;
 
 import com.jovan.erp_v1.enumeration.UnitOfMeasure;
+import com.jovan.erp_v1.model.Material;
 
 import java.math.BigDecimal;
 

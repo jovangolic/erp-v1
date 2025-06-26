@@ -32,36 +32,42 @@ public class MaterialController {
 
     private final IMaterialService materialService;
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER')")
     @PostMapping("/create/new-material")
     public ResponseEntity<MaterialResponse> create(@Valid @RequestBody MaterialRequest request) {
         MaterialResponse response = materialService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER')")
     @PutMapping("/update/{id}")
     public ResponseEntity<MaterialResponse> update(@PathVariable Long id, @Valid @RequestBody MaterialRequest request) {
         MaterialResponse response = materialService.update(id, request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         materialService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/find-one/{id}")
     public ResponseEntity<MaterialResponse> findOne(@PathVariable Long id) {
         MaterialResponse response = materialService.findOne(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/find-all")
     public ResponseEntity<List<MaterialResponse>> findAll() {
         List<MaterialResponse> responses = materialService.findAll();
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/search")
     public ResponseEntity<List<MaterialResponse>> searchMaterials(
             @RequestParam(required = false) String name,
@@ -76,24 +82,28 @@ public class MaterialController {
         return ResponseEntity.ok(result);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/storage/{storageId}")
     public ResponseEntity<List<MaterialResponse>> findByStorage_Id(@PathVariable Long storageId) {
         List<MaterialResponse> responses = materialService.findByStorage_Id(storageId);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/by-code")
     public ResponseEntity<List<MaterialResponse>> findByCode(@RequestParam("code") String code) {
         List<MaterialResponse> responses = materialService.findByCode(code);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/search-by-name")
     public ResponseEntity<List<MaterialResponse>> findByNameContainingIgnoreCase(@RequestParam("name") String name) {
         List<MaterialResponse> responses = materialService.findByNameContainingIgnoreCase(name);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/by-name-code")
     public ResponseEntity<List<MaterialResponse>> search(@RequestParam("name") String name,
             @RequestParam("code") String code) {
@@ -101,30 +111,35 @@ public class MaterialController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/by-unit")
     public ResponseEntity<List<MaterialResponse>> findByUnit(@RequestParam("unit") UnitOfMeasure unit) {
         List<MaterialResponse> responses = materialService.findByUnit(unit);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/by-storageName")
     public ResponseEntity<List<MaterialResponse>> findByStorage_Name(@RequestParam("storageName") String storageName) {
         List<MaterialResponse> responses = materialService.findByStorage_Name(storageName);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/by-storageCapacity")
     public ResponseEntity<List<MaterialResponse>> findByStorage_Capacity(@RequestParam("capacity") Double capacity) {
         List<MaterialResponse> responses = materialService.findByStorage_Capacity(capacity);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/by-storageType")
     public ResponseEntity<List<MaterialResponse>> findByStorage_Type(@RequestParam("type") StorageType type) {
         List<MaterialResponse> responses = materialService.findByStorage_Type(type);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/by-currentStock")
     public ResponseEntity<List<MaterialResponse>> findByCurrentStock(
             @RequestParam("currentStock") BigDecimal currentStock) {
@@ -132,6 +147,7 @@ public class MaterialController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/by-reorderLevel")
     public ResponseEntity<List<MaterialResponse>> findByReorderLevel(
             @RequestParam("reorderLevel") BigDecimal reorderLevel) {

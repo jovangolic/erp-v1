@@ -16,8 +16,8 @@ import com.jovan.erp_v1.exception.MaterialNotFoundException;
 import com.jovan.erp_v1.exception.ResourceNotFoundException;
 import com.jovan.erp_v1.mapper.MaterialMapper;
 import com.jovan.erp_v1.model.Material;
-import com.jovan.erp_v1.model.MaterialSpecification;
 import com.jovan.erp_v1.repository.MaterialRepository;
+import com.jovan.erp_v1.repository.specification.MaterialSpecification;
 import com.jovan.erp_v1.request.MaterialRequest;
 import com.jovan.erp_v1.response.MaterialResponse;
 

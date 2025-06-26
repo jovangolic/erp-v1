@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,5 +27,5 @@ public class WorkCenter {
     private String location;
 
     @Column
-    private Integer capacity;
+    private BigDecimal capacity;
 }
