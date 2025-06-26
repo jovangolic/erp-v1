@@ -37,7 +37,7 @@ public class MaterialRequest {
     private Material material;
 
     @Column
-    private Integer quantity;
+    private BigDecimal quantity;
 
     @Column
     private LocalDate requestDate;

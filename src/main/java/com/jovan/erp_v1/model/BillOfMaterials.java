@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -31,5 +33,5 @@ public class BillOfMaterials {
     private Product component;
 
     @Column
-    private Integer quantity;
+    private BigDecimal quantity;
 }
