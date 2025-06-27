@@ -34,9 +34,9 @@ public interface MaterialMovementRepository extends JpaRepository<MaterialMoveme
 
     List<MaterialMovement> findByToStorage_LocationContainingIgnoreCase(String toStorageLocation);
 
-    List<MaterialMovement> findByFromStorage_Capacity(Double capacity);
+    List<MaterialMovement> findByFromStorage_Capacity(BigDecimal capacity);
 
-    List<MaterialMovement> findByToStorage_Capacity(Double capacity);
+    List<MaterialMovement> findByToStorage_Capacity(BigDecimal capacity);
 
     List<MaterialMovement> findByMovementDate(LocalDate movementDate);
 

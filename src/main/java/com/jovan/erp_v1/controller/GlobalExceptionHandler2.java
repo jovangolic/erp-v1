@@ -120,7 +120,10 @@ public class GlobalExceptionHandler2 {
             ProductionOrderErrorException.class,
             CapacityPlanningErrorException.class,
             ShiftPlanningErrorException.class,
-            BillOfMaterialsErrorException.class
+            BillOfMaterialsErrorException.class,
+            MaterialMovementNotFoundException.class,
+            MaterialRequestObjectErrorException.class,
+            MaterialRequirementErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

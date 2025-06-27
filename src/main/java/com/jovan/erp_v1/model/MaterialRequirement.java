@@ -46,4 +46,7 @@ public class MaterialRequirement {
     @Column
     @Enumerated(EnumType.STRING)
     private MaterialRequestStatus status;
+
+    @Column(nullable = false)
+    private BigDecimal shortage;
 }

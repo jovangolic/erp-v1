@@ -3,7 +3,8 @@ package com.jovan.erp_v1.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import com.jovan.erp_v1.enumeration.MaterialRequestStatus;
+import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
+import com.jovan.erp_v1.enumeration.TransactionType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,30 +23,40 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MaterialRequest {
+public class MaterialTransaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "work_center_id")
-    private WorkCenter requestingWorkCenter;
-
-    @ManyToOne
     @JoinColumn(name = "material_id")
     private Material material;
 
-    @Column
+    @Column(nullable = false)
     private BigDecimal quantity;
 
-    @Column
-    private LocalDate requestDate;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionType type;
+
+    @Column(nullable = false)
+    private LocalDate transactionDate;
 
     @Column
-    private LocalDate neededBy;
+    private String supplierName;
+
+    @Column
+    private String documentReference;
+
+    @Column
+    private String notes;
 
     @Enumerated(EnumType.STRING)
     @Column
-    private MaterialRequestStatus status;
+    private MaterialTransactionStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by_user_id")
+    private User createdByUser;
 }
