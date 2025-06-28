@@ -123,7 +123,8 @@ public class GlobalExceptionHandler2 {
             BillOfMaterialsErrorException.class,
             MaterialMovementNotFoundException.class,
             MaterialRequestObjectErrorException.class,
-            MaterialRequirementErrorException.class
+            MaterialRequirementErrorException.class,
+            MaterialTransactionErrorException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

@@ -113,8 +113,8 @@ public class ShiftPlanningService implements IShiftPlanningService {
     }
 
     @Override
-    public List<ShiftPlanningResponse> findByEmployee_FirstNameAndLastName(String firstName, String lastName) {
-        return shiftPlanningRepository.findByEmployee_FirstNameAndLastName(firstName, lastName).stream()
+    public List<ShiftPlanningResponse> findByEmployeeFirstAndLastName(String firstName, String lastName) {
+        return shiftPlanningRepository.findByEmployeeFirstAndLastName(firstName, lastName).stream()
                 .map(ShiftPlanningResponse::new)
                 .collect(Collectors.toList());
     }

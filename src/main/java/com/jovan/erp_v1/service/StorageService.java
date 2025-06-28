@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -82,7 +83,7 @@ public class StorageService implements IStorageService {
 	}
 
 	@Override
-	public List<StorageResponse> getByCapacity(Double capacity) {
+	public List<StorageResponse> getByCapacity(BigDecimal capacity) {
 		return storageRepository.findByCapacity(capacity).stream()
 				.map(storageMapper::toResponse)
 				.collect(Collectors.toList());

@@ -12,7 +12,7 @@ import com.jovan.erp_v1.repository.EmailSettingRepository;
 
 import lombok.RequiredArgsConstructor;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @RequiredArgsConstructor
 public class EmailConfig {
 

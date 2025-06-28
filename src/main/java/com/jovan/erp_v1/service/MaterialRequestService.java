@@ -158,7 +158,7 @@ public class MaterialRequestService implements IMaterialRequestService {
         if (code == null || code.trim().isEmpty()) {
             throw new IllegalArgumentException("Kod ne sme biti prazan ili null");
         }
-        boolean exists = materialRequestRepository.existsByCodeIgnoreCase(code);
+        boolean exists = materialRequestRepository.existsByMaterial_CodeIgnoreCase(code);
         if (!exists) {
             return Collections.emptyList();
         }

@@ -8,7 +8,7 @@ import com.jovan.erp_v1.model.LogisticsProvider;
 import com.jovan.erp_v1.request.LogisticsProviderRequest;
 import com.jovan.erp_v1.response.LogisticsProviderResponse;
 
-@Mapper(componentModel = "Spring")
+@Mapper(componentModel = "spring")
 public interface LogisticsProviderMapper {
 
     public LogisticsProvider toEntity(LogisticsProviderRequest request);

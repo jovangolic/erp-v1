@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.request.WorkCenterRequest;
 import com.jovan.erp_v1.response.WorkCenterResponse;
 import com.jovan.erp_v1.service.IWorkCenterService;
@@ -139,6 +140,63 @@ public class WorkCenterController {
     public ResponseEntity<List<WorkCenterResponse>> findByLocationOrderByCapacityDesc(
             @RequestParam("location") String location) {
         List<WorkCenterResponse> responses = workCenterService.findByLocationOrderByCapacityDesc(location);
+        return ResponseEntity.ok(responses);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/localStorage/{localStorageId}")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocalStorage_Id(@PathVariable Long localStorageId) {
+        List<WorkCenterResponse> responses = workCenterService.findByLocalStorage_Id(localStorageId);
+        return ResponseEntity.ok(responses);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/by-localStorageName")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocalStorage_NameContainingIgnoreCase(
+            @RequestParam("localStorageName") String localStorageName) {
+        List<WorkCenterResponse> responses = workCenterService
+                .findByLocalStorage_NameContainingIgnoreCase(localStorageName);
+        return ResponseEntity.ok(responses);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/by-localStorageLocation")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocalStorage_LocationContainingIgnoreCase(
+            @RequestParam("localStorageLocation") String localStorageLocation) {
+        List<WorkCenterResponse> responses = workCenterService
+                .findByLocalStorage_LocationContainingIgnoreCase(localStorageLocation);
+        return ResponseEntity.ok(responses);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/localStorage-capacity")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocalStorage_Capacity(
+            @RequestParam("capacity") BigDecimal capacity) {
+        List<WorkCenterResponse> responses = workCenterService.findByLocalStorage_Capacity(capacity);
+        return ResponseEntity.ok(responses);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/localStorage-capacity-less-than")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocalStorage_CapacityLessThan(
+            @RequestParam("capacity") BigDecimal capacity) {
+        List<WorkCenterResponse> responses = workCenterService.findByLocalStorage_CapacityLessThan(capacity);
+        return ResponseEntity.ok(responses);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/localStorage-capacity-greater-than")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocalStorage_CapacityGreaterThan(
+            @RequestParam("capacity") BigDecimal capacity) {
+        List<WorkCenterResponse> responses = workCenterService.findByLocalStorage_CapacityGreaterThan(capacity);
+        return ResponseEntity.ok(responses);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/localStorage-type")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocalStorage_Type(
+            @RequestParam("localStorageType") StorageType localStorageType) {
+        List<WorkCenterResponse> responses = workCenterService.findByLocalStorage_Type(localStorageType);
         return ResponseEntity.ok(responses);
     }
 }

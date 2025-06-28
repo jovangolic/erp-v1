@@ -51,6 +51,6 @@ public interface ProductionOrderRepository
 
     List<ProductionOrder> findByStartDateGreaterThanEqual(LocalDate startDate);
 
-    @Query("SELECT p FROM ProductionOrder WHERE p.startDate >= :startDate")
+    @Query("SELECT p FROM ProductionOrder p WHERE p.startDate >= :startDate")
     List<ProductionOrder> findOrdersWithStartDateAfterOrEqual(@Param("startDate") LocalDate startDate);
 };

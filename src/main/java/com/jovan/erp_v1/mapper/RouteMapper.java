@@ -8,7 +8,7 @@ import com.jovan.erp_v1.model.Route;
 import com.jovan.erp_v1.request.RouteRequest;
 import com.jovan.erp_v1.response.RouteResponse;
 
-@Mapper(componentModel = "Spring")
+@Mapper(componentModel = "spring")
 public interface RouteMapper {
 
     public Route toEntity(RouteRequest request);

@@ -8,7 +8,7 @@ import com.jovan.erp_v1.model.Driver;
 import com.jovan.erp_v1.request.DriverRequest;
 import com.jovan.erp_v1.response.DriverResponse;
 
-@Mapper(componentModel = "Spring")
+@Mapper(componentModel = "spring")
 public interface DriverMapper {
 
     public Driver toEntity(DriverRequest request);

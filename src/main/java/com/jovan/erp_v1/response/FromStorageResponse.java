@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.response;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,7 +19,7 @@ public class FromStorageResponse {
     private Long id;
     private String name;
     private String location;
-    private Double capacity;
+    private BigDecimal capacity;
     private StorageType type;
     private List<GoodsResponse> goods;
     private List<ShelfResponse> shelves;

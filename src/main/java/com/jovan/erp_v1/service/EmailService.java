@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -132,5 +133,14 @@ public class EmailService implements IEmailService {
         // Snimanje korisnika u bazu, npr. userRepository.save(...)
         return sendEmail(email, "Dobrodošli u ERP", "Vaš nalog je kreiran sa rolom: " + role.name())
                 .thenApply(v -> email); // vraća email nakon što se završi slanje
+    }
+
+    public void sendSimpleMail(String to, String subject, String body) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("torbicadraganjove910@gmail.com"); // možeš iz `MailProperties`
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(body);
+        mailSender.send(message);
     }
 }

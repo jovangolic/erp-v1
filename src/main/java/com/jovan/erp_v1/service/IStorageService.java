@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.request.StorageRequest;
@@ -21,7 +22,7 @@ public interface IStorageService {
 
     List<StorageResponse> getByLocation(String location);
 
-    List<StorageResponse> getByCapacity(Double capacity);
+    List<StorageResponse> getByCapacity(BigDecimal capacity);
 
     List<StorageResponse> getByNameAndLocation(String name, String location);
 

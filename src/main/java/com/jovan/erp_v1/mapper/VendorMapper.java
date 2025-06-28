@@ -3,7 +3,7 @@ package com.jovan.erp_v1.mapper;
 import java.util.List;
 
 import org.mapstruct.Mapper;
-
+import org.mapstruct.Mapping;
 import com.jovan.erp_v1.model.Vendor;
 import com.jovan.erp_v1.request.VendorRequest;
 import com.jovan.erp_v1.response.VendorResponse;
@@ -12,9 +12,10 @@ import com.jovan.erp_v1.response.VendorResponse;
  * Converting between DTO and Entities
  */
 
-@Mapper(componentModel = "Spring")
+@Mapper(componentModel = "spring")
 public interface VendorMapper {
 
+    @Mapping(target = "materialTransactions", ignore = true)
     Vendor toEntity(VendorRequest request);
 
     VendorResponse toResponse(Vendor vendor);

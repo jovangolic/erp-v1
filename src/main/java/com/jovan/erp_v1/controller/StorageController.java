@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -83,7 +84,7 @@ public class StorageController {
 	}
 
 	@GetMapping("/storage/by-capacity")
-	public ResponseEntity<List<StorageResponse>> getByStorageCapacity(@RequestParam("capacity") Double capacity) {
+	public ResponseEntity<List<StorageResponse>> getByStorageCapacity(@RequestParam("capacity") BigDecimal capacity) {
 		List<StorageResponse> responses = storageService.getByCapacity(capacity);
 		return ResponseEntity.ok(responses);
 	}

@@ -27,7 +27,9 @@ public interface ShiftPlanningRepository extends JpaRepository<ShiftPlanning, Lo
 
     List<ShiftPlanning> findByEmployee_UsernameContainingIgnoreCase(String username);
 
-    List<ShiftPlanning> findByEmployee_FirstNameAndLastName(String firstName, String lastName);
+    @Query("SELECT s FROM ShiftPlanning s WHERE s.employee.firstName = :firstName AND s.employee.lastName = :lastName")
+    List<ShiftPlanning> findByEmployeeFirstAndLastName(@Param("firstName") String firstName,
+            @Param("lastName") String lastName);
 
     List<ShiftPlanning> findByEmployee_PhoneNumber(String phoneNumber);
 
@@ -37,7 +39,7 @@ public interface ShiftPlanningRepository extends JpaRepository<ShiftPlanning, Lo
 
     List<ShiftPlanning> findByDateGreaterThanEqual(LocalDate date);
 
-    @Query("SELECT sp FROM ShiftPlanning WHERE sp.date >= :date")
+    @Query("SELECT sp FROM ShiftPlanning sp WHERE sp.date >= :date")
     List<ShiftPlanning> findOrdersWithStartDateAfterOrEqual(@Param("date") LocalDate date);
 
     List<ShiftPlanning> findByShiftType(ShiftType shiftType);

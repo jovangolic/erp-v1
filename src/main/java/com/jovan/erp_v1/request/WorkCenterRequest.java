@@ -7,11 +7,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record WorkCenterRequest(
-                Long id,
+        Long id,
 
-                @NotBlank String name,
+        @NotBlank String name,
 
-                @NotBlank String location,
+        @NotBlank String location,
 
-                @NotNull @Positive BigDecimal capacity) {
+        @NotNull @Positive BigDecimal capacity,
+        @NotNull Long localStorageId) {
 }

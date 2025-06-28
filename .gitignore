@@ -36,3 +36,6 @@ build/
 
 # Ignoriši development konfiguraciju
 src/main/resources/application-dev.properties
+
+# .gitignore
+application.yml

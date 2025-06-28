@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.request;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.jovan.erp_v1.enumeration.StorageType;
@@ -15,7 +16,7 @@ public record StorageRequest(
 
 		@NotBlank(message = "Lokacija je obavezna") String location,
 
-		@NotNull(message = "Kapacitet je obavezan") @Positive(message = "Kapacitet mora biti pozitivan broj") Double capacity,
+		@NotNull(message = "Kapacitet je obavezan") @Positive(message = "Kapacitet mora biti pozitivan broj") BigDecimal capacity,
 
 		@NotNull(message = "Tip skladišta je obavezan") StorageType type,
 

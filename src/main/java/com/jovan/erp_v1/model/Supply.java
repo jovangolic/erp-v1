@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,16 +25,16 @@ public class Supply {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@OneToMany(mappedBy = "supply", cascade = CascadeType.ALL)
 	private List<Goods> goods;
-	
+
 	@ManyToOne
 	private Storage storage;
-	
+
 	@Column
-	private Integer quantity;
-	
+	private BigDecimal quantity;
+
 	@Column
 	private LocalDateTime updates;
 }

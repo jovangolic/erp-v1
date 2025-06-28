@@ -43,8 +43,9 @@ public class MaterialTransaction {
     @Column(nullable = false)
     private LocalDate transactionDate;
 
-    @Column
-    private String supplierName;
+    @ManyToOne
+    @JoinColumn(name = "vendor_id", nullable = false)
+    private Vendor vendor;
 
     @Column
     private String documentReference;

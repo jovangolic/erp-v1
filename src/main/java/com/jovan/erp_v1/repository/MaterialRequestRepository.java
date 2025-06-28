@@ -66,5 +66,5 @@ public interface MaterialRequestRepository extends JpaRepository<MaterialRequest
 
     List<MaterialRequest> findByNeededByBetween(LocalDate startDate, LocalDate endDate);
 
-    boolean existsByCodeIgnoreCase(String code);
+    boolean existsByMaterial_CodeIgnoreCase(String code);
 }

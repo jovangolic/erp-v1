@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -109,7 +110,7 @@ public class SupplyService implements ISupplyService {
 	}
 
 	@Override
-	public List<SupplyResponse> getBySuppliesWithMinQuantity(Integer minQuantity) {
+	public List<SupplyResponse> getBySuppliesWithMinQuantity(BigDecimal minQuantity) {
 		return supplyRepository.findSuppliesWithMinQuantity(minQuantity).stream()
 				.map(supplyMapper::toResponse)
 				.collect(Collectors.toList());

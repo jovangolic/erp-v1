@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public class Storage {
 	private String location;
 
 	@Column
-	private Double capacity;
+	private BigDecimal capacity;
 
 	@Enumerated(EnumType.STRING)
 	@Column

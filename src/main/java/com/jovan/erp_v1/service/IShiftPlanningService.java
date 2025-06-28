@@ -31,7 +31,7 @@ public interface IShiftPlanningService {
 
     List<ShiftPlanningResponse> findByEmployee_UsernameContainingIgnoreCase(String username);
 
-    List<ShiftPlanningResponse> findByEmployee_FirstNameAndLastName(String firstName, String lastName);
+    List<ShiftPlanningResponse> findByEmployeeFirstAndLastName(String firstName, String lastName);
 
     List<ShiftPlanningResponse> findByEmployee_PhoneNumber(String phoneNumber);
 

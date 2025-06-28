@@ -195,10 +195,10 @@ public class ShiftPlanningController {
     }
 
     @GetMapping("/by-employee-firstLastName")
-    public ResponseEntity<List<ShiftPlanningResponse>> findByEmployee_FirstNameAndLastName(
+    public ResponseEntity<List<ShiftPlanningResponse>> findByEmployeeFirstAndLastName(
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName) {
-        List<ShiftPlanningResponse> response = shiftPlanningService.findByEmployee_FirstNameAndLastName(firstName,
+        List<ShiftPlanningResponse> response = shiftPlanningService.findByEmployeeFirstAndLastName(firstName,
                 lastName);
         return ResponseEntity.ok(response);
     }
