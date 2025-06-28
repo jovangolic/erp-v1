@@ -57,7 +57,7 @@ public interface MaterialTransactionRepository extends JpaRepository<MaterialTra
 
         List<MaterialTransaction> findByVendor_EmailContainingIgnoreCase(String vendorEmail);
 
-        List<MaterialTransaction> findByVendor_Phone(String vendorPhone);
+        List<MaterialTransaction> findByVendor_PhoneNumber(String vendorPhone);
 
         List<MaterialTransaction> findByVendor_AddressContainingIgnoreCase(String vendorAddress);
 
@@ -69,8 +69,8 @@ public interface MaterialTransactionRepository extends JpaRepository<MaterialTra
 
         List<MaterialTransaction> findByCreatedByUser_Id(Long userId);
 
-        List<MaterialTransaction> findByCreatedByUser_FirstNameAndLastNameContainingIgnoreCase(String userFirstName,
-                        String userLastName);
+        List<MaterialTransaction> findByCreatedByUser_FirstNameContainingIgnoreCaseAndCreatedByUser_LastNameContainingIgnoreCase(
+                        String userFirstName, String userLastName);
 
         List<MaterialTransaction> findByCreatedByUser_EmailContainingIgnoreCase(String userEmail);
 }

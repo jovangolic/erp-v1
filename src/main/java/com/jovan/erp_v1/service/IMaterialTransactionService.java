@@ -61,7 +61,7 @@ public interface IMaterialTransactionService {
 
         List<MaterialTransactionResponse> findByVendor_EmailContainingIgnoreCase(String vendorEmail);
 
-        List<MaterialTransactionResponse> findByVendor_Phone(String vendorPhone);
+        List<MaterialTransactionResponse> findByVendor_PhoneNumber(String vendorPhone);
 
         List<MaterialTransactionResponse> findByVendor_AddressContainingIgnoreCase(String vendorAddress);
 
@@ -73,9 +73,8 @@ public interface IMaterialTransactionService {
 
         List<MaterialTransactionResponse> findByCreatedByUser_Id(Long userId);
 
-        List<MaterialTransactionResponse> findByCreatedByUser_FirstNameAndLastNameContainingIgnoreCase(
-                        String userFirstName,
-                        String userLastName);
+        List<MaterialTransactionResponse> findByCreatedByUser_FirstNameContainingIgnoreCaseAndCreatedByUser_LastNameContainingIgnoreCase(
+                        String userFirstName, String userLastName);
 
         List<MaterialTransactionResponse> findByCreatedByUser_EmailContainingIgnoreCase(String userEmail);
 }

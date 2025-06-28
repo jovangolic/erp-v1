@@ -189,7 +189,7 @@ public class MaterialMovementController {
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
-    @GetMapping("/by-movementDate")
+    @GetMapping("/by-movementDate-after-equal")
     public ResponseEntity<List<MaterialMovementResponse>> findByMovementDateAfterOrEqual(
             @RequestParam("movementDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate movementDate) {
         List<MaterialMovementResponse> responses = materialMovementService.findByMovementDateAfterOrEqual(movementDate);

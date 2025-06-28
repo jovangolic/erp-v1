@@ -78,7 +78,7 @@ public class BillOfMaterialsController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PRODUCTION_PLANNER', 'QUALITY_MANAGER','INVENTORY_MANAGER')")
-    @GetMapping("/find-all")
+    @GetMapping("/quantity-greater-than")
     public ResponseEntity<List<BillOfMaterialsResponse>> findByQuantityGreaterThan(
             @RequestParam("quantity") BigDecimal quantity) {
         List<BillOfMaterialsResponse> responses = billOfMaterialsService.findByQuantityGreaterThan(quantity);
@@ -86,14 +86,14 @@ public class BillOfMaterialsController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PRODUCTION_PLANNER', 'QUALITY_MANAGER','INVENTORY_MANAGER')")
-    @GetMapping("/find-all")
+    @GetMapping("/by-quantity")
     public ResponseEntity<List<BillOfMaterialsResponse>> findByQuantity(@RequestParam("quantity") BigDecimal quantity) {
         List<BillOfMaterialsResponse> responses = billOfMaterialsService.findByQuantity(quantity);
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PRODUCTION_PLANNER', 'QUALITY_MANAGER','INVENTORY_MANAGER')")
-    @GetMapping("/find-all")
+    @GetMapping("/quantity-less-than")
     public ResponseEntity<List<BillOfMaterialsResponse>> findByQuantityLessThan(
             @RequestParam("quantity") BigDecimal quantity) {
         List<BillOfMaterialsResponse> responses = billOfMaterialsService.findByQuantityLessThan(quantity);

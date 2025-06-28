@@ -67,30 +67,32 @@ public class EmailConfig {
      * }
      */
 
-    @Bean
-    public JavaMailSender javaMailSender() {
-        EmailSetting setting = emailSettingRepository.findTopByOrderByIdDesc()
-                .orElseGet(() -> {
-                    EmailSetting defaultSetting = new EmailSetting();
-                    defaultSetting.setSmtpServer("smtp.gmail.com");
-                    defaultSetting.setSmtpPort("587");
-                    defaultSetting.setFromEmail("torbicadraganjove910@gmail.com");
-                    defaultSetting.setFromName("ERP Admin");
-                    defaultSetting.setEmailPassword("zmxfytsioyzubfqw");
-                    defaultSetting.setCreatedBy("system");
-                    return emailSettingRepository.save(defaultSetting);
-                });
-
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost(setting.getSmtpServer());
-        mailSender.setPort(Integer.parseInt(setting.getSmtpPort()));
-        mailSender.setUsername(setting.getFromEmail());
-        mailSender.setPassword(setting.getEmailPassword());
-
-        Properties props = mailSender.getJavaMailProperties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-
-        return mailSender;
-    }
+    /*
+     * @Bean
+     * public JavaMailSender javaMailSender() {
+     * EmailSetting setting = emailSettingRepository.findTopByOrderByIdDesc()
+     * .orElseGet(() -> {
+     * EmailSetting defaultSetting = new EmailSetting();
+     * defaultSetting.setSmtpServer("smtp.gmail.com");
+     * defaultSetting.setSmtpPort("587");
+     * defaultSetting.setFromEmail("torbicadraganjove910@gmail.com");
+     * defaultSetting.setFromName("ERP Admin");
+     * defaultSetting.setEmailPassword("zmxfytsioyzubfqw");
+     * defaultSetting.setCreatedBy("system");
+     * return emailSettingRepository.save(defaultSetting);
+     * });
+     * 
+     * JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+     * mailSender.setHost(setting.getSmtpServer());
+     * mailSender.setPort(Integer.parseInt(setting.getSmtpPort()));
+     * mailSender.setUsername(setting.getFromEmail());
+     * mailSender.setPassword(setting.getEmailPassword());
+     * 
+     * Properties props = mailSender.getJavaMailProperties();
+     * props.put("mail.smtp.auth", "true");
+     * props.put("mail.smtp.starttls.enable", "true");
+     * 
+     * return mailSender;
+     * }
+     */
 }

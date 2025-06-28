@@ -13,7 +13,9 @@ import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
 import com.jovan.erp_v1.service.IMaterialTransactionService;
 import com.jovan.erp_v1.exception.MaterialTransactionErrorException;
 import com.jovan.erp_v1.repository.MaterialTransactionRepository;
-
+import com.jovan.erp_v1.repository.VendorRepository;
+import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
+import com.jovan.erp_v1.repository.MaterialRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,11 +24,12 @@ public class MaterialTransactionService implements IMaterialTransactionService {
 
     private final MaterialTransactionRepository materialTransactionRepository;
     private final VendorRepository vendorRepository;
+    private final MaterialRepository materialRepository;
 
     @Transactional
     @Override
     public MaterialTransactionResponse create(MaterialTransactionRequest request) {
-
+        validateMaterialId(request.materialId());
         return null;
     }
 
@@ -152,7 +155,7 @@ public class MaterialTransactionService implements IMaterialTransactionService {
     }
 
     @Override
-    public List<MaterialTransactionResponse> findByVendor_Phone(String vendorPhone) {
+    public List<MaterialTransactionResponse> findByVendor_PhoneNumber(String vendorPhone) {
         return null;
     }
 
@@ -182,9 +185,8 @@ public class MaterialTransactionService implements IMaterialTransactionService {
     }
 
     @Override
-    public List<MaterialTransactionResponse> findByCreatedByUser_FirstNameAndLastNameContainingIgnoreCase(
-            String userFirstName,
-            String userLastName) {
+    public List<MaterialTransactionResponse> findByCreatedByUser_FirstNameContainingIgnoreCaseAndCreatedByUser_LastNameContainingIgnoreCase(
+            String userFirstName, String userLastName) {
         return null;
     }
 
@@ -206,7 +208,7 @@ public class MaterialTransactionService implements IMaterialTransactionService {
     }
 
     private void validateVendorId(Long vendorId) {
-        if (!vendorRepository_1.existsById(vendorId)) {
+        if (!vendorRepository.existsById(vendorId)) {
             throw new IllegalArgumentException("Vendor sa ID " + vendorId + " ne postoji.");
         }
     }
