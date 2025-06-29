@@ -99,7 +99,7 @@ public class Storage {
 	 * }
 	 */
 
-	public void addGoods(Goods good, String scannedBy) {
+	public void addGoods(Goods good, User scannedBy) {
 		if (goods == null) {
 			goods = new ArrayList<>();
 		}

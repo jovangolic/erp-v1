@@ -31,8 +31,9 @@ public class BarCode {
 	@Column(nullable = false)
 	private LocalDateTime scannedAt;
 	
-	@Column
-	private String scannedBy;
+	@ManyToOne
+	@JoinColumn(name = "scanned_by_user_id")
+	private User scannedBy;
 	
 	@ManyToOne
 	@JoinColumn(name="goods_id")

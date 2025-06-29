@@ -71,6 +71,10 @@ public class User {
 	@OneToMany(mappedBy = "storageForeman")
 	@Builder.Default
 	private Set<Inventory> foremanInventories = new HashSet<>();
+	
+	@OneToMany(mappedBy = "scannedBy",fetch = FetchType.LAZY)
+	@Builder.Default
+	private Set<BarCode> scannedBarCodes = new HashSet<>();
 
 	public User() {
 		this.roles = new HashSet<>();

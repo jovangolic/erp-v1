@@ -35,5 +35,4 @@ public record RawMaterialRequest(
 		Long productId,
 
 		List<@Valid BarCodeRequest> barCodes) {
-
 }

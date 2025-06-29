@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.util;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.IllegalFormatFlagsException;
 
 public class DateValidator {
@@ -43,6 +44,48 @@ public class DateValidator {
             throw new IllegalArgumentException(fieldName + " ne sme biti prazan.");
         }
         if (date.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException(fieldName + " mora biti danas ili u budućnosti.");
+        }
+    }
+    
+    public static void validateNotNull(LocalDateTime dateTime, String fieldName) {
+        if (dateTime == null) {
+            throw new IllegalArgumentException(fieldName + " ne sme biti prazan.");
+        }
+    }
+
+    public static void validateNotInFuture(LocalDateTime dateTime, String fieldName) {
+        if (dateTime == null) {
+            throw new IllegalArgumentException(fieldName + " ne sme biti prazan.");
+        }
+        if (dateTime.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException(fieldName + " ne sme biti u budućnosti.");
+        }
+    }
+
+    public static void validateRange(LocalDateTime start, LocalDateTime end) {
+        if (start == null || end == null) {
+            throw new IllegalArgumentException("Start i End datumi ne smeju biti null");
+        }
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Početni datum ne može biti posle krajnjeg datuma.");
+        }
+    }
+
+    public static void validatePastOrPresent(LocalDateTime dateTime, String fieldName) {
+        if (dateTime == null) {
+            throw new IllegalArgumentException(fieldName + " ne sme biti prazan.");
+        }
+        if (dateTime.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException(fieldName + " ne sme biti u budućnosti.");
+        }
+    }
+
+    public static void validateFutureOrPresent(LocalDateTime dateTime, String fieldName) {
+        if (dateTime == null) {
+            throw new IllegalArgumentException(fieldName + " ne sme biti prazan.");
+        }
+        if (dateTime.isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException(fieldName + " mora biti danas ili u budućnosti.");
         }
     }

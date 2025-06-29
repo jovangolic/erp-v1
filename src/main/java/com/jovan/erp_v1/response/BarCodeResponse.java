@@ -19,7 +19,7 @@ public class BarCodeResponse {
 	private Long id;
 	private String code;
 	private LocalDateTime scannedAt;
-	private String scannedBy;
+	private UserResponse scannedBy;
 	private Long goodsId;
     private String goodsName;
     private GoodsType goodsType;
@@ -28,10 +28,9 @@ public class BarCodeResponse {
 		this.id = code.getId();
 		this.code = code.getCode();
 		this.scannedAt = code.getScannedAt();
-		this.scannedBy = code.getScannedBy();
+		this.scannedBy = code.getScannedBy() != null ? new UserResponse(code.getScannedBy()) : null;
 		this.goodsId = code.getGoods().getId();
 		this.goodsName = code.getGoods().getName();
 		this.goodsType = code.getGoods().getGoodsType();
 	}
-	
 }

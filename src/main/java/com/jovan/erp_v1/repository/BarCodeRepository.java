@@ -15,11 +15,14 @@ public interface BarCodeRepository extends JpaRepository<BarCode, Long> {
 
 	Optional<BarCode> findByCode(String code);
 
-    List<BarCode> findByGoods(Goods goods);
+    List<BarCode> findByGoods_Id(Long goodsId);
+    List<BarCode> findByGoods_Name(String goodsName);
 
     boolean existsByCode(String code);
-	
-    List<BarCode> findByScannedBy(String scannedBy);
 
     List<BarCode> findByScannedAtBetween(LocalDateTime from, LocalDateTime to);
+    List<BarCode> findByScannedBy_Id(Long scannedById);
+    List<BarCode> findByScannedBy_FirstNameContainingIgnoreCaseAndScannedBy_LastNameContainingIgnoreCase(
+            String userFirstName, String userLastName);
+    
 }

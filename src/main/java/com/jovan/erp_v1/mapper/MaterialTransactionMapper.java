@@ -19,6 +19,7 @@ import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.repository.VendorRepository;
 import com.jovan.erp_v1.request.MaterialTransactionRequest;
 import com.jovan.erp_v1.response.MaterialTransactionResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 import com.jovan.erp_v1.enumeration.TransactionType;
 import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
 
@@ -26,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class MaterialTransactionMapper {
+public class MaterialTransactionMapper extends AbstractMapper<MaterialTransactionRequest> {
 
     private final MaterialRepository materialRepository;
     private final UserRepository userRepository;
@@ -34,12 +35,14 @@ public class MaterialTransactionMapper {
 
     public MaterialTransaction toEntity(MaterialTransactionRequest request) {
         Objects.requireNonNull(request, "MaterialTransactionRequest must not be null");
+        validateIdForCreate(request, MaterialTransactionRequest::id);
         return buildMaterialTransactionFromRequest(new MaterialTransaction(), request);
     }
 
     public MaterialTransaction toUpdateEntity(MaterialTransaction mt, MaterialTransactionRequest request) {
         Objects.requireNonNull(request, "MaterialTransactionRequest must not be null");
         Objects.requireNonNull(mt, "MaterialTransaction must not be null");
+        validateIdForUpdate(request, MaterialTransactionRequest::id);
         return buildMaterialTransactionFromRequest(mt, request);
     }
 

@@ -40,4 +40,8 @@ public interface IBalanceSheetService {
     List<BalanceSheetResponse> findByFiscalYear_QuarterStatus(FiscalQuarterStatus quarterStatus);
 
     List<BalanceSheetResponse> findByStatusAndDateRange(FiscalYearStatus status, LocalDate start, LocalDate end);
+    List<BalanceSheetResponse> findByTotalAssetsGreaterThan(BigDecimal totalAssets);
+    List<BalanceSheetResponse> findByTotalAssetsLessThan(BigDecimal totalAssets);
+    List<BalanceSheetResponse> findByTotalEquityGreaterThan(BigDecimal totalEquity);
+    List<BalanceSheetResponse> findByTotalEquityLessThan(BigDecimal totalEquity);
 }

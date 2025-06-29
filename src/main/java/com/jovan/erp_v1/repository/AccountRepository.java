@@ -38,4 +38,6 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     // Pronalazi sve račune sa balansom manjim od zadatog
     List<Account> findByBalanceLessThan(BigDecimal amount);
+    
+    boolean existsByAccountNumber(String accountNumber);
 }

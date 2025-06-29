@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.BarCodeRequest;
 import com.jovan.erp_v1.response.BarCodeResponse;
 import com.jovan.erp_v1.service.IBarcodeService;
@@ -32,39 +34,42 @@ import lombok.RequiredArgsConstructor;
 public class BarCodeController {
 
 	private final IBarcodeService barcodeService;
+	private final UserRepository userRepository;
 	
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/create")
 	public ResponseEntity<BarCodeResponse> create(@Valid @RequestBody BarCodeRequest request) {
 	    LocalDateTime now = LocalDateTime.now();
-	    String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+	    String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+	    Long scannedById = userRepository.findByUsername(currentUsername)
+	            .orElseThrow(() -> new UsernameNotFoundException("Korisnik nije pronađen: " + currentUsername))
+	            .getId();
 	    BarCodeRequest enrichedRequest = new BarCodeRequest(
 	        null,
 	        request.code(),
-	        now,            // backend postavlja vreme skeniranja
-	        currentUser,    // backend postavlja korisnika iz tokena/session
+	        now,          // backend postavlja vreme skeniranja
+	        scannedById,  // backend postavlja scannedById (Long)
 	        request.goodsId()
 	    );
-
 	    BarCodeResponse response = barcodeService.createBarCode(enrichedRequest);
 	    return ResponseEntity.ok(response);
 	}
-	
+
 	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/update/{id}")
 	public ResponseEntity<BarCodeResponse> update(
 	        @PathVariable Long id, 
 	        @Valid @RequestBody BarCodeRequest request) {
-	    // Uhvati trenutno vreme
 	    LocalDateTime now = LocalDateTime.now();
-	    // Uhvati trenutno ulogovanog korisnika iz Security Context-a
-	    String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-	    // Kreiraj novi request sa automatski postavljenim scannedAt i scannedBy
+	    String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+	    Long scannedById = userRepository.findByUsername(currentUsername)
+	            .orElseThrow(() -> new UsernameNotFoundException("Korisnik nije pronađen: " + currentUsername))
+	            .getId();
 	    BarCodeRequest enrichedRequest = new BarCodeRequest(
-	        id,                 // id ostaje isti, jer je update
-	        request.code(),     
-	        now,                // backend postavlja vreme skeniranja
-	        currentUser,        // backend postavlja korisnika iz auth
+	        id,
+	        request.code(),
+	        now,
+	        scannedById,
 	        request.goodsId()
 	    );
 	    BarCodeResponse response = barcodeService.updateBarCode(id, enrichedRequest);
@@ -96,15 +101,28 @@ public class BarCodeController {
 		return ResponseEntity.ok(response);
 	}
 	
-	@GetMapping("/get-by-goodsId")
-	public ResponseEntity<List<BarCodeResponse>> getByGoods(@RequestParam("goodsId") Long goodsId){
-		List<BarCodeResponse> responses = barcodeService.getByGoods(goodsId);
+	@GetMapping("/goods/{goodsId}")
+	public ResponseEntity<List<BarCodeResponse>> findByGoods_Id(@PathVariable Long goodsId){
+		List<BarCodeResponse> responses = barcodeService.findByGoods_Id(goodsId);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/get-by-scannedBy")
-	public ResponseEntity<List<BarCodeResponse>> getByScannedBy(@RequestParam("scannedBy") String scannedBy){
-		List<BarCodeResponse> responses = barcodeService.getByScannedBy(scannedBy);
+	@GetMapping("by-goodsName")
+	public ResponseEntity<List<BarCodeResponse>> findByGoods_Name(@RequestParam("goodsName") String goodsName){
+		List<BarCodeResponse> responses = barcodeService.findByGoods_Name(goodsName);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/scannedBy-first-last-name")
+	public ResponseEntity<List<BarCodeResponse>> findByScannedBy_FirstNameContainingIgnoreCaseAndScannedBy_LastNameContainingIgnoreCase(
+			@RequestParam("userFirstName") String userFirstName,@RequestParam("userLastName") String userLastName){
+		List<BarCodeResponse> responses = barcodeService.findByScannedBy_FirstNameContainingIgnoreCaseAndScannedBy_LastNameContainingIgnoreCase(userFirstName, userLastName);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/scannedBy/{scannedById}")
+	public ResponseEntity<List<BarCodeResponse>> getByScannedBy(@PathVariable Long scannedById){
+		List<BarCodeResponse> responses = barcodeService.findByScannedBy_Id(scannedById);
 		return ResponseEntity.ok(responses);
 	}
 	
@@ -112,7 +130,7 @@ public class BarCodeController {
 	public ResponseEntity<List<BarCodeResponse>> getByScannedAtBetween(
 			@RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
 			@RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to){
-		List<BarCodeResponse> responses = barcodeService.getByScannedAtBetween(from, to);
+		List<BarCodeResponse> responses = barcodeService.findByScannedAtBetween(from, to);
 		return ResponseEntity.ok(responses);
 	}
 }

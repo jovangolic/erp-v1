@@ -16,24 +16,27 @@ import com.jovan.erp_v1.repository.MaterialRepository;
 import com.jovan.erp_v1.repository.ProductionOrderRepository;
 import com.jovan.erp_v1.request.MaterialRequirementRequest;
 import com.jovan.erp_v1.response.MaterialRequirementResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class MaterialRequirementMapper {
+public class MaterialRequirementMapper extends AbstractMapper<MaterialRequirementRequest> {
 
     private final MaterialRepository materialRepository;
     private final ProductionOrderRepository productionOrderRepository;
 
     public MaterialRequirement toEntity(MaterialRequirementRequest request) {
         Objects.requireNonNull(request, "MaterialRequirementRequest must not be null");
+        validateIdForCreate(request, MaterialRequirementRequest::id);
         return buildMaterialRequirementFromRequest(new MaterialRequirement(), request);
     }
 
     public MaterialRequirement toUpdateEntity(MaterialRequirement mr, MaterialRequirementRequest request) {
         Objects.requireNonNull(request, "MaterialRequirementRequest must not be null");
         Objects.requireNonNull(mr, "MaterialRequirement must not be null");
+        validateIdForUpdate(request, MaterialRequirementRequest::id);
         return buildMaterialRequirementFromRequest(mr, request);
     }
 

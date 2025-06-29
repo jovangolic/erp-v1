@@ -18,8 +18,10 @@ import com.jovan.erp_v1.mapper.ProductMapper;
 import com.jovan.erp_v1.model.BarCode;
 import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.model.Storage;
+import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
+import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.BarCodeRequest;
 import com.jovan.erp_v1.request.ProductRequest;
 import com.jovan.erp_v1.response.ProductResponse;
@@ -34,6 +36,7 @@ public class ProductService implements IProductService {
     private final ProductRepository productRepository;
     private final StorageRepository storageRepository;
     private final ProductMapper productMapper;
+    private final UserRepository userRepository;
 
     @Transactional
     @Override
@@ -59,7 +62,7 @@ public class ProductService implements IProductService {
                 .orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " + request.storageId()));
         product.setStorage(storage);
         // **Update barCode liste**
-        updateBarCodes(product, request.barCodes());
+        updateBarCodes(product, request.barCodes(),userRepository);
         Product updated = productRepository.save(product);
         return productMapper.toProductResponse(updated);
     }
@@ -135,37 +138,36 @@ public class ProductService implements IProductService {
         return productMapper.toProductResponseList(productRepository.findByGoodsType(goodsType));
     }
 
-    private void updateBarCodes(Product product, List<BarCodeRequest> barCodeRequests) {
-        // Kreiraj mapu postojećih BarCode entiteta po ID (ako imaju ID)
+    private void updateBarCodes(Product product, List<BarCodeRequest> barCodeRequests, UserRepository userRepository) {
         Map<Long, BarCode> existingBarCodesById = product.getBarCodes().stream()
                 .filter(bc -> bc.getId() != null)
                 .collect(Collectors.toMap(BarCode::getId, Function.identity()));
         List<BarCode> updatedBarCodes = new ArrayList<>();
         for (BarCodeRequest bcRequest : barCodeRequests) {
+            User scannedBy = null;
+            if (bcRequest.scannedById() != null) {
+                scannedBy = userRepository.findById(bcRequest.scannedById())
+                        .orElseThrow(() -> new IllegalArgumentException("Korisnik sa ID " + bcRequest.scannedById() + " nije pronađen."));
+            }
             if (bcRequest.id() != null && existingBarCodesById.containsKey(bcRequest.id())) {
                 // Postojeći barCode - ažuriraj polja
                 BarCode existing = existingBarCodesById.get(bcRequest.id());
                 existing.setCode(bcRequest.code());
                 existing.setScannedAt(bcRequest.scannedAt());
-                existing.setScannedBy(bcRequest.scannedBy());
+                existing.setScannedBy(scannedBy);
                 updatedBarCodes.add(existing);
-                // Ukloni iz mape da bi znao šta je obrađeno
                 existingBarCodesById.remove(bcRequest.id());
             } else {
-                // Novi barCode - napravi novi objekat i poveži sa proizvodom
+                // Novi barCode
                 BarCode newBarCode = BarCode.builder()
                         .code(bcRequest.code())
                         .scannedAt(bcRequest.scannedAt())
-                        .scannedBy(bcRequest.scannedBy())
-                        .goods(product) // poveži sa proizvodom
+                        .scannedBy(scannedBy)
+                        .goods(product)
                         .build();
                 updatedBarCodes.add(newBarCode);
             }
         }
-        // BarCode entiteti koji su ostali u existingBarCodesById mapi su obrisani u
-        // request-u,
-        // pa ih treba ukloniti iz proizvoda (orphanRemoval = true će ih obrisati iz
-        // baze)
         product.getBarCodes().clear();
         product.getBarCodes().addAll(updatedBarCodes);
     }

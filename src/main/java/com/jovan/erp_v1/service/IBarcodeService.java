@@ -15,7 +15,10 @@ public interface IBarcodeService {
 	BarCodeResponse getOne(Long id);
 	List<BarCodeResponse> getAll();
 	BarCodeResponse getByCode(String code);
-	List<BarCodeResponse> getByGoods(Long goodsId);
-	List<BarCodeResponse> getByScannedBy(String scannedBy); 
-	List<BarCodeResponse> getByScannedAtBetween(LocalDateTime from, LocalDateTime to);
+	List<BarCodeResponse> findByGoods_Id(Long goodsId);
+    List<BarCodeResponse> findByGoods_Name(String goodsName);
+    List<BarCodeResponse> findByScannedAtBetween(LocalDateTime from, LocalDateTime to);
+    List<BarCodeResponse> findByScannedBy_Id(Long scannedById);
+    List<BarCodeResponse> findByScannedBy_FirstNameContainingIgnoreCaseAndScannedBy_LastNameContainingIgnoreCase(
+            String userFirstName, String userLastName);
 }

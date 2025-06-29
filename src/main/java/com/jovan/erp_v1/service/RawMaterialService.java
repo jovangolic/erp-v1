@@ -1,7 +1,10 @@
 package com.jovan.erp_v1.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -15,10 +18,13 @@ import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.model.RawMaterial;
 import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.model.Supply;
+import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.RawMaterialRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.repository.SupplyRepository;
+import com.jovan.erp_v1.repository.UserRepository;
+import com.jovan.erp_v1.request.BarCodeRequest;
 import com.jovan.erp_v1.request.RawMaterialRequest;
 import com.jovan.erp_v1.response.RawMaterialResponse;
 
@@ -34,6 +40,7 @@ public class RawMaterialService implements IRawMaterialService {
     private final StorageRepository storageRepository;
     private final SupplyRepository supplyRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     @Override
     public List<RawMaterialResponse> findAll() {
@@ -89,17 +96,22 @@ public class RawMaterialService implements IRawMaterialService {
         }
         // Ažuriranje bar kodova
         existing.getBarCodes().clear(); // zbog `orphanRemoval = true`
-        if (request.barCodes() != null && !request.barCodes().isEmpty()) {
-            List<BarCode> barCodes = request.barCodes().stream()
-                    .map(barCodeReq -> BarCode.builder()
+        List<BarCode> barCodes = request.barCodes().stream()
+                .map((Function<BarCodeRequest, BarCode>) barCodeReq -> {
+                    User scannedBy = null;
+                    if (barCodeReq.scannedById() != null) {
+                        scannedBy = userRepository.findById(barCodeReq.scannedById())
+                                .orElseThrow(() -> new IllegalArgumentException("Korisnik sa ID " + barCodeReq.scannedById() + " nije pronađen."));
+                    }
+                    return BarCode.builder()
                             .code(barCodeReq.code())
                             .scannedAt(barCodeReq.scannedAt() != null ? barCodeReq.scannedAt() : LocalDateTime.now())
-                            .scannedBy(barCodeReq.scannedBy() != null ? barCodeReq.scannedBy() : "system")
+                            .scannedBy(scannedBy)
                             .goods(existing)
-                            .build())
-                    .toList();
-            existing.getBarCodes().addAll(barCodes);
-        }
+                            .build();
+                })
+                .collect(Collectors.toList());// koristi collect da bude jasnije
+        existing.getBarCodes().addAll(barCodes);
         RawMaterial updated = rawMaterialRepository.save(existing);
         return rawMaterialMapper.toResponse(updated);
     }

@@ -11,23 +11,26 @@ import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.request.MaterialRequest;
 import com.jovan.erp_v1.response.MaterialResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class MaterialMapper {
+public class MaterialMapper extends AbstractMapper<MaterialRequest> {
 
     private final StorageRepository storageRepository;
 
     public Material toEntity(MaterialRequest request) {
         Objects.requireNonNull(request, "MaterialRequest cannot be null");
+        validateIdForCreate(request, MaterialRequest::id);
         return buildMaterialFromRequest(new Material(), request);
     }
 
     public void toUpdateEntity(Material m, MaterialRequest request) {
         Objects.requireNonNull(m, "Material entity cannot be null");
         Objects.requireNonNull(request, "MaterialRequest cannot be null");
+        validateIdForUpdate(request, MaterialRequest::id);
         buildMaterialFromRequest(m, request);
     }
 

@@ -19,7 +19,7 @@ public record BarCodeRequest(
 	    // Nema validacije jer se postavlja u backendu ako je null
 	    LocalDateTime scannedAt,
 
-	    String scannedBy, // PROMENA: String umesto LocalDateTime
+	    Long scannedById, // PROMENA: String umesto LocalDateTime
 
 	    @NotNull(message = "GoodsId je obavezan")
 	    Long goodsId

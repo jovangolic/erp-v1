@@ -18,6 +18,8 @@ import java.time.LocalDate;
 public interface BalanceSheetRepository extends JpaRepository<BalanceSheet, Long> {
 
     List<BalanceSheet> findByTotalAssets(BigDecimal totalAssets);
+    List<BalanceSheet> findByTotalAssetsGreaterThan(BigDecimal totalAssets);
+    List<BalanceSheet> findByTotalAssetsLessThan(BigDecimal totalAssets);
 
     Optional<BalanceSheet> findByDate(LocalDate date);
 
@@ -26,6 +28,8 @@ public interface BalanceSheetRepository extends JpaRepository<BalanceSheet, Long
     List<BalanceSheet> findByTotalLiabilities(BigDecimal totalLiabilities);
 
     List<BalanceSheet> findByTotalEquity(BigDecimal totalEquity);
+    List<BalanceSheet> findByTotalEquityGreaterThan(BigDecimal totalEquity);
+    List<BalanceSheet> findByTotalEquityLessThan(BigDecimal totalEquity);
 
     List<BalanceSheet> findByFiscalYear_Id(Long id);
 
