@@ -1,6 +1,8 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -62,6 +64,7 @@ public class FiscalYearMapper {
     }
 
     public FiscalYearResponse toResponse2(FiscalYear fiscalYear) {
+    	Objects.requireNonNull(fiscalYear,"FiscalYear must not be null");
         return new FiscalYearResponse(
                 fiscalYear.getId(),
                 fiscalYear.getYear(),
@@ -73,6 +76,9 @@ public class FiscalYearMapper {
     }
 
     public List<FiscalYearResponse> toResponseList(List<FiscalYear> years) {
+    	if(years == null || years.isEmpty()) {
+    		return Collections.emptyList();
+    	}
         return years.stream().map(this::toResponse).collect(Collectors.toList());
     }
 }

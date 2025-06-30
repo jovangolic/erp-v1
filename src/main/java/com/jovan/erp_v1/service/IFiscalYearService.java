@@ -24,7 +24,7 @@ public interface IFiscalYearService {
 
     List<FiscalYearResponse> findBetweenStartAndEndDates(LocalDate start, LocalDate end);
 
-    FiscalYearResponse findByYear(int year);
+    FiscalYearResponse findByYear(Integer year);
 
     FiscalYearResponse findByYearStatusAndYear(FiscalYearStatus status, Integer year);
 

@@ -22,7 +22,7 @@ public interface FiscalYearRepository extends JpaRepository<FiscalYear, Long> {
     @Query("SELECT fy FROM FiscalYear fy WHERE fy.startDate >= :start AND fy.endDate <= :end")
     List<FiscalYear> findBetweenStartAndEndDates(@Param("start") LocalDate start, @Param("end") LocalDate end);
 
-    Optional<FiscalYear> findByYear(int year);
+    Optional<FiscalYear> findByYear(Integer year);
 
     // Po statusu i godini
     Optional<FiscalYear> findByYearStatusAndYear(FiscalYearStatus status, Integer year);

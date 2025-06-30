@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.controller;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -65,21 +66,21 @@ public class DeliveryItemController {
     }
 
     @GetMapping("/by-quantity")
-    public ResponseEntity<List<DeliveryItemResponse>> findByQuantity(@RequestParam("quantity") Double quantity) {
+    public ResponseEntity<List<DeliveryItemResponse>> findByQuantity(@RequestParam("quantity")BigDecimal quantity) {
         List<DeliveryItemResponse> responses = deliveryItemService.findByQuantity(quantity);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/quantity-greater-than")
     public ResponseEntity<List<DeliveryItemResponse>> findByQuantityGreaterThan(
-            @RequestParam("quantity") Double quantity) {
+            @RequestParam("quantity") BigDecimal quantity) {
         List<DeliveryItemResponse> responses = deliveryItemService.findByQuantityGreaterThan(quantity);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/quantity-less-than")
     public ResponseEntity<List<DeliveryItemResponse>> findByQuantityLessThan(
-            @RequestParam("quantity") Double quantity) {
+            @RequestParam("quantity") BigDecimal quantity) {
         List<DeliveryItemResponse> responses = deliveryItemService.findByQuantityLessThan(quantity);
         return ResponseEntity.ok(responses);
     }

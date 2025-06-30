@@ -10,5 +10,6 @@ public record FiscalQuarterRequest(
         Long id,
         @NotNull FiscalQuarterStatus quarterStatus,
         @NotNull LocalDate startDate,
-        @NotNull LocalDate endDate) {
+        @NotNull LocalDate endDate,
+        @NotNull Long fiscalYearId) {
 }

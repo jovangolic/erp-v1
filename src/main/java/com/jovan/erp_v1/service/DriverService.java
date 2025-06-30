@@ -24,6 +24,7 @@ public class DriverService implements IDriverService {
     @Override
     public DriverResponse create(DriverRequest request) {
         Driver driver = new Driver();
+        validateString(request.name(), request.phone());
         driver.setName(request.name());
         driver.setPhone(request.phone());
         return new DriverResponse(driver);
@@ -34,6 +35,7 @@ public class DriverService implements IDriverService {
     public DriverResponse update(Long id, DriverRequest request) {
         Driver driver = driversRepository.findById(id)
                 .orElseThrow(() -> new DriverErrorException("Driver not found wtih id " + id));
+        validateString(request.name(), request.phone());
         driver.setName(request.name());
         driver.setPhone(request.phone());
         return new DriverResponse(driver);
@@ -64,6 +66,7 @@ public class DriverService implements IDriverService {
 
     @Override
     public List<DriverResponse> findByName(String name) {
+    	validateString(name);
         return driversRepository.findByName(name).stream()
                 .map(DriverResponse::new)
                 .collect(Collectors.toList());
@@ -71,9 +74,28 @@ public class DriverService implements IDriverService {
 
     @Override
     public DriverResponse findByPhone(String phone) {
+    	validateString(phone);
         Driver driver = driversRepository.findByPhone(phone)
                 .orElseThrow(() -> new DriverErrorException("Driver with phone not found" + phone));
         return new DriverResponse(driver);
     }
+    
+ /**Metoda sa jednim obaveznim argumentom
+  * Posto Java nema default-ne argumente kao recimo Python, morao sam da napravim dve odvojene String metode.
+  *  */
+    private void validateString(String str) {
+        validateString(str, null);  // Pozivamo "glavnu" verziju metode
+    }
+
+    // Metoda sa dva argumenta (drugi je "opciono")
+    private void validateString(String str, String s) {
+        if (str == null || str.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                s != null ? s : "Tekstualni karakter za vozačevo ime ili broj telefona ne sme biti prazan ili null"
+            );
+        }
+    }
+    
+    
 
 }

@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -24,6 +25,7 @@ public class InboundDeliveryMapper {
     private final DeliveryItemMapper deliveryItemMapper;
 
     public InboundDelivery toInboundEntity(InboundDeliveryRequest request) {
+    	Objects.requireNonNull(request,"InboundDeliveryRequest must not be null");
         InboundDelivery delivery = new InboundDelivery();
         delivery.setDeliveryDate(request.deliveryDate());
         Supply supply = supplyRepository.findById(request.supplyId())
@@ -46,6 +48,14 @@ public class InboundDeliveryMapper {
     }
 
     public InboundDeliveryResponse toResponse(InboundDelivery delivery) {
+    	Objects.requireNonNull(delivery, "InboundDelivery must not be null");
         return new InboundDeliveryResponse(delivery);
+    }
+    
+    public List<InboundDeliveryResponse> toResponseList(List<InboundDelivery> d){
+    	if(d == null || d.isEmpty()) {
+    		return Collections.emptyList();
+    	}
+    	return d.stream().map(this::toResponse).collect(Collectors.toList());
     }
 }

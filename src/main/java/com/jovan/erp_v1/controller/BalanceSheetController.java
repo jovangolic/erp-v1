@@ -134,5 +134,30 @@ public class BalanceSheetController {
         List<BalanceSheetResponse> responses = balanceSheetService.findByStatusAndDateRange(status, start, end);
         return ResponseEntity.ok(responses);
     }
+    
+    
+    @GetMapping("/totalAssets-greater-than")
+    public ResponseEntity<List<BalanceSheetResponse>> findByTotalAssetsGreaterThan(@RequestParam("totalAssets") BigDecimal totalAssets){
+    	List<BalanceSheetResponse> responses = balanceSheetService.findByTotalAssetsGreaterThan(totalAssets);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/totalAssets-less-than")
+    public ResponseEntity<List<BalanceSheetResponse>> findByTotalAssetsLessThan(@RequestParam("totalAssets") BigDecimal totalAssets){
+    	List<BalanceSheetResponse> responses = balanceSheetService.findByTotalAssetsLessThan(totalAssets);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/totalEquity-greater-than")
+    public ResponseEntity<List<BalanceSheetResponse>> findByTotalEquityGreaterThan(@RequestParam("totalEquity") BigDecimal totalEquity){
+    	List<BalanceSheetResponse> responses = balanceSheetService.findByTotalEquityGreaterThan(totalEquity);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/totalEquity-less-than") 
+    public ResponseEntity<List<BalanceSheetResponse>> findByTotalEquityLessThan(@RequestParam("totalEquity") BigDecimal totalEquity){
+    	List<BalanceSheetResponse> responses = balanceSheetService.findByTotalAssetsLessThan(totalEquity);
+    	return ResponseEntity.ok(responses);
+    }
 
 }

@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,11 +18,11 @@ public interface DeliveryItemRepository extends JpaRepository<DeliveryItem, Long
 
     List<DeliveryItem> findByOutboundDeliveryId(Long outboundId);
 
-    List<DeliveryItem> findByQuantity(Double quantity);
+    List<DeliveryItem> findByQuantity(BigDecimal quantity);
 
-    List<DeliveryItem> findByQuantityGreaterThan(Double quantity);
+    List<DeliveryItem> findByQuantityGreaterThan(BigDecimal quantity);
 
-    List<DeliveryItem> findByQuantityLessThan(Double quantity);
+    List<DeliveryItem> findByQuantityLessThan(BigDecimal quantity);
 
     @Query("SELECT d FROM DeliveryItem d WHERE d.product.id = :productId")
     DeliveryItem findByProductId(@Param("productId") Long productId);

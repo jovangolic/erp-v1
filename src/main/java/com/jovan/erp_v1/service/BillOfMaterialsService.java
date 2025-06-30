@@ -27,7 +27,9 @@ public class BillOfMaterialsService implements IBillOfMaterialsService {
     @Transactional
     @Override
     public BillOfMaterialsResponse create(BillOfMaterialsRequest request) {
-        validateRequest(request);
+        validateParentProductId(request.parentProductId());
+        validateComponentId(request.componentId());
+        validateBigDecimal(request.quantity());
         BillOfMaterials bom = billOfMaterialsMapper.toEntity(request);
         BillOfMaterials saved = billOfMaterialsRepository.save(bom);
         return billOfMaterialsMapper.toResponse(saved);
@@ -39,7 +41,9 @@ public class BillOfMaterialsService implements IBillOfMaterialsService {
     public BillOfMaterialsResponse update(Long id, BillOfMaterialsRequest request) {
         BillOfMaterials bom = billOfMaterialsRepository.findById(id)
                 .orElseThrow(() -> new BillOfMaterialsErrorException("BillOfMaterials not found with id: " + id));
-        validateRequest(request);
+        validateParentProductId(request.parentProductId());
+        validateComponentId(request.componentId());
+        validateBigDecimal(request.quantity());
         billOfMaterialsMapper.toUpdateEntity(bom, request);
         return billOfMaterialsMapper.toResponse(billOfMaterialsRepository.save(bom));
     }
@@ -69,6 +73,7 @@ public class BillOfMaterialsService implements IBillOfMaterialsService {
 
     @Override
     public List<BillOfMaterialsResponse> findByParentProductId(Long parentProductId) {
+    	validateParentProductId(parentProductId);
         return billOfMaterialsRepository.findByParentProductId(parentProductId).stream()
                 .map(BillOfMaterialsResponse::new)
                 .collect(Collectors.toList());
@@ -76,6 +81,7 @@ public class BillOfMaterialsService implements IBillOfMaterialsService {
 
     @Override
     public List<BillOfMaterialsResponse> findByComponentId(Long componentId) {
+    	validateComponentId(componentId);
         return billOfMaterialsRepository.findByComponentId(componentId).stream()
                 .map(BillOfMaterialsResponse::new)
                 .collect(Collectors.toList());
@@ -83,6 +89,7 @@ public class BillOfMaterialsService implements IBillOfMaterialsService {
 
     @Override
     public List<BillOfMaterialsResponse> findByQuantityGreaterThan(BigDecimal quantity) {
+    	validateBigDecimal(quantity);
         return billOfMaterialsRepository.findByQuantityGreaterThan(quantity).stream()
                 .map(BillOfMaterialsResponse::new)
                 .collect(Collectors.toList());
@@ -90,6 +97,7 @@ public class BillOfMaterialsService implements IBillOfMaterialsService {
 
     @Override
     public List<BillOfMaterialsResponse> findByQuantity(BigDecimal quantity) {
+    	validateBigDecimal(quantity);
         return billOfMaterialsRepository.findByQuantity(quantity).stream()
                 .map(BillOfMaterialsResponse::new)
                 .collect(Collectors.toList());
@@ -97,6 +105,7 @@ public class BillOfMaterialsService implements IBillOfMaterialsService {
 
     @Override
     public List<BillOfMaterialsResponse> findByQuantityLessThan(BigDecimal quantity) {
+    	validateBigDecimal(quantity);
         return billOfMaterialsRepository.findByQuantityLessThan(quantity).stream()
                 .map(BillOfMaterialsResponse::new)
                 .collect(Collectors.toList());
@@ -110,6 +119,24 @@ public class BillOfMaterialsService implements IBillOfMaterialsService {
             throw new NoSuchProductException("ParentProduct must not be null");
         }
         if (request.quantity() == null || request.quantity().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Quantity must be a positive number");
+        }
+    }
+    
+    private void validateComponentId(Long componentId) {
+    	if (componentId == null) {
+            throw new NoSuchProductException("Component must not be null");
+        }
+    }
+    
+    private void validateParentProductId(Long parentProductId) {
+    	if (parentProductId == null) {
+            throw new NoSuchProductException("ParentProduct must not be null");
+        }
+    }
+    
+    private void validateBigDecimal(BigDecimal quantity) {
+    	if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Quantity must be a positive number");
         }
     }

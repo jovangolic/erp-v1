@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,11 +19,11 @@ public interface IDeliveryItemService {
 
     List<DeliveryItemResponse> findAll();
 
-    List<DeliveryItemResponse> findByQuantity(Double quantity);
+    List<DeliveryItemResponse> findByQuantity(BigDecimal quantity);
 
-    List<DeliveryItemResponse> findByQuantityGreaterThan(Double quantity);
+    List<DeliveryItemResponse> findByQuantityGreaterThan(BigDecimal quantity);
 
-    List<DeliveryItemResponse> findByQuantityLessThan(Double quantity);
+    List<DeliveryItemResponse> findByQuantityLessThan(BigDecimal quantity);
 
     List<DeliveryItemResponse> findByInboundDelivery_DeliveryDateBetween(LocalDate start, LocalDate end);
 

@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,7 +30,7 @@ public class DeliveryItem {
     private Product product;
 
     @Column
-    private Double quantity;
+    private BigDecimal quantity;
 
     @ManyToOne
     @JoinColumn(name = "inboundDelivery")

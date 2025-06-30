@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.response;
 
+import java.math.BigDecimal;
+
 import com.jovan.erp_v1.model.DeliveryItem;
 
 import lombok.AllArgsConstructor;
@@ -14,7 +16,7 @@ public class DeliveryItemResponse {
     private Long id;
     private Long productId;
     private String productName;
-    private Double quantity;
+    private BigDecimal quantity;
     private Long inboundDeliveryId;
     private Long outboundDeliveryId;
 

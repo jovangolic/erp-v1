@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
+import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.request.FiscalQuarterRequest;
 import com.jovan.erp_v1.response.FiscalQuarterResponse;
@@ -65,9 +66,9 @@ public class FiscalQuarterController {
     }
 
     @GetMapping("/by-fiscalYear/{fiscalYearId}")
-    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear(
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear_Id(
             @PathVariable Long fiscalYearId) {
-        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearId(fiscalYearId);
+        List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear_Id(fiscalYearId);
         return ResponseEntity.ok(responses);
     }
 
@@ -114,4 +115,23 @@ public class FiscalQuarterController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/fiscalYear-year-status")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear_YearStatus(@RequestParam("yearStatus") FiscalYearStatus yearStatus){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear_YearStatus(yearStatus);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    
+    @GetMapping("/by-end-date")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByEndDate(@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByEndDate(endDate);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/fiscalYear-start-date-range")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear_StartDateBetween(@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear_StartDateBetween(start, end);
+    	return ResponseEntity.ok(responses);
+    }
 }

@@ -12,7 +12,7 @@ public record CapacityPlanningRequest(
                 Long id,
                 @NotNull Long workCenterId,
                 @NotNull(message = "Date is required") @FutureOrPresent(message = "Date must be today or in the future") LocalDate date,
-                @NotNull(message = "Available capacity is required") @PositiveOrZero(message = "Available capacity must be 0 or greater") BigDecimal availableCapacit,
+                @NotNull(message = "Available capacity is required") @PositiveOrZero(message = "Available capacity must be 0 or greater") BigDecimal availableCapacity,
                 @NotNull @Positive BigDecimal plannedLoad
 // @NotNull(message = "Remaining capacity is required") @PositiveOrZero(message
 // = "Remaining capacity must be 0 or greater") Integer remainingCapacity
