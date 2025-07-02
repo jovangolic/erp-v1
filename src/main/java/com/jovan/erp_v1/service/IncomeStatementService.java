@@ -33,13 +33,7 @@ public class IncomeStatementService implements IntIncomeStatementService {
     @Override
     public IncomeStatementResponse create(IncomeStatementRequest request) {
         // 1. Validacija da su datumi prisutni (može se preskočiti zbog @NotNull)
-        if (request.periodStart() == null || request.periodEnd() == null) {
-            throw new IncomeStatementErrorException("Start and end dates must be provided.");
-        }
-        // 2. Start pre end
-        if (request.periodStart().isAfter(request.periodEnd())) {
-            throw new IncomeStatementErrorException("Start date cannot be after end date.");
-        }
+        validateFieldRequest(request);
         // 3. Učitavanje i provera da je u okviru fiskalne godine
         FiscalYear fiscalYear = fiscalYearRepository.findById(request.fiscalYearId())
                 .orElseThrow(
@@ -58,18 +52,15 @@ public class IncomeStatementService implements IntIncomeStatementService {
         }
         IncomeStatement st = incomeStatementMapper.toEntity(request);
         IncomeStatement saved = incomeStatementRepository.save(st);
-        return incomeStatementMapper.toResponse(incomeStatementRepository.save(saved));
+        return incomeStatementMapper.toResponse(saved);
     }
 
     @Transactional
     @Override
     public IncomeStatementResponse update(Long id, IncomeStatementRequest request) {
-        if (request.periodStart() == null || request.periodEnd() == null) {
-            throw new IncomeStatementErrorException("Start and end dates must be provided.");
-        }
-        if (request.periodStart().isAfter(request.periodEnd())) {
-            throw new IncomeStatementErrorException("Start date cannot be after end date.");
-        }
+        IncomeStatement st = incomeStatementRepository.findById(id)
+                .orElseThrow(() -> new IncomeStatementErrorException("Income statement not found"));
+        validateFieldRequest(request);
         FiscalYear fiscalYear = fiscalYearRepository.findById(request.fiscalYearId())
                 .orElseThrow(
                         () -> new FiscalYearErrorException("Fiscal year not found with ID: " + request.fiscalYearId()));
@@ -85,8 +76,6 @@ public class IncomeStatementService implements IntIncomeStatementService {
         if (overlaps) {
             throw new IncomeStatementErrorException("Income statement period overlaps with an existing statement.");
         }
-        IncomeStatement st = incomeStatementRepository.findById(id)
-                .orElseThrow(() -> new IncomeStatementErrorException("Income statement not found"));
         incomeStatementMapper.toEntityUpdate(st, request);
         return incomeStatementMapper.toResponse(incomeStatementRepository.save(st));
     }
@@ -116,6 +105,7 @@ public class IncomeStatementService implements IntIncomeStatementService {
 
     @Override
     public List<IncomeStatementResponse> findByTotalRevenue(BigDecimal totalRevenue) {
+    	validateBigDecimal(totalRevenue);
         return incomeStatementRepository.findByTotalRevenue(totalRevenue).stream()
                 .map(IncomeStatementResponse::new)
                 .collect(Collectors.toList());
@@ -123,6 +113,7 @@ public class IncomeStatementService implements IntIncomeStatementService {
 
     @Override
     public List<IncomeStatementResponse> findByTotalExpenses(BigDecimal totalExpenses) {
+    	validateBigDecimal(totalExpenses);
         return incomeStatementRepository.findByTotalExpenses(totalExpenses).stream()
                 .map(IncomeStatementResponse::new)
                 .collect(Collectors.toList());
@@ -130,6 +121,7 @@ public class IncomeStatementService implements IntIncomeStatementService {
 
     @Override
     public List<IncomeStatementResponse> findByNetProfit(BigDecimal netProfit) {
+    	validateBigDecimal(netProfit);
         return incomeStatementRepository.findByNetProfit(netProfit).stream()
                 .map(IncomeStatementResponse::new)
                 .collect(Collectors.toList());
@@ -137,6 +129,7 @@ public class IncomeStatementService implements IntIncomeStatementService {
 
     @Override
     public List<IncomeStatementResponse> findByFiscalYear_Year(Integer year) {
+    	validateInteger(year);
         return incomeStatementRepository.findByFiscalYear_Year(year).stream()
                 .map(IncomeStatementResponse::new)
                 .collect(Collectors.toList());
@@ -144,6 +137,7 @@ public class IncomeStatementService implements IntIncomeStatementService {
 
     @Override
     public List<IncomeStatementResponse> findByFiscalYear_QuarterStatus(FiscalQuarterStatus quarterStatus) {
+    	validateFiscalQuarterStatus(quarterStatus);
         return incomeStatementRepository.findByFiscalYear_QuarterStatus(quarterStatus).stream()
                 .map(IncomeStatementResponse::new)
                 .collect(Collectors.toList());
@@ -192,6 +186,40 @@ public class IncomeStatementService implements IntIncomeStatementService {
         }
         List<IncomeStatement> st = incomeStatementRepository.findByDateWithinPeriod(date);
         return incomeStatementMapper.toResponseList(st);
+    }
+    
+    private void validateBigDecimal(BigDecimal num) {
+        if (num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Mora biti pozitivan broj");
+        }
+    }
+    
+    private void validateInteger(Integer num) {
+    	if(num == null || num < 0) {
+    		throw new IllegalArgumentException("Must be positive number");
+    	}
+    }
+    
+    private void validateFiscalQuarterStatus(FiscalQuarterStatus quarterStatus) {
+    	if(quarterStatus == null) {
+    		throw new IllegalArgumentException("quarterStatus for FiscalQuarterStatus must not be null");
+    	}
+    }
+    
+    private void validateFieldRequest(IncomeStatementRequest request) {
+    	if (request.periodStart() == null || request.periodEnd() == null) {
+            throw new IncomeStatementErrorException("Start and end dates must be provided.");
+        }
+        // 2. Start pre end
+        if (request.periodStart().isAfter(request.periodEnd())) {
+            throw new IncomeStatementErrorException("Start date cannot be after end date.");
+        }
+        if(request.periodEnd().compareTo(request.periodStart()) < 0) {
+        	throw new IncomeStatementErrorException("End date cannot be before start date.");
+        }
+        validateBigDecimal(request.totalRevenue());
+        validateBigDecimal(request.totalExpenses());
+        validateBigDecimal(request.netProfit());
     }
 
 }

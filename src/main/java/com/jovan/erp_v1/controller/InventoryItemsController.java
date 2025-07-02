@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -65,7 +66,7 @@ public class InventoryItemsController {
 	}
 	
 	@GetMapping("/by-quantity")
-	public ResponseEntity<List<InventoryItemsResponse>> getByQuantity(@RequestParam("quantity") Double quantity){
+	public ResponseEntity<List<InventoryItemsResponse>> getByQuantity(@RequestParam("quantity") BigDecimal quantity){
 		List<InventoryItemsResponse> responses = inventoryItemsService.getByQuantity(quantity);
 		return ResponseEntity.ok(responses);
 	}
@@ -98,7 +99,7 @@ public class InventoryItemsController {
 	
 	
 	@GetMapping("/find-by-threshold")
-	public ResponseEntity<List<InventoryItemsResponse>> findItemsWithDifference(@RequestParam("threshold") Double threshold){
+	public ResponseEntity<List<InventoryItemsResponse>> findItemsWithDifference(@RequestParam("threshold") BigDecimal threshold){
 		List<InventoryItemsResponse> responses = inventoryItemsService.findItemsWithDifference(threshold);
 		return ResponseEntity.ok(responses);
 	}

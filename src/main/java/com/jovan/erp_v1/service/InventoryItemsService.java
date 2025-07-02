@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,11 +32,11 @@ public class InventoryItemsService implements IInventoryItemsService {
 	@Override
 	public InventoryItemsResponse create(InventoryItemsRequest request) {
 		InventoryItems items = new InventoryItems();
-		Inventory inventory = inventoryRepository.findById(request.inventoryId())
-				.orElseThrow(() -> new InventoryNotFoundException("Inventory not found "));
+		Inventory inventory = validateInventory(request.inventoryId());
+		Product product = validateProduct(request.productId());
+		validateBigDecimal(request.quantity());
+		validateInteger(request.condition());
 		items.setInventory(inventory);
-		Product product = productRepository.findById(request.productId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found "));
 		items.setProduct(product);
 		items.setItemCondition(request.condition());
 		items.setQuantity(request.quantity());
@@ -49,11 +50,11 @@ public class InventoryItemsService implements IInventoryItemsService {
 	public InventoryItemsResponse update(Long id, InventoryItemsRequest request) {
 		InventoryItems items = inventoryItemsRepository.findById(id)
 				.orElseThrow(() -> new InventoryItemsNotFoundException("Inventory-Items not found with id: " + id));
-		Inventory inventory = inventoryRepository.findById(request.inventoryId())
-				.orElseThrow(() -> new InventoryNotFoundException("Inventory not found "));
+		Inventory inventory = validateInventory(request.inventoryId());
+		Product product = validateProduct(request.productId());
+		validateBigDecimal(request.quantity());
+		validateInteger(request.condition());
 		items.setInventory(inventory);
-		Product product = productRepository.findById(request.productId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found "));
 		items.setProduct(product);
 		items.setItemCondition(request.condition());
 		items.setQuantity(request.quantity());
@@ -73,7 +74,8 @@ public class InventoryItemsService implements IInventoryItemsService {
 	}
 
 	@Override
-	public List<InventoryItemsResponse> getByQuantity(Double quantity) {
+	public List<InventoryItemsResponse> getByQuantity(BigDecimal quantity) {
+		validateBigDecimal(quantity);
 		return inventoryItemsRepository.findByQuantity(quantity).stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
@@ -81,6 +83,7 @@ public class InventoryItemsService implements IInventoryItemsService {
 
 	@Override
 	public List<InventoryItemsResponse> getByItemCondition(Integer itemCondition) {
+		validateInteger(itemCondition);
 		return inventoryItemsRepository.findByItemCondition(itemCondition).stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
@@ -97,8 +100,7 @@ public class InventoryItemsService implements IInventoryItemsService {
 
 	@Override
 	public List<InventoryItemsResponse> getByProductId(Long productId) {
-		Product product = productRepository.findById(productId)
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
+		Product product = validateProduct(productId);
 		return inventoryItemsRepository.findByProductId(product.getId()).stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
@@ -106,6 +108,7 @@ public class InventoryItemsService implements IInventoryItemsService {
 
 	@Override
 	public List<InventoryItemsResponse> getByProductName(String productName) {
+		validateString(productName);
 		return inventoryItemsRepository.findByProductName(productName).stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
@@ -126,13 +129,52 @@ public class InventoryItemsService implements IInventoryItemsService {
 	}
 
 	@Override
-	public List<InventoryItemsResponse> findItemsWithDifference(Double threshold) {
+	public List<InventoryItemsResponse> findItemsWithDifference(BigDecimal threshold) {
+		validateBigDecimal(threshold);
 		return inventoryItemsRepository.findByDifferenceGreaterThan(threshold).stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
 	}
 
-	private double calculateDifference(Double quantity, Integer condition) {
-		return quantity - condition;
+	private BigDecimal calculateDifference(BigDecimal quantity, Integer condition) {
+		if (quantity == null || condition == null) {
+	        throw new IllegalArgumentException("Quantity and condition must not be null.");
+	    }
+		if(quantity.compareTo(BigDecimal.ZERO) <= 0) {
+			throw new IllegalArgumentException("Quantity must be at least 0");
+		}
+		return quantity.subtract(BigDecimal.valueOf(condition));
+	}
+	
+	private void validateBigDecimal(BigDecimal num) {
+		if(num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new IllegalArgumentException("Number must be positive");
+		}
+	}
+	
+	private void validateString(String str) {
+		if(str == null || str.trim().isEmpty()) {
+			throw new IllegalArgumentException("Character must not be null");
+		}
+	}
+	
+	private Product validateProduct(Long productId) {
+		if(productId == null) {
+			throw new ProductNotFoundException("Product must not be null");
+		}
+		return productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product ID "+productId +" not found"));
+	}
+	
+	private void validateInteger(Integer num) {
+		if(num == null || num < 0) {
+			throw new IllegalArgumentException("Number must be positive.");
+		}
+	}
+	
+	private Inventory validateInventory(Long inventoryId) {
+		if(inventoryId == null) {
+			throw new InventoryItemsNotFoundException("Inventory must not be null");
+		}
+		return inventoryRepository.findById(inventoryId).orElseThrow(() -> new InventoryItemsNotFoundException("Inventory ID "+inventoryId +" not found"));
 	}
 }

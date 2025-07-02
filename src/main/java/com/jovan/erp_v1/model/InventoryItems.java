@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -32,11 +34,11 @@ public class InventoryItems {
 	private Product product;
 	
 	@Column(nullable = false)
-	private Double quantity; //Količina proizvoda koja je inventurisana
+	private BigDecimal quantity; //Količina proizvoda koja je inventurisana
 	
 	@Column(name = "item_condition", nullable = false)
 	private Integer itemCondition;// Stanje proizvoda u skladištu (pre inventure)
 	
 	@Column(nullable = true)
-	private Double difference; //Razlika između stanja na skladištu i inventurisanog
+	private BigDecimal difference; //Razlika između stanja na skladištu i inventurisanog
 }

@@ -29,14 +29,18 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
+    @Column
     private BigDecimal amount;
 
+    @Column
     private LocalDateTime paymentDate;
 
+    @Column
     @Enumerated(EnumType.STRING)
     private PaymentMethod method;
 
+    @Column
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 

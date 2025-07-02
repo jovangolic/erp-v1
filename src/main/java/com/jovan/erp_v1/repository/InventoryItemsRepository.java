@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,9 +23,9 @@ public interface InventoryItemsRepository extends JpaRepository<InventoryItems, 
 	@Query("SELECT it FROM InventoryItems it WHERE it.product.name = :productName")
 	List<InventoryItems> findByProductName(@Param("productName") String productName);
 
-	List<InventoryItems> findByDifferenceGreaterThan(Double threshold);
+	List<InventoryItems> findByDifferenceGreaterThan(BigDecimal threshold);
 
-	List<InventoryItems> findByQuantity(Double quantity);
+	List<InventoryItems> findByQuantity(BigDecimal quantity);
 
 	List<InventoryItems> findByItemCondition(Integer itemCondition);
 

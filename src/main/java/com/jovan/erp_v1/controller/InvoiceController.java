@@ -82,7 +82,7 @@ public class InvoiceController {
 	@GetMapping("/invoice-status")
 	public ResponseEntity<List<InvoiceResponse>> getByInvoiceStatus(
 	        @RequestParam("status") InvoiceStatus status) {
-	    List<InvoiceResponse> responses = invoiceService.getByInvoiceStatus(status);
+	    List<InvoiceResponse> responses = invoiceService.findByStatus(status);
 	    return ResponseEntity.ok(responses);
 	}
 	
@@ -90,50 +90,50 @@ public class InvoiceController {
 	@GetMapping("/invoice/buyer-status")
 	public ResponseEntity<List<InvoiceResponse>> getByBuyerAndStatus(@RequestParam("buyerId") Long buyerId,@RequestParam("status") InvoiceStatus status){
 		Buyer buyer = buyerRepository.findById(buyerId).orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: " + buyerId));
-		List<InvoiceResponse> responses = invoiceService.getByBuyerAndStatus(buyer, status);
+		List<InvoiceResponse> responses = invoiceService.findByBuyerIdAndStatus(buyerId, status);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@GetMapping("/invoice/total-amount")
 	public ResponseEntity<List<InvoiceResponse>> getByTotalAmount(@RequestParam("totalAmount") BigDecimal totalAmount){
-		List<InvoiceResponse> responses = invoiceService.getByTotalAmount(totalAmount);
+		List<InvoiceResponse> responses = invoiceService.findByTotalAmount(totalAmount);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@GetMapping("/invoice/buyer/{buyerId}")
 	public ResponseEntity<List<InvoiceResponse>> getByBuyerId(@PathVariable Long buyerId){
-		List<InvoiceResponse> responses = invoiceService.getByBuyerId(buyerId);
+		List<InvoiceResponse> responses = invoiceService.findByBuyerId(buyerId);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@GetMapping("/invoice/sales/{salesId}")
 	public ResponseEntity<List<InvoiceResponse>> getBySalesId(@PathVariable Long salesId){
-		List<InvoiceResponse> responses = invoiceService.getBySalesId(salesId);
+		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_Id(salesId);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@GetMapping("/invoice/payment/{paymentId}")
 	public ResponseEntity<List<InvoiceResponse>> getByPaymentId(@PathVariable Long paymentId){
-		List<InvoiceResponse> responses = invoiceService.getByPaymentId(paymentId);
+		List<InvoiceResponse> responses = invoiceService.findByPayment_Id(paymentId);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@GetMapping("/invoice/issue-date-between")
 	public ResponseEntity<List<InvoiceResponse>> getByIssueDateBetween(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
 			@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate){
-		List<InvoiceResponse> responses = invoiceService.getByIssueDateBetween(startDate, endDate);
+		List<InvoiceResponse> responses = invoiceService.findByIssueDateBetween(startDate, endDate);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@GetMapping("/invoice/due-date-before")
 	public ResponseEntity<List<InvoiceResponse>> getByDueDateBefore(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date){
-		List<InvoiceResponse> responses = invoiceService.getByDueDateBefore(date);
+		List<InvoiceResponse> responses = invoiceService.findByDueDateBefore(date);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@GetMapping("/invoice/search-fragment/{fragment}")
 	public ResponseEntity<List<InvoiceResponse>> searchByInvoiceNumberFragment(@PathVariable String fragment){
-		List<InvoiceResponse> responses = invoiceService.searchByInvoiceNumberFragment(fragment);
+		List<InvoiceResponse> responses = invoiceService.findByInvoiceNumberContainingIgnoreCase(fragment);
 		return ResponseEntity.ok(responses);
 	}
 	
@@ -145,12 +145,8 @@ public class InvoiceController {
 	
 	@GetMapping("/invoice/sorted-buyer/{buyerId}")
 	public ResponseEntity<List<InvoiceResponse>> getInvoicesByBuyerSortedByIssueDate(@PathVariable Long buyerId){
-		List<InvoiceResponse> responses = invoiceService.getInvoicesByBuyerSortedByIssueDate(buyerId);
+		List<InvoiceResponse> responses = invoiceService.findInvoicesByBuyerSortedByIssueDate(buyerId);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@ExceptionHandler(InvoiceNotFoundException.class)
-    public ResponseEntity<String> handleInvoiceNotFoundException(InvoiceNotFoundException err){
-    	return ResponseEntity.badRequest().body(err.getMessage());
-    }
 }

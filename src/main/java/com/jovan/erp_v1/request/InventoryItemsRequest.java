@@ -1,5 +1,8 @@
 package com.jovan.erp_v1.request;
 
+import java.math.BigDecimal;
+
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
@@ -13,12 +16,11 @@ public record InventoryItemsRequest(
 	    Long productId,
 
 	    @NotNull(message = "Quantity is required")
-	    @Min(value = 0, message = "Quantity must be at least 0")
-	    Double quantity,
+		@DecimalMin(value = "0.0", inclusive = true, message = "Quantity must be at least 0")
+		BigDecimal quantity,
 
 	    @NotNull(message = "Condition is required")
 	    @Min(value = 0, message = "Condition must be at least 0")
 	    Integer condition
 		) {
-
 }

@@ -1,10 +1,12 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.jovan.erp_v1.exception.NoSuchProductException;
 import com.jovan.erp_v1.exception.ProductNotFoundException;
 import com.jovan.erp_v1.model.Inventory;
 import com.jovan.erp_v1.model.InventoryItems;
@@ -52,6 +54,10 @@ public class InventoryItemsMapper {
 	}
 	
 	public List<InventoryItemsResponse> toResponseList(List<InventoryItems> items){
+		if(items == null || items.isEmpty()) {
+			return Collections.emptyList();
+		}
 		return items.stream().map(this::toResponse).collect(Collectors.toList());
 	}
+	
 }

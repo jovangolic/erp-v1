@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.response;
 
+import java.math.BigDecimal;
+
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.InventoryItems;
 
@@ -16,9 +18,9 @@ public class InventoryItemsResponse {
     private Long inventoryId;
     private Long productId;
     private String productName;
-    private Double quantity;
+    private BigDecimal quantity;
     private Integer itemCondition;
-    private Double difference;
+    private BigDecimal difference;
     private UnitMeasure unitMeasure;
 
     public InventoryItemsResponse(InventoryItems items) {

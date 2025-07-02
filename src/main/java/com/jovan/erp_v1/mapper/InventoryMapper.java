@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,6 +81,9 @@ public class InventoryMapper {
 	}
 
 	public List<InventoryResponse> toResponseList(List<Inventory> inventories) {
+		if(inventories == null || inventories.isEmpty()) {
+			return Collections.emptyList();
+		}
 		return inventories.stream()
 				.map(this::toResponse)
 				.collect(Collectors.toList());
