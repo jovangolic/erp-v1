@@ -162,7 +162,7 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByBuyerId(Long buyerId) {
 		Buyer buyer = fetchBuyer(buyerId);
-		return invoiceRepository.findByBuyerId(buyerId).stream()
+		return invoiceRepository.findByBuyerId(buyer.getId()).stream()
 				.map(invoiceMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -223,179 +223,269 @@ public class InvoiceService implements IInvoiceService {
 	//dodate metode:
 	@Override
 	public InvoiceResponse findByInvoiceNumber(String invocieNumber) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(invocieNumber, "Invoice number");
+		Invoice invoice = invoiceRepository.findByInvoiceNumber(invocieNumber).orElseThrow(() -> new InvoiceNotFoundException("InvoiceNumber not found"+ invocieNumber));
+		return new InvoiceResponse(invoice);
 	}
 
 	@Override
 	public List<InvoiceResponse> findByPaymentStatus(PaymentStatus status) {
-		// TODO Auto-generated method stub
-		return null;
+		validatePaymentStatus(status);
+		return invoiceRepository.findByPaymentStatus(status).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByBuyerIdOrderByIssueDateDesc(Long buyerId) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBuyerExists(buyerId);
+		return invoiceRepository.findByBuyerIdOrderByIssueDateDesc(buyerId).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByBuyerCompanyNameContainingIgnoreCase(String companyName) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(companyName, "Company name");
+		return invoiceRepository.findByBuyerCompanyNameContainingIgnoreCase(companyName).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByBuyerPib(String pib) {
-		// TODO Auto-generated method stub
-		return null;
+		if (pib == null || pib.trim().isEmpty()) {
+			throw new IllegalArgumentException("PIB must not be null or empty");
+		}
+		if(!invoiceRepository.existsByBuyer_Pib(pib)) {
+			throw new InvoiceNotFoundException("No invoices found for buyer with PIB: " + pib);
+		}
+		return invoiceRepository.findByBuyerPib(pib).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByBuyerEmailContainingIgnoreCase(String email) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(email, "Email");
+		return invoiceRepository.findByBuyerEmailContainingIgnoreCase(email).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByBuyerPhoneNumber(String phoneNumber) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(phoneNumber, "Phone number");
+		return invoiceRepository.findByBuyerPhoneNumber(phoneNumber).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByNoteContainingIgnoreCase(String note) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(note, "Note");
+		return invoiceRepository.findByNoteContainingIgnoreCase(note).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByRelatedSales_TotalPrice(BigDecimal totalPrice) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(totalPrice);
+		return invoiceRepository.findByRelatedSales_TotalPrice(totalPrice).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByRelatedSales_TotalPriceGreaterThan(BigDecimal totalPrice) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(totalPrice);
+		return invoiceRepository.findByRelatedSales_TotalPriceGreaterThan(totalPrice).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByRelatedSales_TotalPriceLessThan(BigDecimal totalPrice) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(totalPrice);
+		return invoiceRepository.findByRelatedSales_TotalPriceLessThan(totalPrice).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByPayment_Amount(BigDecimal amount) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(amount);
+		return invoiceRepository.findByPayment_Amount(amount).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByPayment_PaymentDate(LocalDateTime paymentDate) {
-		// TODO Auto-generated method stub
-		return null;
+		DateValidator.validateNotNull(paymentDate, "Date and time");
+		return invoiceRepository.findByPayment_PaymentDate(paymentDate).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByPayment_PaymentDateBetween(LocalDateTime paymentDateStart,
 			LocalDateTime paymentDateEnd) {
-		// TODO Auto-generated method stub
-		return null;
+		DateValidator.validateRange(paymentDateStart, paymentDateEnd);
+		return invoiceRepository.findByPayment_PaymentDateBetween(paymentDateStart, paymentDateEnd).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByPayment_Method(PaymentMethod method) {
-		// TODO Auto-generated method stub
-		return null;
+		validatePaymentMehod(method);
+		return invoiceRepository.findByPayment_Method(method).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByPayment_ReferenceNumberContainingIgnoreCase(String referenceNumber) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(referenceNumber, "Reference number");
+		return invoiceRepository.findByPayment_ReferenceNumberContainingIgnoreCase(referenceNumber).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_Id(Long salesOrderId) {
-		// TODO Auto-generated method stub
-		return null;
+		SalesOrder so = fetchSalesOrder(salesOrderId);
+		return invoiceRepository.findBySalesOrder_Id(so.getId()).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public boolean existsBySalesOrder_orderNumber(String orderNumber) {
-		// TODO Auto-generated method stub
-		return false;
+		if(orderNumber == null || orderNumber.trim().isEmpty()) {
+			throw new IllegalArgumentException("OrderNumber must not be null or empty");
+		}
+		if(!invoiceRepository.existsByInvoiceNumber(orderNumber)) {
+			throw new InvoiceNotFoundException("Mo orderNumber for SalesOrder not found "+orderNumber);
+		}
+		return invoiceRepository.existsBySalesOrder_orderNumber(orderNumber);
 	}
 
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_OrderDate(LocalDateTime orderDate) {
-		// TODO Auto-generated method stub
-		return null;
+		DateValidator.validateNotNull(orderDate, "Date and time");
+		return invoiceRepository.findBySalesOrder_OrderDate(orderDate).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_OrderDateBetween(LocalDateTime orderDateStart,
 			LocalDateTime orderDateEnd) {
-		// TODO Auto-generated method stub
-		return null;
+		DateValidator.validateRange(orderDateStart, orderDateEnd);
+		return invoiceRepository.findBySalesOrder_OrderDateBetween(orderDateStart, orderDateEnd).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_TotalAmount(BigDecimal totalAmount) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(totalAmount);
+		return invoiceRepository.findBySalesOrder_TotalAmount(totalAmount).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_TotalAmountGreaterThan(BigDecimal totalAmount) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(totalAmount);
+		return invoiceRepository.findBySalesOrder_TotalAmountGreaterThan(totalAmount).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_TotalAmountLessThan(BigDecimal totalAmount) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(totalAmount);
+		return invoiceRepository.findBySalesOrder_TotalAmountLessThan(totalAmount).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_Status(OrderStatus status) {
-		// TODO Auto-generated method stub
-		return null;
+		validateOrderStatus(status);
+		return invoiceRepository.findBySalesOrder_Status(status).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_NoteContainingIgnoreCase(String note) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(note, "Note");
+		return invoiceRepository.findBySalesOrder_NoteContainingIgnoreCase(note).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByCreatedBy_Id(Long createdById) {
-		// TODO Auto-generated method stub
-		return null;
+		User user = fetchCreatedBy(createdById);
+		return invoiceRepository.findByCreatedBy_Id(user.getId()).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByCreatedBy_EmailContainingIgnoreCase(String createdByEmail) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(createdByEmail, "createdByEmail");
+		return invoiceRepository.findByCreatedBy_EmailContainingIgnoreCase(createdByEmail).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(
 			String createdByFirstName, String createdByLastName) {
-		// TODO Auto-generated method stub
-		return null;
+		validateDoubleString(createdByFirstName, createdByLastName);
+		return invoiceRepository.findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(createdByFirstName, createdByLastName).stream()
+				.map(InvoiceResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	private String generateInvoiceNumber() {
 		String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 		long count = invoiceRepository.count() + 1;
 		return String.format("INV-%s-%04d", datePart, count);
+	}
+	
+	private void validateDoubleString(String s1, String s2) {
+        if (s1 == null || s1.trim().isEmpty() || s2 == null || s2.trim().isEmpty()) {
+            throw new IllegalArgumentException("Both string must not be null or empty");
+        }
+    }
+	
+	private void validateOrderStatus(OrderStatus status) {
+		if(status == null) {
+			throw new IllegalArgumentException("OrderStatus status must not be null");
+		}
+	}
+	
+	private void validatePaymentMehod(PaymentMethod method) {
+		if(method == null) {
+			throw new IllegalArgumentException("PaymentMethod method must not be null");
+		}
+	}
+	
+	private void validateBuyerExists(Long buyerId) {
+	    if (buyerId == null) {
+	        throw new BuyerNotFoundException("Buyer ID must not be null");
+	    }
+	    if (!buyerRepository.existsById(buyerId)) {
+	        throw new BuyerNotFoundException("Buyer not found with ID: " + buyerId);
+	    }
 	}
 	
 	private Buyer fetchBuyer(Long buyerId) {
@@ -436,6 +526,12 @@ public class InvoiceService implements IInvoiceService {
     private void validateInvoiceStatus(InvoiceStatus status) {
     	if(status == null) {
     		throw new IllegalArgumentException("InvoiceStatus status must not be null");
+    	}
+    }
+    
+    private void validatePaymentStatus(PaymentStatus status) {
+    	if(status == null) {
+    		throw new IllegalArgumentException("PaymentStatus status must not be null");
     	}
     }
     

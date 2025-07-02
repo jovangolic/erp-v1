@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.controller;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
+import com.jovan.erp_v1.enumeration.OrderStatus;
+import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.exception.BuyerNotFoundException;
 import com.jovan.erp_v1.exception.InvoiceNotFoundException;
 import com.jovan.erp_v1.mapper.InvoiceMapper;
@@ -148,5 +151,160 @@ public class InvoiceController {
 		List<InvoiceResponse> responses = invoiceService.findInvoicesByBuyerSortedByIssueDate(buyerId);
 		return ResponseEntity.ok(responses);
 	}
+	
+	//nove metode
+	
+	@GetMapping("/buyer-company-name")
+	public ResponseEntity<List<InvoiceResponse>> findByBuyerCompanyNameContainingIgnoreCase(@RequestParam("companyName") String companyName){
+		List<InvoiceResponse> responses = invoiceService.findByBuyerCompanyNameContainingIgnoreCase(companyName);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/buyer-pib")
+	public ResponseEntity<List<InvoiceResponse>> findByBuyerPib(@RequestParam("pib") String pib){
+		List<InvoiceResponse> responses = invoiceService.findByBuyerPib(pib);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/buyer-email")
+	public ResponseEntity<List<InvoiceResponse>> findByBuyerEmailContainingIgnoreCase(@RequestParam("email") String email){
+		List<InvoiceResponse> responses = invoiceService.findByBuyerEmailContainingIgnoreCase(email);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/buyer-phone-number")
+	public ResponseEntity<List<InvoiceResponse>> findByBuyerPhoneNumber(@RequestParam("phoneNumber") String phoneNumber){
+		List<InvoiceResponse> responses = invoiceService.findByBuyerPhoneNumber(phoneNumber);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/by-note")
+	public ResponseEntity<List<InvoiceResponse>> findByNoteContainingIgnoreCase(@RequestParam("note") String note){
+		List<InvoiceResponse> responses = invoiceService.findByNoteContainingIgnoreCase(note);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/relatedSales/{relatedSalesId}")
+	public ResponseEntity<List<InvoiceResponse>> findByRelatedSales_Id(@PathVariable Long relatedSalesId){
+		List<InvoiceResponse> responses = invoiceService.findByRelatedSales_Id(relatedSalesId);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/relatedSales-totalPrice")
+	public ResponseEntity<List<InvoiceResponse>> findByRelatedSales_TotalPrice(@RequestParam("totalPrice") BigDecimal totalPrice){
+		List<InvoiceResponse> responses = invoiceService.findByRelatedSales_TotalPrice(totalPrice);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/relatedSales-totalPrice-greate-than")
+	public ResponseEntity<List<InvoiceResponse>> findByRelatedSales_TotalPriceGreaterThan(@RequestParam("totalPrice") BigDecimal totalPrice){
+		List<InvoiceResponse> responses = invoiceService.findByRelatedSales_TotalPriceGreaterThan(totalPrice);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/relatedSales-totalPrice-less-than")
+	public ResponseEntity<List<InvoiceResponse>> findByRelatedSales_TotalPriceLessThan(@RequestParam("totalPrice") BigDecimal totalPrice){
+		List<InvoiceResponse> responses = invoiceService.findByRelatedSales_TotalPriceLessThan(totalPrice);
+		return ResponseEntity.ok(responses);
+	}
+	
+	
+	@GetMapping("/payment-amount")
+	public ResponseEntity<List<InvoiceResponse>> findByPayment_Amount(@RequestParam("amount") BigDecimal amount){
+		List<InvoiceResponse> responses = invoiceService.findByPayment_Amount(amount);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/payment-date")
+	public ResponseEntity<List<InvoiceResponse>> findByPayment_PaymentDate(@RequestParam("paymentDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime paymentDate){
+		List<InvoiceResponse> responses = invoiceService.findByPayment_PaymentDate(paymentDate);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/payment-date-range")
+	public ResponseEntity<List<InvoiceResponse>> findByPayment_PaymentDateBetween(@RequestParam("paymentDateStart") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime paymentDateStart,
+            @RequestParam("paymentDateEnd") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime paymentDateEnd){
+		List<InvoiceResponse> responses = invoiceService.findByPayment_PaymentDateBetween(paymentDateStart, paymentDateEnd);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/payment-method")
+	public ResponseEntity<List<InvoiceResponse>> findByPayment_Method(@RequestParam("method") PaymentMethod method){
+		List<InvoiceResponse> responses = invoiceService.findByPayment_Method(method);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/payment-reference-number")
+	public ResponseEntity<List<InvoiceResponse>> findByPayment_ReferenceNumberContainingIgnoreCase(@RequestParam("referenceNumber") String referenceNumber){
+		List<InvoiceResponse> responses = invoiceService.findByPayment_ReferenceNumberContainingIgnoreCase(referenceNumber);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/salesOrder/{salesOrderId}")
+	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_Id(@PathVariable Long salesOrderId){
+		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_Id(salesOrderId);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/salesOrder-date")
+	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_OrderDate(@RequestParam("orderDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime orderDate){
+		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_OrderDate(orderDate);
+				return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/salesOrder-date-range")
+	public ResponseEntity<List<InvoiceResponse>> indBySalesOrder_OrderDateBetween(@RequestParam("orderDateStart") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime orderDateStart, @RequestParam("orderDateEnd") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime orderDateEnd){
+		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_OrderDateBetween(orderDateStart, orderDateEnd);
+				return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/salesOrder-total-amount")
+	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_TotalAmount(@RequestParam("totalAmount") BigDecimal totalAmount){
+		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_TotalAmount(totalAmount);
+				return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/salesOrder-total-amount-greater-than")
+	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_TotalAmountGreaterThan(@RequestParam("totalAmount") BigDecimal totalAmount){
+		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_TotalAmountGreaterThan(totalAmount);
+				return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/salesOrder-total-amount-less-than")
+	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_TotalAmountLessThan(@RequestParam("totalAmount") BigDecimal totalAmount){
+		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_TotalAmountLessThan(totalAmount);
+				return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/salesOrder-status")
+	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_Status(@RequestParam("status") OrderStatus status){
+		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_Status(status);
+				return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/salesOrder-note")
+	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_NoteContainingIgnoreCase(@RequestParam("note") String note){
+		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_NoteContainingIgnoreCase(note);
+				return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/createdBy/{createdById}")
+	public ResponseEntity<List<InvoiceResponse>> findByCreatedBy_Id(@PathVariable Long createdById){
+		List<InvoiceResponse> responses = invoiceService.findByCreatedBy_Id(createdById);
+				return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/createdBy-email")
+	public ResponseEntity<List<InvoiceResponse>>  findByCreatedBy_EmailContainingIgnoreCase(@RequestParam("createdByEmail") String createdByEmail){
+		List<InvoiceResponse> responses = invoiceService.findByCreatedBy_EmailContainingIgnoreCase(createdByEmail);
+				return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/createdBy-first-last-name")
+	public ResponseEntity<List<InvoiceResponse>>  findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(@RequestParam("createdByFirstName") String createdByFirstName,@RequestParam("createdByLastName") String createdByLastName){
+		List<InvoiceResponse> responses = invoiceService.findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(createdByFirstName, createdByLastName);
+				return ResponseEntity.ok(responses);
+	}
+	
 	
 }
