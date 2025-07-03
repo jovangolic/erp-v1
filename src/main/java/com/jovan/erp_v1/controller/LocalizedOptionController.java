@@ -11,9 +11,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.service.annotation.PutExchange;
 
+import com.jovan.erp_v1.enumeration.LanguageCodeType;
+import com.jovan.erp_v1.enumeration.LanguageNameType;
+import com.jovan.erp_v1.enumeration.OptionCategory;
 import com.jovan.erp_v1.request.LocalizedOptionRequest;
 import com.jovan.erp_v1.response.LocalizedOptionResponse;
 import com.jovan.erp_v1.service.ILocalizedOptionService;
@@ -23,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/localizedOption")
+@RequestMapping("/localizedOptions")
 @PreAuthorize("hasRole('ADMIN','SUPERADMIN')")
 public class LocalizedOptionController {
 
@@ -85,4 +89,41 @@ public class LocalizedOptionController {
         LocalizedOptionResponse response = localizedOptionService.update(id, request);
         return ResponseEntity.ok(response);
     }
+    
+    @GetMapping("/label")
+    public ResponseEntity<List<LocalizedOptionResponse>> findByOption_Label(@RequestParam("label") String label){
+    	List<LocalizedOptionResponse> responses = localizedOptionService.findByOption_Label(label);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/value")
+    public ResponseEntity<List<LocalizedOptionResponse>> findByOption_Value(@RequestParam("value") String value){
+    	List<LocalizedOptionResponse> responses = localizedOptionService.findByOption_Value(value);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/category")
+    public ResponseEntity<List<LocalizedOptionResponse>> findByOption_Category(@RequestParam("category") OptionCategory category){
+    	List<LocalizedOptionResponse> responses = localizedOptionService.findByOption_Category(category);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/language/{languageId}")
+    public ResponseEntity<List<LocalizedOptionResponse>> findByLanguage_Id(@PathVariable Long languageId){
+    	List<LocalizedOptionResponse> responses = localizedOptionService.findByLanguage_Id(languageId);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/language/code-type")
+    public ResponseEntity<List<LocalizedOptionResponse>> findByLanguage_LanguageCodeType(@RequestParam("languageCodeType") LanguageCodeType languageCodeType){
+    	List<LocalizedOptionResponse> responses = localizedOptionService.findByLanguage_LanguageCodeType(languageCodeType);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/language/name-type")
+    public ResponseEntity<List<LocalizedOptionResponse>> findByLanguage_LanguageNameType(@RequestParam("languageNameType") LanguageNameType languageNameType){
+    	List<LocalizedOptionResponse> responses = localizedOptionService.findByLanguage_LanguageNameType(languageNameType);
+    	return ResponseEntity.ok(responses);
+    }
+    
 }

@@ -2,6 +2,9 @@ package com.jovan.erp_v1.service;
 
 import java.util.List;
 
+import com.jovan.erp_v1.enumeration.LanguageCodeType;
+import com.jovan.erp_v1.enumeration.LanguageNameType;
+import com.jovan.erp_v1.enumeration.OptionCategory;
 import com.jovan.erp_v1.request.LocalizedOptionRequest;
 import com.jovan.erp_v1.response.LocalizedOptionResponse;
 
@@ -26,4 +29,12 @@ public interface ILocalizedOptionService {
     List<LocalizedOptionResponse> getAllByLanguage(Long languageId);
 
     LocalizedOptionResponse findOne(Long id);
+    //nove metode
+    List<LocalizedOptionResponse> findByOption_Label(String label);
+    List<LocalizedOptionResponse> findByOption_Value(String value);
+    List<LocalizedOptionResponse> findByOption_Category(OptionCategory category);
+    List<LocalizedOptionResponse> findByLanguage_Id(Long languageId);
+    List<LocalizedOptionResponse> findByLanguage_LanguageCodeType(LanguageCodeType languageCodeType);
+    List<LocalizedOptionResponse> findByLanguage_LanguageNameType(LanguageNameType languageNameType);
+    
 }

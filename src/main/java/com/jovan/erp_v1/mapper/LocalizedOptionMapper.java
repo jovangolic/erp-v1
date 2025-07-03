@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Objects;
+
 import org.springframework.stereotype.Component;
 
 import com.jovan.erp_v1.model.LocalizedOption;
@@ -26,6 +28,7 @@ public class LocalizedOptionMapper {
     }
 
     public LocalizedOptionResponse toResponse(LocalizedOption entity) {
+    	Objects.requireNonNull(entity,"LocalizedOption must not be null");
         return new LocalizedOptionResponse(
                 entity.getId(),
                 entity.getOption().getId(),

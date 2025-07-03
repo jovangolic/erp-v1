@@ -1,8 +1,11 @@
 package com.jovan.erp_v1.controller;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -136,5 +139,24 @@ public class JournalItemController {
     public ResponseEntity<List<JournalItemResponse>> search(@RequestParam("request") JournalItemSearchRequest request) {
         List<JournalItemResponse> responses = journalItemService.search(request);
         return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/by-entry-date")
+    public ResponseEntity<List<JournalItemResponse>> findByJournalEntry_EntryDate(@RequestParam("entryDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime entryDate){
+    	List<JournalItemResponse> responses = journalItemService.findByJournalEntry_EntryDate(entryDate);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/by-date-range")
+    public ResponseEntity<List<JournalItemResponse>> findByJournalEntry_EntryDateBetween(@RequestParam("entryDateStart") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime entryDateStart,
+            @RequestParam("entryDateEnd") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime entryDateEnd){
+    	List<JournalItemResponse> responses = journalItemService.findByJournalEntry_EntryDateBetween(entryDateStart, entryDateEnd);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/by-description")
+    public ResponseEntity<List<JournalItemResponse>> findByJournalEntry_Description(@RequestParam("description") String description){
+    	List<JournalItemResponse> responses = journalItemService.findByJournalEntry_Description(description);
+    	return ResponseEntity.ok(responses);
     }
 }

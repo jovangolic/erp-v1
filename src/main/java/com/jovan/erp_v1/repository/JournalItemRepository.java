@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,4 +34,7 @@ public interface JournalItemRepository extends JpaRepository<JournalItem, Long> 
     List<JournalItem> findByCredit(BigDecimal credit);
 
     List<JournalItem> findByJournalEntry_Id(Long journalEntryId);
+    List<JournalItem> findByJournalEntry_EntryDate(LocalDateTime entryDate);
+    List<JournalItem> findByJournalEntry_EntryDateBetween(LocalDateTime entryDateStart,LocalDateTime entryDateEnd);
+    List<JournalItem> findByJournalEntry_Description(String description);
 }

@@ -1,6 +1,8 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -21,7 +23,6 @@ public class JournalEntryMapper {
         JournalEntry j = new JournalEntry();
         j.setEntryDate(request.entryDate());
         j.setDescription(request.description());
-
         List<JournalItem> items = request.itemRequests().stream()
                 .map(itemReq -> {
                     JournalItem item = journalItemMapper.toEntity(itemReq);
@@ -48,10 +49,14 @@ public class JournalEntryMapper {
     }
 
     public JournalEntryResponse toResponse(JournalEntry entries) {
+    	Objects.requireNonNull(entries,"JournalEntry must not be null");
         return new JournalEntryResponse(entries);
     }
 
     public List<JournalEntryResponse> toResponseList(List<JournalEntry> entries) {
+    	if(entries == null || entries.isEmpty()) {
+    		return Collections.emptyList();
+    	}
         return entries.stream().map(this::toResponse).collect(Collectors.toList());
     }
 }

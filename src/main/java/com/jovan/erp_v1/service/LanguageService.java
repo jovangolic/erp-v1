@@ -28,6 +28,8 @@ public class LanguageService implements ILanguageService {
     @Transactional
     @Override
     public LanguageResponse create(LanguageRequest request) {
+    	validateLanguageCodeType(request.getLanguageCodeType());
+        validateLanguageNameType(request.getLanguageNameType());
         Language language = languageMapper.toEntity(request);
         languageRepository.save(language);
         return languageMapper.toResponse(language);
@@ -42,6 +44,7 @@ public class LanguageService implements ILanguageService {
 
     @Override
     public LanguageResponse findByCodeType(LanguageCodeType codeType) {
+    	validateLanguageCodeType(codeType);
         Language language = languageRepository.findByLanguageCodeType(codeType)
                 .orElseThrow(() -> new LanguageErrorException("Language with code " + codeType + " not found."));
         return languageMapper.toResponse(language);
@@ -51,6 +54,8 @@ public class LanguageService implements ILanguageService {
     public LanguageResponse update(Long id, LanguageRequest request) {
         Language lang = languageRepository.findById(id)
                 .orElseThrow(() -> new LanguageErrorException("Language not found " + id));
+        validateLanguageCodeType(request.getLanguageCodeType());
+        validateLanguageNameType(request.getLanguageNameType());
         lang.setLanguageCodeType(request.getLanguageCodeType());
         lang.setLanguageNameType(request.getLanguageNameType());
         Language saved = languageRepository.save(lang);
@@ -74,8 +79,21 @@ public class LanguageService implements ILanguageService {
 
     @Override
     public LanguageResponse findByNameType(LanguageNameType nameType) {
+    	validateLanguageNameType(nameType);
         Language name = languageRepository.findByLanguageNameType(nameType)
                 .orElseThrow(() -> new LanguageErrorException("Language name not found"));
         return new LanguageResponse(name);
+    }
+    
+    private void validateLanguageNameType(LanguageNameType nameType) {
+    	if(nameType == null) {
+    		throw new LanguageErrorException("LanguageNameType nameType must not be null");
+    	}
+    }
+    
+    private void validateLanguageCodeType(LanguageCodeType codeType) {
+    	if(codeType == null) {
+    		throw new LanguageErrorException("LanguageCodeType codeType must not be null");
+    	}
     }
 }

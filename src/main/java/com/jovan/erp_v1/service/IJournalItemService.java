@@ -1,8 +1,8 @@
 package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
-
 import com.jovan.erp_v1.enumeration.AccountType;
 import com.jovan.erp_v1.request.JournalItemRequest;
 import com.jovan.erp_v1.request.JournalItemSearchRequest;
@@ -43,4 +43,8 @@ public interface IJournalItemService {
     List<JournalItemResponse> findByJournalEntry_Id(Long journalEntryId);
 
     List<JournalItemResponse> search(JournalItemSearchRequest request);
+  
+    List<JournalItemResponse> findByJournalEntry_EntryDate(LocalDateTime entryDate);
+    List<JournalItemResponse> findByJournalEntry_EntryDateBetween(LocalDateTime entryDateStart,LocalDateTime entryDateEnd);
+    List<JournalItemResponse> findByJournalEntry_Description(String description);
 }

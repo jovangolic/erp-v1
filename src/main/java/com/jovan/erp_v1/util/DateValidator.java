@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.IllegalFormatFlagsException;
 
+import com.jovan.erp_v1.exception.LedgerEntryErrorException;
+
 public class DateValidator {
 
     public static void validateNotNull(LocalDate date, String fieldName) {
@@ -87,6 +89,15 @@ public class DateValidator {
         }
         if (dateTime.isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException(fieldName + " mora biti danas ili u budućnosti.");
+        }
+    }
+    
+    public void validateDateRange(LocalDateTime date, LocalDateTime min, LocalDateTime max) {
+        if (date.isBefore(min)) {
+            throw new LedgerEntryErrorException("Entry date is too far in the past.");
+        }
+        if (date.isAfter(max)) {
+            throw new LedgerEntryErrorException("Entry date is too far in the future.");
         }
     }
 

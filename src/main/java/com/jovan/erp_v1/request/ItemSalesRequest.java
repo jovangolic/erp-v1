@@ -19,7 +19,7 @@ public record ItemSalesRequest(
 
 	    @NotNull(message = "Količina je obavezna")
 	    @Positive(message = "Količina mora biti pozitivna")
-	    Integer quantity,
+	    BigDecimal quantity,
 
 	    @NotNull(message = "Jedinična cena je obavezna")
 	    @DecimalMin(value = "0.0", inclusive = false, message = "Cena mora biti pozitivna")

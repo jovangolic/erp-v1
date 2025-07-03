@@ -40,7 +40,7 @@ public class ItemSales {
 	private SalesOrder salesOrder;
 	
 	@Column
-	private Integer quantity;
+	private BigDecimal quantity;
 	
 	@Column(nullable = false)
 	private BigDecimal unitPrice;

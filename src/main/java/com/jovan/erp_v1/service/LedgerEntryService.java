@@ -12,9 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.AccountType;
 import com.jovan.erp_v1.enumeration.LedgerType;
+import com.jovan.erp_v1.exception.AccountNotFoundErrorException;
 import com.jovan.erp_v1.exception.LedgerEntryErrorException;
 import com.jovan.erp_v1.mapper.LedgerEntryMapper;
 import com.jovan.erp_v1.model.LedgerEntry;
+import com.jovan.erp_v1.repository.AccountRepository;
 import com.jovan.erp_v1.repository.LedgerEntryRepository;
 import com.jovan.erp_v1.request.LedgerEntryRequest;
 import com.jovan.erp_v1.response.LedgerEntryResponse;
@@ -27,21 +29,12 @@ public class LedgerEntryService implements ILedgerEntryService {
 
     private final LedgerEntryRepository ledgerEntryRepository;
     private final LedgerEntryMapper ledgerEntryMapper;
+    private final AccountRepository accountRepository;
 
     @Transactional
     @Override
     public LedgerEntryResponse create(LedgerEntryRequest request) {
-        if (request.entryDate().isAfter(LocalDateTime.now().plusYears(5))) {
-            throw new LedgerEntryErrorException("Entry date is too far in the future.");
-        }
-
-        if (request.entryDate().isBefore(LocalDateTime.of(2000, 1, 1, 0, 0))) {
-            throw new LedgerEntryErrorException("Entry date is too far in the past.");
-        }
-
-        if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new LedgerEntryErrorException("Amount must be a positive value.");
-        }
+        validateRequest(request);
         LedgerEntry entry = ledgerEntryMapper.toEntity(request);
         LedgerEntry saved = ledgerEntryRepository.save(entry);
         return ledgerEntryMapper.toResponse(ledgerEntryRepository.save(saved));
@@ -50,19 +43,9 @@ public class LedgerEntryService implements ILedgerEntryService {
     @Transactional
     @Override
     public LedgerEntryResponse update(Long id, LedgerEntryRequest request) {
-        if (request.entryDate().isAfter(LocalDateTime.now().plusYears(5))) {
-            throw new LedgerEntryErrorException("Entry date is too far in the future.");
-        }
-
-        if (request.entryDate().isBefore(LocalDateTime.of(2000, 1, 1, 0, 0))) {
-            throw new LedgerEntryErrorException("Entry date is too far in the past.");
-        }
-
-        if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new LedgerEntryErrorException("Amount must be a positive value.");
-        }
-        LedgerEntry entry = ledgerEntryRepository.findById(id)
+    	LedgerEntry entry = ledgerEntryRepository.findById(id)
                 .orElseThrow(() -> new LedgerEntryErrorException("LedgerEntry not found with id: " + id));
+    	validateRequest(request);
         ledgerEntryMapper.toUpdateEntity(entry, request);
         return ledgerEntryMapper.toResponse(ledgerEntryRepository.save(entry));
     }
@@ -92,6 +75,7 @@ public class LedgerEntryService implements ILedgerEntryService {
 
     @Override
     public List<LedgerEntryResponse> findByType(LedgerType type) {
+    	validateLedgerType(type);
         return ledgerEntryRepository.findByType(type).stream()
                 .map(LedgerEntryResponse::new)
                 .collect(Collectors.toList());
@@ -99,6 +83,8 @@ public class LedgerEntryService implements ILedgerEntryService {
 
     @Override
     public List<LedgerEntryResponse> findByAmountBetween(BigDecimal min, BigDecimal max) {
+    	validateBigDecimal(max);
+    	validateBigDecimal(min);
         return ledgerEntryRepository.findByAmountBetween(min, max).stream()
                 .map(LedgerEntryResponse::new)
                 .collect(Collectors.toList());
@@ -106,6 +92,7 @@ public class LedgerEntryService implements ILedgerEntryService {
 
     @Override
     public List<LedgerEntryResponse> findByDescriptionContainingIgnoreCase(String keyword) {
+    	validateString(keyword);
         return ledgerEntryRepository.findByDescriptionContainingIgnoreCase(keyword).stream()
                 .map(LedgerEntryResponse::new)
                 .collect(Collectors.toList());
@@ -135,6 +122,9 @@ public class LedgerEntryService implements ILedgerEntryService {
 
     @Override
     public List<LedgerEntryResponse> findByAccount_AccountNumber(String accountNumber) {
+    	if(!ledgerEntryRepository.existsByAccount_AccountNumber(accountNumber)) {
+    		throw new LedgerEntryErrorException("AccountNumber not found");
+    	}
         return ledgerEntryRepository.findByAccount_AccountNumber(accountNumber).stream()
                 .map(LedgerEntryResponse::new)
                 .collect(Collectors.toList());
@@ -142,6 +132,9 @@ public class LedgerEntryService implements ILedgerEntryService {
 
     @Override
     public List<LedgerEntryResponse> findByAccount_AccountName(String accountName) {
+    	if(!ledgerEntryRepository.existsByAccount_AccountName(accountName)) {
+    		throw new LedgerEntryErrorException("AccountName not found");
+    	}
         return ledgerEntryRepository.findByAccount_AccountName(accountName).stream()
                 .map(LedgerEntryResponse::new)
                 .collect(Collectors.toList());
@@ -149,6 +142,7 @@ public class LedgerEntryService implements ILedgerEntryService {
 
     @Override
     public List<LedgerEntryResponse> findByAccount_AccountNameContainingIgnoreCase(String name) {
+    	validateString(name);
         return ledgerEntryRepository.findByAccount_AccountNameContainingIgnoreCase(name).stream()
                 .map(LedgerEntryResponse::new)
                 .collect(Collectors.toList());
@@ -156,6 +150,7 @@ public class LedgerEntryService implements ILedgerEntryService {
 
     @Override
     public List<LedgerEntryResponse> findByAccount_Type(AccountType type) {
+    	validateAccountType(type);
         return ledgerEntryRepository.findByAccount_Type(type).stream()
                 .map(LedgerEntryResponse::new)
                 .collect(Collectors.toList());
@@ -163,6 +158,7 @@ public class LedgerEntryService implements ILedgerEntryService {
 
     @Override
     public List<LedgerEntryResponse> findByAccount_Balance(BigDecimal balance) {
+    	validateBigDecimal(balance);
         return ledgerEntryRepository.findByAccount_Balance(balance).stream()
                 .map(LedgerEntryResponse::new)
                 .collect(Collectors.toList());
@@ -217,5 +213,53 @@ public class LedgerEntryService implements ILedgerEntryService {
                 .findByEntryDateBetweenAndAccount_Id(start, end, accountId);
         return ledgerEntryMapper.toResponseList(entries);
     }
+    
+    private void validateLedgerType(LedgerType type) {
+    	if(type == null) {
+    		throw new IllegalArgumentException("LedgerType type must not be null");
+    	}
+    }
+    
+    private void validateAccountType(AccountType type) {
+    	if(type == null) {
+    		throw new IllegalArgumentException("AccountType type must not be null");
+    	}
+    }
+    
+    private void validateString(String str) {
+    	if(str == null) {
+    		throw new IllegalArgumentException("Given string must not be null nor empty");
+    	}
+    }
 
+    private void validateBigDecimal(BigDecimal num) {
+    	if(num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
+    		throw new IllegalArgumentException("Number must be positive");
+    	}
+    }
+    
+   private void validateAccountId(Long accountId) {
+	   if(accountId == null) {
+		   throw new AccountNotFoundErrorException("Account ID must not be null");
+	   }
+	   if(!accountRepository.existsById(accountId)) {
+		   throw new AccountNotFoundErrorException("Account not found with id "+accountId);
+	   }
+   }
+   
+   private void validateRequest(LedgerEntryRequest request) {
+	   if (request.entryDate().isAfter(LocalDateTime.now().plusYears(5))) {
+           throw new LedgerEntryErrorException("Entry date is too far in the future.");
+       }
+       if (request.entryDate().isBefore(LocalDateTime.of(2000, 1, 1, 0, 0))) {
+           throw new LedgerEntryErrorException("Entry date is too far in the past.");
+       }
+       if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0) {
+           throw new LedgerEntryErrorException("Amount must be a positive value.");
+       }
+       validateBigDecimal(request.amount());
+       validateString(request.description());
+       validateAccountId(request.accountId());
+       validateLedgerType(request.type());
+   }
 }

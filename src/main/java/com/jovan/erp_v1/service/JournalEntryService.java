@@ -15,6 +15,7 @@ import com.jovan.erp_v1.model.JournalEntry;
 import com.jovan.erp_v1.repository.JournalEntryRepository;
 import com.jovan.erp_v1.request.JournalEntryRequest;
 import com.jovan.erp_v1.response.JournalEntryResponse;
+import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +29,11 @@ public class JournalEntryService implements IJournalEntryService {
     @Transactional
     @Override
     public JournalEntryResponse create(JournalEntryRequest request) {
+    	DateValidator.validateNotNull(request.entryDate(), "Date and Time");
+    	validateString(request.description(), "Description");
+    	if (request.itemRequests() == null || request.itemRequests().isEmpty()) {
+    	    throw new IllegalArgumentException("Lista stavki ne sme biti prazna.");
+    	}
         JournalEntry entry = journalEntryMapper.toEntity(request);
         JournalEntry saved = journalEntryRepository.save(entry);
         return journalEntryMapper.toResponse(saved);
@@ -38,6 +44,11 @@ public class JournalEntryService implements IJournalEntryService {
     public JournalEntryResponse update(Long id, JournalEntryRequest request) {
         JournalEntry j = journalEntryRepository.findById(id)
                 .orElseThrow(() -> new JournalEntryErrorException("JournalEntry not found with id: " + id));
+        DateValidator.validateNotNull(request.entryDate(), "Date and Time");
+    	validateString(request.description(), "Description");
+    	if (request.itemRequests() == null || request.itemRequests().isEmpty()) {
+    	    throw new IllegalArgumentException("Lista stavki ne sme biti prazna prilikom ažuriranja unosa.");
+    	}
         journalEntryMapper.toUpdateEntity(j, request);
         return journalEntryMapper.toResponse(journalEntryRepository.save(j));
     }
@@ -67,6 +78,7 @@ public class JournalEntryService implements IJournalEntryService {
 
     @Override
     public List<JournalEntryResponse> findByDescription(String description) {
+    	validateString(description, "Description");
         return journalEntryRepository.findByDescription(description).stream()
                 .map(JournalEntryResponse::new)
                 .collect(Collectors.toList());
@@ -110,6 +122,7 @@ public class JournalEntryService implements IJournalEntryService {
 
     @Override
     public List<JournalEntryResponse> findByYear(Integer year) {
+    	validateInteger(year);
         return journalEntryRepository.findByYear(year).stream()
                 .map(JournalEntryResponse::new)
                 .collect(Collectors.toList());
@@ -134,6 +147,18 @@ public class JournalEntryService implements IJournalEntryService {
         if (start.isAfter(end)) {
             throw new JournalEntryErrorException("Start date and time must not be after end date and time");
         }
+    }
+    
+    private void validateString(String str, String fieldName) {
+    	if(str == null || str.trim().isEmpty())	{
+    		throw new IllegalArgumentException("Must be string not empty or null");
+    	}
+    }
+    
+    private void validateInteger(Integer num) {
+    	if(num == null || num < 0) {
+    		throw new IllegalArgumentException("Number must be positive");
+    	}
     }
 
 }

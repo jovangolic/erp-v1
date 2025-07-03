@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Objects;
+
 import org.springframework.stereotype.Component;
 
 import com.jovan.erp_v1.model.Language;
@@ -17,6 +19,7 @@ public class LanguageMapper {
     }
 
     public LanguageResponse toResponse(Language language) {
+    	Objects.requireNonNull(language,"Language must not be null");
         return new LanguageResponse(
                 language.getId(),
                 language.getLanguageCodeType(),

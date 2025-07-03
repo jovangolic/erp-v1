@@ -1,6 +1,8 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -35,14 +37,21 @@ public class JournalItemMapper {
     }
 
     public JournalItemResponse toResponse(JournalItem items) {
+    	Objects.requireNonNull(items,"JournalItem must not be null");
         return new JournalItemResponse(items);
     }
 
     public List<JournalItemResponse> toResponseList(List<JournalItem> items) {
+    	if(items == null || items.isEmpty()) {
+    		return Collections.emptyList();
+    	}
         return items.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     private Account fetchAccount(Long id) {
+    	if(id == null) {
+    		throw new AccountNotFoundErrorException("Account ID must not be null");
+    	}
         return accountRepository.findById(id)
                 .orElseThrow(() -> new AccountNotFoundErrorException("Account not found"));
     }

@@ -30,6 +30,8 @@ public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, Long> 
     List<LedgerEntry> findByAccount_Id(Long id);
 
     List<LedgerEntry> findByAccount_AccountNumber(String accountNumber);
+    boolean existsByAccount_AccountNumber(String accountNumber);
+    boolean existsByAccount_AccountName(String accountName);
 
     List<LedgerEntry> findByAccount_AccountName(String accountName);
 

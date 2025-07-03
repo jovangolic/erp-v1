@@ -17,6 +17,9 @@ import com.jovan.erp_v1.repository.LocalizedOptionRepository;
 import com.jovan.erp_v1.repository.OptionRepository;
 import com.jovan.erp_v1.request.LocalizedOptionRequest;
 import com.jovan.erp_v1.response.LocalizedOptionResponse;
+import com.jovan.erp_v1.enumeration.LanguageCodeType;
+import com.jovan.erp_v1.enumeration.LanguageNameType;
+import com.jovan.erp_v1.enumeration.OptionCategory;
 import com.jovan.erp_v1.exception.LanguageErrorException;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +36,8 @@ public class LocalizedOptionService implements ILocalizedOptionService {
     @Transactional
     @Override
     public LocalizedOptionResponse create(LocalizedOptionRequest request) {
+    	validateIds(request.getOptionId(), request.getLanguageId());
+    	validateString(request.getLocalizedLabel());
         LocalizedOption entity = localizedOptionMapper.toEntity(request);
         localizedOptionRepository.save(entity);
         return localizedOptionMapper.toResponse(entity);
@@ -70,10 +75,9 @@ public class LocalizedOptionService implements ILocalizedOptionService {
     public LocalizedOptionResponse update(Long id, LocalizedOptionRequest request) {
         LocalizedOption local = localizedOptionRepository.findById(id)
                 .orElseThrow(() -> new LocalizedOptionErrorException("LocalizedOption not found " + id));
-        Option opt = optionRepository.findById(request.getOptionId())
-                .orElseThrow(() -> new OptionErrorException("Option not found"));
-        Language lang = languageRepository.findById(request.getLanguageId())
-                .orElseThrow(() -> new LanguageErrorException("Language not found"));
+        Option opt = fetchOption(request.getOptionId());
+        Language lang = fetchLanguage(request.getLanguageId());
+        validateString(request.getLocalizedLabel());
         local.setLocalizedLabel(request.getLocalizedLabel());
         local.setLanguage(lang);
         local.setOption(opt);
@@ -91,6 +95,7 @@ public class LocalizedOptionService implements ILocalizedOptionService {
 
     @Override
     public LocalizedOptionResponse getTranslation(Long optionId, Long languageId) {
+    	validateIds(optionId, languageId);
         return localizedOptionRepository.findByOptionIdAndLanguageId(optionId, languageId)
                 .map(localizedOptionMapper::toResponse)
                 .orElseThrow(() -> new OptionErrorException("Prevod nije pronađen"));
@@ -98,6 +103,9 @@ public class LocalizedOptionService implements ILocalizedOptionService {
 
     @Override
     public List<LocalizedOptionResponse> getAllByLanguage(Long languageId) {
+    	if(!localizedOptionRepository.existsByLanguage_Id(languageId)) {
+			throw new LanguageErrorException("Language ID not found");
+		}
         List<LocalizedOption> lista = localizedOptionRepository.findByLanguageId(languageId);
         return lista.stream().map(localizedOptionMapper::toResponse)
                 .collect(Collectors.toList());
@@ -109,4 +117,99 @@ public class LocalizedOptionService implements ILocalizedOptionService {
                 .orElseThrow(() -> new LocalizedOptionErrorException("LocalizedOption not found " + id));
         return new LocalizedOptionResponse(opt);
     }
+
+	@Override
+	public List<LocalizedOptionResponse> findByOption_Label(String label) {
+		validateString(label);
+		return localizedOptionRepository.findByOption_Label(label).stream()
+				.map(LocalizedOptionResponse::new)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<LocalizedOptionResponse> findByOption_Value(String value) {
+		validateString(value);
+		return localizedOptionRepository.findByOption_Value(value).stream()
+				.map(LocalizedOptionResponse::new)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<LocalizedOptionResponse> findByOption_Category(OptionCategory category) {
+		validateOptionCategory(category);
+		return localizedOptionRepository.findByOption_Category(category).stream()
+				.map(LocalizedOptionResponse::new)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<LocalizedOptionResponse> findByLanguage_Id(Long languageId) {
+		if(!localizedOptionRepository.existsByLanguage_Id(languageId)) {
+			throw new LanguageErrorException("Language ID not found");
+		}
+		return localizedOptionRepository.findByLanguage_Id(languageId).stream()
+				.map(LocalizedOptionResponse::new)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<LocalizedOptionResponse> findByLanguage_LanguageCodeType(LanguageCodeType languageCodeType) {
+		validateLanguageCodeType(languageCodeType);
+		return localizedOptionRepository.findByLanguage_LanguageCodeType(languageCodeType).stream()
+				.map(LocalizedOptionResponse::new)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<LocalizedOptionResponse> findByLanguage_LanguageNameType(LanguageNameType languageNameType) {
+		validateLanguageNameType(languageNameType);
+		return localizedOptionRepository.findByLanguage_LanguageNameType(languageNameType).stream()
+				.map(LocalizedOptionResponse::new)
+				.collect(Collectors.toList());
+	}
+	
+	private void validateOptionCategory(OptionCategory category) {
+		if(category == null) {
+			throw new IllegalArgumentException("OptionCategory category must not be null");
+		}
+	}
+	
+	private void validateLanguageCodeType(LanguageCodeType languageCodeType) {
+		if(languageCodeType == null) {
+			throw new IllegalArgumentException("LanguageCodeType languageCodeType must not be null");
+		}
+	}
+	
+	private void validateLanguageNameType(LanguageNameType languageNameType) {
+		if(languageNameType == null) {
+			throw new IllegalArgumentException("LanguageNameType languageNameType must not be null");
+		}
+	}
+	
+	private void validateString(String str) {
+		if(str == null || str.trim().isEmpty()) {
+			throw new IllegalArgumentException("String musrt not be null nor empty");
+		}
+	}
+	
+	private Option fetchOption(Long optionId) {
+		if(optionId == null) {
+			throw new OptionErrorException("Option ID must not be null nor empty");
+		}
+		return optionRepository.findById(optionId)
+                .orElseThrow(() -> new OptionErrorException("Option not found"));
+	}
+	
+	private Language fetchLanguage(Long languageId) {
+		if(languageId == null) {
+			throw new LanguageErrorException("Language ID must not be null nor empty");
+		}
+		return languageRepository.findById(languageId)
+                .orElseThrow(() -> new LanguageErrorException("Language not found"));
+	}
+	
+	private void validateIds(Long optionId, Long languageId) {
+		fetchLanguage(languageId);
+		fetchOption(optionId);
+	}
 }
