@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,16 +24,20 @@ public class OptionService implements IOptionService {
     private final OptionRepository optionRepository;
     private final OptionMapper optionMapper;
 
+    @Transactional
     @Override
     public OptionResponse create(OptionRequest request) {
+    	validateCreateOption(request);
         Option option = optionMapper.toEntity(request);
         return optionMapper.toResponse(optionRepository.save(option));
     }
 
+    @Transactional
     @Override
     public OptionResponse update(Long id, OptionRequest request) {
         Option option = optionRepository.findById(id)
                 .orElseThrow(() -> new OptionErrorException("Option not found"));
+        validateUpdateOption(id, request);
         option.setLabel(request.label());
         option.setValue(request.value());
         option.setCategory(request.category());
@@ -40,6 +45,7 @@ public class OptionService implements IOptionService {
         return optionMapper.toResponse(optionRepository.save(option));
     }
 
+    @Transactional
     @Override
     public void delete(Long id) {
         optionRepository.deleteById(id);
@@ -54,6 +60,7 @@ public class OptionService implements IOptionService {
 
     @Override
     public List<OptionResponse> getByCategory(OptionCategory category) {
+    	validateOptionCategory(category);
         return optionRepository.findByCategory(category).stream()
                 .map(optionMapper::toResponse)
                 .toList();
@@ -63,12 +70,61 @@ public class OptionService implements IOptionService {
     public OptionResponse getOne(Long id) {
         Option opt = optionRepository.findById(id)
                 .orElseThrow(() -> new OptionErrorException("Option not found " + id));
-        return new OptionResponse(opt.getId(), opt.getLabel(), opt.getValue(), opt.getCategory(), opt.isActive());
+        return new OptionResponse(opt.getId(), opt.getLabel(), opt.getValue(), opt.getCategory(), opt.getActive());
     }
 
 	@Override
 	public List<OptionResponse> findByCategoryAndActiveTrue(OptionCategory category) {
-		
-		return null;
+		validateOptionCategory(category);
+		return optionRepository.findByCategoryAndActiveTrue(category).stream()
+				.map(optionMapper::toResponse)
+				.collect(Collectors.toList());
 	}
+	
+	private void validateOptionCategory(OptionCategory category) {
+		if(category == null) {
+			throw new IllegalArgumentException("OptionCategory category must not be null ");
+		}
+	}
+	
+	private void validateNonEmpty(String value, String fieldName) {
+	    if (value == null || value.trim().isEmpty()) {
+	        throw new IllegalArgumentException(fieldName + " must not be null or empty.");
+	    }
+	}
+	
+	private void validateBoolean(Boolean active) {
+		if(active == null) {
+			throw new IllegalArgumentException("Option must be active");
+		}
+	}
+	
+	private void validateCreateOption(OptionRequest request) {
+	    validateNonEmpty(request.label(), "Label");
+	    validateNonEmpty(request.value(), "Value");
+	    validateOptionCategory(request.category());
+	    validateBoolean(request.active());
+	    if (optionRepository.existsByLabel(request.label())) {
+	        throw new IllegalArgumentException("Label '" + request.label() + "' already exists.");
+	    }
+	    if (optionRepository.existsByValue(request.value())) {
+	        throw new IllegalArgumentException("Value '" + request.value() + "' already exists.");
+	    }
+	}
+	
+	private void validateUpdateOption(Long id, OptionRequest request) {
+	    validateNonEmpty(request.label(), "Label");
+	    validateNonEmpty(request.value(), "Value");
+	    validateOptionCategory(request.category());
+	    validateBoolean(request.active());
+	    Option labelMatch = optionRepository.findByLabel(request.label());
+	    if (labelMatch != null && !labelMatch.getId().equals(id)) {
+	        throw new IllegalArgumentException("Label '" + request.label() + "' already used by another option.");
+	    }
+	    Option valueMatch = optionRepository.findByValue(request.value());
+	    if (valueMatch != null && !valueMatch.getId().equals(id)) {
+	        throw new IllegalArgumentException("Value '" + request.value() + "' already used by another option.");
+	    }
+	}
+
 }

@@ -38,5 +38,5 @@ public class Option {
 
     @Column
     @Builder.Default
-    private boolean active = true;
+    private Boolean active = true;
 }

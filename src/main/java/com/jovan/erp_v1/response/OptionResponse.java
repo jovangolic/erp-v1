@@ -7,6 +7,6 @@ public record OptionResponse(
         String label,
         String value,
         OptionCategory category,
-        boolean active) {
+        Boolean active) {
 
 }

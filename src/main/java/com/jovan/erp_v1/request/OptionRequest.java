@@ -13,6 +13,5 @@ public record OptionRequest(
 
         @NotNull(message = "Kategorija je obavezna") OptionCategory category,
 
-        boolean active) {
-
+        Boolean active) {
 }

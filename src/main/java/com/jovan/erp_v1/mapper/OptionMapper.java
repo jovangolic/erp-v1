@@ -29,6 +29,6 @@ public class OptionMapper {
                 option.getLabel(),
                 option.getValue(),
                 option.getCategory(),
-                option.isActive());
+                option.getActive());
     }
 }
