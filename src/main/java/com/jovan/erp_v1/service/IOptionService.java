@@ -3,6 +3,7 @@ package com.jovan.erp_v1.service;
 import java.util.List;
 
 import com.jovan.erp_v1.enumeration.OptionCategory;
+import com.jovan.erp_v1.model.Option;
 import com.jovan.erp_v1.request.OptionRequest;
 import com.jovan.erp_v1.response.OptionResponse;
 
@@ -19,4 +20,5 @@ public interface IOptionService {
     List<OptionResponse> getAll();
 
     List<OptionResponse> getByCategory(OptionCategory category);
+    List<OptionResponse> findByCategoryAndActiveTrue(OptionCategory category);
 }

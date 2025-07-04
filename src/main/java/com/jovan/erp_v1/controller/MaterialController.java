@@ -127,7 +127,7 @@ public class MaterialController {
 
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/by-storageCapacity")
-    public ResponseEntity<List<MaterialResponse>> findByStorage_Capacity(@RequestParam("capacity") Double capacity) {
+    public ResponseEntity<List<MaterialResponse>> findByStorage_Capacity(@RequestParam("capacity") BigDecimal capacity) {
         List<MaterialResponse> responses = materialService.findByStorage_Capacity(capacity);
         return ResponseEntity.ok(responses);
     }
@@ -153,5 +153,19 @@ public class MaterialController {
             @RequestParam("reorderLevel") BigDecimal reorderLevel) {
         List<MaterialResponse> responses = materialService.findByReorderLevel(reorderLevel);
         return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
+    @GetMapping("/current-stock-greater-than")
+    public ResponseEntity<List<MaterialResponse>> findByCurrentStockGreterThan(@RequestParam("currentStock") BigDecimal currentStock){
+    	List<MaterialResponse> responses = materialService.findByCurrentStockGreterThan(currentStock);
+    	return ResponseEntity.ok(responses);			
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
+    @GetMapping("/current-stock-less-than")
+    public ResponseEntity<List<MaterialResponse>> findByCurrentStockLessThan(@RequestParam("currentStock") BigDecimal currentStock){
+    	List<MaterialResponse> responses = materialService.findByCurrentStockLessThan(currentStock);
+    	return ResponseEntity.ok(responses);	
     }
 }

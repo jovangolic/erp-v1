@@ -16,4 +16,8 @@ public interface OptionRepository extends JpaRepository<Option, Long> {
     Option findByLabel(String label);
 
     Option findByValue(String value);
+    //dodate metode
+    List<Option> findByCategoryAndActiveTrue(OptionCategory category);
+    boolean existsByValue(String value);
+    boolean existsByLabel(String label);
 }

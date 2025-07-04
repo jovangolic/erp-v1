@@ -65,4 +65,10 @@ public class OptionService implements IOptionService {
                 .orElseThrow(() -> new OptionErrorException("Option not found " + id));
         return new OptionResponse(opt.getId(), opt.getLabel(), opt.getValue(), opt.getCategory(), opt.isActive());
     }
+
+	@Override
+	public List<OptionResponse> findByCategoryAndActiveTrue(OptionCategory category) {
+		
+		return null;
+	}
 }

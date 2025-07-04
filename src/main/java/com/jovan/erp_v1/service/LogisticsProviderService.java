@@ -23,6 +23,7 @@ public class LogisticsProviderService implements ILogisticsProviderService {
     @Transactional
     @Override
     public LogisticsProviderResponse create(LogisticsProviderRequest request) {
+    	validate(request.name(),request.contactPhone(), request.email(),request.website());
         LogisticsProvider provider = new LogisticsProvider();
         provider.setName(request.name());
         provider.setContactPhone(request.contactPhone());
@@ -36,6 +37,7 @@ public class LogisticsProviderService implements ILogisticsProviderService {
     public LogisticsProviderResponse update(Long id, LogisticsProviderRequest request) {
         LogisticsProvider provider = logisticsProviderRepository.findById(id)
                 .orElseThrow(() -> new LogisticsProviderErrorException("Logistics-provider not found " + id));
+        validate(request.name(),request.contactPhone(), request.email(),request.website());
         provider.setName(request.name());
         provider.setContactPhone(request.contactPhone());
         provider.setEmail(request.email());
@@ -68,6 +70,7 @@ public class LogisticsProviderService implements ILogisticsProviderService {
 
     @Override
     public List<LogisticsProviderResponse> findByName(String name) {
+    	validate(name);
         return logisticsProviderRepository.findByName(name).stream()
                 .map(LogisticsProviderResponse::new)
                 .collect(Collectors.toList());
@@ -75,6 +78,7 @@ public class LogisticsProviderService implements ILogisticsProviderService {
 
     @Override
     public List<LogisticsProviderResponse> findByNameContainingIgnoreCase(String fragment) {
+    	validate(fragment);
         return logisticsProviderRepository.findByNameContainingIgnoreCase(fragment).stream()
                 .map(LogisticsProviderResponse::new)
                 .collect(Collectors.toList());
@@ -82,6 +86,7 @@ public class LogisticsProviderService implements ILogisticsProviderService {
 
     @Override
     public List<LogisticsProviderResponse> searchByNameOrWebsite(String query) {
+    	validate(query);
         return logisticsProviderRepository.searchByNameOrWebsite(query).stream()
                 .map(LogisticsProviderResponse::new)
                 .collect(Collectors.toList());
@@ -89,6 +94,7 @@ public class LogisticsProviderService implements ILogisticsProviderService {
 
     @Override
     public LogisticsProviderResponse findByContactPhone(String contactPhone) {
+    	validate(contactPhone);
         LogisticsProvider provider = logisticsProviderRepository.findByContactPhone(contactPhone);
         if (provider == null) {
             throw new LogisticsProviderErrorException("Provider with phone not found");
@@ -98,6 +104,7 @@ public class LogisticsProviderService implements ILogisticsProviderService {
 
     @Override
     public LogisticsProviderResponse findByEmail(String email) {
+    	validate(email);
         LogisticsProvider provider = logisticsProviderRepository.findByEmail(email);
         if (provider == null) {
             throw new LogisticsProviderErrorException("Provider with email not found");
@@ -107,11 +114,20 @@ public class LogisticsProviderService implements ILogisticsProviderService {
 
     @Override
     public LogisticsProviderResponse findByWebsite(String website) {
+    	validate(website);
         LogisticsProvider provider = logisticsProviderRepository.findByWebsite(website);
         if (provider == null) {
             throw new LogisticsProviderErrorException("Provider with website not found");
         }
         return new LogisticsProviderResponse(provider);
     }
-
+    
+    
+     public static void validate(String... strings) {
+          for(String s : strings) {
+              if (s == null || s.trim().isEmpty()) {
+                  throw new IllegalArgumentException("String must not be null nor empty");
+               }
+          } 
+    }
 }

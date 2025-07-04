@@ -35,11 +35,14 @@ public interface IMaterialService {
 
     List<MaterialResponse> findByStorage_Name(String storageName);
 
-    List<MaterialResponse> findByStorage_Capacity(Double capacity);
+    List<MaterialResponse> findByStorage_Capacity(BigDecimal capacity);
 
     List<MaterialResponse> findByStorage_Type(StorageType type);
 
     List<MaterialResponse> findByCurrentStock(BigDecimal currentStock);
 
     List<MaterialResponse> findByReorderLevel(BigDecimal reorderLevel);
+    
+    List<MaterialResponse> findByCurrentStockGreterThan(BigDecimal currentStock);
+    List<MaterialResponse> findByCurrentStockLessThan(BigDecimal currentStock);
 }

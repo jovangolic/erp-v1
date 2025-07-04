@@ -89,8 +89,12 @@ public class MaterialMovementService implements IMaterialMovementService {
 
     @Override
     public List<MaterialMovementResponse> findByType(MovementType type) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByType'");
+        if(type == null) {
+        	throw new IllegalArgumentException("MovementType type must not null nor empty");
+        }
+        return materialMovementRepository.findByType(type).stream()
+                .map(MaterialMovementResponse::new)
+                .collect(Collectors.toList());
     }
 
     @Override

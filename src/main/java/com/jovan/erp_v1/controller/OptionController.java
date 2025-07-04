@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.OptionCategory;
@@ -63,5 +64,11 @@ public class OptionController {
     @GetMapping("/category/{category}")
     public ResponseEntity<List<OptionResponse>> getByCategory(@PathVariable OptionCategory category) {
         return ResponseEntity.ok(optionService.getByCategory(category));
+    }
+    
+    @GetMapping("/category-is-active")
+    public ResponseEntity<List<OptionResponse>>findByCategoryAndActiveTrue(@RequestParam("category") OptionCategory category){
+    	List<OptionResponse> responses = optionService.findByCategoryAndActiveTrue(category);
+    	return ResponseEntity.ok(responses);
     }
 }
