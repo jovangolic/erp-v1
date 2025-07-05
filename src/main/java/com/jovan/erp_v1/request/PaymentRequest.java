@@ -36,5 +36,4 @@ public record PaymentRequest(
 	    @NotNull(message = "ID povezane prodaje je obavezan")
 	    Long relatedSalesId
 		) {
-
 }

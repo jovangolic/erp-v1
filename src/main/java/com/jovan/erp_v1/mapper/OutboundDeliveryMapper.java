@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.mapper;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -25,8 +26,7 @@ public class OutboundDeliveryMapper {
     public OutboundDelivery toEntity(OutboundDeliveryRequest request) {
         OutboundDelivery delivery = new OutboundDelivery();
         delivery.setDeliveryDate(request.deliveryDate());
-        Buyer buyer = buyerRepository.findById(request.buyerId())
-                .orElseThrow(() -> new BuyerNotFoundException("Buyer not found: " + request.buyerId()));
+        Buyer buyer = fetchBuyer(request.buyerId());
         delivery.setBuyer(buyer);
         delivery.setStatus(request.status());
         List<DeliveryItem> items = request.itemRequest().stream()
@@ -42,7 +42,15 @@ public class OutboundDeliveryMapper {
     }
 
     public OutboundDeliveryResponse toResponse(OutboundDelivery delivery) {
+    	Objects.requireNonNull(delivery,"OutboundDelivery must not be null");
         return new OutboundDeliveryResponse(delivery);
+    }
+    
+    private Buyer fetchBuyer(Long buyerId) {
+    	if(buyerId == null) {
+    		throw new BuyerNotFoundException("Buyer ID must not be null");
+    	}
+    	return buyerRepository.findById(buyerId).orElseThrow(() -> new BuyerNotFoundException("Buyer not found with ID: "+buyerId));
     }
 
 }
