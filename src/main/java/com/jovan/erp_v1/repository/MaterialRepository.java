@@ -37,7 +37,7 @@ public interface MaterialRepository extends JpaRepository<Material, Long>, JpaSp
     List<Material> findByStorage_Type(StorageType type);
 
     List<Material> findByCurrentStock(BigDecimal currentStock);
-    List<Material> findByCurrentStockGreterThan(BigDecimal currentStock);
+    List<Material> findByCurrentStockGreaterThan(BigDecimal currentStock);
     List<Material> findByCurrentStockLessThan(BigDecimal currentStock);
 
     List<Material> findByReorderLevel(BigDecimal reorderLevel);

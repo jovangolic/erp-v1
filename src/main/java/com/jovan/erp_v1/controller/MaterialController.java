@@ -157,8 +157,8 @@ public class MaterialController {
     
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/current-stock-greater-than")
-    public ResponseEntity<List<MaterialResponse>> findByCurrentStockGreterThan(@RequestParam("currentStock") BigDecimal currentStock){
-    	List<MaterialResponse> responses = materialService.findByCurrentStockGreterThan(currentStock);
+    public ResponseEntity<List<MaterialResponse>> findByCurrentStockGreaterThan(@RequestParam("currentStock") BigDecimal currentStock){
+    	List<MaterialResponse> responses = materialService.findByCurrentStockGreaterThan(currentStock);
     	return ResponseEntity.ok(responses);			
     }
     

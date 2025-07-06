@@ -200,9 +200,9 @@ public class MaterialService implements IMaterialService {
     }
     
     @Override
-	public List<MaterialResponse> findByCurrentStockGreterThan(BigDecimal currentStock) {
+	public List<MaterialResponse> findByCurrentStockGreaterThan(BigDecimal currentStock) {
 		validateBigDecimal(currentStock);
-		return materialRepository.findByCurrentStockGreterThan(currentStock).stream()
+		return materialRepository.findByCurrentStockGreaterThan(currentStock).stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
 	}

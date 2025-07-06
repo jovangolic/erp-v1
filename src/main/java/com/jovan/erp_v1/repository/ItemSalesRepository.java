@@ -66,9 +66,10 @@ public interface ItemSalesRepository extends JpaRepository<ItemSales, Long>, Jpa
 	List<ItemSales> findBySalesOrder_TotalAmount(BigDecimal totalAmount);
 	List<ItemSales> findBySalesOrder_TotalAmountGreaterThan(BigDecimal totalAmount);
 	List<ItemSales> findBySalesOrder_TotalAmountLessThan(BigDecimal totalAmount);
-	@Query("SELECT is FROM  ItemSale is WHERE is.salesOrder.buyer.id = :buyerId")
+	@Query("SELECT is FROM  ItemSales is WHERE is.salesOrder.buyer.id = :buyerId")
 	List<ItemSales> findBySalesOrder_Buyer_Id(@Param("buyerId") Long buyerId);
-	List<ItemSales> findBySalesOrder_OrderStatus(OrderStatus status);
+	@Query("SELECT is FROM ItemSales is WHERE is.salesOrder.status = :status")
+	List<ItemSales> findBySalesOrder_OrderStatus(@Param("status") OrderStatus status);
 	@Query("SELECT is FROM  ItemSales is WHERE is.salesOrder.invoice.id = :invoiceId")
 	List<ItemSales> findBySalesOrder_Invoice_Id(@Param("invoiceId") Long invoiceId);
 	//itemSales

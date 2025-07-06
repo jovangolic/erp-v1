@@ -363,14 +363,14 @@ public class InvoiceService implements IInvoiceService {
 	}
 
 	@Override
-	public boolean existsBySalesOrder_orderNumber(String orderNumber) {
+	public boolean existsBySalesOrder_OrderNumber(String orderNumber) {
 		if(orderNumber == null || orderNumber.trim().isEmpty()) {
 			throw new IllegalArgumentException("OrderNumber must not be null or empty");
 		}
 		if(!invoiceRepository.existsByInvoiceNumber(orderNumber)) {
 			throw new InvoiceNotFoundException("Mo orderNumber for SalesOrder not found "+orderNumber);
 		}
-		return invoiceRepository.existsBySalesOrder_orderNumber(orderNumber);
+		return invoiceRepository.existsBySalesOrder_OrderNumber(orderNumber);
 	}
 
 	@Override

@@ -53,7 +53,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 	List<Invoice> findByPayment_Method(PaymentMethod method);
 	List<Invoice> findByPayment_ReferenceNumberContainingIgnoreCase(String referenceNumber);
 	List<Invoice> findBySalesOrder_Id(Long salesOrderId);
-	boolean existsBySalesOrder_orderNumber(String orderNumber);
+	boolean existsBySalesOrder_OrderNumber(String orderNumber);
 	List<Invoice> findBySalesOrder_OrderDate(LocalDateTime orderDate);
 	List<Invoice> findBySalesOrder_OrderDateBetween(LocalDateTime orderDateStart, LocalDateTime orderDateEnd);
 	List<Invoice> findBySalesOrder_TotalAmount(BigDecimal totalAmount);
@@ -65,5 +65,5 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 	List<Invoice> findByCreatedBy_EmailContainingIgnoreCase(String createdByEmail);
 	List<Invoice> findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(String createdByFirstName, String createdByLastName);
 	boolean existsByBuyer_Pib(String pib);
-	boolean existsSalesOrder_OrderNumber(String orderNumber);
+	
 }

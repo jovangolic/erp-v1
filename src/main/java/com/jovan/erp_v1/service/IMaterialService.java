@@ -43,6 +43,6 @@ public interface IMaterialService {
 
     List<MaterialResponse> findByReorderLevel(BigDecimal reorderLevel);
     
-    List<MaterialResponse> findByCurrentStockGreterThan(BigDecimal currentStock);
+    List<MaterialResponse> findByCurrentStockGreaterThan(BigDecimal currentStock);
     List<MaterialResponse> findByCurrentStockLessThan(BigDecimal currentStock);
 }

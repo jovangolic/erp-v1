@@ -46,7 +46,7 @@ public interface IInvoiceService {
 	List<InvoiceResponse> findByPayment_Method(PaymentMethod method);
 	List<InvoiceResponse> findByPayment_ReferenceNumberContainingIgnoreCase(String referenceNumber);
 	List<InvoiceResponse> findBySalesOrder_Id(Long salesOrderId);
-	boolean existsBySalesOrder_orderNumber(String orderNumber);
+	boolean existsBySalesOrder_OrderNumber(String orderNumber);
 	List<InvoiceResponse> findBySalesOrder_OrderDate(LocalDateTime orderDate);
 	List<InvoiceResponse> findBySalesOrder_OrderDateBetween(LocalDateTime orderDateStart, LocalDateTime orderDateEnd);
 	List<InvoiceResponse> findBySalesOrder_TotalAmount(BigDecimal totalAmount);
