@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.request;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.jovan.erp_v1.enumeration.GoodsType;
@@ -8,6 +9,8 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -28,7 +31,9 @@ public record ProductRequest(
 
 		@NotNull(message = "ID skladišta je obavezan") Long storageId,
 
-		@NotNull(message = "Trenutna količina je obavezna") @PositiveOrZero(message = "Količina mora biti 0 ili veća") Double currentQuantity,
+		@NotNull(message = "Ukupna cena je obavezna")
+		@DecimalMin(value = "0.0", inclusive = false, message = "Cena mora biti veća od nule")
+		@Digits(integer = 10, fraction = 2, message = "Maksimalno 10 cifara pre i 2 posle decimalne tačke") BigDecimal currentQuantity,
 		List<@Valid BarCodeRequest> barCodes) {
 
 }

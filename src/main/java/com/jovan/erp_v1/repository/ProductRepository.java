@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +39,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByNameAndSupplierType(@Param("name") String name, @Param("type") SupplierType type);
 
     @Query("select p from Product p where p.currentQuantity <= :quantity")
-    List<Product> findByCurrentQuantityLessThan(@Param("quantity") Double currentQuantity);
+    List<Product> findByCurrentQuantityLessThan(@Param("quantity") BigDecimal currentQuantity);
 
     @Query("select p from Product p where p.supplierType = :supplierType")
     List<Product> findBySupplierType(@Param("supplierType") SupplierType supplierType);
@@ -59,4 +61,30 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("select p from Product p where p.storage = :storage")
     List<Product> findByStorage(@Param("storage") Storage storage);
+    
+    //nove metode
+    @Query("select p from Product p where p.shelf.rowCount = :row and p.shelf.cols = :col and p.shelf.storage.id = :storageId")
+    List<Product> findByShelfRowColAndStorage(@Param("row") Integer row,
+                                              @Param("col") Integer col,
+                                              @Param("storageId") Long storageId);
+
+    @Query("select p from Product p where p.shelf.rowCount = :row")
+    List<Product> findByShelfRow(@Param("row") Integer row);
+
+    @Query("select p from Product p where p.shelf.cols = :col")
+    List<Product> findByShelfColumn(@Param("col") Integer col);
+    
+    @Query("select p from Product p where p.supply.quantity >= :quantity")
+    List<Product> findBySupplyMinQuantity(@Param("quantity") BigDecimal quantity);
+
+    @Query("select p from Product p where p.supply.updates >= :from and p.supply.updates <= :to")
+    List<Product> findBySupplyUpdateRange(@Param("from") LocalDateTime from,
+                                          @Param("to") LocalDateTime to);
+
+    @Query("select p from Product p where p.supply.storage.id = :storageId")
+    List<Product> findBySupplyStorageId(@Param("storageId") Long storageId);
+    Long countByShelfRowCount(Integer rowCount);
+    Long countByShelfCols(Integer cols);
+    boolean existsByShelfRowCount(Integer rowCount);
+    boolean existsByShelfCols(Integer cols);
 }

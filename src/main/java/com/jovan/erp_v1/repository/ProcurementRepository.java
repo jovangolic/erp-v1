@@ -4,13 +4,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import com.jovan.erp_v1.model.Procurement;
+
 
 @Repository
 public interface ProcurementRepository extends JpaRepository<Procurement, Long> {
@@ -29,4 +28,7 @@ public interface ProcurementRepository extends JpaRepository<Procurement, Long> 
 
 	@Query("SELECT SUM(p.totalCost) FROM Procurement p")
 	BigDecimal sumTotalCost();
+	
+	List<Procurement> findByTotalCostGreaterThan(BigDecimal totalCost);
+	List<Procurement> findByTotalCostLessThan(BigDecimal totalCost);
 }

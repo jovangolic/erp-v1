@@ -17,4 +17,6 @@ public interface IProcurementService {
 	List<ProcurementResponse> getByTotalCost(BigDecimal totalCost);
 	List<ProcurementResponse> getByDateBetween(LocalDateTime start, LocalDateTime end);
 	List<ProcurementResponse> getByTotalCostBetween(BigDecimal min, BigDecimal max);
+	List<ProcurementResponse> getByTotalCostGreaterThan(BigDecimal totalCost);
+	List<ProcurementResponse> getByTotalCostLessThan(BigDecimal totalCost);
 }

@@ -94,6 +94,16 @@ public class ProcurementController {
 		return ResponseEntity.ok(responses);
 	}
 	
+	@GetMapping("/total-cost-greater-than")
+	public ResponseEntity<List<ProcurementResponse>> getByTotalCostGreaterThan(@RequestParam("totalCost")  BigDecimal totalCost){
+		List<ProcurementResponse> responses = procurementService.getByTotalCostGreaterThan(totalCost);
+		return ResponseEntity.ok(responses);
+	}
 	
+	@GetMapping("/total-cost-less-than")
+	public ResponseEntity<List<ProcurementResponse>> getByTotalCostLessThan(@RequestParam("totalCost") BigDecimal totalCost){
+		List<ProcurementResponse> responses = procurementService.getByTotalCostLessThan(totalCost);
+		return ResponseEntity.ok(responses);
+	}
 	
 }

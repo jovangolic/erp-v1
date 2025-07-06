@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import com.jovan.erp_v1.enumeration.ProductionOrderStatus;
@@ -24,7 +25,7 @@ public interface IProductionOrderService {
 
     List<ProductionOrderResponse> findByProduct_NameContainingIgnoreCase(String name);
 
-    List<ProductionOrderResponse> findByProduct_CurrentQuantity(Double currentQuantity);
+    List<ProductionOrderResponse> findByProduct_CurrentQuantity(BigDecimal currentQuantity);
 
     List<ProductionOrderResponse> findByStatus(ProductionOrderStatus status);
 

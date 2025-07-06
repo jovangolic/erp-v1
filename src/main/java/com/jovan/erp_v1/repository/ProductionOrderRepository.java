@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +24,7 @@ public interface ProductionOrderRepository
 
     List<ProductionOrder> findByProduct_NameContainingIgnoreCase(String name);
 
-    List<ProductionOrder> findByProduct_CurrentQuantity(Double currentQuantity);
+    List<ProductionOrder> findByProduct_CurrentQuantity(BigDecimal currentQuantity);
 
     List<ProductionOrder> findByStatus(ProductionOrderStatus status);
 
@@ -53,4 +54,5 @@ public interface ProductionOrderRepository
 
     @Query("SELECT p FROM ProductionOrder p WHERE p.startDate >= :startDate")
     List<ProductionOrder> findOrdersWithStartDateAfterOrEqual(@Param("startDate") LocalDate startDate);
+    boolean existsByOrderNumber(String orderNumber);
 };

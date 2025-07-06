@@ -1,3 +1,4 @@
+#Currenty doing refurbishing
 ERP Backend System — SLAM (Storage, Logistics and Accounting Management)
 
 This is the backend component of SLAM, a modular ERP system designed specifically for micro, small, and medium-sized enterprises (MSMEs) to streamline warehouse, logistics, and accounting operations.
@@ -58,15 +59,16 @@ This is the backend component of SLAM, a modular ERP system designed specificall
 ---
 
 ## 📁 Project Structure
-- 📁 model/         → JPA entities (User, Warehouse, Product, TransportOrder, Invoice...)
-- 📁 controller/    → REST API endpoints for external communication
-- 📁 service/       → Business logic and transaction handling
-- 📁 repository/    → Spring Data JPA interfaces
-- 📁 dto/           → Data Transfer Objects for safe data exchange
-- 📁 security/      → JWT utilities and security configuration
-- 📁 mapper/        → DTO <-> Entity mapping logic
-- 📁 config/        → Application and security configuration files
-- 📁 util/          → Utility classes (e.g., ApiMessages, CredentialGenerator, JsonUtil)
+
+- 📁 model/ → JPA entities (User, Warehouse, Product, TransportOrder, Invoice...)
+- 📁 controller/ → REST API endpoints for external communication
+- 📁 service/ → Business logic and transaction handling
+- 📁 repository/ → Spring Data JPA interfaces
+- 📁 dto/ → Data Transfer Objects for safe data exchange
+- 📁 security/ → JWT utilities and security configuration
+- 📁 mapper/ → DTO <-> Entity mapping logic
+- 📁 config/ → Application and security configuration files
+- 📁 util/ → Utility classes (e.g., ApiMessages, CredentialGenerator, JsonUtil)
 
 ---
 
@@ -114,9 +116,11 @@ To interact with protected endpoints, you must first **authenticate using JWT**.
 #### Steps:
 
 1. **Locate the JWT secret key**
+
    - Open `.env` file and copy the value of `JWT_SECRET`.
 
 2. **Configure Postman Authorization**
+
    - Go to the **Authorization** tab.
    - Select `Bearer Token` or `JWT Bearer` (depending on Postman).
    - Set:
@@ -125,7 +129,7 @@ To interact with protected endpoints, you must first **authenticate using JWT**.
    - Leave other fields as default.
 
 3. **User Setup & Login Flow (using Postman)
-This section explains how to create users and log into the system using **Postman**.
+   This section explains how to create users and log into the system using **Postman\*\*.
 
 ---
 
@@ -148,11 +152,11 @@ Endpoint: POST http://localhost:8080/users/create-superadmin
 Request Body:
 
 {
-  "firstName": "John",
-  "lastName": "Doe",
-  "address": "Main Street 1",
-  "phoneNumber": "0648888123",
-  "types": "SUPERADMIN"
+"firstName": "John",
+"lastName": "Doe",
+"address": "Main Street 1",
+"phoneNumber": "0648888123",
+"types": "SUPERADMIN"
 }
 
 📥 Response:
@@ -173,8 +177,8 @@ Endpoint: POST http://localhost:8080/auth/login
 
 Request Body:
 {
-  "identifier": "john.doe@firma.rs",
-  "password": "<generated_password>"
+"identifier": "john.doe@firma.rs",
+"password": "<generated_password>"
 }
 Once logged in, copy the returned JWT token and add it to the Authorization header:
 Authorization: Bearer <your_token>
@@ -186,6 +190,7 @@ Once logged in as Superadmin, you can create new users.
 🧑‍💼 Admin
 
 Endpoint: POST http://localhost:8080/users/create-admin
+
 ```json
 {
   "firstName": "Dragan",
@@ -193,21 +198,24 @@ Endpoint: POST http://localhost:8080/users/create-admin
   "phoneNumber": "0647654321",
   "address": "Detelinara 100, Novi Sad",
   "types": "ADMIN"
-} 
+}
 ```
 
 Login as Admin
 
 Endpoint: POST http://localhost:8080/auth/login
+
 ```json
 {
   "identifier": "dragan.torbica@firma.rs",
   "password": "<generated_password>"
 }
 ```
+
 Create Storage Foreman
 
 Endpoint: POST http://localhost:8080/users/admin/create-user
+
 ```json
 {
   "firstName": "Djordje",
@@ -217,9 +225,11 @@ Endpoint: POST http://localhost:8080/users/admin/create-user
   "types": "STORAGE_FOREMAN"
 }
 ```
+
 Create Storage Employee
 
 Endpoint: POST http://localhost:8080/users/admin/create-user
+
 ```json
 {
   "firstName": "Bosko",
@@ -229,7 +239,8 @@ Endpoint: POST http://localhost:8080/users/admin/create-user
   "types": "STORAGE_EMPLOYEE"
 }
 ```
-2. **Postman Testing Summary
+
+2. \*\*Postman Testing Summary
 
 All major user roles (SUPERADMIN, ADMIN, STORAGE_FOREMAN, STORAGE_EMPLOYEE) can be created via Postman
 
@@ -253,10 +264,9 @@ bash
 mvn clean install -DskipTests
 mvn spring-boot:run
 
-Clone the repository: 
+Clone the repository:
 https://github.com/jovangolic/erp-v1.git
 cd erp-v1
-
 
 # Jovan Golić - Author of this project.
 
@@ -265,7 +275,6 @@ cd erp-v1
 For questions, feel free to open an issue or reach out via GitHub:
 🔗 github.com/jovangolic
 For any inquiries or issues, please open an issue in the repository or contact me at jovangolic19@gmail.com.
-
 
 # Contributing
 

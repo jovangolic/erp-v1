@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,12 +10,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.ProductionOrderStatus;
+import com.jovan.erp_v1.exception.ProductNotFoundException;
 import com.jovan.erp_v1.exception.ProductionOrderErrorException;
+import com.jovan.erp_v1.exception.WorkCenterErrorException;
 import com.jovan.erp_v1.mapper.ProductionOrderMapper;
+import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.model.ProductionOrder;
+import com.jovan.erp_v1.model.WorkCenter;
+import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.ProductionOrderRepository;
+import com.jovan.erp_v1.repository.WorkCenterRepository;
 import com.jovan.erp_v1.request.ProductionOrderRequest;
 import com.jovan.erp_v1.response.ProductionOrderResponse;
+import com.jovan.erp_v1.util.DateValidator;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -25,28 +33,13 @@ public class ProductionOrderService implements IProductionOrderService {
 
     private final ProductionOrderRepository productionOrderRepository;
     private final ProductionOrderMapper productionOrderMapper;
+    private final WorkCenterRepository workCenterRepository;
+    private final ProductRepository productRepository;
 
     @Transactional
     @Override
     public ProductionOrderResponse create(ProductionOrderRequest request) {
-        if (request.orderNumber() == null) {
-            throw new IllegalArgumentException("OrderNumber must not be null");
-        }
-        if (request.productId() == null) {
-            throw new IllegalArgumentException("ProductId must not be null");
-        }
-        if (request.workCenterId() == null) {
-            throw new IllegalArgumentException("WorkCenterId must not be null");
-        }
-        if (request.quantityPlanned() == null || request.quantityProduced() == null) {
-            throw new IllegalArgumentException("qualityPlanned and quantityProduced must not be null");
-        }
-        if (request.endDate() != null && request.startDate().isAfter(request.endDate())) {
-            throw new IllegalArgumentException("StartDate must not be after endDate");
-        }
-        if (request.startDate().isAfter(request.endDate())) {
-            throw new IllegalArgumentException("StartDate must not be after endDate");
-        }
+        validateProductionOrderRequest(request);
         ProductionOrder order = productionOrderMapper.toEntity(request);
         ProductionOrder saved = productionOrderRepository.save(order);
         return productionOrderMapper.toResponse(saved);
@@ -55,24 +48,7 @@ public class ProductionOrderService implements IProductionOrderService {
     @Transactional
     @Override
     public ProductionOrderResponse update(Long id, ProductionOrderRequest request) {
-        if (request.orderNumber() == null) {
-            throw new IllegalArgumentException("OrderNumber must not be null");
-        }
-        if (request.productId() == null) {
-            throw new IllegalArgumentException("ProductId must not be null");
-        }
-        if (request.workCenterId() == null) {
-            throw new IllegalArgumentException("WorkCenterId must not be null");
-        }
-        if (request.quantityPlanned() == null || request.quantityProduced() == null) {
-            throw new IllegalArgumentException("qualityPlanned and quantityProduced must not be null");
-        }
-        if (request.endDate() != null && request.startDate().isAfter(request.endDate())) {
-            throw new IllegalArgumentException("StartDate must not be after endDate");
-        }
-        if (request.startDate().isAfter(request.endDate())) {
-            throw new IllegalArgumentException("StartDate must not be after endDate");
-        }
+        validateProductionOrderRequest(request);
         ProductionOrder o = productionOrderRepository.findById(id)
                 .orElseThrow(() -> new ProductionOrderErrorException("ProductionOrder not found with id " + id));
         productionOrderMapper.toUpdateEntity(o, request);
@@ -104,6 +80,7 @@ public class ProductionOrderService implements IProductionOrderService {
 
     @Override
     public ProductionOrderResponse findByOrderNumber(String orderNumber) {
+    	validateOrderNumberExists(orderNumber);
         ProductionOrder o = productionOrderRepository.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new ProductionOrderErrorException("OrderNumber not found for ProductionOrder"));
         return new ProductionOrderResponse(o);
@@ -111,6 +88,7 @@ public class ProductionOrderService implements IProductionOrderService {
 
     @Override
     public List<ProductionOrderResponse> findByProduct_Id(Long productId) {
+    	fetchProduct(productId);
         return productionOrderRepository.findByProduct_Id(productId).stream()
                 .map(ProductionOrderResponse::new)
                 .collect(Collectors.toList());
@@ -118,13 +96,15 @@ public class ProductionOrderService implements IProductionOrderService {
 
     @Override
     public List<ProductionOrderResponse> findByProduct_NameContainingIgnoreCase(String name) {
+    	validateString(name);
         return productionOrderRepository.findByProduct_NameContainingIgnoreCase(name).stream()
                 .map(ProductionOrderResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ProductionOrderResponse> findByProduct_CurrentQuantity(Double currentQuantity) {
+    public List<ProductionOrderResponse> findByProduct_CurrentQuantity(BigDecimal currentQuantity) {
+    	validateBigDecimal(currentQuantity);
         return productionOrderRepository.findByProduct_CurrentQuantity(currentQuantity).stream()
                 .map(ProductionOrderResponse::new)
                 .collect(Collectors.toList());
@@ -132,6 +112,7 @@ public class ProductionOrderService implements IProductionOrderService {
 
     @Override
     public List<ProductionOrderResponse> findByStatus(ProductionOrderStatus status) {
+    	validateProductionOrderStatus(status);
         return productionOrderRepository.findByStatus(status).stream()
                 .map(ProductionOrderResponse::new)
                 .collect(Collectors.toList());
@@ -139,6 +120,7 @@ public class ProductionOrderService implements IProductionOrderService {
 
     @Override
     public List<ProductionOrderResponse> findByWorkCenter_Id(Long workCenterId) {
+    	fetchWorkCenter(workCenterId);
         return productionOrderRepository.findByWorkCenter_Id(workCenterId).stream()
                 .map(ProductionOrderResponse::new)
                 .collect(Collectors.toList());
@@ -146,6 +128,7 @@ public class ProductionOrderService implements IProductionOrderService {
 
     @Override
     public List<ProductionOrderResponse> findByWorkCenter_NameContainingIgnoreCase(String name) {
+    	validateString(name);
         return productionOrderRepository.findByWorkCenter_NameContainingIgnoreCase(name).stream()
                 .map(ProductionOrderResponse::new)
                 .collect(Collectors.toList());
@@ -153,6 +136,7 @@ public class ProductionOrderService implements IProductionOrderService {
 
     @Override
     public List<ProductionOrderResponse> findByWorkCenter_LocationContainingIgnoreCase(String location) {
+    	validateString(location);
         return productionOrderRepository.findByWorkCenter_LocationContainingIgnoreCase(location).stream()
                 .map(ProductionOrderResponse::new)
                 .collect(Collectors.toList());
@@ -160,6 +144,7 @@ public class ProductionOrderService implements IProductionOrderService {
 
     @Override
     public List<ProductionOrderResponse> findByWorkCenter_Capacity(Integer capacity) {
+    	validateInteger(capacity);
         return productionOrderRepository.findByWorkCenter_Capacity(capacity).stream()
                 .map(ProductionOrderResponse::new)
                 .collect(Collectors.toList());
@@ -167,6 +152,7 @@ public class ProductionOrderService implements IProductionOrderService {
 
     @Override
     public List<ProductionOrderResponse> findByWorkCenter_CapacityGreaterThan(Integer capacity) {
+    	validateInteger(capacity);
         return productionOrderRepository.findByWorkCenter_CapacityGreaterThan(capacity).stream()
                 .map(ProductionOrderResponse::new)
                 .collect(Collectors.toList());
@@ -174,6 +160,7 @@ public class ProductionOrderService implements IProductionOrderService {
 
     @Override
     public List<ProductionOrderResponse> findByWorkCenter_CapacityLessThan(Integer capacity) {
+    	validateInteger(capacity);
         return productionOrderRepository.findByWorkCenter_CapacityLessThan(capacity).stream()
                 .map(ProductionOrderResponse::new)
                 .collect(Collectors.toList());
@@ -181,6 +168,7 @@ public class ProductionOrderService implements IProductionOrderService {
 
     @Override
     public List<ProductionOrderResponse> findByQuantityPlanned(Integer quantityPlanned) {
+    	validateInteger(quantityPlanned);
         return productionOrderRepository.findByQuantityPlanned(quantityPlanned).stream()
                 .map(ProductionOrderResponse::new)
                 .collect(Collectors.toList());
@@ -188,6 +176,7 @@ public class ProductionOrderService implements IProductionOrderService {
 
     @Override
     public List<ProductionOrderResponse> findByQuantityProduced(Integer quantityProduced) {
+    	validateInteger(quantityProduced);
         return productionOrderRepository.findByQuantityProduced(quantityProduced).stream()
                 .map(ProductionOrderResponse::new)
                 .collect(Collectors.toList());
@@ -272,6 +261,63 @@ public class ProductionOrderService implements IProductionOrderService {
             return cb.and(predicates.toArray(new Predicate[0]));
         });
         return filteredOrders.stream().map(ProductionOrderResponse::new).collect(Collectors.toList());
+    }
+    
+    private void validateInteger(Integer num) {
+    	if(num == null || num < 0) {
+    		throw new IllegalArgumentException("Number must be positive");
+    	}
+    }
+    
+    private void validateString(String str) {
+    	if(str == null || str.trim().isEmpty()) {
+    		throw new IllegalArgumentException("String must not be null nor empty");
+    	}
+    }
+    
+    private void validateProductionOrderStatus(ProductionOrderStatus status) {
+    	if(status == null) {
+    		throw new IllegalArgumentException("ProductionOrderStatus status must not be null");
+    	}
+    }
+    
+    private WorkCenter fetchWorkCenter(Long workCenterId) {
+    	if(workCenterId == null) {
+    		throw new WorkCenterErrorException("WorkCenter ID must not be null");
+    	}
+    	return workCenterRepository.findById(workCenterId).orElseThrow(() -> new WorkCenterErrorException("WorkCenter not found with id "+workCenterId));
+    }
+    
+    private Product fetchProduct(Long productId) {
+    	if(productId == null) {
+    		throw new ProductNotFoundException("Product ID must not be null");
+    	}
+    	return productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found with id "+productId));
+    }
+    
+    private void validateOrderNumberExists(String orderNumber) {
+    	if(orderNumber == null) {
+    		throw new IllegalArgumentException("OrderNumber must not be null");
+    	}
+    	if(!productionOrderRepository.existsByOrderNumber(orderNumber)) {
+    		throw new ProductionOrderErrorException("OrderNumber not found "+orderNumber);
+    	}
+    }
+    
+    private void validateBigDecimal(BigDecimal num) {
+    	if(num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
+    		throw new IllegalArgumentException("Number must be positive");
+    	}
+    }
+    
+    private void validateProductionOrderRequest(ProductionOrderRequest request) {
+    	validateOrderNumberExists(request.orderNumber());
+    	fetchProduct(request.productId());
+    	validateInteger(request.quantityPlanned());
+    	validateInteger(request.quantityProduced());
+    	DateValidator.validateRange(request.startDate(), request.endDate());
+    	validateProductionOrderStatus(request.status());
+    	fetchWorkCenter(request.workCenterId());
     }
 
 }

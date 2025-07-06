@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.model;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -18,7 +19,7 @@ import lombok.NoArgsConstructor;
 public class Product extends Goods {
 	
 	@Column(nullable = false)
-    private Double currentQuantity;
+    private BigDecimal currentQuantity;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RawMaterial> composition;

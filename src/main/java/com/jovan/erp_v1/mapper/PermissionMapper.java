@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Objects;
+
 import org.springframework.stereotype.Component;
 import com.jovan.erp_v1.enumeration.PermissionType;
 import com.jovan.erp_v1.model.Permission;
@@ -16,6 +18,7 @@ public class PermissionMapper {
     }
 
     public PermissionResponse toResponse(Permission entity) {
+    	Objects.requireNonNull(entity,"Permission must not be null");
         return new PermissionResponse(entity.getId(), entity.getPermissionType());
     }
 }

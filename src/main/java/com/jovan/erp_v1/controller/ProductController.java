@@ -1,7 +1,10 @@
 package com.jovan.erp_v1.controller;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.mapper.ProductMapper;
 import com.jovan.erp_v1.request.ProductRequest;
 import com.jovan.erp_v1.response.ProductResponse;
@@ -77,7 +81,7 @@ public class ProductController {
 	}
 	
 	@GetMapping("/product-by-quantity")
-	public ResponseEntity<List<ProductResponse>> findByCurrentQuantityLessThan(@RequestParam("quantity") Double quantity){
+	public ResponseEntity<List<ProductResponse>> findByCurrentQuantityLessThan(@RequestParam("quantity") BigDecimal quantity){
 		List<ProductResponse> responses = productService.findByCurrentQuantityLessThan(quantity);
 		return ResponseEntity.ok(responses);
 	}
@@ -109,6 +113,63 @@ public class ProductController {
 	@GetMapping("/product-by-goods-type")
 	public ResponseEntity<List<ProductResponse>> findByGoodsType(@RequestParam("goodsType") GoodsType goodsType){
 		List<ProductResponse> responses = productService.findByGoodsType(goodsType);
+		return ResponseEntity.ok(responses);
+	}
+	
+	//nove metode
+	
+	@GetMapping("/by-unitMeasure")
+	public ResponseEntity<List<ProductResponse>> findByUnitMeasure(@RequestParam("unitMeasure") UnitMeasure unitMeasure){
+		List<ProductResponse> responses = productService.findByUnitMeasure(unitMeasure);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/storage/{storageId}/shelf")
+	public ResponseEntity<List<ProductResponse>> findByShelfRowColAndStorage(@RequestParam("row") Integer row,@RequestParam("col") Integer col,@PathVariable Long storageId){
+		List<ProductResponse> responses = productService.findByShelfRowColAndStorage(row, col, storageId);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/shelf/row")
+	public ResponseEntity<List<ProductResponse>> findByShelfRow(@RequestParam("row") Integer row){
+		List<ProductResponse> responses = productService.findByShelfRow(row);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/shelf/col")
+	public ResponseEntity<List<ProductResponse>> findByShelfColumn(@RequestParam("col") Integer col){
+		List<ProductResponse> responses = productService.findByShelfColumn(col);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/supply-min-quantity")
+	public ResponseEntity<List<ProductResponse>> findBySupplyMinQuantity(@RequestParam("quantity") BigDecimal quantity){
+		List<ProductResponse> responses = productService.findBySupplyMinQuantity(quantity);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/supply/updated")
+	public ResponseEntity<List<ProductResponse>>  findBySupplyUpdateRange(@RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+			@RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to){
+		List<ProductResponse> responses = productService.findBySupplyUpdateRange(from, to);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/storage/{storageId}")
+	public ResponseEntity<List<ProductResponse>> findBySupplyStorageId(@PathVariable Long storageId){
+		List<ProductResponse> responses = productService.findBySupplyStorageId(storageId);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/count/shelf/rows")
+	public ResponseEntity<Long> countByShelfRowCount(@RequestParam("rowCount") Integer rowCount){
+		Long responses = productService.countByShelfRowCount(rowCount);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/count/shelf/cols")
+	public ResponseEntity<Long> countByShelfCols(@RequestParam("cols") Integer cols){
+		Long responses = productService.countByShelfCols(cols);
 		return ResponseEntity.ok(responses);
 	}
 }

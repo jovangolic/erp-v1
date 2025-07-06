@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.response;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,7 +18,7 @@ public class ProductResponse {
     private String name;
     // private String barCode;
     private UnitMeasure unitMeasure;
-    private Double currentQuantity;
+    private BigDecimal currentQuantity;
     private List<RawMaterialResponse> composition;
 
     public ProductResponse(Product product) {

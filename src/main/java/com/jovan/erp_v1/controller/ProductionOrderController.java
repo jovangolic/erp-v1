@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.controller;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -85,7 +86,7 @@ public class ProductionOrderController {
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','QUALITY_MANAGER')")
     @GetMapping("/by-productQuantity")
     public ResponseEntity<List<ProductionOrderResponse>> findByProduct_CurrentQuantity(
-            @RequestParam("currentQuantity") Double currentQuantity) {
+            @RequestParam("currentQuantity") BigDecimal currentQuantity) {
         List<ProductionOrderResponse> response = productionOrderService.findByProduct_CurrentQuantity(currentQuantity);
         return ResponseEntity.ok(response);
     }

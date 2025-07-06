@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jovan.erp_v1.enumeration.PermissionType;
 import com.jovan.erp_v1.exception.PermissionErrorException;
 import com.jovan.erp_v1.mapper.PermissionMapper;
 import com.jovan.erp_v1.model.Permission;
@@ -24,6 +25,7 @@ public class PermissionService implements IPermissionService {
 
     @Override
     public PermissionResponse create(PermissionRequest request) {
+    	validatePermisionType(request.getPermissionType());
         Permission permission = permissionMapper.toEntity(request);
         permissionRepository.save(permission);
         return permissionMapper.toResponse(permission);
@@ -38,7 +40,8 @@ public class PermissionService implements IPermissionService {
 
     @Override
     public PermissionResponse getById(Long id) {
-        return null;
+    	Permission p = permissionRepository.findById(id).orElseThrow(() -> new PermissionErrorException("PermissionType id not found wuth type "+id));
+        return new PermissionResponse(p);
     }
 
     @Override
@@ -55,11 +58,24 @@ public class PermissionService implements IPermissionService {
     public PermissionResponse update(Long id, PermissionRequest request) {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Permission with ID " + id + " not found"));
-
+        validatePermisionType(request.getPermissionType());
         permission.setPermissionType(request.getPermissionType());
         Permission updated = permissionRepository.save(permission);
 
         return permissionMapper.toResponse(updated);
     }
+
+	@Override
+	public PermissionResponse findByPermissionType(PermissionType type) {
+		Permission p = validatePermisionType(type);
+		return new PermissionResponse(p);
+	}
+	
+	private Permission validatePermisionType(PermissionType type) {
+		if(type == null) {
+			throw new IllegalArgumentException("Type must not be null");
+		}
+		return permissionRepository.findByPermissionType(type).orElseThrow(() -> new PermissionErrorException("PermissionType type not found wuth type "+type));
+	}
 
 }

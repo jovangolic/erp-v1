@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.request;
 
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,5 +25,4 @@ public record ProcurementRequest(
 	    @NotEmpty(message = "Morate navesti bar jednu stavku iz dobavljača")
 	    List<Long> supplyItemIds 
 		) {
-
 }
