@@ -1,4 +1,4 @@
-#Currenty doing refurbishing
+#Currenty doing refurbishing, use Eclipse or InteliJ
 ERP Backend System — SLAM (Storage, Logistics and Accounting Management)
 
 This is the backend component of SLAM, a modular ERP system designed specifically for micro, small, and medium-sized enterprises (MSMEs) to streamline warehouse, logistics, and accounting operations.
