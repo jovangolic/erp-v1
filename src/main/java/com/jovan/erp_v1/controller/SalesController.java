@@ -98,4 +98,74 @@ public class SalesController {
 	
 	//nove metode
 
+	@GetMapping("/buyer/{buyerId}")
+	public ResponseEntity<List<SalesResponse>> findByBuyer_Id(Long buyerId){
+		List<SalesResponse> responses = salesService.findByBuyer_Id(buyerId);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/by-company-name")
+	public ResponseEntity<List<SalesResponse>> findByBuyer_CompanyNameContainingIgnoreCase(String buyerCompanyName){
+		List<SalesResponse> responses = salesService.findByBuyer_CompanyNameContainingIgnoreCase(buyerCompanyName);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/by-pib")
+	public ResponseEntity<List<SalesResponse>> findByBuyer_PibContainingIgnoreCase(String buyerPib){
+		List<SalesResponse> responses = salesService.findByBuyer_PibContainingIgnoreCase(buyerPib);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/by-address")
+	public ResponseEntity<List<SalesResponse>> findByBuyer_AddressContainingIgnoreCase(String buyerAddress){
+		List<SalesResponse> responses = salesService.findByBuyer_AddressContainingIgnoreCase(buyerAddress);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/by-contact-person")
+	public ResponseEntity<List<SalesResponse>> findByBuyer_ContactPerson(String contactPerson){
+		List<SalesResponse> responses = salesService.findByBuyer_ContactPerson(contactPerson);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/by-email")
+	public ResponseEntity<List<SalesResponse>> findByBuyer_EmailContainingIgnoreCase(String buyerEmail){
+		List<SalesResponse> responses = salesService.findByBuyer_EmailContainingIgnoreCase(buyerEmail);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/by-phone-number")
+	public ResponseEntity<List<SalesResponse>> findByBuyer_PhoneNumber(String buyerPhoneNumber){
+		List<SalesResponse> responses = salesService.findByBuyer_PhoneNumber(buyerPhoneNumber);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/by-total-price-max")
+	public ResponseEntity<List<SalesResponse>> findByTotalPriceGreaterThan(BigDecimal totalPrice){
+		List<SalesResponse> responses = salesService.findByTotalPriceGreaterThan(totalPrice);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/by-total-price-min")
+	public ResponseEntity<List<SalesResponse>> findByTotalPriceLessThan(BigDecimal totalPrice){
+		List<SalesResponse> responses = salesService.findByTotalPriceLessThan(totalPrice);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search")
+	public ResponseEntity<List<SalesResponse>> searchSales(
+	    @RequestParam(required = false) Long buyerId,
+	    @RequestParam(required = false) String companyName,
+	    @RequestParam(required = false) String pib,
+	    @RequestParam(required = false) String email,
+	    @RequestParam(required = false) String phoneNumber,
+	    @RequestParam(required = false) String address,
+	    @RequestParam(required = false) String contactPerson,
+	    @RequestParam(required = false) BigDecimal minTotalPrice,
+	    @RequestParam(required = false) BigDecimal maxTotalPrice
+	)
+	{
+		List<SalesResponse> responses = salesService.searchSales(buyerId, companyName, pib, email, phoneNumber, address, contactPerson, minTotalPrice, maxTotalPrice);
+		return ResponseEntity.ok(responses);
+	}
 }

@@ -36,4 +36,5 @@ public interface ISalesService {
 	List<SalesResponse> findByBuyer_PhoneNumber(String buyerPhoneNumber);
 	List<SalesResponse> findByTotalPriceGreaterThan(BigDecimal totalPrice);
 	List<SalesResponse> findByTotalPriceLessThan(BigDecimal totalPrice);
+	List<SalesResponse> searchSales(Long buyerId, String companyName,String pib,String email,String phoneNumber,String address,String contactPerson, BigDecimal minTotalPrice, BigDecimal maxTotalPrice);
 }

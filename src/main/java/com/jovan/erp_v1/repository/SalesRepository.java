@@ -6,18 +6,18 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.jovan.erp_v1.dto.DailySalesDTO;
-import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.Sales;
 
 import jakarta.persistence.MapKeyColumn;
 
 @Repository
-public interface SalesRepository extends JpaRepository<Sales, Long> {
+public interface SalesRepository extends JpaRepository<Sales, Long>, JpaSpecificationExecutor<Sales> {
 
 	List<Sales> findByCreatedAt(LocalDateTime date);
 
@@ -47,4 +47,5 @@ public interface SalesRepository extends JpaRepository<Sales, Long> {
 	List<Sales> findByTotalPriceGreaterThan(BigDecimal totalPrice);
 	List<Sales> findByTotalPriceLessThan(BigDecimal totalPrice);
 	boolean existsByBuyer_Pib(String pib);
+	
 }
