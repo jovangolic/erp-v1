@@ -23,6 +23,7 @@ import com.jovan.erp_v1.repository.SalesRepository;
 import com.jovan.erp_v1.request.ItemSalesRequest;
 import com.jovan.erp_v1.request.SalesRequest;
 import com.jovan.erp_v1.response.SalesResponse;
+import com.jovan.erp_v1.util.DateValidator;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -77,17 +78,18 @@ public class SalesService implements ISalesService {
 
 	@Override
 	public List<SalesResponse> getByCreatedAtBetween(LocalDateTime start, LocalDateTime end) {
+		DateValidator.validateRange(start, end);
 		return salesRepository.findByCreatedAtBetween(start, end).stream()
 				.map(salesMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
-	@Override
+	/*@Override
 	public List<SalesResponse> getByBuyer(Buyer buyer) {
 		return salesRepository.findByBuyer(buyer).stream()
 				.map(salesMapper::toResponse)
 				.collect(Collectors.toList());
-	}
+	}*/
 
 	@Override
 	public List<SalesResponse> getByTotalPrice(BigDecimal totalPrice) {
@@ -137,6 +139,79 @@ public class SalesService implements ISalesService {
 		return salesRepository.findAll().stream()
 				.map(salesMapper::toResponse)
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<SalesResponse> findByBuyer_Id(Long buyerId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SalesResponse> findByBuyer_CompanyNameContainingIgnoreCase(String buyerCompanyName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SalesResponse> findByBuyer_PibContainingIgnoreCase(String buyerPib) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SalesResponse> findByBuyer_AddressContainingIgnoreCase(String buyerAddress) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SalesResponse> findByBuyer_ContactPerson(String contactPerson) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SalesResponse> findByBuyer_EmailContainingIgnoreCase(String buyerEmail) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SalesResponse> findByBuyer_PhoneNumber(String buyerPhoneNumber) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SalesResponse> findByTotalPriceGreaterThan(BigDecimal totalPrice) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SalesResponse> findByTotalPriceLessThan(BigDecimal totalPrice) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	private Buyer fetchBuyerId(Long buyerId) {
+		if(buyerId == null) {
+			throw new BuyerNotFoundException("Buyer ID must not be null");
+		}
+		return buyerRepository.findById(buyerId).orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id "+buyerId));
+	}
+	
+	private void validateString(String str) {
+		if(str == null  || str.trim().isEmpty()) {
+			throw new IllegalArgumentException("String must not be null nor empty");
+		}
+	}
+	
+	private void validateBigDecimal(BigDecimal num) {
+		if(num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
+			throw new IllegalArgumentException("Number must be positive");
+		}
 	}
 
 }

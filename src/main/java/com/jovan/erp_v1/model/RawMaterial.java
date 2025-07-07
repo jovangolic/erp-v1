@@ -1,6 +1,8 @@
 package com.jovan.erp_v1.model;
 
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -16,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class RawMaterial extends Goods {
 	
 	@Column(nullable = false)
-    private Integer currentQuantity;
+    private BigDecimal currentQuantity;
 
     @ManyToOne
     @JoinColumn(name = "product_id")

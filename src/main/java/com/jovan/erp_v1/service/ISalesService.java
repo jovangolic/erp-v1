@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.request.SalesRequest;
 import com.jovan.erp_v1.response.SalesResponse;
 
@@ -19,7 +17,7 @@ public interface ISalesService {
 
 	List<SalesResponse> getByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
-	List<SalesResponse> getByBuyer(Buyer buyer);
+	//List<SalesResponse> getByBuyer(Buyer buyer);
 
 	List<SalesResponse> getByTotalPrice(BigDecimal totalPrice);
 
@@ -28,4 +26,14 @@ public interface ISalesService {
 	List<SalesResponse> getSalesByDate(LocalDate date);
 
 	List<SalesResponse> getAllSales();
+	//nove metode
+	List<SalesResponse> findByBuyer_Id(Long buyerId);
+	List<SalesResponse> findByBuyer_CompanyNameContainingIgnoreCase(String buyerCompanyName);
+	List<SalesResponse> findByBuyer_PibContainingIgnoreCase(String buyerPib);
+	List<SalesResponse> findByBuyer_AddressContainingIgnoreCase(String buyerAddress);
+	List<SalesResponse> findByBuyer_ContactPerson(String contactPerson);
+	List<SalesResponse> findByBuyer_EmailContainingIgnoreCase(String buyerEmail);
+	List<SalesResponse> findByBuyer_PhoneNumber(String buyerPhoneNumber);
+	List<SalesResponse> findByTotalPriceGreaterThan(BigDecimal totalPrice);
+	List<SalesResponse> findByTotalPriceLessThan(BigDecimal totalPrice);
 }

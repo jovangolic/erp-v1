@@ -1,6 +1,8 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -45,6 +47,7 @@ public class SalesMapper {
 	}
 	
 	public SalesResponse toResponse(Sales sales) {
+		Objects.requireNonNull(sales, "Sales must not be null");
 		SalesResponse response = new SalesResponse();
 		response.setId(sales.getId());
 		
@@ -65,6 +68,9 @@ public class SalesMapper {
 	
 	
 	public List<SalesResponse> toResponseList(List<Sales> sales){
+		if(sales == null || sales.isEmpty()) {
+			return Collections.emptyList();
+		}
 		return sales.stream()
 				.map(this::toResponse)
 				.collect(Collectors.toList());

@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,6 +27,6 @@ public class Route {
     @Column
     private String destination;
 
-    @Column
-    private Double distanceKm;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal distanceKm;
 }

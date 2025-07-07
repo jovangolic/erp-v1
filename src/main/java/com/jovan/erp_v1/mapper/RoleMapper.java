@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -73,6 +74,9 @@ public class RoleMapper {
          */
 
         public List<RoleResponse> toResponseList(List<Role> roles) {
+        	if(roles == null || roles.isEmpty()) {
+        		return Collections.emptyList();
+        	}
                 return roles.stream().map(this::toResponse)
                                 .collect(Collectors.toList());
         }

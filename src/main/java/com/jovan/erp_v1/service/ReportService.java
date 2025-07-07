@@ -19,6 +19,7 @@ import com.jovan.erp_v1.model.Report;
 import com.jovan.erp_v1.repository.ReportRepository;
 import com.jovan.erp_v1.request.ReportRequest;
 import com.jovan.erp_v1.response.ReportResponse;
+import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -65,6 +66,7 @@ public class ReportService implements IReportService {
 
     @Override
     public List<ReportResponse> getReportsByType(ReportType type) {
+    	validateReportType(type);
         return reportRepository.findByType(type)
                 .stream()
                 .map(ReportResponse::new)
@@ -73,6 +75,7 @@ public class ReportService implements IReportService {
 
     @Override
     public List<ReportResponse> getReportsBetweenDates(LocalDateTime from, LocalDateTime to) {
+    	DateValidator.validateRange(from, to);
         return reportRepository.findAll()
                 .stream()
                 .filter(report -> report.getGeneratedAt() != null &&
@@ -80,5 +83,11 @@ public class ReportService implements IReportService {
                         !report.getGeneratedAt().isAfter(to))
                 .map(ReportResponse::new)
                 .collect(Collectors.toList());
+    }
+    
+    private void validateReportType(ReportType type) {
+    	if(type == null) {
+    		throw new IllegalArgumentException("ReportType type must not be null");
+    	}
     }
 }

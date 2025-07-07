@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,7 +17,7 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 
     List<Route> findByOriginAndDestination(String origin, String destination);
 
-    List<Route> findByDistanceKmGreaterThan(Double distance);
+    List<Route> findByDistanceKmGreaterThan(BigDecimal distance);
 
-    List<Route> findByDistanceKmLessThan(Double distance);
+    List<Route> findByDistanceKmLessThan(BigDecimal distance);
 }

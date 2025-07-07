@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.response;
 
+import java.math.BigDecimal;
+
 import com.jovan.erp_v1.model.Route;
 
 import lombok.AllArgsConstructor;
@@ -14,7 +16,7 @@ public class RouteResponse {
     private Long id;
     private String origin;
     private String destination;
-    private Double distanceKm;
+    private BigDecimal distanceKm;
 
     public RouteResponse(Route r) {
         this.id = r.getId();

@@ -1,6 +1,8 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -40,7 +42,7 @@ public class RawMaterialMapper {
 	                    .code(req.code())
 	                    .scannedAt(req.scannedAt())
 	                    .scannedBy(scannedBy)
-	                    .goods(rawMaterial) // ako koristiš bidirekcionu vezu
+	                    .goods(rawMaterial) // ako koristim bidirekcionu vezu
 	                    .build();
 	            rawMaterial.addBarCode(barCode);
 	        }
@@ -58,20 +60,28 @@ public class RawMaterialMapper {
 	}
 
     public RawMaterialResponse toResponse(RawMaterial rawMaterial) {
+    	Objects.requireNonNull(rawMaterial, "RawMaterial must not be null");
         return new RawMaterialResponse(rawMaterial);
     }
 
     public List<RawMaterialResponse> toResponseList(List<RawMaterial> materials) {
+    	if(materials == null || materials.isEmpty()) {
+    		return Collections.emptyList();
+    	}
         return materials.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
     public GoodsResponse toGoodsResponse(RawMaterial rawMaterial) {
+    	Objects.requireNonNull(rawMaterial, "RawMaterial must not be null");
         return new GoodsResponse(rawMaterial); // jer RawMaterial nasleđuje Goods
     }
 
     public List<GoodsResponse> toGoodsResponseList(List<RawMaterial> materials) {
+    	if(materials == null || materials.isEmpty()) {
+    		return Collections.emptyList();
+    	}
         return materials.stream()
                 .map(this::toGoodsResponse)
                 .collect(Collectors.toList());

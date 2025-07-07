@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.response;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,7 @@ public class RawMaterialResponse {
     private String storageName; // opciono
 
     private Long supplyId;
-    private Integer currentQuantity;
+    private BigDecimal currentQuantity;
 
     private Long productId;
     private String productName; // opciono

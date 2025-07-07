@@ -71,14 +71,6 @@ public class SalesController {
 		return ResponseEntity.ok(responses);
 	}
 
-	@GetMapping("/get-by-buyer")
-	public ResponseEntity<List<SalesResponse>> getSalesByBuyer(@RequestParam("buyerId") Long buyerId) {
-		Buyer buyer = buyerRepository.findById(buyerId)
-				.orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: " + buyerId));
-		List<SalesResponse> responses = salesService.getByBuyer(buyer);
-		return ResponseEntity.ok(responses);
-	}
-
 	@GetMapping("/sale/total-price")
 	public ResponseEntity<List<SalesResponse>> getByTotalPrice(@RequestParam("totalPrice") BigDecimal totalPrice) {
 		List<SalesResponse> responses = salesService.getByTotalPrice(totalPrice);
@@ -103,5 +95,7 @@ public class SalesController {
 		List<SalesResponse> responses = salesService.getAllSales();
 		return ResponseEntity.ok(responses);
 	}
+	
+	//nove metode
 
 }

@@ -2,6 +2,8 @@ package com.jovan.erp_v1.service;
 
 import com.jovan.erp_v1.request.RouteRequest;
 import com.jovan.erp_v1.response.RouteResponse;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface IRouteService {
@@ -22,7 +24,7 @@ public interface IRouteService {
 
     List<RouteResponse> findByOriginAndDestination(String origin, String destination);
 
-    List<RouteResponse> findByDistanceKmGreaterThan(Double distance);
+    List<RouteResponse> findByDistanceKmGreaterThan(BigDecimal distance);
 
-    List<RouteResponse> findByDistanceKmLessThan(Double distance);
+    List<RouteResponse> findByDistanceKmLessThan(BigDecimal distance);
 }

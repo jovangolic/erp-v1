@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -79,13 +80,13 @@ public class RouteController {
     }
 
     @GetMapping("/distance-greater")
-    public ResponseEntity<List<RouteResponse>> findByDistanceKmGreaterThan(@RequestParam("distance") Double distance) {
+    public ResponseEntity<List<RouteResponse>> findByDistanceKmGreaterThan(@RequestParam("distance") BigDecimal distance) {
         List<RouteResponse> responses = routeService.findByDistanceKmGreaterThan(distance);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/distance-less")
-    public ResponseEntity<List<RouteResponse>> findByDistanceKmLessThan(@RequestParam("distance") Double distance) {
+    public ResponseEntity<List<RouteResponse>> findByDistanceKmLessThan(@RequestParam("distance") BigDecimal distance) {
         List<RouteResponse> responses = routeService.findByDistanceKmLessThan(distance);
         return ResponseEntity.ok(responses);
     }
