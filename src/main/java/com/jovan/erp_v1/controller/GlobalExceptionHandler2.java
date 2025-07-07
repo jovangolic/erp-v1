@@ -21,6 +21,7 @@ import org.springframework.core.convert.ConversionFailedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jovan.erp_v1.response.ErrorResponse;
 
+
 import jakarta.validation.ConstraintViolationException;
 
 @ControllerAdvice
@@ -124,7 +125,9 @@ public class GlobalExceptionHandler2 {
             MaterialMovementNotFoundException.class,
             MaterialRequestObjectErrorException.class,
             MaterialRequirementErrorException.class,
-            MaterialTransactionErrorException.class
+            MaterialTransactionErrorException.class,
+            DuplicateOrderNumberException.class,
+            PaymentReferenceNotFoundException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

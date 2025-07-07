@@ -76,4 +76,6 @@ public class SalesOrderController {
 		List<SalesOrderResponse> responses = salesOrder.getAllOrders();
 		return ResponseEntity.ok(responses);
 	}
+	
+	//nove metode
 }
