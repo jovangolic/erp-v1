@@ -40,14 +40,14 @@ public class ShiftController {
 	@PostMapping("/new/create-shift")
 	public ResponseEntity<ShiftResponse> createShift(@Valid @RequestBody ShiftRequest request){
 		Shift shift = iShiftService.save(request);
-		return ResponseEntity.ok(shiftMapper.toDto(shift));
+		return ResponseEntity.ok(shiftMapper.toResponse(shift));
 	}
 	
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN')")
 	@PutMapping("/update/{id}")
 	public ResponseEntity<ShiftResponse> updateShift(@PathVariable Long id, @Valid @RequestBody ShiftRequest request){
 		Shift updated = iShiftService.update(id, request);
-		return ResponseEntity.ok(shiftMapper.toDto(updated));
+		return ResponseEntity.ok(shiftMapper.toResponse(updated));
 	}
 	
 	
@@ -68,5 +68,9 @@ public class ShiftController {
 		List<ShiftResponse> allShift = iShiftService.getAll();
 		return ResponseEntity.ok(allShift);
 	}
+	
+	//nove metode
+	
+	
 	
 }

@@ -47,7 +47,7 @@ public class ShelfService implements IShelfService {
 		if (request.goods() != null && !request.goods().isEmpty()) {
 			List<Goods> goods = goodsRepository.findAllById(request.goods());
 			for (Goods g : goods) {
-				g.setShelf(shelf); // ✳️ Bitan korak
+				g.setShelf(shelf); // Bitan korak
 			}
 			shelf.setGoods(goods);
 		}

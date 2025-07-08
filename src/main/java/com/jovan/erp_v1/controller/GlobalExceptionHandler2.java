@@ -127,7 +127,8 @@ public class GlobalExceptionHandler2 {
             MaterialRequirementErrorException.class,
             MaterialTransactionErrorException.class,
             DuplicateOrderNumberException.class,
-            PaymentReferenceNotFoundException.class
+            PaymentReferenceNotFoundException.class,
+            NoDataFoundException.class
 
     })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(RuntimeException err) {

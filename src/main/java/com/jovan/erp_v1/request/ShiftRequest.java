@@ -1,7 +1,7 @@
 package com.jovan.erp_v1.request;
 
 import java.time.LocalDateTime;
-
+import java.util.List;
 import jakarta.validation.constraints.NotNull;
 
 public record ShiftRequest(
@@ -14,6 +14,6 @@ public record ShiftRequest(
 
 	    @NotNull(message = "ID supervizora smene je obavezan")
 	    Long shiftSupervisorId
+	    //List<ConfirmationDocumentRequest> documents  -> ako bude potrebno, samo odkomentarisi
 		) {
-
 }
