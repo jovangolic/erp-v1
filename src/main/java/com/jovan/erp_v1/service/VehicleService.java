@@ -36,6 +36,9 @@ public class VehicleService implements IVehicleService {
     @Transactional
     @Override
     public VehicleResponse update(Long id, VehicleRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new VehicleErrorException("Vehicle not found " + id));
         vehicle.setModel(request.model());

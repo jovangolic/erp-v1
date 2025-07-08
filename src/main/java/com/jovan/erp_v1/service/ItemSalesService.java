@@ -86,6 +86,9 @@ public class ItemSalesService implements INTERItemSales {
     @Transactional
 	@Override
 	public ItemSalesResponse update(Long id, ItemSalesRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
     	ItemSales existing = itemSalesRepository.findById(id)
     	        .orElseThrow(() -> new ItemSalesNotFoundException("ItemSales not found with id: " + id));
     	validateBigDecimal(request.quantity());

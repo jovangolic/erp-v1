@@ -61,6 +61,9 @@ public class SalesService implements ISalesService {
 	@Transactional
 	@Override
 	public SalesResponse updateSales(Long id, SalesRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		Sales sales = salesRepository.findById(id)
 				.orElseThrow(() -> new SalesNotFoundException("Sales not found with id: " + id));
 		Buyer buyer = fetchBuyerId(request.buyerId());

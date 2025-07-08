@@ -43,6 +43,9 @@ public class LedgerEntryService implements ILedgerEntryService {
     @Transactional
     @Override
     public LedgerEntryResponse update(Long id, LedgerEntryRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
     	LedgerEntry entry = ledgerEntryRepository.findById(id)
                 .orElseThrow(() -> new LedgerEntryErrorException("LedgerEntry not found with id: " + id));
     	validateRequest(request);

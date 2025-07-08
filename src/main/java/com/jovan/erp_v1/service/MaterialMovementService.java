@@ -48,6 +48,9 @@ public class MaterialMovementService implements IMaterialMovementService {
     @Transactional
     @Override
     public MaterialMovementResponse update(Long id, MaterialMovementRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         MaterialMovement m = materialMovementRepository.findById(id).orElseThrow(
                 () -> new MaterialMovementNotFoundException("Material sa datim ID-om nije pronadjen" + id));
         DateValidator.validateNotNull(request.movementDate(), "Datum kretanja");

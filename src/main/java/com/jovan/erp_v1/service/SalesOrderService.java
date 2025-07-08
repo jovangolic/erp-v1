@@ -77,6 +77,9 @@ public class SalesOrderService implements ISalesOrder {
 	@Transactional
 	@Override
 	public SalesOrderResponse updateOrder(Long id, SalesOrderRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		SalesOrder salesOrder = salesOrderRepository.findById(id)
 				.orElseThrow(() -> new SalesOrderNotFoundException("Sales order not found with id: " + id));
 		validateItemSalesRequest(request.items());

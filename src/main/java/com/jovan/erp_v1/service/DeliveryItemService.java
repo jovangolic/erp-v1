@@ -60,6 +60,9 @@ public class DeliveryItemService implements IDeliveryItemService {
     @Transactional
     @Override
     public DeliveryItemResponse update(Long id, DeliveryItemRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         DeliveryItem item = deliveryItemRepository.findById(id)
                 .orElseThrow(() -> new DeliveryItemErrorException("DeliveryItem not found " + id));
         Product product = productRepository.findById(request.productId())

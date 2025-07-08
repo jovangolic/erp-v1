@@ -58,6 +58,9 @@ public class IncomeStatementService implements IntIncomeStatementService {
     @Transactional
     @Override
     public IncomeStatementResponse update(Long id, IncomeStatementRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         IncomeStatement st = incomeStatementRepository.findById(id)
                 .orElseThrow(() -> new IncomeStatementErrorException("Income statement not found"));
         validateFieldRequest(request);

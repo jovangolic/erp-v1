@@ -35,6 +35,9 @@ public class OptionService implements IOptionService {
     @Transactional
     @Override
     public OptionResponse update(Long id, OptionRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         Option option = optionRepository.findById(id)
                 .orElseThrow(() -> new OptionErrorException("Option not found"));
         validateUpdateOption(id, request);

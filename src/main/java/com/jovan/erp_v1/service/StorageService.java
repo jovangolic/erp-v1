@@ -35,6 +35,9 @@ public class StorageService implements IStorageService {
 	@Transactional
 	@Override
 	public StorageResponse updateStorage(Long id, StorageRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		Storage storage = storageRepository.findById(id)
 				.orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " + id));
 		storage.setName(request.name());

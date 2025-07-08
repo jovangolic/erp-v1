@@ -37,9 +37,12 @@ public class ShelfService implements IShelfService {
 	@Override
 	public ShelfResponse createShelf(ShelfRequest request) {
 		Shelf shelf = new Shelf();
+		validateInteger(request.rowCount());
+		validateInteger(request.cols());
+		Storage storage = fetchStorageId(request.storageId());
+		validateGoodsList(request.goods());
 		shelf.setRowCount(request.rowCount());
 		shelf.setCols(request.cols());
-		Storage storage = fetchStorageId(request.storageId());
 		shelf.setStorage(storage);
 		if (request.goods() != null && !request.goods().isEmpty()) {
 			List<Goods> goods = goodsRepository.findAllById(request.goods());
@@ -60,14 +63,16 @@ public class ShelfService implements IShelfService {
 		}
 		Shelf shelf = shelfRepository.findById(id)
 				.orElseThrow(() -> new ShelfNotFoundException("Shelf not found with id: " + id));
+		validateInteger(request.rowCount());
+		validateInteger(request.cols());
+		Storage storage = fetchStorageId(request.storageId());
 		shelf.setRowCount(request.rowCount());
 		shelf.setCols(request.cols());
-		Storage storage = fetchStorageId(request.storageId());
 		shelf.setStorage(storage);
 		if (request.goods() != null && !request.goods().isEmpty()) {
 			List<Goods> goodsList = goodsRepository.findAllById(request.goods());
 			for (Goods g : goodsList) {
-				g.setShelf(shelf); // ✳️ važno
+				g.setShelf(shelf); // važno
 			}
 			shelf.setGoods(goodsList);
 		} else {
@@ -211,6 +216,17 @@ public class ShelfService implements IShelfService {
 		return shelfRepository.findByStorage_NameAndStorage_Type(name, type).stream()
 				.map(ShelfResponse::new)
 				.collect(Collectors.toList());
+	}
+	
+	private void validateGoodsList(List<Long> goods) {
+		if(goods == null || goods.isEmpty()) {
+			throw new IllegalArgumentException("Goods list must not be empty nor null");
+		}
+		for(Long goodId: goods) {
+			if(goodId == null || goodId <= 0) {
+				throw new IllegalArgumentException("Each good ID must be a positive non-null number");
+			}
+		}
 	}
 	
 	private void validateInteger(Integer num) {

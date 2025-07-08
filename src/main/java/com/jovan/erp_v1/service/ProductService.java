@@ -57,6 +57,9 @@ public class ProductService implements IProductService {
     @Transactional
     @Override
     public ProductResponse updateProduct(Long id, ProductRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
         validateProductRequest(request);

@@ -42,6 +42,9 @@ public class JournalItemService implements IJournalItemService {
     @Transactional
     @Override
     public JournalItemResponse update(Long id, JournalItemRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         JournalItem item = journalItemRepository.findById(id)
                 .orElseThrow(() -> new JournalItemErrorException("JournalItem not found with id " + id));
         validateAccountExists(request.accountId());

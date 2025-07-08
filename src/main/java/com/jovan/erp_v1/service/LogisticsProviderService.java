@@ -35,6 +35,9 @@ public class LogisticsProviderService implements ILogisticsProviderService {
     @Transactional
     @Override
     public LogisticsProviderResponse update(Long id, LogisticsProviderRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         LogisticsProvider provider = logisticsProviderRepository.findById(id)
                 .orElseThrow(() -> new LogisticsProviderErrorException("Logistics-provider not found " + id));
         validate(request.name(),request.contactPhone(), request.email(),request.website());

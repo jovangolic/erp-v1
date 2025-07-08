@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record ProductionOrderRequest(
+			Long id,
                 @NotBlank(message = "Order number is required") String orderNumber,
 
                 @NotNull(message = "Product ID is required") Long productId,

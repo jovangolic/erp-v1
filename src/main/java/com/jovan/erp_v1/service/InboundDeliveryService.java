@@ -52,6 +52,9 @@ public class InboundDeliveryService implements InterfejsInboundDeliveryService {
     @Transactional
     @Override
     public InboundDeliveryResponse update(Long id, InboundDeliveryRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
     	validateInboundDeliveryItems(request);
         InboundDelivery delivery = inboundDeliveryRepository.findById(id)
                 .orElseThrow(() -> new InboundDeliveryErrorException("InboundDelivery not found " + id));

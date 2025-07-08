@@ -53,6 +53,9 @@ public class MaterialTransactionService implements IMaterialTransactionService {
     @Transactional
     @Override
     public MaterialTransactionResponse update(Long id, MaterialTransactionRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
     	MaterialTransaction mt = materialTransactionRepository.findById(id).orElseThrow(() -> new MaterialTransactionErrorException("MaterialTransaction not found with id " + id));
     	validateMaterialId(request.materialId());
         validateBigDecimal(request.quantity());

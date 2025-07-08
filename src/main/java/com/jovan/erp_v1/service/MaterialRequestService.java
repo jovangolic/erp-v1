@@ -45,6 +45,9 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Transactional
     @Override
     public MaterialRequestResponse update(Long id, MaterialRequestDTO dto) {
+    	if (!dto.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         MaterialRequest req = materialRequestRepository.findById(id).orElseThrow(
                 () -> new MaterialRequestObjectErrorException("MaterilaRequestObject not found with id :" + id));
         validateMaterialId(dto.materialId());

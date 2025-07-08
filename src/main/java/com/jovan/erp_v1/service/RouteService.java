@@ -38,6 +38,9 @@ public class RouteService implements IRouteService {
     @Transactional
     @Override
     public RouteResponse update(Long id, RouteRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         Route route = routeRepository.findById(id)
                 .orElseThrow(() -> new RouteNotFoundException("Route not found " + id));
         validateString(request.origin());

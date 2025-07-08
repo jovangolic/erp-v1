@@ -37,6 +37,9 @@ public class StockTransferItemService implements IStockTransferItemService {
     @Transactional
     @Override
     public StockTransferItemResponse update(Long id, StockTransferItemRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         StockTransferItem item = stockTransferItemRepository.findById(id)
                 .orElseThrow(() -> new StockTransferItemErrorException("StockTransferItem not found " + id));
         Product product = productRepository.findById(request.productId())

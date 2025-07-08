@@ -53,6 +53,9 @@ public class SupplyItemService implements ISupplyItemService {
 	@Transactional
 	@Override
 	public SupplyItemResponse updateSupplyItem(Long id, SupplyItemRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		SupplyItem supplyItem = supplyItemRepository.findById(id)
 				.orElseThrow(() -> new SupplyItemNotFoundException("SupplyItem not found wityh id: " + id));
 		Procurement procurement = procurementRepository.findById(request.procurementId()).orElseThrow(

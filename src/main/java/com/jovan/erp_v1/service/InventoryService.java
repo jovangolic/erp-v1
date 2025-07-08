@@ -70,6 +70,9 @@ public class InventoryService implements IInventoryService {
 	@Transactional
 	@Override
 	public InventoryResponse update(Long id, InventoryRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		Inventory inventory = inventoryRepository.findById(id)
 				.orElseThrow(() -> new InventoryNotFoundException("Inventory not found with id: " + id));
 		User storageEmployee = validateStorageEmployee(request.storageEmployeeId());

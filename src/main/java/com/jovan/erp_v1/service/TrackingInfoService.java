@@ -37,6 +37,9 @@ public class TrackingInfoService implements ITrackingInfoService {
     @Transactional
     @Override
     public TrackingInfoResponse update(Long id, TrackingInfoRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         TrackingInfo info = trackingInfoRepository.findById(id)
                 .orElseThrow(() -> new TrackingInfoErrorException("TrackingInfo not found " + id));
         infoMapper.updateEntity(info, request);

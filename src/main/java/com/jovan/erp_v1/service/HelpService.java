@@ -36,6 +36,9 @@ public class HelpService implements IHelpService {
     @Transactional
     @Override
     public HelpResponse update(Long id, HelpRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         Help help = helpRepository.findById(id)
                 .orElseThrow(() -> new HelpErrorException("Help not found"));
         help.setTitle(request.title());

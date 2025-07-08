@@ -54,6 +54,9 @@ public class SupplyService implements ISupplyService {
 	@Transactional
 	@Override
 	public SupplyResponse updateSupply(Long id, SupplyRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		Supply existing = supplyRepository.findById(id)
 				.orElseThrow(() -> new SupplyNotFoundException("Supply not found with id: " + id));
 		existing.setQuantity(request.quantity());

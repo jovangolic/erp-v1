@@ -35,6 +35,9 @@ public class FileOptService implements IFileOptService {
     @Transactional
     @Override
     public FileOptResponse update(Long id, FileOptRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         FileOpt fileOpt = fileOptRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("FileOpt not found"));
         fileOpt.setExtension(request.extension());

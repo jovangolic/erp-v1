@@ -67,6 +67,9 @@ public class ShipmentService implements IShipmentService {
         @Transactional
         @Override
         public ShipmentResponse update(Long id, ShipmentRequest request) {
+        	if (!request.id().equals(id)) {
+    			throw new IllegalArgumentException("ID in path and body do not match");
+    		}
                 Shipment ship = shipmentRepository.findById(id)
                                 .orElseThrow(() -> new ShipmentNotFoundException("Shipment not found " + id));
                 Storage storage = storageRepositor.findById(request.originStorageId())

@@ -30,6 +30,9 @@ public class EditOptService implements IEditOptService {
 
     @Override
     public EditOptResponse update(Long id, EditOptRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         EditOpt opt = editOptRepository.findById(id)
                 .orElseThrow(() -> new EditOptErrorException("EditOpt not found"));
         opt.setId(id);

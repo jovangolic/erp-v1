@@ -48,6 +48,9 @@ public class TransportOrderService implements ITransportOrderService {
     @Transactional
     @Override
     public TransportOrderResponse update(Long id, TransportOrderRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         TransportOrder to = transportOrderRepository.findById(id)
                 .orElseThrow(() -> new TransportOrderErrorException("TransportOrder not found " + id));
         to.setScheduledDate(request.scheduledDate());

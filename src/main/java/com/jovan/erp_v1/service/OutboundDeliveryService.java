@@ -52,6 +52,9 @@ public class OutboundDeliveryService implements IOutboundDeliveryService {
     @Transactional
     @Override
     public OutboundDeliveryResponse update(Long id, OutboundDeliveryRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         OutboundDelivery delivery = outboundDeliveryRepository.findById(id)
                 .orElseThrow(() -> new OutboundDeliveryErrorException("OutboundDelivery not found " + id));
         DateValidator.validateNotNull(request.deliveryDate(), "Delivery Date");

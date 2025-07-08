@@ -39,6 +39,9 @@ public class ShiftService implements IShiftService {
 	@Transactional
 	@Override
 	public Shift update(Long id, ShiftRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		Shift shift = shiftRepository.findById(id)
 				.orElseThrow(() -> new NoSuchShiftErrorException("Shift not found with id: " + id));
 		User supervisor = userRepository.findById(request.shiftSupervisorId())

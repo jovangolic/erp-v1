@@ -41,6 +41,9 @@ public class AccountService implements IAccountService {
     @Transactional
     @Override
     public AccountResponse update(Long id, AccountRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
     	Account existing = accountRepository.findById(request.id())
     	        .orElseThrow(() -> new AccountNotFoundErrorException("Nalog nije pronađen"));
     	    // Ako korisnik pokušava da postavi broj koji već koristi drugi nalog

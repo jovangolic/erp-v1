@@ -48,6 +48,9 @@ public class ProductionOrderService implements IProductionOrderService {
     @Transactional
     @Override
     public ProductionOrderResponse update(Long id, ProductionOrderRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         validateProductionOrderRequest(request);
         ProductionOrder o = productionOrderRepository.findById(id)
                 .orElseThrow(() -> new ProductionOrderErrorException("ProductionOrder not found with id " + id));

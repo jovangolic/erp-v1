@@ -40,6 +40,9 @@ public class ShiftPlanningService implements IShiftPlanningService {
     @Transactional
     @Override
     public ShiftPlanningResponse update(Long id, ShiftPlanningRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         ShiftPlanning sp = shiftPlanningRepository.findById(id)
                 .orElseThrow(() -> new ShiftPlanningErrorException("ShiftPlanning not found with id: " + id));
         validateRequest(request);

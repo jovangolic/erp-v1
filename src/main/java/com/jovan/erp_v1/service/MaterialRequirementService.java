@@ -57,6 +57,9 @@ public class MaterialRequirementService implements IMaterialRequirementService {
     @Transactional
     @Override
     public MaterialRequirementResponse update(Long id, MaterialRequirementRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         MaterialRequirement mr = materialRequirementRepository.findById(id)
                 .orElseThrow(() -> new MaterialRequirementErrorException("MaterialRequirement not found " + id));
         validateMaterialId(request.materialId());

@@ -43,6 +43,9 @@ public class WorkCenterService implements IWorkCenterService {
     @Transactional
     @Override
     public WorkCenterResponse update(Long id, WorkCenterRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         WorkCenter wc = workCenterRepository.findById(id)
                 .orElseThrow(() -> new WorkCenterErrorException("WorkCenter not found with id: " + id));
         validateString(request.name());

@@ -43,6 +43,9 @@ public class BalanceSheetService implements IBalanceSheetService {
     @Transactional
     @Override
     public BalanceSheetResponse update(Long id, BalanceSheetRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         BalanceSheet sheet = balanceSheetRepository.findById(id)
                 .orElseThrow(() -> new BalanceSheetErrorException("BalanceSheet not found with id " + id));
         DateValidator.validateNotNull(request.date(), "Datum ne sme biti null");

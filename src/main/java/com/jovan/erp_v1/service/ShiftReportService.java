@@ -49,6 +49,9 @@ public class ShiftReportService implements IShiftReportService {
 	@Transactional
 	@Override
 	public ShiftReport update(Long id, ShiftReportRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		ShiftReport report = shiftReportRepository.findById(id)
 				.orElseThrow(() -> new NoSuchShiftReportFoundException("Report not found with id: " + id));
 		Shift shift = shiftRepository.findById(request.id())

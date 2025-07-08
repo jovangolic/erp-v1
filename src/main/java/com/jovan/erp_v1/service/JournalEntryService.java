@@ -42,6 +42,9 @@ public class JournalEntryService implements IJournalEntryService {
     @Transactional
     @Override
     public JournalEntryResponse update(Long id, JournalEntryRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         JournalEntry j = journalEntryRepository.findById(id)
                 .orElseThrow(() -> new JournalEntryErrorException("JournalEntry not found with id: " + id));
         DateValidator.validateNotNull(request.entryDate(), "Date and Time");

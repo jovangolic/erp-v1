@@ -83,6 +83,9 @@ public class InvoiceService implements IInvoiceService {
 	@Transactional
 	@Override
 	public InvoiceResponse updateInvoice(Long id, InvoiceRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		Invoice invoice = invoiceRepository.findById(id)
 				.orElseThrow(() -> new InvoiceNotFoundException("Invoice not found with id: " + id));
 		Buyer buyer = fetchBuyer(request.buyerId());

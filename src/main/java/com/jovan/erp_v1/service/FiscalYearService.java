@@ -44,6 +44,9 @@ public class FiscalYearService implements IFiscalYearService {
     @Transactional
     @Override
     public FiscalYearResponse update(Long id, FiscalYearRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         FiscalYear year = fiscalYearRepository.findById(id)
                 .orElseThrow(() -> new FiscalYearErrorException("Fiscal-Year not found with id:" + id));
         validatePositiveInteger(request.year(), "Godina");

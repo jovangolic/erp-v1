@@ -47,6 +47,9 @@ public class FiscalQuarterService implements IFiscalQuarterService {
     @Transactional
     @Override
     public FiscalQuarterResponse update(Long id, FiscalQuarterRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         FiscalQuarter q = fiscalQuarterRepository.findById(id)
                 .orElseThrow(() -> new FiscalQuarterErrorException("FiscalQuarter not found with id: " + id));
         List<FiscalQuarter> existing = fiscalQuarterRepository.findByFiscalYear_Id(request.fiscalYearId())

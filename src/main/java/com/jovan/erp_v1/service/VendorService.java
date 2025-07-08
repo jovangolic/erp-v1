@@ -34,6 +34,9 @@ public class VendorService implements IVendorService {
     @Transactional
     @Override
     public VendorResponse updateVendor(Long id, VendorRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         Vendor vendor = vendorRepository.findById(id)
                 .orElseThrow(() -> new SupplierNotFoundException("Vendor not found with id: " + id));
 

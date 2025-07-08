@@ -54,6 +54,9 @@ public class TaxRateService implements ITaxRateService {
     @Transactional
     @Override
     public TaxRateResponse update(Long id, TaxRateRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         boolean overlapping = taxRateRepository.existsByTaxNameAndTypeAndDateRangeOverlap(
                 request.taxName(), request.type(), request.startDate(), request.endDate());
         if (overlapping) {

@@ -79,6 +79,9 @@ public class RawMaterialService implements IRawMaterialService {
 	@Transactional
 	@Override
 	public RawMaterialResponse update(Long id, RawMaterialRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		RawMaterial existing = rawMaterialRepository.findById(id)
 				.orElseThrow(() -> new RawMaterialNotFoundException("RawMaterial not found with id: " + id));
 		validateRawMaterialUpdateRequest(request);

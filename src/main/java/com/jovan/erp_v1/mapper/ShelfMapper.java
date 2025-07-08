@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.mapper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,6 +61,9 @@ public class ShelfMapper {
 	}
 	
 	public List<ShelfResponse> toResponseList(List<Shelf> shelves){
+		if(shelves == null || shelves.isEmpty()) {
+			return Collections.emptyList();
+		}
 		return shelves.stream()
 				.map(this::toResponse)
 				.collect(Collectors.toList());

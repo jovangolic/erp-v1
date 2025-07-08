@@ -45,6 +45,9 @@ public class BarCodeService implements IBarcodeService {
 	@Transactional
 	@Override
 	public BarCodeResponse updateBarCode(Long id, BarCodeRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		BarCode barCode = barCodeRepository.findById(id)
 				.orElseThrow(() -> new BarCodeNotFoundException("Bar-code not found with id: " + id));
 		validateUniqueCode(request.code());

@@ -46,6 +46,9 @@ public class ProcurementService implements IProcurementService {
 	@Transactional
 	@Override
 	public ProcurementResponse updateProcurement(Long id, ProcurementRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		Procurement existingProcurement = procurementRepository.findById(id)
 				.orElseThrow(() -> new ProcurementNotFoundException("Procurement not found with id: " + id));
 		DateValidator.validatePastOrPresent(request.date(), "Procurement date");

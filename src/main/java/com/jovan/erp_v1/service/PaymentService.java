@@ -103,6 +103,9 @@ public class PaymentService implements IPaymentService {
 	@Transactional
 	@Override
 	public PaymentResponse updatePayment(Long id, PaymentRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		logger.info("Updating payment with ID={}", id);
 	    Payment payment = paymentRepository.findById(id)
 	        .orElseThrow(() -> {

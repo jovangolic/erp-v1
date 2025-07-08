@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record FileOptRequest(
+				Long id,
 
                 @NotNull(message = "Ekstenzija fajla je obavezna") FileExtension extension,
 

@@ -47,6 +47,9 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Transactional
     @Override
     public CapacityPlanningResponse update(Long id, CapacityPlanningRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         CapacityPlanning cp = capacityPlanningRepository.findById(id)
                 .orElseThrow(() -> new CapacityPlanningErrorException("CapacityPlanning not found with id: " + id));
         WorkCenter workCenter = workCenterRepository.findById(request.workCenterId())

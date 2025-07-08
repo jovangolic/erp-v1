@@ -48,6 +48,9 @@ public class InventoryItemsService implements IInventoryItemsService {
 	@Transactional
 	@Override
 	public InventoryItemsResponse update(Long id, InventoryItemsRequest request) {
+		if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
 		InventoryItems items = inventoryItemsRepository.findById(id)
 				.orElseThrow(() -> new InventoryItemsNotFoundException("Inventory-Items not found with id: " + id));
 		Inventory inventory = validateInventory(request.inventoryId());

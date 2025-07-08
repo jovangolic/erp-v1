@@ -49,6 +49,9 @@ public class MaterialService implements IMaterialService {
     @Transactional
     @Override
     public MaterialResponse update(Long id, MaterialRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         Material existing = materialRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Material not found with id " + id));
         List<Material> materialsWithSameCode = materialRepository.findByCode(request.code());

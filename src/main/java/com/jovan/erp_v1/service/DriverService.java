@@ -33,6 +33,9 @@ public class DriverService implements IDriverService {
     @Transactional
     @Override
     public DriverResponse update(Long id, DriverRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new IllegalArgumentException("ID in path and body do not match");
+		}
         Driver driver = driversRepository.findById(id)
                 .orElseThrow(() -> new DriverErrorException("Driver not found wtih id " + id));
         validateString(request.name(), request.phone());

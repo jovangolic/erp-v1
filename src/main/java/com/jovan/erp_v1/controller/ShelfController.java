@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.request.ShelfRequest;
 import com.jovan.erp_v1.response.ShelfResponse;
 import com.jovan.erp_v1.response.ShelfResponseWithGoods;
@@ -119,6 +121,38 @@ public class ShelfController {
 	public ResponseEntity<ShelfResponseWithGoods> getShelfWithGoods(@PathVariable Long shelfId) {
 		ShelfResponseWithGoods response = shelfService.getShelfWithGoods(shelfId);
 		return ResponseEntity.ok(response);
+	}
+	
+	//nove metode
+	
+	@GetMapping("/storage-name")
+    public ResponseEntity<List<ShelfResponse>> findByStorage_Name(@RequestParam("name") String name){
+    	List<ShelfResponse> responses = shelfService.findByStorage_Name(name);
+    	return ResponseEntity.ok(responses);
+    }
+    
+	@GetMapping("/storage-location")
+	public ResponseEntity<List<ShelfResponse>> findByStorage_Location(@RequestParam("location") String location){
+		List<ShelfResponse> responses = shelfService.findByStorage_Location(location);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/storage-type")
+	public ResponseEntity<List<ShelfResponse>> findByStorage_Type(@RequestParam("type") StorageType type){
+		List<ShelfResponse> responses = shelfService.findByStorage_Type(type);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/storage-capacity-greater-than")
+	public ResponseEntity<List<ShelfResponse>> findByStorage_CapacityGreaterThan(@RequestParam("capacity") BigDecimal capacity){
+		List<ShelfResponse> responses = shelfService.findByStorage_CapacityGreaterThan(capacity);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/storage-name-and-type")
+	public ResponseEntity<List<ShelfResponse>> findByStorage_NameAndStorage_Type(@RequestParam("name") String name,@RequestParam("type") StorageType type){
+		List<ShelfResponse> responses = shelfService.findByStorage_NameAndStorage_Type(name, type);
+		  return ResponseEntity.ok(responses);
 	}
 
 }
