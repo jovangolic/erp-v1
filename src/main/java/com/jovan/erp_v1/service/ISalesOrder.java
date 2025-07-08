@@ -24,6 +24,7 @@ public interface ISalesOrder {
     void deleteSales(Long id);
 
     // nove metode
+    List<SalesOrderResponse> findByBuyer_Id(Long buyerId);
     List<SalesOrderResponse> findByBuyer_CompanyNameContainingIgnoreCase(String companyName);
 
     List<SalesOrderResponse> findByBuyer_PibContainingIgnoreCase(String pib);
@@ -43,6 +44,7 @@ public interface ISalesOrder {
     List<SalesOrderResponse> findByInvoice_TotalAmountGreaterThan(BigDecimal totalAmount);
 
     List<SalesOrderResponse> findByInvoice_TotalAmountLessThan(BigDecimal totalAmount);
+    List<SalesOrderResponse> findByInvoice_TotalAmountBetween(BigDecimal min, BigDecimal max);
 
     // issueDate
     List<SalesOrderResponse> findByInvoice_IssueDate(LocalDateTime issueDate);

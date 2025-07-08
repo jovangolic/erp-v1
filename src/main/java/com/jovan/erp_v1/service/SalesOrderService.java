@@ -151,6 +151,14 @@ public class SalesOrderService implements ISalesOrder {
 	}
 
 	// nove metode
+	
+	@Override
+	public List<SalesOrderResponse> findByBuyer_Id(Long buyerId){
+		fetchBuyerId(buyerId);
+		return salesOrderRepository.findByBuyer_Id(buyerId).stream()
+				.map(SalesOrderResponse::new)
+				.collect(Collectors.toList());
+	}
 
 	@Override
 	public List<SalesOrderResponse> findByBuyer_CompanyNameContainingIgnoreCase(String companyName) {
@@ -228,6 +236,15 @@ public class SalesOrderService implements ISalesOrder {
 	public List<SalesOrderResponse> findByInvoice_TotalAmountLessThan(BigDecimal totalAmount) {
 		validateBigDecimal(totalAmount);
 		return salesOrderRepository.findByInvoice_TotalAmountLessThan(totalAmount).stream()
+				.map(SalesOrderResponse::new)
+				.collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<SalesOrderResponse> findByInvoice_TotalAmountBetween(BigDecimal min, BigDecimal max){
+		validateBigDecimal(min);
+		validateBigDecimal(max);
+		return salesOrderRepository.findByInvoiceTotalAmountBetween(min, max).stream()
 				.map(SalesOrderResponse::new)
 				.collect(Collectors.toList());
 	}

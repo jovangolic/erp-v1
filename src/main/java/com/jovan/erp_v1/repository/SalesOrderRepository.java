@@ -71,7 +71,8 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
   List<SalesOrder> findByInvoice_TotalAmountGreaterThan(BigDecimal totalAmount);
 
   List<SalesOrder> findByInvoice_TotalAmountLessThan(BigDecimal totalAmount);
-
+  @Query("SELECT s FROM SalesOrder s WHERE s.invoice.totalAmount BETWEEN :min AND :max")
+  List<SalesOrder> findByInvoiceTotalAmountBetween(@Param("min") BigDecimal min, @Param("max") BigDecimal max);
   // issueDate
   List<SalesOrder> findByInvoice_IssueDate(LocalDateTime issueDate);
 

@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -7,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.exception.ShelfNotFoundException;
 import com.jovan.erp_v1.exception.StorageNotFoundException;
 import com.jovan.erp_v1.model.Goods;
@@ -37,8 +39,7 @@ public class ShelfService implements IShelfService {
 		Shelf shelf = new Shelf();
 		shelf.setRowCount(request.rowCount());
 		shelf.setCols(request.cols());
-		Storage storage = storageRepository.findById(request.storageId())
-				.orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " + request.storageId()));
+		Storage storage = fetchStorageId(request.storageId());
 		shelf.setStorage(storage);
 		if (request.goods() != null && !request.goods().isEmpty()) {
 			List<Goods> goods = goodsRepository.findAllById(request.goods());
@@ -61,8 +62,7 @@ public class ShelfService implements IShelfService {
 				.orElseThrow(() -> new ShelfNotFoundException("Shelf not found with id: " + id));
 		shelf.setRowCount(request.rowCount());
 		shelf.setCols(request.cols());
-		Storage storage = storageRepository.findById(request.storageId())
-				.orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " + request.storageId()));
+		Storage storage = fetchStorageId(request.storageId());
 		shelf.setStorage(storage);
 		if (request.goods() != null && !request.goods().isEmpty()) {
 			List<Goods> goodsList = goodsRepository.findAllById(request.goods());
@@ -88,21 +88,29 @@ public class ShelfService implements IShelfService {
 
 	@Override
 	public boolean existsByRowCountAndStorageId(Integer rows, Long storageId) {
+		validateInteger(rows);
+		fetchStorageId(storageId);
 		return shelfRepository.existsByRowCountAndStorageId(rows, storageId);
 	}
 
 	@Override
 	public boolean existsByColsAndStorageId(Integer cols, Long storageId) {
+		validateInteger(cols);
+		fetchStorageId(storageId);
 		return shelfRepository.existsByColsAndStorageId(cols, storageId);
 	}
 
 	@Override
 	public boolean existsByRowCountAndColsAndStorageId(Integer rows, Integer cols, Long storageId) {
+		validateInteger(cols);
+		validateInteger(rows);
+		fetchStorageId(storageId);
 		return shelfRepository.existsByRowCountAndColsAndStorageId(rows, cols, storageId);
 	}
 
 	@Override
 	public List<ShelfResponse> findByStorageId(Long storageId) {
+		fetchStorageId(storageId);
 		return shelfRepository.findByStorageId(storageId).stream()
 				.map(ShelfResponse::new)
 				.collect(Collectors.toList());
@@ -110,12 +118,17 @@ public class ShelfService implements IShelfService {
 
 	@Override
 	public Optional<ShelfResponse> findByRowCountAndColsAndStorageId(Integer rows, Integer cols, Long storageId) {
+		validateInteger(cols);
+		validateInteger(rows);
+		fetchStorageId(storageId);
 		return shelfRepository.findByRowCountAndColsAndStorageId(rows, cols, storageId)
 				.map(ShelfResponse::new);
 	}
 
 	@Override
 	public List<ShelfResponse> findByRowCountAndStorageId(Integer rows, Long storageId) {
+		fetchStorageId(storageId);
+		validateInteger(rows);
 		return shelfRepository.findByRowCountAndStorageId(rows, storageId).stream()
 				.map(ShelfResponse::new)
 				.collect(Collectors.toList());
@@ -123,6 +136,8 @@ public class ShelfService implements IShelfService {
 
 	@Override
 	public List<ShelfResponse> findByColsAndStorageId(Integer cols, Long storageId) {
+		fetchStorageId(storageId);
+		validateInteger(cols);
 		return shelfRepository.findByColsAndStorageId(cols, storageId).stream()
 				.map(ShelfResponse::new)
 				.collect(Collectors.toList());
@@ -155,6 +170,78 @@ public class ShelfService implements IShelfService {
 		return shelfRepository.findAll().stream()
 				.map(ShelfResponse::new)
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ShelfResponse> findByStorage_Name(String name) {
+		validateString(name);
+		return shelfRepository.findByStorage_Name(name).stream()
+				.map(ShelfResponse::new)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ShelfResponse> findByStorage_Location(String location) {
+		validateString(location);
+		return shelfRepository.findByStorage_Location(location).stream()
+				.map(ShelfResponse::new)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ShelfResponse> findByStorage_Type(StorageType type) {
+		validateStorageType(type);
+		return shelfRepository.findByStorage_Type(type).stream()
+				.map(ShelfResponse::new)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ShelfResponse> findByStorage_CapacityGreaterThan(BigDecimal capacity) {
+		validateBigDecimal(capacity);
+		return shelfRepository.findByStorage_CapacityGreaterThan(capacity).stream()
+				.map(ShelfResponse::new)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ShelfResponse> findByStorage_NameAndStorage_Type(String name, StorageType type) {
+		validateString(name);
+		validateStorageType(type);
+		return shelfRepository.findByStorage_NameAndStorage_Type(name, type).stream()
+				.map(ShelfResponse::new)
+				.collect(Collectors.toList());
+	}
+	
+	private void validateInteger(Integer num) {
+		if(num == null || num <= 0) {
+			throw new IllegalArgumentException("Number must be positive");
+		}
+	}
+	
+	private void validateString(String str) {
+		if(str == null || str.trim().isEmpty()) {
+			throw new IllegalArgumentException("String must not be null nor empty");
+		}
+	}
+	
+	private void validateBigDecimal(BigDecimal num) {
+		if(num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
+			throw new IllegalArgumentException("Number must be positive");
+		}
+	}
+	
+	private void validateStorageType(StorageType type) {
+		if(type == null) {
+			throw new StorageNotFoundException("StorageType type must not be null");
+		}
+	}
+	
+	private Storage fetchStorageId(Long storageId) {
+		if(storageId == null) {
+			throw new StorageNotFoundException("Storage ID must not be null");
+		}
+		return storageRepository.findById(storageId).orElseThrow(() -> new StorageNotFoundException("Storage not found with id "+storageId));
 	}
 
 }

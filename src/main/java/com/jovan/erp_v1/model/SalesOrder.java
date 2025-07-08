@@ -54,5 +54,4 @@ public class SalesOrder {
     private OrderStatus status;
 
     private String note;
-
 }

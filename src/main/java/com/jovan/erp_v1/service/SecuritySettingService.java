@@ -32,10 +32,10 @@ public class SecuritySettingService implements ISecuritySettingService {
         SecuritySetting setting = settingRepository.findBySettingName(request.settingName())
                 .orElseThrow(() -> new SecuritySettingErrorException(
                         "Setting not found with name: " + request.settingName()));
-
+        validateString(request.settingName());
+        validateString(request.value());
         setting.setValue(request.value());
         SecuritySetting updated = settingRepository.save(setting);
-
         return SecuritySettingMapper.toResponse(updated);
     }
 
@@ -45,5 +45,11 @@ public class SecuritySettingService implements ISecuritySettingService {
         return settings.stream()
                 .map(SecuritySettingMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+    
+    private void validateString(String str) {
+    	if(str == null || str.trim().isEmpty()) {
+    		throw new IllegalArgumentException("String must not be null nor empty");
+    	}
     }
 }
