@@ -149,8 +149,8 @@ public class SalesOrderService implements ISalesOrder {
 				})
 				.collect(Collectors.toList());
 	}
-	
-	//nove metode
+
+	// nove metode
 
 	@Override
 	public List<SalesOrderResponse> findByBuyer_CompanyNameContainingIgnoreCase(String companyName) {
@@ -201,9 +201,9 @@ public class SalesOrderService implements ISalesOrder {
 	}
 
 	@Override
-	public List<SalesOrderResponse> findByInvoice_NumberContainingIgnoreCase(String invoiceNumber) {
+	public List<SalesOrderResponse> findByInvoice_InvoiceNumberContainingIgnoreCase(String invoiceNumber) {
 		checkInvoiceNumber(invoiceNumber);
-		return salesOrderRepository.findByInvoice_NumberContainingIgnoreCase(invoiceNumber).stream()
+		return salesOrderRepository.findByInvoice_InvoiceNumberContainingIgnoreCase(invoiceNumber).stream()
 				.map(SalesOrderResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -268,24 +268,24 @@ public class SalesOrderService implements ISalesOrder {
 	public List<SalesOrderResponse> findByInvoice_DueDate(LocalDateTime dueDate) {
 		DateValidator.validateNotNull(dueDate, "Due-date");
 		return salesOrderRepository.findByInvoice_DueDate(dueDate).stream()
-	            .map(SalesOrderResponse::new)
-	            .collect(Collectors.toList());
+				.map(SalesOrderResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SalesOrderResponse> findByInvoice_DueDateAfter(LocalDateTime date) {
-	    DateValidator.validateNotNull(date, "Date");
-	    return salesOrderRepository.findByInvoice_DueDateAfter(date).stream()
-	            .map(SalesOrderResponse::new)
-	            .collect(Collectors.toList());
+		DateValidator.validateNotNull(date, "Date");
+		return salesOrderRepository.findByInvoice_DueDateAfter(date).stream()
+				.map(SalesOrderResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SalesOrderResponse> findByInvoice_DueDateBefore(LocalDateTime date) {
-	    DateValidator.validateNotNull(date, "Date");
-	    return salesOrderRepository.findByInvoice_DueDateBefore(date).stream()
-	            .map(SalesOrderResponse::new)
-	            .collect(Collectors.toList());
+		DateValidator.validateNotNull(date, "Date");
+		return salesOrderRepository.findByInvoice_DueDateBefore(date).stream()
+				.map(SalesOrderResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -385,7 +385,8 @@ public class SalesOrderService implements ISalesOrder {
 	}
 
 	@Override
-	public List<SalesOrderResponse> findByInvoice_Payment_PaymentDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
+	public List<SalesOrderResponse> findByInvoice_Payment_PaymentDateBetween(LocalDateTime startDate,
+			LocalDateTime endDate) {
 		DateValidator.validateRange(startDate, endDate);
 		return salesOrderRepository.findByInvoice_Payment_PaymentDateBetween(startDate, endDate).stream()
 				.map(SalesOrderResponse::new)
@@ -425,127 +426,134 @@ public class SalesOrderService implements ISalesOrder {
 	}
 
 	@Override
-	public List<SalesOrderResponse> findByInvoice_CreatedBy_FirstNameLikeIgnoreCaseAndLastNameLikeIgnoreCase(String firstName,
+	public List<SalesOrderResponse> findByInvoice_CreatedBy_FirstNameLikeIgnoreCaseAndLastNameLikeIgnoreCase(
+			String firstName,
 			String lastName) {
 		validateString(firstName);
 		validateString(lastName);
-		return salesOrderRepository.findByInvoice_CreatedBy_FirstNameLikeIgnoreCaseAndLastNameLikeIgnoreCase(firstName, lastName).stream()
+		return salesOrderRepository
+				.findByInvoice_CreatedBy_FirstNameLikeIgnoreCaseAndLastNameLikeIgnoreCase(firstName, lastName).stream()
 				.map(SalesOrderResponse::new)
 				.collect(Collectors.toList());
 	}
-	
+
 	private void validateItemSalesRequest(List<ItemSalesRequest> items) {
-		if(items == null || items.isEmpty()) {
+		if (items == null || items.isEmpty()) {
 			throw new IllegalArgumentException("List of items must not be null nor empty");
 		}
-		for(ItemSalesRequest item : items) {
+		for (ItemSalesRequest item : items) {
 			validateItemSalesRequest(item);
 		}
 	}
-	
+
 	private void validateItemSalesRequest(ItemSalesRequest items) {
-		if(items.goodsId() == null) {
+		if (items.goodsId() == null) {
 			throw new GoodsNotFoundException("Goods ID must not be null");
 		}
-		if(items.salesId() == null) {
+		if (items.salesId() == null) {
 			throw new SalesNotFoundException("Sales ID must not be null");
 		}
-		if(items.procurementId() == null) {
+		if (items.procurementId() == null) {
 			throw new ProcurementNotFoundException("Procurement ID must not be null");
 		}
 		validateBigDecimal(items.quantity());
 		validateBigDecimal(items.unitPrice());
 	}
-	
+
 	private void validateBigDecimal(BigDecimal num) {
-		if(num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
 			throw new IllegalArgumentException("Number must be positive");
 		}
 	}
-	
+
 	private void validateString(String str) {
-		if(str == null || str.trim().isEmpty()) {
+		if (str == null || str.trim().isEmpty()) {
 			throw new IllegalArgumentException("String must not be null nor empty");
 		}
 	}
-	
+
 	private void validateOrderStatus(OrderStatus status) {
-		if(status == null) {
+		if (status == null) {
 			throw new IllegalArgumentException("OrderStatus status must not be null");
 		}
 	}
-	
+
 	private Payment fetchPaymentId(Long id) {
-		if(id == null) {
+		if (id == null) {
 			throw new PaymentNotFoundException("Payment ID muast not be null");
 		}
-		return paymentRepository.findById(id).orElseThrow(() -> new PaymentNotFoundException("Payment not found with id "+id));
+		return paymentRepository.findById(id)
+				.orElseThrow(() -> new PaymentNotFoundException("Payment not found with id " + id));
 	}
-	
+
 	private Buyer fetchBuyerId(Long buyerId) {
-		if(buyerId == null) {
+		if (buyerId == null) {
 			throw new BuyerNotFoundException("Buyer ID must not be null");
 		}
-		return buyerRepository.findById(buyerId).orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: "+buyerId));
+		return buyerRepository.findById(buyerId)
+				.orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: " + buyerId));
 	}
-	
+
 	private User fetchUserId(Long userId) {
-		if(userId == null) {
+		if (userId == null) {
 			throw new UserNotFoundException("User ID must nut be null");
 		}
-		return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found with id: "+userId));
+		return userRepository.findById(userId)
+				.orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 	}
-	
+
 	private Sales fetchSalesId(Long salesId) {
-		if(salesId == null) {
+		if (salesId == null) {
 			throw new SalesNotFoundException("Sales ID must not be null");
 		}
-		return salesRepository.findById(salesId).orElseThrow(() -> new SalesNotFoundException("Sales not found with id " + salesId));
+		return salesRepository.findById(salesId)
+				.orElseThrow(() -> new SalesNotFoundException("Sales not found with id " + salesId));
 	}
-	
+
 	private Invoice fetchInvoice(Long invoiceId) {
-		if(invoiceId == null) {
+		if (invoiceId == null) {
 			throw new InvoiceNotFoundException("Invoice ID must not be null");
 		}
-		return invoiceRepository.findById(invoiceId).orElseThrow(() -> new InvoiceNotFoundException("Invoice not found with id "+invoiceId));
+		return invoiceRepository.findById(invoiceId)
+				.orElseThrow(() -> new InvoiceNotFoundException("Invoice not found with id " + invoiceId));
 	}
-	
+
 	private void checkOrderNumber(String orderNumber, boolean shouldBeUnique) {
-	    boolean exists = salesOrderRepository.existsByOrderNumber(orderNumber);
-	    if (shouldBeUnique && exists) {
-	        throw new DuplicateOrderNumberException("Order number already exists: " + orderNumber);
-	    } else if (!shouldBeUnique && !exists) {
-	        throw new SalesOrderNotFoundException("Order number not found: " + orderNumber);
-	    }
+		boolean exists = salesOrderRepository.existsByOrderNumber(orderNumber);
+		if (shouldBeUnique && exists) {
+			throw new DuplicateOrderNumberException("Order number already exists: " + orderNumber);
+		} else if (!shouldBeUnique && !exists) {
+			throw new SalesOrderNotFoundException("Order number not found: " + orderNumber);
+		}
 	}
-	
+
 	private void validatePaymentStatus(PaymentStatus status) {
-		if(status == null) {
+		if (status == null) {
 			throw new IllegalArgumentException("PaymentStatus status must not be null");
 		}
 	}
-	
+
 	private void validatePaymentMethod(PaymentMethod method) {
-		if(method == null) {
+		if (method == null) {
 			throw new IllegalArgumentException("PaymentMethod method must not be null");
 		}
 	}
-	
+
 	private void checkInvoiceNumber(String invoiceNumber) {
-		if(!salesOrderRepository.existsByInvoice_InvoiceNumber(invoiceNumber)) {
-			throw new IllegalArgumentException("Invoice number not found: "+invoiceNumber);
+		if (!salesOrderRepository.existsByInvoice_InvoiceNumber(invoiceNumber)) {
+			throw new IllegalArgumentException("Invoice number not found: " + invoiceNumber);
 		}
 	}
-	
+
 	private void checkReferenceNumberExists(String referenceNumber) {
-	    if (!salesOrderRepository.existsByInvoice_Payment_ReferenceNumberLikeIgnoreCase(referenceNumber)) {
-	        throw new PaymentReferenceNotFoundException("Reference number not found: " + referenceNumber);
-	    }
+		if (!salesOrderRepository.existsByInvoice_Payment_ReferenceNumberLikeIgnoreCase(referenceNumber)) {
+			throw new PaymentReferenceNotFoundException("Reference number not found: " + referenceNumber);
+		}
 	}
-	
+
 	private void checkPib(String pib) {
-		if(!salesOrderRepository.existsByBuyer_Pib(pib)) {
-			throw new BuyerNotFoundException("PIB  number not found "+pib);
+		if (!salesOrderRepository.existsByBuyer_Pib(pib)) {
+			throw new BuyerNotFoundException("PIB  number not found " + pib);
 		}
 	}
 

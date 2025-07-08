@@ -8,14 +8,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
-import com.jovan.erp_v1.model.Goods;
 import com.jovan.erp_v1.model.RawMaterial;
-import com.jovan.erp_v1.response.RawMaterialResponse;
 
 @Repository
 public interface RawMaterialRepository extends JpaRepository<RawMaterial, Long>, JpaSpecificationExecutor<RawMaterial> {
@@ -50,27 +47,52 @@ public interface RawMaterialRepository extends JpaRepository<RawMaterial, Long>,
 
 	@Query("select r from RawMaterial r where r.goodsType = :type")
 	List<RawMaterial> findByGoodsType(@Param("type") GoodsType goodsType);
-	//nove metode
+
+	// nove metode
 	boolean existsByBarCodes_Code(String code);
+
 	List<RawMaterial> findByCurrentQuantity(BigDecimal currentQuantity);
+
 	List<RawMaterial> findByCurrentQuantityLessThan(BigDecimal currentQuantity);
+
 	List<RawMaterial> findByCurrentQuantityGreaterThan(BigDecimal currentQuantity);
+
 	List<RawMaterial> findByProduct_CurrentQuantity(BigDecimal currentQuantity);
+
 	List<RawMaterial> findByProduct_CurrentQuantityGreaterThan(BigDecimal currentQuantity);
+
 	List<RawMaterial> findByProduct_CurrentQuantityLessThan(BigDecimal currentQuantity);
+
 	@Query("SELECT rm FROM RawMaterial rm WHERE rm.shelf.id = :shelfId")
 	List<RawMaterial> findByShelf_Id(@Param("shelfId") Long shelfId);
+
 	Long countByShelf_RowCount(Integer rowCount);
-    Long countByShelf_Cols(Integer cols);
-    @Query("SELECT rm FROM RawMaterial rm WHERE rm.shelf.id = :shelfId AND rm.currentQuantity > :quantity")
-    List<RawMaterial> findByShelfAndQuantityGreaterThan(@Param("shelfId") Long shelfId, @Param("quantity") BigDecimal quantity);
-    @Query("SELECT rm FROM RawMaterial rm WHERE rm.shelf.id = :shelfId AND rm.currentQuantity < :quantity")
-    List<RawMaterial> findByShelfAndQuantityLessThan(@Param("shelfId") Long shelfId, @Param("quantity") BigDecimal quantity);
-    @Query("SELECT rm FROM RawMaterial rm WHERE rm.shelf.id = :shelfId AND rm.currentQuantity = :quantity")
-    List<RawMaterial> findByShelfAndExactQuantity(@Param("shelfId") Long shelfId, @Param("quantity") BigDecimal quantity);
-    List<RawMaterial> findByShelf_IdAndCurrentQuantityGreaterThan(Long shelfId, BigDecimal quantity);
-    List<RawMaterial> findByShelf_IdAndCurrentQuantityLessThan(Long shelfId, BigDecimal quantity);
-    List<RawMaterial> filterRawMaterials(Long shelfId, BigDecimal minQty, BigDecimal maxQty, Long productId);
-    boolean existsByShelf_RowCount(Integer rowCount);
-    boolean existsByShelf_Cols(Integer cols);
+
+	Long countByShelf_Cols(Integer cols);
+
+	@Query("SELECT rm FROM RawMaterial rm WHERE rm.shelf.id = :shelfId AND rm.currentQuantity > :quantity")
+	List<RawMaterial> findByShelfAndQuantityGreaterThan(@Param("shelfId") Long shelfId,
+			@Param("quantity") BigDecimal quantity);
+
+	@Query("SELECT rm FROM RawMaterial rm WHERE rm.shelf.id = :shelfId AND rm.currentQuantity < :quantity")
+	List<RawMaterial> findByShelfAndQuantityLessThan(@Param("shelfId") Long shelfId,
+			@Param("quantity") BigDecimal quantity);
+
+	@Query("SELECT rm FROM RawMaterial rm WHERE rm.shelf.id = :shelfId AND rm.currentQuantity = :quantity")
+	List<RawMaterial> findByShelfAndExactQuantity(@Param("shelfId") Long shelfId,
+			@Param("quantity") BigDecimal quantity);
+
+	List<RawMaterial> findByShelf_IdAndCurrentQuantityGreaterThan(Long shelfId, BigDecimal quantity);
+
+	List<RawMaterial> findByShelf_IdAndCurrentQuantityLessThan(Long shelfId, BigDecimal quantity);
+
+	@Query("SELECT rw FROM RawMaterial rw WHERE rw.shelf.id = :shelfId AND rw.product.id = :productId AND rw.currentQuantity BETWEEN :minQty AND :maxQty")
+	List<RawMaterial> filterRawMaterial(@Param("shelfId") Long shelfId,
+			@Param("productId") Long productId,
+			@Param("minQty") BigDecimal minQty,
+			@Param("maxQty") BigDecimal maxQty);
+
+	boolean existsByShelf_RowCount(Integer rowCount);
+
+	boolean existsByShelf_Cols(Integer cols);
 }
