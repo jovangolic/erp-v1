@@ -44,7 +44,7 @@ public interface ShiftPlanningRepository extends JpaRepository<ShiftPlanning, Lo
 
     List<ShiftPlanning> findByShiftType(ShiftType shiftType);
 
-    List<ShiftPlanning> findByAssigned(boolean assigned);
+    List<ShiftPlanning> findByAssigned(Boolean assigned);
 
     List<ShiftPlanning> findByEmployee_IdAndAssignedTrue(Long employeeId);
 

@@ -43,5 +43,5 @@ public class ShiftPlanning {
     private ShiftType shiftType;
 
     @Column
-    private boolean assigned;
+    private Boolean assigned;
 }

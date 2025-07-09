@@ -45,7 +45,7 @@ public interface IShiftPlanningService {
 
     List<ShiftPlanningResponse> findByShiftType(ShiftType shiftType);
 
-    List<ShiftPlanningResponse> findByAssigned(boolean assigned);
+    List<ShiftPlanningResponse> findByAssigned(Boolean assigned);
 
     List<ShiftPlanningResponse> findByEmployee_IdAndAssignedTrue(Long employeeId);
 

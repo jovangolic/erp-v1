@@ -149,7 +149,7 @@ public class ShiftPlanningController {
     }
 
     @GetMapping("/by-assigned")
-    public ResponseEntity<List<ShiftPlanningResponse>> findByAssigned(@RequestParam("assigned") boolean assigned) {
+    public ResponseEntity<List<ShiftPlanningResponse>> findByAssigned(@RequestParam("assigned") Boolean assigned) {
         List<ShiftPlanningResponse> response = shiftPlanningService.findByAssigned(assigned);
         return ResponseEntity.ok(response);
     }

@@ -18,7 +18,7 @@ public class ShiftPlanningResponse {
     private UserResponse userResponse;
     private LocalDate date;
     private ShiftType shiftType;
-    private boolean assigned;
+    private Boolean assigned;
 
     public ShiftPlanningResponse(ShiftPlanning shift) {
         this.id = shift.getId();
@@ -26,6 +26,6 @@ public class ShiftPlanningResponse {
         this.userResponse = new UserResponse(shift.getEmployee());
         this.date = shift.getDate();
         this.shiftType = shift.getShiftType();
-        this.assigned = shift.isAssigned();
+        this.assigned = shift.getAssigned();
     }
 }

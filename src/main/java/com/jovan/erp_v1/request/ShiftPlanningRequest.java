@@ -13,5 +13,5 @@ public record ShiftPlanningRequest(
         @NotNull Long userId,
         @NotNull @FutureOrPresent LocalDate date,
         @NotNull ShiftType shiftType,
-        boolean assigned) {
+        @NotNull Boolean assigned) {
 }
