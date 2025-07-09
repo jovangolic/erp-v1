@@ -52,7 +52,8 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
     	       "(HOUR(s.startTime) >= 22 OR HOUR(s.endTime) <= 6)")
     List<Shift> findNightShifts();
     //sledece smene
-    List<Shift> findFutureShifts(LocalDateTime now);
+    @Query("SELECT s FROM Shift s WHERE s.startTime > :now")
+    List<Shift> findFutureShifts(@Param("now") LocalDateTime now);
     @Query("SELECT s FROM Shift s WHERE s.startTime > CURRENT_TIMESTAMP")
     List<Shift> findAllFutureShifts();
     //supervisor
@@ -60,7 +61,7 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
     List<Shift> findByShiftSupervisor_EmailLikeIgnoreCase(@Param("email") String email);
     @Query("SELECT s FROM Shift s WHERE LOWER(s.shiftSupervisor.phoneNumber) LIKE LOWER(CONCAT('%', :phoneNumber, '%'))")
     List<Shift> findByShiftSupervisorPhoneNumberLikeIgnoreCase(@Param("phoneNumber") String phoneNumber);
-    @Query("SELECT sh FROM Shift sh WHERE LOWER(sh.shiftSupervisor.firstName) LIKE LOWER(CONCAT('%', :firstName, '%')) AND LOWER(so.shiftSupervisor.lastName) LIKE LOWER(CONCAT('%', :lastName, '%'))")
+    @Query("SELECT sh FROM Shift sh WHERE LOWER(sh.shiftSupervisor.firstName) LIKE LOWER(CONCAT('%', :firstName, '%')) AND LOWER(sh.shiftSupervisor.lastName) LIKE LOWER(CONCAT('%', :lastName, '%'))")
     List<Shift> findByShiftSupervisor_FirstNameLikeIgnoreCaseAndLastNameLikeIgnoreCase(@Param("firstName") String firstName, @Param("lastName") String lastName);
     
     //boolean

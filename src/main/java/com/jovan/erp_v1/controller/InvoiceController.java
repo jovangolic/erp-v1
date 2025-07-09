@@ -93,7 +93,7 @@ public class InvoiceController {
 	@GetMapping("/invoice/buyer-status")
 	public ResponseEntity<List<InvoiceResponse>> getByBuyerAndStatus(@RequestParam("buyerId") Long buyerId,@RequestParam("status") InvoiceStatus status){
 		Buyer buyer = buyerRepository.findById(buyerId).orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: " + buyerId));
-		List<InvoiceResponse> responses = invoiceService.findByBuyerIdAndStatus(buyerId, status);
+		List<InvoiceResponse> responses = invoiceService.findByBuyerIdAndStatus(buyer.getId(), status);
 		return ResponseEntity.ok(responses);
 	}
 	

@@ -225,7 +225,7 @@ public class SalesOrderController {
 		return ResponseEntity.ok(responses);	
 	}
 	
-	@GetMapping("/search/invoice/relatedSales/{relatedSalesId")
+	@GetMapping("/search/invoice/relatedSales/{relatedSalesId}")
 	public ResponseEntity<List<SalesOrderResponse>> findByInvoice_RelatedSales_Id(@PathVariable Long relatedSalesId){
 		List<SalesOrderResponse> responses = salesOrder.findByInvoice_RelatedSales_Id(relatedSalesId);
 		return ResponseEntity.ok(responses);	
