@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import com.jovan.erp_v1.enumeration.ShipmentStatus;
 
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +16,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -47,4 +50,7 @@ public class Shipment {
     @ManyToOne
     @JoinColumn(name = "origin_storage_id")
     private Storage originStorage;
+    
+    @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventLog> eventLogs = new ArrayList<>();
 }

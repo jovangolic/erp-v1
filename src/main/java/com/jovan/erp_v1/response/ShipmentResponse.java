@@ -17,18 +17,18 @@ public class ShipmentResponse {
     private Long id;
     private LocalDate shipmentDate;
     private ShipmentStatus status;
-    private Long providerId;
-    private Long outboundDeliveryId;
-    private Long trackingInfoId;
-    private Long originStorageId;
+    private LogisticsProviderResponse logisticsProviderResponse;
+    private OutboundDeliveryResponse outboundDeliveryResponse;
+    private TrackingInfoBasicResponse trackingInfoBasicResponse;
+    private StorageBasicResponse storageBasicResponse;
 
     public ShipmentResponse(Shipment ship) {
         this.id = ship.getId();
         this.shipmentDate = ship.getShipmentDate();
         this.status = ship.getStatus();
-        this.providerId = ship.getProvider().getId();
-        this.outboundDeliveryId = ship.getOutboundDelivery().getId();
-        this.trackingInfoId = ship.getTrackingInfo().getId();
-        this.originStorageId = ship.getOriginStorage().getId();
+        this.logisticsProviderResponse = ship.getProvider() != null ? new LogisticsProviderResponse(ship.getProvider()) : null;
+        this.outboundDeliveryResponse = ship.getOutboundDelivery() != null ? new OutboundDeliveryResponse(ship.getOutboundDelivery()) : null;
+        this.trackingInfoBasicResponse = ship.getTrackingInfo() != null ? new TrackingInfoBasicResponse(ship.getTrackingInfo()) : null;
+        this.storageBasicResponse = ship.getOriginStorage() != null ? new StorageBasicResponse(ship.getOriginStorage()) : null;
     }
 }

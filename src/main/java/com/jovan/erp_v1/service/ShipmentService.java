@@ -1,12 +1,14 @@
 package com.jovan.erp_v1.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jovan.erp_v1.enumeration.DeliveryStatus;
 import com.jovan.erp_v1.enumeration.ShipmentStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.exception.LogisticsProviderErrorException;
@@ -33,7 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class ShipmentService implements IShipmentService {
 
         private final ShipmentRepository shipmentRepository;
-        private final StorageRepository storageRepositor;
+        private final StorageRepository storageRepository;
         private final LogisticsProviderRepository providerRepository;
         private OutboundDeliveryRepository deliveryRepository;
 
@@ -41,7 +43,7 @@ public class ShipmentService implements IShipmentService {
         @Override
         public ShipmentResponse create(ShipmentRequest request) {
                 Shipment ship = new Shipment();
-                Storage storage = storageRepositor.findById(request.originStorageId())
+                Storage storage = storageRepository.findById(request.originStorageId())
                                 .orElseThrow(() -> new StorageNotFoundException("Storage not found"));
                 LogisticsProvider provider = providerRepository.findById(request.providerId())
                                 .orElseThrow(() -> new LogisticsProviderErrorException("LogisticsProvider not found"));
@@ -72,7 +74,7 @@ public class ShipmentService implements IShipmentService {
     		}
                 Shipment ship = shipmentRepository.findById(id)
                                 .orElseThrow(() -> new ShipmentNotFoundException("Shipment not found " + id));
-                Storage storage = storageRepositor.findById(request.originStorageId())
+                Storage storage = storageRepository.findById(request.originStorageId())
                                 .orElseThrow(() -> new StorageNotFoundException("Storage not found"));
                 LogisticsProvider provider = providerRepository.findById(request.providerId())
                                 .orElseThrow(() -> new LogisticsProviderErrorException("LogisticsProvider not found"));
@@ -225,4 +227,203 @@ public class ShipmentService implements IShipmentService {
                                 .collect(Collectors.toList());
         }
 
+		@Override
+		public List<ShipmentResponse> findByTrackingInfo_TrackingNumber(String trackingNumber) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByTrackingInfo_EstimatedDelivery(LocalDate estimatedDelivery) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByTrackingInfo_EstimatedDeliveryBetween(LocalDate estimatedDeliveryStart,
+				LocalDate estimatedDeliveryEnd) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByProvider_EmailLikeIgnoreCase(String email) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByProvider_WebsiteContainingIgnoreCase(String website) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByProvider_PhoneNumberLikeIgnoreCase(String phoneNumber) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByOutboundDelivery_DeliveryDate(LocalDate deliveryDate) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByOutboundDelivery_DeliveryDateBetween(LocalDate deliveryDateStart,
+				LocalDate deliveryDateEnd) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByOutboundDelivery_Status(DeliveryStatus status) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByOutboundDelivery_Buyer_Id(Long buyerId) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findLateShipments() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findShipmentsDueSoon(LocalDate futureDate) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByTrackingInfoIsNull() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByOutboundDelivery_StatusAndOutboundDelivery_DeliveryDateBetween(
+				DeliveryStatus status, LocalDate from, LocalDate to) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByOriginStorageIdAndTrackingInfo_EstimatedDeliveryBetween(Long storageId,
+				LocalDate from, LocalDate to) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByTrackingInfo_CurrentStatusAndTrackingInfo_CurrentLocationContainingIgnoreCase(
+				ShipmentStatus status, String location) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findByBuyerNameContainingIgnoreCase(String buyerName) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findRecentlyDeliveredShipments(LocalDateTime fromDate) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findCancelledShipments() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findCancelledShipmentsBetweenDates(LocalDate from, LocalDate to) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findDelayedShipments() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findInTransitShipments() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findDeliveredShipments() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findShipmentsByFixedStatus(ShipmentStatus status) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findPendingDeliveries() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findInTransitDeliveries() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findDeliveredDeliveries() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findCancelledDeliveries() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<ShipmentResponse> findInTransitShipmentsWithInTransitDelivery() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		private OutboundDelivery fetchOutboundDeliveryId(Long outId) {
+	    	if(outId == null) {
+	    		throw new OutboundDeliveryErrorException("OutboundDelivery ID must not be null");
+	    	}
+	    	return deliveryRepository.findById(outId).orElseThrow(() -> new OutboundDeliveryErrorException("OuboundDelivery not found with id "+outId));
+	    }
+	    
+	    private Storage fetchStorageId(Long storageId) {
+	    	if(storageId == null) {
+	    		throw new StorageNotFoundException("Storage ID must not be null");
+	    	}
+	    	return storageRepository.findById(storageId).orElseThrow(() -> new StorageNotFoundException("Storage not found with id "+storageId));
+	    }
+	    
+	    private LogisticsProvider fetchLogisticsProviderId(Long logisticsId) {
+	    	if(logisticsId == null) {
+	    		throw new LogisticsProviderErrorException("Logistics-provider ID must not be null");
+	    	}
+	    	return providerRepository.findById(logisticsId).orElseThrow(() -> new LogisticsProviderErrorException("Logistics-provider not found with id "+logisticsId));
+	    }
 }
