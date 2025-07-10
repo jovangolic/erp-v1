@@ -2,6 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,22 +12,31 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
 import com.jovan.erp_v1.enumeration.ShipmentStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
+import com.jovan.erp_v1.exception.BuyerNotFoundException;
 import com.jovan.erp_v1.exception.LogisticsProviderErrorException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.OutboundDeliveryErrorException;
 import com.jovan.erp_v1.exception.ShipmentNotFoundException;
 import com.jovan.erp_v1.exception.StorageNotFoundException;
+import com.jovan.erp_v1.exception.TrackingInfoErrorException;
+import com.jovan.erp_v1.mapper.ShipmentMapper;
+import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.LogisticsProvider;
 import com.jovan.erp_v1.model.OutboundDelivery;
 import com.jovan.erp_v1.model.Shipment;
 import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.model.TrackingInfo;
+import com.jovan.erp_v1.repository.BuyerRepository;
 import com.jovan.erp_v1.repository.LogisticsProviderRepository;
 import com.jovan.erp_v1.repository.OutboundDeliveryRepository;
 import com.jovan.erp_v1.repository.ShipmentRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
+import com.jovan.erp_v1.repository.TrackingInfoRepository;
+import com.jovan.erp_v1.request.EventLogRequest;
 import com.jovan.erp_v1.request.ShipmentRequest;
 import com.jovan.erp_v1.request.TrackingInfoRequest;
 import com.jovan.erp_v1.response.ShipmentResponse;
+import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,18 +47,21 @@ public class ShipmentService implements IShipmentService {
         private final ShipmentRepository shipmentRepository;
         private final StorageRepository storageRepository;
         private final LogisticsProviderRepository providerRepository;
-        private OutboundDeliveryRepository deliveryRepository;
+        private final OutboundDeliveryRepository deliveryRepository;
+        private final ShipmentMapper shipmentMapper;
+        private final BuyerRepository buyerRepository;
+        private final TrackingInfoRepository trackingInfoRepository;
 
         @Transactional
         @Override
         public ShipmentResponse create(ShipmentRequest request) {
                 Shipment ship = new Shipment();
-                Storage storage = storageRepository.findById(request.originStorageId())
-                                .orElseThrow(() -> new StorageNotFoundException("Storage not found"));
-                LogisticsProvider provider = providerRepository.findById(request.providerId())
-                                .orElseThrow(() -> new LogisticsProviderErrorException("LogisticsProvider not found"));
-                OutboundDelivery out = deliveryRepository.findById(request.outboundDeliveryId())
-                                .orElseThrow(() -> new OutboundDeliveryErrorException("OutboundDelivery not found"));
+                DateValidator.validateNotNull(request.shipmentDate(), "Shipment date");
+                validateShipmentStatus(request.status());
+                Storage storage = fetchStorageId(request.originStorageId());
+                LogisticsProvider provider = fetchLogisticsProviderId(request.providerId());
+                OutboundDelivery out = fetchOutboundDeliveryId(request.outboundDeliveryId());
+                validateEventLogRequest(request.eventLogRequest(), false);
                 ship.setShipmentDate(request.shipmentDate());
                 ship.setStatus(request.status());
                 ship.setProvider(provider);
@@ -74,12 +87,12 @@ public class ShipmentService implements IShipmentService {
     		}
                 Shipment ship = shipmentRepository.findById(id)
                                 .orElseThrow(() -> new ShipmentNotFoundException("Shipment not found " + id));
-                Storage storage = storageRepository.findById(request.originStorageId())
-                                .orElseThrow(() -> new StorageNotFoundException("Storage not found"));
-                LogisticsProvider provider = providerRepository.findById(request.providerId())
-                                .orElseThrow(() -> new LogisticsProviderErrorException("LogisticsProvider not found"));
-                OutboundDelivery out = deliveryRepository.findById(request.outboundDeliveryId())
-                                .orElseThrow(() -> new OutboundDeliveryErrorException("OutboundDelivery not found"));
+                DateValidator.validateNotNull(request.shipmentDate(), "Shipment date");
+                validateShipmentStatus(request.status());
+                Storage storage = fetchStorageId(request.originStorageId());
+                LogisticsProvider provider = fetchLogisticsProviderId(request.providerId());
+                OutboundDelivery out = fetchOutboundDeliveryId(request.outboundDeliveryId());
+                validateEventLogRequest(request.eventLogRequest(), true);
                 ship.setShipmentDate(request.shipmentDate());
                 ship.setStatus(request.status());
                 ship.setProvider(provider);
@@ -111,104 +124,187 @@ public class ShipmentService implements IShipmentService {
 
         @Override
         public List<ShipmentResponse> findByStatus(ShipmentStatus status) {
-                return shipmentRepository.findByStatus(status).stream()
+        	if(!shipmentRepository.existsShipmentsByStatus(status)) {
+        		String msg = String.format("No trackingInfo found for shipment status %s", status);
+        		throw new NoDataFoundException(msg);
+        	}
+        	List<Shipment> shipments = shipmentRepository.findByStatus(status);
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public List<ShipmentResponse> findByShipmentDateBetween(LocalDate from, LocalDate to) {
-                return shipmentRepository.findByShipmentDateBetween(from, to).stream()
+        	DateValidator.validateRange(from, to);
+        	List<Shipment> shipments = shipmentRepository.findByShipmentDateBetween(from, to);
+        	if(shipments.isEmpty()) {
+        		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        		String msg = String.format("No shipments found for date between %s and %s.", 
+        				from.format(formatter),to.format(formatter));
+        		throw new NoDataFoundException(msg);
+        	}
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public List<ShipmentResponse> findByProviderId(Long providerId) {
-                return shipmentRepository.findByProviderId(providerId).stream()
+        	fetchLogisticsProviderId(providerId);
+        	List<Shipment> shipments = shipmentRepository.findByProviderId(providerId);
+        	if(shipments.isEmpty()) {
+        		String msg = String.format("Logistics provider ID not found %s", providerId);
+        		throw new NoDataFoundException(msg);
+        	}
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public List<ShipmentResponse> findByProvider_NameContainingIgnoreCase(String name) {
-                return shipmentRepository.findByProvider_NameContainingIgnoreCase(name).stream()
+        	validateString(name);
+        	List<Shipment> shipments = shipmentRepository.findByProvider_NameContainingIgnoreCase(name);
+        	if(shipments.isEmpty()) {
+        		String msg = String.format("Logistics-provider name not found %s", name);
+        		throw new NoDataFoundException(msg);
+        	}
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public ShipmentResponse findByOutboundDeliveryId(Long outboundId) {
+        	fetchOutboundDeliveryId(outboundId);
                 Shipment s = shipmentRepository.findByOutboundDeliveryId(outboundId);
                 return new ShipmentResponse(s);
         }
 
         @Override
         public List<ShipmentResponse> findByTrackingInfo_CurrentStatus(ShipmentStatus status) {
-                return shipmentRepository.findByTrackingInfo_CurrentStatus(status).stream()
+        	if(!shipmentRepository.existsShipmentsByStatus(status)) {
+        		String msg = String.format("No trackingInfo found for shipment status %s", status);
+        		throw new NoDataFoundException(msg);
+        	}
+        	List<Shipment> shipments = shipmentRepository.findByTrackingInfo_CurrentStatus(status);
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public List<ShipmentResponse> findByTrackingInfoId(Long trackingInfoId) {
-                return shipmentRepository.findByTrackingInfoId(trackingInfoId).stream()
+        	fetchTrackingInfoId(trackingInfoId);
+        	List<Shipment> shipments = shipmentRepository.findByTrackingInfoId(trackingInfoId);
+        	if(shipments.isEmpty()) {
+        		String msg = String.format("TrackingInfo ID not found %s", trackingInfoId);
+        		throw new NoDataFoundException(msg);
+        	}
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public List<ShipmentResponse> findByOriginStorageId(Long storageId) {
-                return shipmentRepository.findByOriginStorageId(storageId).stream()
+        	fetchStorageId(storageId);
+        	List<Shipment> shipments =shipmentRepository.findByOriginStorageId(storageId);
+        	if(shipments.isEmpty()) {
+        		String msg = String.format("Storage ID for origin storage not found %s", storageId);
+        		throw new NoDataFoundException(msg);
+        	}
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public List<ShipmentResponse> findByOriginStorage_Name(String name) {
-                return shipmentRepository.findByOriginStorage_Name(name).stream()
+        	validateString(name);
+        	List<Shipment> shipments = shipmentRepository.findByOriginStorage_Name(name);
+        	if(shipments.isEmpty()) {
+        		String msg = String.format("Origin storage name not found %s", name);
+        		throw new NoDataFoundException(msg);
+        	}
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public List<ShipmentResponse> findByOriginStorage_Location(String location) {
-                return shipmentRepository.findByOriginStorage_Location(location).stream()
+        	validateString(location);
+        	List<Shipment> shipments = shipmentRepository.findByOriginStorage_Location(location);
+        	if(shipments.isEmpty()) {
+        		String msg = String.format("Location for origin storage not found %s", location);
+        		throw new NoDataFoundException(msg);
+        	}
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public List<ShipmentResponse> findByOriginStorage_Type(StorageType type) {
-                return shipmentRepository.findByOriginStorage_Type(type).stream()
+        	validateStorageType(type);
+        	List<Shipment> shipments = shipmentRepository.findByOriginStorage_Type(type);
+        	if(shipments.isEmpty()) {
+        		String msg = String.format("No type for origin storage found %s", type);
+        		throw new NoDataFoundException(msg);
+        	}
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public List<ShipmentResponse> findByOriginStorageIdAndStatus(Long storageId, ShipmentStatus status) {
-                return shipmentRepository.findByOriginStorageIdAndStatus(storageId, status).stream()
+        	fetchStorageId(storageId);
+        	if(!shipmentRepository.existsShipmentsByStatus(status)) {
+        		String msg = String.format("No shipments found with status %s for storage ID %d.", status, storageId);
+        		throw new NoDataFoundException(msg);
+        	}
+        	List<Shipment> shipments = shipmentRepository.findByOriginStorageIdAndStatus(storageId, status);
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public List<ShipmentResponse> searchByOriginStorageName(String name) {
-                return shipmentRepository.searchByOriginStorageName(name).stream()
+        	validateString(name);
+        	List<Shipment> shipments = shipmentRepository.searchByOriginStorageName(name);
+        	if(shipments.isEmpty()) {
+        		String msg = String.format("Given name for origin storage not found %s", name);
+        		throw new NoDataFoundException(msg);
+        	}
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public List<ShipmentResponse> findByTrackingInfo_CurrentLocationContainingIgnoreCase(String location) {
-                return shipmentRepository.findByTrackingInfo_CurrentLocationContainingIgnoreCase(location).stream()
+        	validateString(location);
+        	List<Shipment> shipments = shipmentRepository.findByTrackingInfo_CurrentLocationContainingIgnoreCase(location);
+        	if(shipments.isEmpty()) {
+        		String msg = String.format("No tracking-info found for current location %s", location);
+        		throw new NoDataFoundException(msg);
+        	}
+            return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
         @Override
         public List<ShipmentResponse> findOverdueDelayedShipments() {
-                return shipmentRepository.findOverdueDelayedShipments().stream()
+        	if(!shipmentRepository.existsOverdueDelayedShipments()) {
+        		throw new NoDataFoundException("No shipments found for overdue delayed");
+        	}
+        	List<Shipment> shipments = shipmentRepository.findOverdueDelayedShipments();
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
@@ -222,188 +318,433 @@ public class ShipmentService implements IShipmentService {
 
         @Override
         public List<ShipmentResponse> findAll() {
-                return shipmentRepository.findAll().stream()
+        	List<Shipment> shipments = shipmentRepository.findAll();
+        	if(shipments.isEmpty()) {
+        		throw new NoDataFoundException("No shipments found");
+        	}
+                return shipments.stream()
                                 .map(ShipmentResponse::new)
                                 .collect(Collectors.toList());
         }
 
 		@Override
 		public List<ShipmentResponse> findByTrackingInfo_TrackingNumber(String trackingNumber) {
-			// TODO Auto-generated method stub
-			return null;
+			if(!shipmentRepository.existsByTrackingInfo_TrackingNumber(trackingNumber)) {
+				String msg = String.format("No shipment found with tracking number %s.", trackingNumber);
+				throw new NoDataFoundException(msg);
+			}
+			List<Shipment> shipments = shipmentRepository.findByTrackingInfo_TrackingNumber(trackingNumber);
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByTrackingInfo_EstimatedDelivery(LocalDate estimatedDelivery) {
-			// TODO Auto-generated method stub
-			return null;
+			DateValidator.validateFutureOrPresent(estimatedDelivery, "Estimated delivery date");
+			List<Shipment> shipments = shipmentRepository.findByTrackingInfo_EstimatedDelivery(estimatedDelivery);
+			if(shipments.isEmpty()) {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+				String msg = String.format("No tracking-info found for estimated delivery date %s", estimatedDelivery.format(formatter));
+				throw new NoDataFoundException(msg);
+			}
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByTrackingInfo_EstimatedDeliveryBetween(LocalDate estimatedDeliveryStart,
 				LocalDate estimatedDeliveryEnd) {
-			// TODO Auto-generated method stub
-			return null;
+			DateValidator.validateRange(estimatedDeliveryStart, estimatedDeliveryEnd);
+			List<Shipment> shipments = shipmentRepository.findByTrackingInfo_EstimatedDeliveryBetween(estimatedDeliveryStart, estimatedDeliveryEnd);
+			if(shipments.isEmpty()) {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+				String msg = String.format(
+					    "No tracking-info found for estimated delivery between %s and %s.",
+					    estimatedDeliveryStart.format(formatter), estimatedDeliveryEnd.format(formatter)
+					);
+				throw new NoDataFoundException(msg);
+			}
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByProvider_EmailLikeIgnoreCase(String email) {
-			// TODO Auto-generated method stub
-			return null;
+			if(!shipmentRepository.existsByProvider_Email(email)) {
+				String msg = String.format("No email %s found for logistics provider: ", email);
+				throw new NoDataFoundException(msg);
+			}
+			List<Shipment> shipments = shipmentRepository.findByProvider_EmailLikeIgnoreCase(email);
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByProvider_WebsiteContainingIgnoreCase(String website) {
-			// TODO Auto-generated method stub
-			return null;
+			if(!shipmentRepository.existsByProvider_Website(website)) {
+				String msg = String.format("No given website %s found for logistics provider: ", website);
+				throw new NoDataFoundException(msg);
+			}
+			List<Shipment> shipments = shipmentRepository.findByProvider_WebsiteContainingIgnoreCase(website);
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByProvider_PhoneNumberLikeIgnoreCase(String phoneNumber) {
-			// TODO Auto-generated method stub
-			return null;
+			if(!shipmentRepository.existsByProvider_PhoneNumber(phoneNumber)) {
+				String msg = String.format("No given phone-number %s found for logistics provider", phoneNumber);
+				throw new NoDataFoundException(msg);
+			}
+			List<Shipment> shipments = shipmentRepository.findByProvider_PhoneNumberLikeIgnoreCase(phoneNumber);
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByOutboundDelivery_DeliveryDate(LocalDate deliveryDate) {
-			// TODO Auto-generated method stub
-			return null;
+			DateValidator.validateNotInFuture(deliveryDate, "Delivery date");
+			List<Shipment> shipments = shipmentRepository.findByOutboundDelivery_DeliveryDate(deliveryDate);
+			if(shipments.isEmpty()) {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+				String msg = String.format("No outbound-delivery found for deliveryDate %s: ", deliveryDate.format(formatter));
+				throw new NoDataFoundException(msg);
+			}
+ 			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByOutboundDelivery_DeliveryDateBetween(LocalDate deliveryDateStart,
 				LocalDate deliveryDateEnd) {
-			// TODO Auto-generated method stub
-			return null;
+			DateValidator.validateRange(deliveryDateStart, deliveryDateEnd);
+			List<Shipment> shipments = shipmentRepository.findByOutboundDelivery_DeliveryDateBetween(deliveryDateStart, deliveryDateEnd);
+			if(shipments.isEmpty()) {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+				String msg = String.format(
+					    "No outboundDelivery found for  delivery between %s and %s",
+					    deliveryDateStart.format(formatter),
+					    deliveryDateEnd.format(formatter));
+				throw new NoDataFoundException(msg);
+			}
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByOutboundDelivery_Status(DeliveryStatus status) {
-			// TODO Auto-generated method stub
-			return null;
+			validateDeliveryStatus(status);
+			List<Shipment> shipments = shipmentRepository.findByOutboundDelivery_Status(status);
+			if(shipments.isEmpty()) {
+				String message = String.format("No outbound-delivery found for delivvery status %s", status);
+				throw new NoDataFoundException(message);
+			}
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByOutboundDelivery_Buyer_Id(Long buyerId) {
-			// TODO Auto-generated method stub
-			return null;
+			fetchBuyerId(buyerId);
+			List<Shipment> shipments = shipmentRepository.findByOutboundDelivery_Buyer_Id(buyerId);
+			if(shipments.isEmpty()) {
+				String message = String.format("No outbound-delivery found for buyerId %s", buyerId);
+				throw new NoDataFoundException(message);
+			}
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findLateShipments() {
-			// TODO Auto-generated method stub
-			return null;
+			LocalDate local = LocalDate.now();
+			if(!shipmentRepository.existsLateShipments(local)) {
+				throw new NoDataFoundException("No late shipments found");
+			}
+			List<Shipment> shipments = shipmentRepository.findLateShipments();
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findShipmentsDueSoon(LocalDate futureDate) {
-			// TODO Auto-generated method stub
-			return null;
+			DateValidator.validatePastOrPresent(futureDate, "Future date");
+			List<Shipment> shipments = shipmentRepository.findShipmentsDueSoon(futureDate);
+			if(shipments.isEmpty()) {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+				String message = String.format("No shipments found that are due on or before %s", futureDate.format(formatter));
+				throw new NoDataFoundException(message);
+			}
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByTrackingInfoIsNull() {
-			// TODO Auto-generated method stub
-			return null;
+			List<Shipment> shipments = shipmentRepository.findByTrackingInfoIsNull();
+			if(shipments.isEmpty()) {
+				throw new NoDataFoundException("Tracking info must not be null nor empty");
+			}
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByOutboundDelivery_StatusAndOutboundDelivery_DeliveryDateBetween(
 				DeliveryStatus status, LocalDate from, LocalDate to) {
-			// TODO Auto-generated method stub
-			return null;
+			validateDeliveryStatus(status);
+			DateValidator.validateRange(from, to);
+			List<Shipment> shipments = shipmentRepository.findByOutboundDelivery_StatusAndOutboundDelivery_DeliveryDateBetween(status, from, to);
+			if(shipments.isEmpty()) {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+				String msg = String.format(
+					    "No outboundDelivery found for status %s with delivery between %s and %s",
+					    status,
+					    from.format(formatter),
+					    to.format(formatter)
+					);
+				throw new NoDataFoundException(msg);
+			}
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByOriginStorageIdAndTrackingInfo_EstimatedDeliveryBetween(Long storageId,
 				LocalDate from, LocalDate to) {
-			// TODO Auto-generated method stub
-			return null;
+			fetchStorageId(storageId);
+			DateValidator.validateRange(from, to);
+			List<Shipment> shipments = shipmentRepository.findByOriginStorageIdAndTrackingInfo_EstimatedDeliveryBetween(storageId, from, to);
+			if(shipments.isEmpty()) {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+				String message = String.format(
+				    "No shipments found for origin storage ID %d with estimated delivery between %s and %s",
+				    storageId, from.format(formatter), to.format(formatter));
+				throw new NoDataFoundException(message);
+			}
+			return shipments.stream()
+					.map(shipmentMapper::toResponse)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByTrackingInfo_CurrentStatusAndTrackingInfo_CurrentLocationContainingIgnoreCase(
 				ShipmentStatus status, String location) {
-			// TODO Auto-generated method stub
-			return null;
+			validateString(location);
+		    if (!shipmentRepository.existsShipmentsByStatus(status)) {
+		        String message = String.format("No shipments found with status: %s", status);
+		        throw new NoDataFoundException(message);
+		    }
+		    List<Shipment> shipments = shipmentRepository
+		        .findByTrackingInfo_CurrentStatusAndTrackingInfo_CurrentLocationContainingIgnoreCase(status, location);
+		    if (shipments.isEmpty()) {
+		        String message = String.format("No shipments found with status %s and location containing: %s", status, location);
+		        throw new NoDataFoundException(message);
+		    }
+		    return shipments.stream()
+		        .map(ShipmentResponse::new)
+		        .collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findByBuyerNameContainingIgnoreCase(String buyerName) {
-			// TODO Auto-generated method stub
-			return null;
+			validateString(buyerName);
+			return shipmentRepository.findByBuyerNameContainingIgnoreCase(buyerName).stream()
+					.map(ShipmentResponse::new)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findRecentlyDeliveredShipments(LocalDateTime fromDate) {
-			// TODO Auto-generated method stub
-			return null;
+			DateValidator.validateNotNull(fromDate, "From date"); //method which checking that argument date is not null
+			if(!shipmentRepository.existsRecentlyDeliveredShipments(fromDate)) {
+				String message = String.format("No delivered shipments found from the given date: %s", fromDate);
+				throw new NoDataFoundException(message);
+			}
+			List<Shipment> shipments = shipmentRepository.findRecentlyDeliveredShipments(fromDate);
+			return shipments.stream()
+		            .map(ShipmentResponse::new)
+		            .collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findCancelledShipments() {
-			// TODO Auto-generated method stub
-			return null;
+			if(!shipmentRepository.existsCancelledShipments()) {
+				throw new NoDataFoundException("No cancelled shipments found in the system");
+			}
+			List<Shipment> shipments = shipmentRepository.findCancelledShipments();
+			return shipments.stream()
+		            .map(ShipmentResponse::new)
+		            .collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findCancelledShipmentsBetweenDates(LocalDate from, LocalDate to) {
-			// TODO Auto-generated method stub
-			return null;
+			DateValidator.validateRange(from, to);
+			List<Shipment> shipments = shipmentRepository.findCancelledShipmentsBetweenDates(from, to);
+			return shipments.stream()
+		            .map(ShipmentResponse::new)
+		            .collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findDelayedShipments() {
-			// TODO Auto-generated method stub
-			return null;
+			if(!shipmentRepository.existsDelayedShipments()) {
+				throw new NoDataFoundException("No delayed shipments found in the system");
+			}
+			List<Shipment> shipments = shipmentRepository.findDelayedShipments();
+			return shipments.stream()
+		            .map(ShipmentResponse::new)
+		            .collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findInTransitShipments() {
-			// TODO Auto-generated method stub
-			return null;
+			if(!shipmentRepository.existsInTransitShipments()) {
+				throw new NoDataFoundException("No transit shipments found in the system");
+			}
+			List<Shipment> shipments = shipmentRepository.findInTransitShipments();
+			return shipments.stream()
+		            .map(ShipmentResponse::new)
+		            .collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findDeliveredShipments() {
-			// TODO Auto-generated method stub
-			return null;
+			if(!shipmentRepository.existsDelayedShipments()) {
+				throw new NoDataFoundException("No delivered shipments found in the system");
+			}
+			List<Shipment> shipments = shipmentRepository.findDeliveredShipments();
+			return shipments.stream()
+		            .map(ShipmentResponse::new)
+		            .collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findShipmentsByFixedStatus(ShipmentStatus status) {
-			// TODO Auto-generated method stub
-			return null;
+			validateShipmentStatus(status);
+			return shipmentRepository.findShipmentsByFixedStatus(status).stream()
+					.map(ShipmentResponse::new)
+					.collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findPendingDeliveries() {
-			// TODO Auto-generated method stub
-			return null;
+			if(!shipmentRepository.existsPendingDeliveries()) {
+				throw new NoDataFoundException("No pending deliveries found in the system");
+			}
+			List<Shipment> shipments = shipmentRepository.findPendingDeliveries();
+			return shipments.stream()
+		            .map(ShipmentResponse::new)
+		            .collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findInTransitDeliveries() {
-			// TODO Auto-generated method stub
-			return null;
+			if(!shipmentRepository.existsInTransitDeliveries()) {
+				throw new NoDataFoundException("No transit deliveris found in the system");
+			}
+			List<Shipment> shipments = shipmentRepository.findInTransitDeliveries();
+			return shipments.stream()
+		            .map(ShipmentResponse::new)
+		            .collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findDeliveredDeliveries() {
-			// TODO Auto-generated method stub
-			return null;
+		    if (!shipmentRepository.existsDeliveredDeliveries()) {
+		        throw new NoDataFoundException("No delivered deliveries found in the system.");
+		    }
+		    List<Shipment> shipments = shipmentRepository.findDeliveredDeliveries();
+		    return shipments.stream().map(shipmentMapper::toResponse).collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findCancelledDeliveries() {
-			// TODO Auto-generated method stub
-			return null;
+			if(!shipmentRepository.existsCancelledDeliveries()) {
+				throw new NoDataFoundException("No cancelled deliveries found in the system");
+			}
+			List<Shipment> shipments = shipmentRepository.findCancelledDeliveries();
+			return shipments.stream()
+		            .map(ShipmentResponse::new)
+		            .collect(Collectors.toList());
 		}
 
 		@Override
 		public List<ShipmentResponse> findInTransitShipmentsWithInTransitDelivery() {
-			// TODO Auto-generated method stub
-			return null;
+		    if (!shipmentRepository.existsInTransitShipmentsWithInTransitDelivery()) {
+		        throw new NoDataFoundException("No in-transit shipments with in-transit delivery found.");
+		    }
+		    List<Shipment> shipments = shipmentRepository.findInTransitShipmentsWithInTransitDelivery();
+		    return shipments.stream()
+		            .map(ShipmentResponse::new)
+		            .collect(Collectors.toList());
+		}
+		
+		private void validateStorageType(StorageType type) {
+			if(type == null) {
+				throw new NoDataFoundException("StorageType type must not be null");
+			}
+		}
+		
+		private void validateDeliveryStatus(DeliveryStatus status) {
+			if(status == null) {
+				throw new IllegalArgumentException("DeliveryStatus status must not be null");
+			}
+		}
+		
+		private void validateString(String str) {
+			if(str == null || str.trim().isEmpty()) {
+				throw new NoDataFoundException("Textual characters must not be null nor empty");
+			}
+		}
+		
+		private void validateShipmentStatus(ShipmentStatus status) {
+			if(status == null) {
+				throw new IllegalArgumentException("ShipmentStatus status must not be null");
+			}
+		}
+		
+		private void validateEventLogRequest(List<EventLogRequest> requests, boolean requireShipmentId) {
+		    if(requests == null || requests.isEmpty()) {
+		        throw new IllegalArgumentException("EventLog must not be null nor empty");
+		    }
+		    for(EventLogRequest req : requests) {
+		        if (req == null) {
+		            throw new IllegalArgumentException("EventLog entry must not be null");
+		        }
+		        validateEventLogRequest(req, requireShipmentId); 
+		    }
+		}
+		
+		private void validateEventLogRequest(EventLogRequest request,boolean requireShipmentId) {
+			if(request.timestamp() == null) {
+				throw new IllegalArgumentException("Date and time must not be null");
+			}
+			if(request.description() == null || request.description().isEmpty()) {
+				throw new IllegalArgumentException("Description must not be null nor empty");
+			}
+			if (requireShipmentId) {
+				if (request.shipmentId() == null) {
+					throw new IllegalArgumentException("Shipment ID must not be null");
+				}
+				fetchShipmentId(request.shipmentId());
+			}
+			
 		}
 
 		private OutboundDelivery fetchOutboundDeliveryId(Long outId) {
@@ -412,6 +753,20 @@ public class ShipmentService implements IShipmentService {
 	    	}
 	    	return deliveryRepository.findById(outId).orElseThrow(() -> new OutboundDeliveryErrorException("OuboundDelivery not found with id "+outId));
 	    }
+		
+		private Shipment fetchShipmentId(Long shipmentId) {
+			if(shipmentId == null) {
+				throw new ShipmentNotFoundException("Shipment ID must not be null");
+			}
+			return shipmentRepository.findById(shipmentId).orElseThrow(() -> new ShipmentNotFoundException("Shipment not found with id "+shipmentId));
+		}
+		
+		private Buyer fetchBuyerId(Long buyerId) {
+			if(buyerId == null) {
+				throw new BuyerNotFoundException("Buyer ID must not be null");
+			}
+			return buyerRepository.findById(buyerId).orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: "+buyerId));
+		}
 	    
 	    private Storage fetchStorageId(Long storageId) {
 	    	if(storageId == null) {
@@ -426,4 +781,11 @@ public class ShipmentService implements IShipmentService {
 	    	}
 	    	return providerRepository.findById(logisticsId).orElseThrow(() -> new LogisticsProviderErrorException("Logistics-provider not found with id "+logisticsId));
 	    }
+	   
+	  private TrackingInfo fetchTrackingInfoId(Long trackinInfoId) {
+		  if(trackinInfoId == null) {
+			  throw new NoDataFoundException("TrackingInfo ID must not be null");
+		  }
+		  return trackingInfoRepository.findById(trackinInfoId).orElseThrow(() -> new TrackingInfoErrorException("TrackingInfo not found with id: "+trackinInfoId));
+	  }
 }

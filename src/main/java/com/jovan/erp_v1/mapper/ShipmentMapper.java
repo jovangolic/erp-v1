@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.jovan.erp_v1.exception.LogisticsProviderErrorException;
 import com.jovan.erp_v1.exception.OutboundDeliveryErrorException;
 import com.jovan.erp_v1.exception.StorageNotFoundException;
+import com.jovan.erp_v1.model.EventLog;
 import com.jovan.erp_v1.model.LogisticsProvider;
 import com.jovan.erp_v1.model.OutboundDelivery;
 import com.jovan.erp_v1.model.Shipment;
@@ -29,6 +30,7 @@ public class ShipmentMapper {
     private final LogisticsProviderRepository logisticsProviderRepository;
     private final OutboundDeliveryRepository out;
     private final StorageRepository storageRepository;
+    private final EventLogMapper eventLogMapper;
 
     public Shipment toEntity(ShipmentRequest request) {
 		Shipment sh = new Shipment();
@@ -48,6 +50,10 @@ public class ShipmentMapper {
 	    sh.setTrackingInfo(info);
 		Storage store = fetchStorageId(request.originStorageId());
 		sh.setOriginStorage(store);
+		List<EventLog> logs = request.eventLogRequest().stream()
+			    .map(logReq -> eventLogMapper.toEntity(logReq, sh))
+			    .collect(Collectors.toList());
+			sh.setEventLogs(logs);
 		return sh;
 	}
 

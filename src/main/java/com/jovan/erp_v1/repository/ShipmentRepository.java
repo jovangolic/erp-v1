@@ -91,4 +91,32 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     boolean existsByProvider_Email(String email);
     boolean existsByProvider_Website(String website);
     boolean existsByProvider_ContactPhone(String contactPhone);
+    boolean existsByProvider_PhoneNumber(String phoneNumber);
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.status = 'DELIVERED' AND s.shipmentDate >= :fromDate")
+    boolean existsRecentlyDeliveredShipments(@Param("fromDate") LocalDateTime fromDate);
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.status = 'CANCELLED'")
+    boolean existsCancelledShipments();
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.status = 'DELAYED'")
+    boolean existsDelayedShipments();
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.status = 'IN_TRANSIT'")
+    boolean existsInTransitShipments();
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.status = 'DELIVERED'")
+    boolean existsDeliveredShipments();
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.status = :status")
+    boolean existsShipmentsByStatus(@Param("status") ShipmentStatus status);
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.outboundDelivery.status = 'PENDING'")
+    boolean existsPendingDeliveries();
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.outboundDelivery.status = 'IN_TRANSIT'")
+    boolean existsInTransitDeliveries();
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.outboundDelivery.status = 'DELIVERED'")
+    boolean existsDeliveredDeliveries();
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.outboundDelivery.status = 'CANCELLED'")
+    boolean existsCancelledDeliveries();
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.status = 'IN_TRANSIT' AND s.outboundDelivery.status = 'IN_TRANSIT'")
+    boolean existsInTransitShipmentsWithInTransitDelivery();
+    @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END " +
+    	       "FROM Shipment s WHERE s.trackingInfo.estimatedDelivery < :today AND s.trackingInfo.deliveryDate IS NULL")
+    boolean existsLateShipments(@Param("today") LocalDate today);
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.trackingInfo.estimatedDelivery < CURRENT_DATE AND s.deliveryStatus = 'DELAYED'")
+    boolean existsOverdueDelayedShipments();
 }
