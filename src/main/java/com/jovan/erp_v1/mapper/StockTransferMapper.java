@@ -1,10 +1,13 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.StorageNotFoundException;
 import com.jovan.erp_v1.model.StockTransfer;
 import com.jovan.erp_v1.model.StockTransferItem;
@@ -24,10 +27,8 @@ public class StockTransferMapper {
 
     public StockTransfer toEntity(StockTransferRequest request) {
         StockTransfer stock = new StockTransfer();
-        Storage from = storageRepository.findById(request.fromStorageId())
-                .orElseThrow(() -> new StorageNotFoundException("Storage from not found"));
-        Storage to = storageRepository.findById(request.toStorageId())
-                .orElseThrow(() -> new StorageNotFoundException("Storage to not found"));
+        Storage from = fetchFromStorageId(request.fromStorageId());
+        Storage to = fetchToStorageId(request.toStorageId());
         stock.setTransferDate(request.transferDate());
         stock.setFromStorage(from);
         stock.setToStorage(to);
@@ -45,6 +46,7 @@ public class StockTransferMapper {
     }
 
     public StockTransferResponse toResponse(StockTransfer stock) {
+    	Objects.requireNonNull(stock, "StockTransfer must not be null");
         return new StockTransferResponse(stock);
     }
 
@@ -57,6 +59,23 @@ public class StockTransferMapper {
      */
 
     public List<StockTransferResponse> toResponseList(List<StockTransfer> stocks) {
+    	if(stocks == null || stocks.isEmpty()) {
+    		return Collections.emptyList();
+    	}
         return stocks.stream().map(this::toResponse).collect(Collectors.toList());
+    }
+    
+    private Storage fetchFromStorageId(Long fromStorageId) {
+    	if(fromStorageId == null) {
+    		throw new NoDataFoundException("FromStorage ID must not be null");
+    	}
+    	return storageRepository.findById(fromStorageId).orElseThrow(() -> new NoDataFoundException("FromStorage not found with id "+fromStorageId));
+    }
+    
+    private Storage fetchToStorageId(Long toStorageId) {
+    	if(toStorageId == null) {
+    		throw new NoDataFoundException("FromStorage ID must not be null");
+    	}
+    	return storageRepository.findById(toStorageId).orElseThrow(() -> new NoDataFoundException("FromStorage not found with id "+toStorageId));
     }
 }

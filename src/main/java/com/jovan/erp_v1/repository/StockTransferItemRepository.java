@@ -90,7 +90,8 @@ public interface StockTransferItemRepository extends JpaRepository<StockTransfer
     @Query("SELECT sti FROM StockTransferItem sti WHERE sti.stockTransfer.toStorage.type = :type")
     List<StockTransferItem> findByStockTransfer_ToStorage_Type(@Param("type") StorageType type);
     
-    
+    //boolean
+    boolean existsByStockTransfer_StatusIn(List<TransferStatus> statuses);
     boolean existsByStockTransfer_Status(TransferStatus status);
     boolean existsByStockTransfer_TransferDate(LocalDate date);
     boolean existsByStockTransfer_TransferDateBetween(LocalDate start, LocalDate end);
@@ -121,4 +122,14 @@ public interface StockTransferItemRepository extends JpaRepository<StockTransfer
     boolean existsCompletedTransfers();
     @Query("SELECT COUNT(sti) > 0 FROM StockTransferItem sti WHERE sti.stockTransfer.status = 'CANCELLED'")
     boolean existsCancelledTransfers();
+    //shelf
+    boolean existsByProduct_Shelf_RowCount(Integer rowCount);
+    boolean existsByProduct_Shelf_RowCountGreaterThanEqual(Integer rowCount);
+    boolean existsByProduct_Shelf_RowCountLessThanEqual(Integer rowCount);
+    boolean existsByProduct_Shelf_Cols(Integer cols);
+    boolean existsByProduct_Shelf_ColsGreaterThanEqual(Integer cols);
+    boolean existsByProduct_Shelf_ColsLessThanEqual(Integer cols);
+    boolean existsByProduct_Shelf_ColsBetween(Integer minCols, Integer maxCols);
+    boolean existsByProduct_Shelf_RowCountBetween(Integer minRowCount,Integer maxRowCount);
+    boolean existsByProduct_Shelf_Id(Long shelfId);
 }

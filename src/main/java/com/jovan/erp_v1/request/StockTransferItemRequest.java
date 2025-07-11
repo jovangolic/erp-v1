@@ -8,5 +8,6 @@ import jakarta.validation.constraints.Positive;
 public record StockTransferItemRequest(
         Long id,
         @NotNull Long productId,
-        @NotNull @Positive BigDecimal quantity) {
+        @NotNull @Positive BigDecimal quantity,
+        @NotNull Long stockTransferId) {
 }

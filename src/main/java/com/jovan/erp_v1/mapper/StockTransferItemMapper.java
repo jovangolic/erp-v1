@@ -9,9 +9,12 @@ import org.springframework.stereotype.Component;
 
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.NoSuchProductException;
+import com.jovan.erp_v1.exception.StockTransferErrorException;
 import com.jovan.erp_v1.model.Product;
+import com.jovan.erp_v1.model.StockTransfer;
 import com.jovan.erp_v1.model.StockTransferItem;
 import com.jovan.erp_v1.repository.ProductRepository;
+import com.jovan.erp_v1.repository.StockTransferRepository;
 import com.jovan.erp_v1.request.StockTransferItemRequest;
 import com.jovan.erp_v1.response.StockTransferItemResponse;
 
@@ -22,12 +25,14 @@ import lombok.RequiredArgsConstructor;
 public class StockTransferItemMapper {
 
     private final ProductRepository productRepository;
+    private final StockTransferRepository stockTransferRepository;
 
     public StockTransferItem toEntity(StockTransferItemRequest request) {
         StockTransferItem item = new StockTransferItem();
         Product product = fetchProductId(request.productId());
         item.setProduct(product);
         item.setQuantity(request.quantity());
+        item.setStockTransfer(fetchStockTransferId(request.stockTransferId()));
         return item;
     }
 
@@ -48,5 +53,12 @@ public class StockTransferItemMapper {
     		throw new NoDataFoundException("Product ID must not be null");
     	}
     	return productRepository.findById(productId).orElseThrow(() -> new NoSuchProductException("Product not found with id: "+productId));
+    }
+    
+    private StockTransfer fetchStockTransferId(Long stockTransferId) {
+    	if(stockTransferId == null) {
+    		throw new NoDataFoundException("StockTransfer ID must not be null");
+    	}
+    	return stockTransferRepository.findById(stockTransferId).orElseThrow(() -> new StockTransferErrorException("StockTransfer not found with id: "+stockTransferId));
     }
 }
