@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -89,7 +90,7 @@ public class StockTransferItemController {
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/by-quantity")
-    public ResponseEntity<List<StockTransferItemResponse>> findByQuantity(@RequestParam("quantity") Double quantity) {
+    public ResponseEntity<List<StockTransferItemResponse>> findByQuantity(@RequestParam("quantity") BigDecimal quantity) {
         List<StockTransferItemResponse> responses = stockTransferItemService.findByQuantity(quantity);
         return ResponseEntity.ok(responses);
     }
@@ -97,7 +98,7 @@ public class StockTransferItemController {
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/by-less-quantity")
     public ResponseEntity<List<StockTransferItemResponse>> findByQuantityLessThan(
-            @RequestParam("quantity") Double quantity) {
+            @RequestParam("quantity") BigDecimal quantity) {
         List<StockTransferItemResponse> responses = stockTransferItemService.findByQuantityLessThan(quantity);
         return ResponseEntity.ok(responses);
     }
@@ -105,7 +106,7 @@ public class StockTransferItemController {
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/by-greater-quantity")
     public ResponseEntity<List<StockTransferItemResponse>> findByQuantityGreaterThan(
-            @RequestParam("quantity") Double quantity) {
+            @RequestParam("quantity") BigDecimal quantity) {
         List<StockTransferItemResponse> responses = stockTransferItemService.findByQuantityGreaterThan(quantity);
         return ResponseEntity.ok(responses);
     }
@@ -134,5 +135,7 @@ public class StockTransferItemController {
                 .findByStockTransfer_ToStorageId(toStorageId);
         return ResponseEntity.ok(responses);
     }
+    
+    //nove metode
 
 }

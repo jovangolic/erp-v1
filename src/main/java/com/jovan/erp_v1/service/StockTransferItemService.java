@@ -1,11 +1,13 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.NoSuchProductException;
 import com.jovan.erp_v1.exception.StockTransferItemErrorException;
 import com.jovan.erp_v1.mapper.StockTransferItemMapper;
@@ -103,21 +105,21 @@ public class StockTransferItemService implements IStockTransferItemService {
     }
 
     @Override
-    public List<StockTransferItemResponse> findByQuantity(Double quantity) {
+    public List<StockTransferItemResponse> findByQuantity(BigDecimal quantity) {
         return stockTransferItemRepository.findByQuantity(quantity).stream()
                 .map(StockTransferItemResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<StockTransferItemResponse> findByQuantityLessThan(Double quantity) {
+    public List<StockTransferItemResponse> findByQuantityLessThan(BigDecimal quantity) {
         return stockTransferItemRepository.findByQuantityLessThan(quantity).stream()
                 .map(StockTransferItemResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<StockTransferItemResponse> findByQuantityGreaterThan(Double quantity) {
+    public List<StockTransferItemResponse> findByQuantityGreaterThan(BigDecimal quantity) {
         return stockTransferItemRepository.findByQuantityGreaterThan(quantity).stream()
                 .map(StockTransferItemResponse::new)
                 .collect(Collectors.toList());
@@ -142,6 +144,13 @@ public class StockTransferItemService implements IStockTransferItemService {
         return stockTransferItemRepository.findByStockTransfer_ToStorageId(toStorageId).stream()
                 .map(StockTransferItemResponse::new)
                 .collect(Collectors.toList());
+    }
+    
+    private Product fetchProductId(Long productId) {
+    	if(productId == null) {
+    		throw new NoDataFoundException("Product ID must not be null");
+    	}
+    	return productRepository.findById(productId).orElseThrow(() -> new NoSuchProductException("Product not found with id: "+productId));
     }
 
 }

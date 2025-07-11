@@ -21,12 +21,14 @@ import com.jovan.erp_v1.exception.StorageNotFoundException;
 import com.jovan.erp_v1.exception.TrackingInfoErrorException;
 import com.jovan.erp_v1.mapper.ShipmentMapper;
 import com.jovan.erp_v1.model.Buyer;
+import com.jovan.erp_v1.model.EventLog;
 import com.jovan.erp_v1.model.LogisticsProvider;
 import com.jovan.erp_v1.model.OutboundDelivery;
 import com.jovan.erp_v1.model.Shipment;
 import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.model.TrackingInfo;
 import com.jovan.erp_v1.repository.BuyerRepository;
+import com.jovan.erp_v1.repository.EventLogRepository;
 import com.jovan.erp_v1.repository.LogisticsProviderRepository;
 import com.jovan.erp_v1.repository.OutboundDeliveryRepository;
 import com.jovan.erp_v1.repository.ShipmentRepository;
@@ -51,6 +53,7 @@ public class ShipmentService implements IShipmentService {
         private final ShipmentMapper shipmentMapper;
         private final BuyerRepository buyerRepository;
         private final TrackingInfoRepository trackingInfoRepository;
+        private final EventLogRepository eventLogRepository;
 
         @Transactional
         @Override
@@ -76,6 +79,11 @@ public class ShipmentService implements IShipmentService {
                 info.setShipment(ship);
                 ship.setTrackingInfo(info);
                 Shipment saved = shipmentRepository.save(ship);
+                EventLog log = new EventLog();
+                log.setTimestamp(LocalDateTime.now());
+                log.setDescription("Shipment created");
+                log.setShipment(saved);
+                eventLogRepository.save(log);
                 return new ShipmentResponse(saved);
         }
 
@@ -110,6 +118,11 @@ public class ShipmentService implements IShipmentService {
                 info.setCurrentStatus(infoReq.currentStatus());
                 ship.setTrackingInfo(info);
                 Shipment saved = shipmentRepository.save(ship);
+                EventLog log = new EventLog();
+                log.setTimestamp(LocalDateTime.now());
+                log.setDescription("Shipment update - status changed to"+request.status());
+                log.setShipment(saved);
+                eventLogRepository.save(log);
                 return new ShipmentResponse(saved);
         }
 

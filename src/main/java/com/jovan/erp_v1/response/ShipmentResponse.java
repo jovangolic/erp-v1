@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import com.jovan.erp_v1.enumeration.ShipmentStatus;
 import com.jovan.erp_v1.model.Shipment;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +23,7 @@ public class ShipmentResponse {
     private OutboundDeliveryResponse outboundDeliveryResponse;
     private TrackingInfoBasicResponse trackingInfoBasicResponse;
     private StorageBasicResponse storageBasicResponse;
+    private List<EventLogResponse> eventLogResponses;
 
     public ShipmentResponse(Shipment ship) {
         this.id = ship.getId();
@@ -30,5 +33,8 @@ public class ShipmentResponse {
         this.outboundDeliveryResponse = ship.getOutboundDelivery() != null ? new OutboundDeliveryResponse(ship.getOutboundDelivery()) : null;
         this.trackingInfoBasicResponse = ship.getTrackingInfo() != null ? new TrackingInfoBasicResponse(ship.getTrackingInfo()) : null;
         this.storageBasicResponse = ship.getOriginStorage() != null ? new StorageBasicResponse(ship.getOriginStorage()) : null;
+        this.eventLogResponses = ship.getEventLogs().stream()
+        		.map(EventLogResponse::new)
+        		.collect(Collectors.toList());
     }
 }
