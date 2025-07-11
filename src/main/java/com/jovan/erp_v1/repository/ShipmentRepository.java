@@ -41,8 +41,8 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     @Query("SELECT sh FROM Shipment sh WHERE LOWER(sh.provider.email) LIKE LOWER(CONCAT('%', :email, '%'))")
     List<Shipment> findByProvider_EmailLikeIgnoreCase(@Param("email") String email);
     List<Shipment> findByProvider_WebsiteContainingIgnoreCase(String website);
-    @Query("SELECT sh FROM Shipment sh WHERE LOWER(sh.provider.phoneNumber) LIKE LOWER(CONCAT('%' :phoneNumber '%'))")
-    List<Shipment> findByProvider_PhoneNumberLikeIgnoreCase(@Param("phoneNumber") String phoneNumber);
+    @Query("SELECT sh FROM Shipment sh WHERE LOWER(sh.provider.contactPhone) LIKE LOWER(CONCAT('%', :phoneNumber, '%'))")
+    List<Shipment> findByProvider_ContactPhoneLikeIgnoreCase(@Param("phoneNumber") String phoneNumber);
     List<Shipment> findByOutboundDelivery_DeliveryDate(LocalDate deliveryDate);
     List<Shipment> findByOutboundDelivery_DeliveryDateBetween(LocalDate deliveryDateStart, LocalDate deliveryDateEnd);
     List<Shipment> findByOutboundDelivery_Status(DeliveryStatus status);
@@ -58,8 +58,8 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     List<Shipment> findByOutboundDelivery_StatusAndOutboundDelivery_DeliveryDateBetween(DeliveryStatus status, LocalDate from, LocalDate to);
     List<Shipment> findByOriginStorageIdAndTrackingInfo_EstimatedDeliveryBetween(Long storageId, LocalDate from, LocalDate to);
     List<Shipment> findByTrackingInfo_CurrentStatusAndTrackingInfo_CurrentLocationContainingIgnoreCase(ShipmentStatus status, String location);
-    @Query("SELECT s FROM Shipment s WHERE LOWER(s.outboundDelivery.buyer.name) LIKE LOWER(CONCAT('%', :buyerName, '%'))")
-    List<Shipment> findByBuyerNameContainingIgnoreCase(@Param("buyerName") String buyerName);
+    @Query("SELECT s FROM Shipment s WHERE LOWER(s.outboundDelivery.buyer.companyName) LIKE LOWER(CONCAT('%', :buyerName, '%'))")
+    List<Shipment> findByBuyerCompanyNameContainingIgnoreCase(@Param("buyerName") String buyerName);
     @Query("SELECT s FROM Shipment s WHERE s.status = 'DELIVERED' AND s.trackingInfo.updatedAt >= :fromDate")
     List<Shipment> findRecentlyDeliveredShipments(@Param("fromDate") LocalDateTime fromDate);
     @Query("SELECT s FROM Shipment s WHERE s.status = 'CANCELLED'")
@@ -91,7 +91,6 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     boolean existsByProvider_Email(String email);
     boolean existsByProvider_Website(String website);
     boolean existsByProvider_ContactPhone(String contactPhone);
-    boolean existsByProvider_PhoneNumber(String phoneNumber);
     @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.status = 'DELIVERED' AND s.shipmentDate >= :fromDate")
     boolean existsRecentlyDeliveredShipments(@Param("fromDate") LocalDateTime fromDate);
     @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.status = 'CANCELLED'")
@@ -115,8 +114,8 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.status = 'IN_TRANSIT' AND s.outboundDelivery.status = 'IN_TRANSIT'")
     boolean existsInTransitShipmentsWithInTransitDelivery();
     @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END " +
-    	       "FROM Shipment s WHERE s.trackingInfo.estimatedDelivery < :today AND s.trackingInfo.deliveryDate IS NULL")
+    	       "FROM Shipment s WHERE s.trackingInfo.estimatedDelivery < :today AND s.trackingInfo.estimatedDelivery IS NULL")
     boolean existsLateShipments(@Param("today") LocalDate today);
-    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.trackingInfo.estimatedDelivery < CURRENT_DATE AND s.deliveryStatus = 'DELAYED'")
+    @Query("SELECT COUNT(s) > 0 FROM Shipment s WHERE s.trackingInfo.estimatedDelivery < CURRENT_DATE AND s.status = 'DELAYED'")
     boolean existsOverdueDelayedShipments();
 }

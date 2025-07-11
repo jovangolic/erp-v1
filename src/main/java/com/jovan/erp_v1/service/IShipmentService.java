@@ -37,7 +37,7 @@ public interface IShipmentService {
     List<ShipmentResponse> findByTrackingInfo_EstimatedDeliveryBetween(LocalDate estimatedDeliveryStart,LocalDate estimatedDeliveryEnd);
     List<ShipmentResponse> findByProvider_EmailLikeIgnoreCase( String email);
     List<ShipmentResponse> findByProvider_WebsiteContainingIgnoreCase(String website);
-    List<ShipmentResponse> findByProvider_PhoneNumberLikeIgnoreCase( String phoneNumber);
+    List<ShipmentResponse> findByProvider_ContactPhoneLikeIgnoreCase( String phoneNumber);
     List<ShipmentResponse> findByOutboundDelivery_DeliveryDate(LocalDate deliveryDate);
     List<ShipmentResponse> findByOutboundDelivery_DeliveryDateBetween(LocalDate deliveryDateStart, LocalDate deliveryDateEnd);
     List<ShipmentResponse> findByOutboundDelivery_Status(DeliveryStatus status);
@@ -50,7 +50,7 @@ public interface IShipmentService {
     List<ShipmentResponse> findByOutboundDelivery_StatusAndOutboundDelivery_DeliveryDateBetween(DeliveryStatus status, LocalDate from, LocalDate to);
     List<ShipmentResponse> findByOriginStorageIdAndTrackingInfo_EstimatedDeliveryBetween(Long storageId, LocalDate from, LocalDate to);
     List<ShipmentResponse> findByTrackingInfo_CurrentStatusAndTrackingInfo_CurrentLocationContainingIgnoreCase(ShipmentStatus status, String location);
-    List<ShipmentResponse> findByBuyerNameContainingIgnoreCase(String buyerName);
+    List<ShipmentResponse> findByBuyerCompanyNameContainingIgnoreCase(String buyerName);
     List<ShipmentResponse> findRecentlyDeliveredShipments(LocalDateTime fromDate);
     List<ShipmentResponse> findCancelledShipments();
     List<ShipmentResponse> findCancelledShipmentsBetweenDates( LocalDate from,  LocalDate to);

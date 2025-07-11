@@ -221,8 +221,8 @@ public class ShipmentController {
     
     @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/seach/provider-phone-number")
-    public ResponseEntity<List<ShipmentResponse>> findByProvider_PhoneNumberLikeIgnoreCase(@RequestParam("phoneNumber") String phoneNumber){
-    	List<ShipmentResponse> responses = shipmentService.findByProvider_PhoneNumberLikeIgnoreCase(phoneNumber);
+    public ResponseEntity<List<ShipmentResponse>> findByProvider_ContactPhoneLikeIgnoreCase(@RequestParam("phoneNumber") String phoneNumber){
+    	List<ShipmentResponse> responses = shipmentService.findByProvider_ContactPhoneLikeIgnoreCase(phoneNumber);
     	return ResponseEntity.ok(responses);
     }
     
@@ -302,8 +302,8 @@ public class ShipmentController {
     
     @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/search/buyer-name")
-    public ResponseEntity<List<ShipmentResponse>> findByBuyerNameContainingIgnoreCase(@RequestParam("buyerName") String buyerName){
-    	List<ShipmentResponse> responses = shipmentService.findByBuyerNameContainingIgnoreCase(buyerName);
+    public ResponseEntity<List<ShipmentResponse>> findByBuyerCompanyNameContainingIgnoreCase(@RequestParam("buyerName") String buyerName){
+    	List<ShipmentResponse> responses = shipmentService.findByBuyerCompanyNameContainingIgnoreCase(buyerName);
     	return ResponseEntity.ok(responses);
     }
      

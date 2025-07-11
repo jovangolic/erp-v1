@@ -409,12 +409,12 @@ public class ShipmentService implements IShipmentService {
 		}
 
 		@Override
-		public List<ShipmentResponse> findByProvider_PhoneNumberLikeIgnoreCase(String phoneNumber) {
-			if(!shipmentRepository.existsByProvider_PhoneNumber(phoneNumber)) {
+		public List<ShipmentResponse> findByProvider_ContactPhoneLikeIgnoreCase(String phoneNumber) {
+			if(!shipmentRepository.existsByProvider_ContactPhone(phoneNumber)) {
 				String msg = String.format("No given phone-number %s found for logistics provider", phoneNumber);
 				throw new NoDataFoundException(msg);
 			}
-			List<Shipment> shipments = shipmentRepository.findByProvider_PhoneNumberLikeIgnoreCase(phoneNumber);
+			List<Shipment> shipments = shipmentRepository.findByProvider_ContactPhoneLikeIgnoreCase(phoneNumber);
 			return shipments.stream()
 					.map(shipmentMapper::toResponse)
 					.collect(Collectors.toList());
@@ -574,9 +574,9 @@ public class ShipmentService implements IShipmentService {
 		}
 
 		@Override
-		public List<ShipmentResponse> findByBuyerNameContainingIgnoreCase(String buyerName) {
+		public List<ShipmentResponse> findByBuyerCompanyNameContainingIgnoreCase(String buyerName) {
 			validateString(buyerName);
-			return shipmentRepository.findByBuyerNameContainingIgnoreCase(buyerName).stream()
+			return shipmentRepository.findByBuyerCompanyNameContainingIgnoreCase(buyerName).stream()
 					.map(ShipmentResponse::new)
 					.collect(Collectors.toList());
 		}
