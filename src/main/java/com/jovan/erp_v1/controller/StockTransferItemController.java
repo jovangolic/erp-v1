@@ -154,7 +154,8 @@ public class StockTransferItemController {
     
     @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @GetMapping("/search/storage-type-and-unit-measure")
-    public ResponseEntity<List<StockTransferItemResponse>> findByProduct_UnitMeasureAndProduct_StorageType(@RequestParam("unitMeasure") UnitMeasure unitMeasure,@RequestParam("storageType") StorageType storageType){
+    public ResponseEntity<List<StockTransferItemResponse>> findByProduct_UnitMeasureAndProduct_StorageType(@RequestParam("unitMeasure") UnitMeasure unitMeasure,
+    		@RequestParam("storageType") StorageType storageType){
     	List<StockTransferItemResponse> responses = stockTransferItemService.findByProduct_UnitMeasureAndProduct_StorageType(unitMeasure, storageType);
     	return ResponseEntity.ok(responses);
     }

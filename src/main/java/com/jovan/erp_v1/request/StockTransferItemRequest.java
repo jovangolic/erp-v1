@@ -9,5 +9,5 @@ public record StockTransferItemRequest(
         Long id,
         @NotNull Long productId,
         @NotNull @Positive BigDecimal quantity,
-        @NotNull Long stockTransferId) {
+        Long stockTransferId) {
 }
