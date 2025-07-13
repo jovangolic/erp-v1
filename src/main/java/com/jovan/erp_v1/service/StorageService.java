@@ -45,6 +45,7 @@ public class StorageService implements IStorageService {
 		}
 		Storage storage = storageRepository.findById(id)
 				.orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " + id));
+		validateUpdateStorage(request);
 		storage.setName(request.name());
 		storage.setLocation(request.location());
 		storage.setCapacity(request.capacity());
@@ -65,7 +66,13 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> getByStorageType(StorageType type) {
-		return storageRepository.findByType(type).stream()
+		validateStorageType(type);
+		if(!storageRepository.existsByType(type)) {
+			String msg = String.format("No storage with given type found %s", type);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByType(type);
+		return items.stream()
 				.map(storageMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -79,41 +86,76 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> getByName(String name) {
-		return storageRepository.findByName(name).stream()
+		validateString(name);
+		if(!storageRepository.existsByNameContainingIgnoreCase(name)) {
+			String msg = String.format("No storage with given name found %s", name);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByNameContainingIgnoreCase(name);
+		return items.stream()
 				.map(storageMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> getByLocation(String location) {
-		return storageRepository.findByLocation(location).stream()
+		validateString(location);
+		if(!storageRepository.existsByLocationContainingIgnoreCase(location)) {
+			String msg = String.format("No storage with given location found %s", location);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByLocation(location);
+		return items.stream()
 				.map(storageMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> getByCapacity(BigDecimal capacity) {
-		return storageRepository.findByCapacity(capacity).stream()
+		validateBigDecimal(capacity);
+		if(!storageRepository.existsByCapacity(capacity)) {
+			String msg = String.format("No storage with than capacity found %s", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByCapacity(capacity);
+		return items.stream()
 				.map(storageMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> getByNameAndLocation(String name, String location) {
-		return storageRepository.findByNameAndLocation(name, location).stream()
+		validateString(name);
+		validateString(location);
+		List<Storage> items =storageRepository.findByNameAndLocation(name, location);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with name %s and location %s not found"
+					, name,location);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(storageMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> getByTypeAndCapacityGreaterThan(StorageType type, BigDecimal capacity) {
-		return storageRepository.findByTypeAndCapacityGreaterThan(type, capacity).stream()
+		validateStorageType(type);
+		validateBigDecimal(capacity);
+		if(!storageRepository.existsByTypeAndCapacityGreaterThan(type, capacity)) {
+			String msg = String.format("Storage with type '%s' and capacity > %s found",
+					type,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByTypeAndCapacityGreaterThan(type, capacity);
+		return items.stream()
 				.map(storageMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> getStoragesWithMinGoods(Integer minCount) {
+		validateInteger(minCount);
 		List<Storage> all = storageRepository.findAll();
 		List<Storage> filtered = all.stream()
 				.filter(storage -> storage.getGoods().size() >= minCount)
@@ -123,13 +165,22 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> getByNameContainingIgnoreCase(String name) {
+		validateString(name);
 		List<Storage> storages = storageRepository.findByNameContainingIgnoreCase(name);
+		if(storages.isEmpty()) {
+			String msg = String.format("No storage with name equal found %s", name);
+			throw new NoDataFoundException(msg);
+		}
 		return storageMapper.toResponseList(storages);
 	}
 
 	@Override
 	public List<StorageResponse> getAllStorage() {
-		return storageRepository.findAll().stream()
+		List<Storage> items = storageRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No storages are found");
+		}
+		return items.stream()
 				.map(StorageResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -138,60 +189,140 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> findByTypeAndCapacityLessThan(StorageType type, BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(capacity);
+		validateStorageType(type);
+		if(!storageRepository.existsByType(type)) {
+			String msg = String.format("No storage with type '%s' and capacity < %s found", type, capacity);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByTypeAndCapacityLessThan(type, capacity);
+		return items.stream()
+				.map(storageMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> findByCapacityGreaterThan(BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(capacity);
+		if(!storageRepository.existsByCapacityGreaterThan(capacity)) {
+			String msg = String.format("Storage with capacity greater than not found %s", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByCapacityGreaterThan(capacity);
+		return items.stream()
+				.map(storageMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> findByCapacityLessThan(BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(capacity);
+		if(!storageRepository.existsByCapacityLessThan(capacity)) {
+			String msg = String.format("Storage with capacity less than not found %s", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByCapacityLessThan(capacity);
+		return items.stream()
+				.map(storageMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> findByNameAndLocationAndCapacity(String name, String location, BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(name);
+		validateString(location);
+		validateBigDecimal(capacity);
+		if(!storageRepository.existsByNameAndLocationAndCapacity(name, location, capacity)) {
+			String msg = String.format("Storage with name %s and location %s and capacity %s not found",
+					name,location,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByNameAndLocationAndCapacity(name, location, capacity);
+		return items.stream()
+				.map(storageMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> findByTypeAndLocation(StorageType type, String location) {
-		// TODO Auto-generated method stub
-		return null;
+		validateStorageType(type);
+		validateString(location);
+		if(!storageRepository.existsByTypeAndLocation(type, location)) {
+			String msg = String.format("Storage with type %s and location %s not found",
+					type,location);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByTypeAndLocation(type, location);
+		return items.stream()
+				.map(storageMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> findByTypeAndName(StorageType type, String name) {
-		// TODO Auto-generated method stub
-		return null;
+		validateStorageType(type);
+		validateString(name);
+		if(!storageRepository.existsByType(type)) {
+			String msg = String.format("Storage with type %s and name %s not found",
+					type,name);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByTypeAndName(type, name);
+		return items.stream()
+				.map(storageMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> findByLocationAndCapacity(StorageType type, BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateStorageType(type);
+		validateBigDecimal(capacity);
+		if(!storageRepository.existsByLocationAndCapacity(type, capacity)) {
+			String msg = String.format("Storage with type %s and capacity %s not found",
+					type,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByLocationAndCapacity(type, capacity);
+		return items.stream()
+				.map(storageMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> findByTypeAndLocationAndCapacity(StorageType type, String location, BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateStorageType(type);
+		validateString(location);
+		validateBigDecimal(capacity);
+		if(!storageRepository.existsByTypeAndLocationAndCapacity(type, location, capacity)) {
+			String msg = String.format("Storage with type %s location %s and capacity %s not found",
+					type,location,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByTypeAndLocationAndCapacity(type, location, capacity);
+		return items.stream()
+				.map(storageMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(String name, String location) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(name);
+		validateString(location);
+		if(!storageRepository.existsByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(name, location)) {
+			String msg = String.format("Storage with name %s and location %s found",
+					name,location);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(name, location);
+		return items.stream()
+				.map(storageMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageResponse> findByCapacityBetween(BigDecimal min, BigDecimal max) {
+		validateBigDecimal(max);
+		validateBigDecimal(min);
 		if(!storageRepository.existsByCapacityBetween(min, max)) {
 			String msg = String.format("No capacity range found between %s and %s",
 					min,max);
@@ -205,6 +336,7 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> findByTypeOrderByCapacityDesc(StorageType type) {
+		validateStorageType(type);
 		if(!storageRepository.existsByType(type)) {
 			String msg = String.format("No storage found for type '%s' ordered by capacity descending", type);
 			throw new NoDataFoundException(msg);
@@ -217,6 +349,7 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> findByLocationOrderByNameAsc(String location) {
+		validateString(location);
 		if(!storageRepository.existsByLocation(location)) {
 			String msg = String.format("No storage found for location '%s' ordered by name ascending", location);
 			throw new NoDataFoundException(msg);
@@ -240,6 +373,7 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> findByExactShelfCount(Integer shelfCount) {
+		validateShelfCount(shelfCount);
 		if(!storageRepository.existsByExactShelfCount(shelfCount)) {
 			String msg = String.format("Exact shelf count not found for given storage %d", shelfCount);
 			throw new NoDataFoundException(msg);
@@ -252,6 +386,8 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> findByLocationContainingIgnoreCaseAndType(String location, StorageType type) {
+		validateString(location);
+		validateStorageType(type);
 		if(!storageRepository.existsByLocationContainingIgnoreCaseAndType(location, type)) {
 			String msg = String.format("No storage found with location containing '%s' and type '%s'", location, type);
 			throw new NoDataFoundException(msg);
@@ -332,6 +468,7 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> findStorageWithoutGoodsAndMaterialsByType(StorageType type) {
+		validateStorageType(type);
 		if(!storageRepository.existsStorageWithoutGoodsAndMaterialsByType(type)) {
 			String msg = String.format("No storage-type without goods and materials found %s", type);
 			throw new NoDataFoundException(msg);
@@ -344,6 +481,7 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> findStorageWithGoodsAndMaterialsByType(StorageType type) {
+		validateStorageType(type);
 		if(!storageRepository.existsStorageWithGoodsAndMaterialsByType(type)) {
 			String msg = String.format("No storage-type with goods and materials found %s", type);
 			throw new NoDataFoundException(msg);
@@ -356,6 +494,7 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> findStorageWithGoodsOrMaterialsByType(StorageType type) {
+		validateStorageType(type);
 		if(!storageRepository.existsStorageWithGoodsOrMaterialsByType(type)) {
 			String msg = String.format("No storage-type with goods or materials found %s", type);
 			throw new NoDataFoundException(msg);
@@ -368,6 +507,7 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> findAllByType(StorageType type) {
+		validateStorageType(type);
 		if(!storageRepository.existsByType(type)) {
 			String msg = String.format("No storage with all types found %s", type);
 			throw new NoDataFoundException(msg);
@@ -380,6 +520,7 @@ public class StorageService implements IStorageService {
 
 	@Override
 	public List<StorageResponse> findEmptyStorageByType(StorageType type) {
+		validateStorageType(type);
 		if(!storageRepository.existsEmptyStorageByType(type)) {
 			String msg = String.format("No empty storage found with type equal %s", type);
 			throw new NoDataFoundException(msg);
@@ -447,7 +588,7 @@ public class StorageService implements IStorageService {
 	
 	private void validateString(String str) {
 		if(str == null || str.trim().isEmpty()) {
-			throw new ValidationException("String must not be null");
+			throw new ValidationException("String must not be null nor empty");
 		}
 	}
 	
@@ -478,6 +619,15 @@ public class StorageService implements IStorageService {
 		validateStorageStatus(request.status());
 	}
 	
+	private void validateUpdateStorage(StorageRequest request) {
+		validateString(request.name());
+		validateString(request.location());
+		validateBigDecimal(request.capacity());
+		validateStorageType(request.type());
+		validateShelfRequest(request.shelves());
+		validateStorageStatus(request.status());
+	}
+	
 	private void validateShelfRequest(List<ShelfRequest> shelves) {
 		if(shelves == null || shelves.isEmpty()) {
 			throw new ValidationException("ShelfRequest must not be null nor empty");
@@ -489,6 +639,7 @@ public class StorageService implements IStorageService {
 			validateShelfRequest(sh);
 		}
 	}
+	
 	
 	private void validateShelfRequest(ShelfRequest request) {
 		if (request.rowCount() == null) {
@@ -511,6 +662,68 @@ public class StorageService implements IStorageService {
 	            throw new ValidationException("Goods list contains invalid ID (must be positive and non-null)");
 	        }
 	    }
+	}
+	
+	private void validateShelfRequestRequest(List<ShelfRequest> requests) {
+		if(requests == null || requests.isEmpty()) {
+			throw new ValidationException("ShelfRequest must not be null nor empty");
+		}
+		for(ShelfRequest req : requests) {
+			if(req == null) {
+				throw new ValidationException("ShelfRequest must not be null");
+			}
+			validateShelfRequestRequest(req);
+		}
+	}
+	
+	private void validateShelfRequestRequest(ShelfRequest request) {
+		if (request.rowCount() == null) {
+	        throw new ValidationException("Row-count must not be null");
+	    }
+	    if (request.cols() == null) {
+	        throw new ValidationException("Cols must not be null");
+	    }
+	    if (request.rowCount() < 1) {
+	        throw new ValidationException("Row-count must be at least 1");
+	    }
+	    if (request.cols() < 1) {
+	        throw new ValidationException("Cols must be at least 1");
+	    }
+		if(request.goods() == null || request.goods().isEmpty()) {
+			throw new ValidationException("Goods list must not be null nor empty");
+		}
+		if(request.storageId() == null) {
+			throw new ValidationException("Storage ID must not be null"); //ova je metoda dodata samo za update metodu
+		}
+		for (Long goodId : request.goods()) {
+	        if (goodId == null || goodId <= 0) {
+	            throw new ValidationException("Goods list contains invalid ID (must be positive and non-null)");
+	        }
+	    }
+	}
+	
+	private void validateShelfCount(Integer shelfCount) {
+		if(shelfCount == null || shelfCount < 1) {
+			throw new ValidationException("Shelf-count must not be null nor negative number");
+		}
+	}
+	
+	private void validateCols(Integer cols) {
+		if(cols == null || cols < 1) {
+			throw new ValidationException("Cols must not be null nor negative number");
+		}
+	}
+	
+	private void validateInteger(Integer num) {
+		if(num == null || num < 1) {
+			throw new ValidationException("Number must not be null nor negative");
+		}
+	}
+	
+	private void validateRowCount(Integer rowCount) {
+		if(rowCount == null || rowCount < 1) {
+			throw new ValidationException("Row-count must not be null nor negative number");
+		}
 	}
 
 }

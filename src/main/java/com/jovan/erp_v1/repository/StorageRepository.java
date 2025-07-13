@@ -103,12 +103,15 @@ public interface StorageRepository extends JpaRepository<Storage, Long> {
     boolean existsByType(@Param("type") StorageType type);
     boolean existsByNameContainingIgnoreCase(String name);
     boolean existsByLocationContainingIgnoreCase(String location);
+    boolean existsByLocationAndCapacity(StorageType type, BigDecimal capacity);
+    boolean existsByNameAndLocationAndCapacity(String name, String location, BigDecimal capacity);
     boolean existsByCapacity(BigDecimal capacity);
     boolean existsByCapacityGreaterThan(BigDecimal capacity);
     boolean existsByCapacityLessThan(BigDecimal capacity);
     boolean existsByNameAndLocation(String name, String location);
     boolean existsByNameAndCapacity(String name, BigDecimal capacity);
     boolean existsByTypeAndLocation(StorageType type, String location);
+    boolean existsByTypeAndLocationAndCapacity(StorageType type, String location, BigDecimal capacity);
     boolean existsByTypeAndCapacityGreaterThan(StorageType type, BigDecimal capacity);
     boolean existsByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(String name, String location);
     @Query("SELECT COUNT(s) > 0 FROM Storage s WHERE SIZE(s.goods) > :minCount")
