@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 
 import jakarta.persistence.CascadeType;
@@ -39,6 +41,9 @@ public class Storage {
 	@Enumerated(EnumType.STRING)
 	@Column
 	private StorageType type;
+	
+	@Enumerated(EnumType.STRING)
+	private StorageStatus status;
 
 	@OneToMany(mappedBy = "storage", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Goods> goods;

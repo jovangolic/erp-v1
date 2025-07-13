@@ -1,6 +1,8 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -32,16 +34,20 @@ public class StorageMapper {
                     return shelf;
                 })
                 .collect(Collectors.toList());
-
         storage.setShelves(shelves);
+        storage.setStatus(request.status());
         return storage;
     }
 
     public StorageResponse toResponse(Storage storage) {
+    	Objects.requireNonNull(storage, "Storage must not be null");
         return new StorageResponse(storage);
     }
 
     public List<StorageResponse> toResponseList(List<Storage> storages) {
+    	if(storages == null || storages.isEmpty()) {
+    		return Collections.emptyList();
+    	}
         return storages.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());

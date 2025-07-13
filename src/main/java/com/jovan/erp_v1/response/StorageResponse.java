@@ -3,6 +3,8 @@ package com.jovan.erp_v1.response;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.model.Storage;
 import lombok.AllArgsConstructor;
@@ -28,6 +30,7 @@ public class StorageResponse {
 	private List<WorkCenterResponse> workCenterResponses;
 	private List<MaterialMovementResponse> outgoingMaterialMovements;
 	private List<MaterialMovementResponse> incomingMaterialMovements;
+	private StorageStatus status;
 
 	public StorageResponse(Storage storage) {
 		this.id = storage.getId();
@@ -68,6 +71,6 @@ public class StorageResponse {
 				.collect(Collectors.toList());
 		this.incomingMaterialMovements = storage.getIncomingMaterialMovements().stream()
 				.map(MaterialMovementResponse::new)
-				.collect(Collectors.toList());
+				.collect(Collectors.toList());		this.status = storage.getStatus();
 	}
 }

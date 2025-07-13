@@ -98,13 +98,13 @@ public class StorageController {
 
 	@GetMapping("/storage/by-type-and-capacity")
 	public ResponseEntity<List<StorageResponse>> getByTypeAndCapacityGreaterThan(@RequestParam("type") StorageType type,
-			@RequestParam("capacity") Double capacity) {
+			@RequestParam("capacity") BigDecimal capacity) {
 		List<StorageResponse> responses = storageService.getByTypeAndCapacityGreaterThan(type, capacity);
 		return ResponseEntity.ok(responses);
 	}
 
 	@GetMapping("/storage/by-minCount")
-	public ResponseEntity<List<StorageResponse>> getStoragesWithMinGoods(@RequestParam("minCount") int minCount) {
+	public ResponseEntity<List<StorageResponse>> getStoragesWithMinGoods(@RequestParam("minCount") Integer minCount) {
 		List<StorageResponse> responses = storageService.getStoragesWithMinGoods(minCount);
 		return ResponseEntity.ok(responses);
 	}

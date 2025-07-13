@@ -2,6 +2,7 @@ package com.jovan.erp_v1.response;
 
 import java.math.BigDecimal;
 
+import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.model.Storage;
 
@@ -18,6 +19,7 @@ public class StorageBasicResponse {
     private String location;
 	private BigDecimal capacity;
 	private StorageType type;
+	private StorageStatus status;
 
     public StorageBasicResponse(Storage s) {
         this.id = s.getId();
@@ -25,5 +27,6 @@ public class StorageBasicResponse {
         this.location = s.getLocation();
         this.capacity = s.getCapacity();
         this.type = s.getType();
+        this.status = s.getStatus();
     }
 }
