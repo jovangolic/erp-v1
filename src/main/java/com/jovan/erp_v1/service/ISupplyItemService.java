@@ -66,4 +66,5 @@ public interface ISupplyItemService {
 	List<CostSumByProcurement> findCostSumGroupedByProcurement();
 	List<SupplyItemResponse> findByProcurementWithSupplyCostOver( BigDecimal minTotal);
 	List<SupplyItemResponse> findBySupplierWithMoreThanNItems( Long minCount);
+	List<CostSumByProcurement> findCostSumGroupedByProcurementWithMinTotal( BigDecimal minTotal);
 }

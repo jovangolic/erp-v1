@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SumCostGroupedByProcurementResponse {
 
-	private long procurementId;
+	private Long procurementId;
 	private BigDecimal sumCost;
 	
 	public SumCostGroupedByProcurementResponse(Long procurementId, BigDecimal sumCost) {

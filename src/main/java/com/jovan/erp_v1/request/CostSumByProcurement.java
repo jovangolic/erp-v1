@@ -5,5 +5,4 @@ import java.math.BigDecimal;
 public record CostSumByProcurement(
 		Long procurementId, BigDecimal totalCost
 		) {
-
 }

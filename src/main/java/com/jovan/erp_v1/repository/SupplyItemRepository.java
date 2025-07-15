@@ -9,7 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.jovan.erp_v1.dto.AvgCostByProcurementResponse;
 import com.jovan.erp_v1.model.SupplyItem;
+import com.jovan.erp_v1.request.AvgCostByProcurementRecord;
 import com.jovan.erp_v1.request.CostSumByProcurement;
 
 @Repository
@@ -106,8 +108,9 @@ public interface SupplyItemRepository extends JpaRepository<SupplyItem, Long> {
 	List<Object[]> sumCostGroupedByProcurement();
 	@Query("SELECT si.supplier.id, COUNT(si) FROM SupplyItem si GROUP BY si.supplier.id")
 	List<Object[]> countBySupplier();
-	@Query("SELECT si.procurement.id, AVG(si.cost) FROM SupplyItem si GROUP BY si.procurement.id")
-	List<Object[]> avgCostByProcurement();
+	//@Query("SELECT si.procurement.id, AVG(si.cost) FROM SupplyItem si GROUP BY si.procurement.id")
+	@Query("SELECT AvgCostByProcurementRecord(si.procurement.id, AVG(si.cost))rec FROM SupplyItem si GROUP BY si.procurement.id")
+	List<AvgCostByProcurementRecord> avgCostByProcurement();
 	@Query("SELECT ProcurementGlobalStatsResponse(COUNT(si), SUM(si.cost), AVG(si.cost), MIN(si.cost), MAX(si.cost)) psr FROM SupplyItem si")
 	Object[] procurementStats();
 	@Query("SELECT ProcurementStatsPerEntityResponse(" +
@@ -121,6 +124,8 @@ public interface SupplyItemRepository extends JpaRepository<SupplyItem, Long> {
 	List<SupplyItem> findByProcurementWithSupplyCostOver(@Param("minTotal") BigDecimal minTotal);
 	@Query("SELECT si FROM SupplyItem si WHERE si.supplier.id IN ( SELECT si2.supplier.id FROM SupplyItem si2 GROUP BY si2.supplier.id HAVING COUNT(si2) > :minCount )")
 	List<SupplyItem> findBySupplierWithMoreThanNItems(@Param("minCount") Long minCount);
+	@Query("SELECT CostSumByProcurement(p.id, SUM(p.totalCost)) csp FROM SupplyItem si JOIN si.procurement p GROUP BY p.id HAVING SUM(p.totalCost) > :minTotal")
+	List<CostSumByProcurement> findCostSumGroupedByProcurementWithMinTotal(@Param("minTotal") BigDecimal minTotal);
 	
 	 
 	 //boolean
@@ -168,8 +173,20 @@ public interface SupplyItemRepository extends JpaRepository<SupplyItem, Long> {
 	 boolean existsByProcurementId(@Param("procurementId") Long procurementId);
 	 @Query("SELECT (AVG(si.cost) > :value) FROM SupplyItem si")
 	 boolean avgCostGreaterThan(@Param("value") BigDecimal value);
+	 @Query("SELECT (AVG(si.cost) < :value) FROM SupplyItem si")
+	 boolean avgCostLessThan(@Param("value") BigDecimal value);
+	 @Query("SELECT COUNT(si) > 0 FROM SupplyItem si WHERE si.procurement.totalCost IS NOT NULL")
+	 boolean existsAvgCostByProcurement();
 	 @Query("SELECT COUNT(si) > 0 FROM SupplyItem si GROUP BY si.supplier.id HAVING COUNT(si) > :minCount")
-	 boolean existsSupplierWithMoreThanNItems(@Param("minCount") Long minCount);@Query("SELECT COUNT(si.procurement.id) > 0 FROM SupplyItem si GROUP BY si.procurement.id HAVING SUM(si.cost) > :minTotal")
+	 boolean existsSupplierWithMoreThanNItems(@Param("minCount") Long minCount);
+	 @Query("SELECT COUNT(si.procurement.id) > 0 FROM SupplyItem si GROUP BY si.procurement.id HAVING SUM(si.cost) > :minTotal")
 	 boolean existsProcurementWithSupplyCostOver(@Param("minTotal") BigDecimal minTotal);
-	 
+	 @Query("SELECT CostSumByProcurement(si.procurement.id, si.procurement.totalCost) csp FROM SupplyItem si GROUP BY si.procurement.id, si.procurement.totalCost")
+	 boolean existsCostSumGroupedByProcurement();
+	 @Query("SELECT COUNT(si) > 0 FROM SupplyItem si")
+	 boolean existsSupplyMaxItems();
+	 @Query("SELECT COUNT(si) > 0 FROM SupplyItem si WHERE si.cost IS NOT NULL")
+	 boolean existsSupplyMinItems();
+	 @Query("SELECT CASE WHEN COUNT(si) > 0 THEN true ELSE false END FROM SupplyItem si")
+	 boolean existsSupplyItems();
 }

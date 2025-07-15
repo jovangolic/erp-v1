@@ -13,9 +13,11 @@ import com.jovan.erp_v1.dto.ProcurementStatsPerEntityResponse;
 import com.jovan.erp_v1.dto.SumCostGroupedByProcurementResponse;
 import com.jovan.erp_v1.dto.SupplierItemCountResponse;
 import com.jovan.erp_v1.dto.SupplyItemStatsResponse;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ProcurementNotFoundException;
 import com.jovan.erp_v1.exception.SupplierNotFoundException;
 import com.jovan.erp_v1.exception.SupplyItemNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.SupplyItemMapper;
 import com.jovan.erp_v1.model.Procurement;
 import com.jovan.erp_v1.model.SupplyItem;
@@ -23,6 +25,7 @@ import com.jovan.erp_v1.model.Vendor;
 import com.jovan.erp_v1.repository.ProcurementRepository;
 import com.jovan.erp_v1.repository.SupplyItemRepository;
 import com.jovan.erp_v1.repository.VendorRepository;
+import com.jovan.erp_v1.request.AvgCostByProcurementRecord;
 import com.jovan.erp_v1.request.CostSumByProcurement;
 import com.jovan.erp_v1.request.SupplyItemRequest;
 import com.jovan.erp_v1.response.SupplyItemResponse;
@@ -263,8 +266,14 @@ public class SupplyItemService implements ISupplyItemService {
 
 	@Override
 	public SupplyItemStatsResponse countAllSupplyItems() {
-		// TODO Auto-generated method stub
-		return null;
+	    if (!supplyItemRepository.existsSupplyItems()) {
+	        throw new NoDataFoundException("No supply items in database.");
+	    }
+	    Long count = supplyItemRepository.countAllSupplyItems();
+	    if (count == null) {
+	        count = 0L;
+	    }
+	    return SupplyItemStatsResponse.ofCount(count);
 	}
 
 	@Override
@@ -275,44 +284,73 @@ public class SupplyItemService implements ISupplyItemService {
 
 	@Override
 	public SupplyItemStatsResponse sumAllCosts() {
-		// TODO Auto-generated method stub
-		return null;
+	    if (!supplyItemRepository.existsSupplyItems()) {
+	        throw new NoDataFoundException("No supply items in database.");
+	    }
+	    BigDecimal sum = supplyItemRepository.sumAllCosts();
+	    if(sum == null) {
+	    	sum = BigDecimal.ZERO;
+	    }
+	    return SupplyItemStatsResponse.ofSum(sum);
 	}
 
 	@Override
 	public SupplyItemStatsResponse averageCost() {
-		// TODO Auto-generated method stub
-		return null;
+	    if (!supplyItemRepository.existsSupplyItems()) {
+	        throw new NoDataFoundException("No supply items in database.");
+	    }
+	    BigDecimal average = supplyItemRepository.averageCost();
+	    if (average == null) {
+	        average = BigDecimal.ZERO;
+	    }
+	    return SupplyItemStatsResponse.ofAvg(average);
 	}
 
 	@Override
 	public SupplyItemStatsResponse minCost() {
-		// TODO Auto-generated method stub
-		return null;
+		if (!supplyItemRepository.existsSupplyMinItems()) {
+		    throw new NoDataFoundException("No supply items in database.");
+		}
+		BigDecimal total = supplyItemRepository.minCost();
+		return SupplyItemStatsResponse.builder()
+				.min(total != null ? total : BigDecimal.ZERO)
+				.build();
 	}
 
 	@Override
 	public SupplyItemStatsResponse maxCost() {
-		// TODO Auto-generated method stub
-		return null;
+		if (!supplyItemRepository.existsSupplyMaxItems()) {
+		    throw new NoDataFoundException("No supply items in database.");
+		}
+		BigDecimal total = supplyItemRepository.maxCost();
+		return SupplyItemStatsResponse.builder()
+			    .max(total != null ? total : BigDecimal.ZERO)
+			    .build();
 	}
-
+	
 	@Override
 	public List<SumCostGroupedByProcurementResponse> sumCostGroupedByProcurement() {
-		// TODO Auto-generated method stub
-		return null;
+		List<Object[]> items = supplyItemRepository.sumCostGroupedByProcurement();
+		return items.stream()
+				.map(row -> new SumCostGroupedByProcurementResponse((Long)row[0], (BigDecimal)row[1]))
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplierItemCountResponse> countBySupplier() {
-		// TODO Auto-generated method stub
-		return null;
+		List<Object[]> items = supplyItemRepository.countBySupplier();
+		return items.stream()
+				.map(row -> new SupplierItemCountResponse((Long)row[0], (Long)row[1]))
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<AvgCostByProcurementResponse> avgCostByProcurement() {
-		// TODO Auto-generated method stub
-		return null;
+		List<AvgCostByProcurementRecord> items = supplyItemRepository.avgCostByProcurement();
+		return items.stream()
+				.filter(item -> item.avgCost().compareTo(BigDecimal.valueOf(100)) > 0)
+				.map(item -> new AvgCostByProcurementResponse(item.procurementId(), item.avgCost()))
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -342,19 +380,86 @@ public class SupplyItemService implements ISupplyItemService {
 
 	@Override
 	public List<CostSumByProcurement> findCostSumGroupedByProcurement() {
-		// TODO Auto-generated method stub
-		return null;
+		if(!supplyItemRepository.existsCostSumGroupedByProcurement()) {
+			throw new NoDataFoundException("Total cost summed for Procurement not found");
+		}
+		List<CostSumByProcurement> items = supplyItemRepository.findCostSumGroupedByProcurement();
+		return items.stream()
+				.filter(item -> item.totalCost().compareTo(BigDecimal.valueOf(100)) > 0)
+				.collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<CostSumByProcurement> findCostSumGroupedByProcurementWithMinTotal(BigDecimal minTotal) {
+		if (!supplyItemRepository.existsCostSumGroupedByProcurement()) {
+			throw new NoDataFoundException("Total cost summed for Procurement not found");
+		}
+		return supplyItemRepository.findCostSumGroupedByProcurementWithMinTotal(minTotal);
 	}
 
 	@Override
 	public List<SupplyItemResponse> findByProcurementWithSupplyCostOver(BigDecimal minTotal) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimalNonNegative(minTotal);
+		if(!supplyItemRepository.existsProcurementWithSupplyCostOver(minTotal)) {
+			String msg = String.format("Procurement with supply cost over not found %s", minTotal);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findByProcurementWithSupplyCostOver(minTotal);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findBySupplierWithMoreThanNItems(Long minCount) {
-		// TODO Auto-generated method stub
-		return null;
+		validateLong(minCount);
+		if(!supplyItemRepository.existsSupplierWithMoreThanNItems(minCount)) {
+			String msg = String.format("Supplier with more than n items not found %d", minCount);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findBySupplierWithMoreThanNItems(minCount);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
+	
+	private void validateLong(Long num) {
+		if(num == null || num < 0) {
+			throw new ValidationException("Minimum count must be zero or a positive number");
+		}
+	}
+	
+	private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+	}
+	
+	private void createSupplyItemRequest(SupplyItemRequest request) {
+		fetchProcurementId(request.procurementId());
+		fetchVendorId(request.vendorId());
+		validateBigDecimal(request.cost());
+	}
+	
+	private Vendor fetchVendorId(Long vendorId) {
+		if(vendorId == null) {
+			throw new ValidationException("Vendor ID must not be null");
+		}
+		return vendorRepository.findById(vendorId).orElseThrow(() -> new ValidationException("Vendor not found with id "+vendorId));
+	}
+	
+	private Procurement fetchProcurementId(Long procurementId) {
+		if(procurementId == null) {
+			throw new ValidationException("Procurement ID must not be null");
+		}
+		return procurementRepository.findById(procurementId).orElseThrow(() -> new ProcurementNotFoundException("Procurement not found with id "+procurementId));
+	}
+	
+	private void validateBigDecimal(BigDecimal num) {
+		if(num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
+			throw new ValidationException("Number must be positive");
+		}
+	}
+
+	
 }
