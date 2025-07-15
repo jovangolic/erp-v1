@@ -314,10 +314,5 @@ public class StorageController {
 		List<StorageResponse> responses = storageService.findInterimStorage();
 		return ResponseEntity.ok(responses);
 	}
-	
-	@GetMapping("/search/available-storages")
-	public ResponseEntity<List<StorageResponse>> findAvailableStorage(){
-		List<StorageResponse> responses = storageService.findAvailableStorage();
-		return ResponseEntity.ok(responses);
-	}
+
 }

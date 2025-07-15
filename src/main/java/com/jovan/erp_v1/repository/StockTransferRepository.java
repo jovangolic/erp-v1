@@ -51,8 +51,10 @@ public interface StockTransferRepository extends JpaRepository<StockTransfer, Lo
     List<StockTransfer> findByToStorage_CapacityGreaterThan(BigDecimal capacity);
     List<StockTransfer> findByFromStorage_CapacityLessThan(BigDecimal capacity);
     List<StockTransfer> findByToStorage_CapacityLessThan(BigDecimal capacity);
-    List<StockTransfer> findByFromStorage_CapacityAndType(BigDecimal capacity, StorageType type);
-    List<StockTransfer> findByToStorage_CapacityAndType(BigDecimal capacity, StorageType type);
+    @Query("SELECT st FROM StockTransfer st WHERE st.toStorage.type = :type")
+    List<StockTransfer> findByFromStorage_CapacityAndType(BigDecimal capacity,@Param("type") StorageType type);
+    @Query("SELECT st FROM StockTransfer st WHERE st.fromStorage.type = :type")
+    List<StockTransfer> findByToStorage_CapacityAndType(BigDecimal capacity,@Param("type") StorageType type);
     @Query("SELECT st FROM StockTransfer st WHERE st.fromStorage.capacity >= :capacity AND st.fromStorage.type = :type")
     List<StockTransfer> findByFromStorage_CapacityGreaterThanAndType(@Param("capacity") BigDecimal capacity,@Param("type") StorageType type);
     @Query("SELECT st FROM StockTransfer st WHERE st.toStorage.capacity >= :capacity AND st.toStorage.type = :type")

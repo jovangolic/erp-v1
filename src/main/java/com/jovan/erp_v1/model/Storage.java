@@ -44,6 +44,9 @@ public class Storage {
 	
 	@Enumerated(EnumType.STRING)
 	private StorageStatus status;
+	
+	@Column
+	private BigDecimal usedCapacity = BigDecimal.ZERO;
 
 	@OneToMany(mappedBy = "storage", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Goods> goods;
