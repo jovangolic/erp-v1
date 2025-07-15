@@ -32,7 +32,8 @@ public interface StorageRepository extends JpaRepository<Storage, Long> {
     List<Storage> findByNameAndLocationAndCapacity(String name, String location, BigDecimal capacity);
     List<Storage> findByTypeAndLocation(StorageType type, String location);
     List<Storage> findByTypeAndName(StorageType type, String name);
-    List<Storage> findByLocationAndCapacity(StorageType type, BigDecimal capacity);
+    List<Storage> findByLocationAndCapacity(String location, BigDecimal capacity);
+    List<Storage> findByTypeAndCapacity(StorageType type, BigDecimal capacity);
     List<Storage> findByTypeAndLocationAndCapacity(StorageType type, String location, BigDecimal capacity);
     List<Storage> findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(String name, String location);
     List<Storage> findByCapacityBetween(BigDecimal min, BigDecimal max);
@@ -96,6 +97,8 @@ public interface StorageRepository extends JpaRepository<Storage, Long> {
     List<Storage> findClosedStorage();
     @Query("SELECT COUNT(s) > 0 FROM Storage s WHERE s.type = 'INTERIM'")
     List<Storage> findInterimStorage();
+    @Query("SELECT COUNT(s) > 0 FROM Storage s WHERE s.type = 'AVAILABLE'")
+    List<Storage> findAvailableStorage();
     
     
     //boolean
@@ -103,7 +106,8 @@ public interface StorageRepository extends JpaRepository<Storage, Long> {
     boolean existsByType(@Param("type") StorageType type);
     boolean existsByNameContainingIgnoreCase(String name);
     boolean existsByLocationContainingIgnoreCase(String location);
-    boolean existsByLocationAndCapacity(StorageType type, BigDecimal capacity);
+    boolean existsByLocationAndCapacity(String location, BigDecimal capacity);
+    boolean existsByTypeAndCapacity(StorageType type, BigDecimal capacity);
     boolean existsByNameAndLocationAndCapacity(String name, String location, BigDecimal capacity);
     boolean existsByCapacity(BigDecimal capacity);
     boolean existsByCapacityGreaterThan(BigDecimal capacity);

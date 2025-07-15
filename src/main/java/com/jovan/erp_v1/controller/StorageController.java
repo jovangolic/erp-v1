@@ -123,189 +123,201 @@ public class StorageController {
 	
 	//nove metode
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByTypeAndCapacityLessThan(StorageType type, BigDecimal capacity){
+	@GetMapping("/search/storage-type-and-capacity-less-than")
+	public ResponseEntity<List<StorageResponse>> findByTypeAndCapacityLessThan(@RequestParam("type") StorageType type,@RequestParam("capacity") BigDecimal capacity){
 		List<StorageResponse> responses = storageService.findByTypeAndCapacityLessThan(type, capacity);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByCapacityGreaterThan(BigDecimal capacity){
+	@GetMapping("/search/capacity-greater-than")
+	public ResponseEntity<List<StorageResponse>> findByCapacityGreaterThan(@RequestParam("capacity")BigDecimal capacity){
 		List<StorageResponse> responses = storageService.findByCapacityGreaterThan(capacity);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByCapacityLessThan(BigDecimal capacity){
+	@GetMapping("/search/capacity-less-than")
+	public ResponseEntity<List<StorageResponse>> findByCapacityLessThan(@RequestParam("capacity") BigDecimal capacity){
 		List<StorageResponse> responses = storageService.findByCapacityLessThan(capacity);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByNameAndLocationAndCapacity(String name, String location, BigDecimal capacity){
+	@GetMapping("/search/storage-name-location-capacity")
+	public ResponseEntity<List<StorageResponse>> findByNameAndLocationAndCapacity(@RequestParam("name") String name,@RequestParam("location") String location,@RequestParam("capacity") BigDecimal capacity){
 		List<StorageResponse> responses = storageService.findByNameAndLocationAndCapacity(name, location, capacity);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByTypeAndLocation(StorageType type, String location){
+	@GetMapping("/search/storage-type-and-location")
+	public ResponseEntity<List<StorageResponse>> findByTypeAndLocation(@RequestParam("type") StorageType type,@RequestParam("location") String location){
 		List<StorageResponse> responses = storageService.findByTypeAndLocation(type, location);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByTypeAndName(StorageType type, String name){
+	@GetMapping("/search/storage-type-and-name")
+	public ResponseEntity<List<StorageResponse>> findByTypeAndName(@RequestParam("type") StorageType type,@RequestParam("name") String name){
 		List<StorageResponse> responses = storageService.findByTypeAndName(type, name);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByLocationAndCapacity(StorageType type, BigDecimal capacity){
-		List<StorageResponse> responses = storageService.findByLocationAndCapacity(type, capacity);
+	@GetMapping("/search/storage-location-and-capacity")
+	public ResponseEntity<List<StorageResponse>> findByLocationAndCapacity(@RequestParam("location") String location,@RequestParam("capacity") BigDecimal capacity){
+		List<StorageResponse> responses = storageService.findByLocationAndCapacity(location, capacity);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByTypeAndLocationAndCapacity(StorageType type, String location, BigDecimal capacity){
+	@GetMapping("/search/storage-type-and-capacity")
+	public ResponseEntity<List<StorageResponse>> findByTypeAndCapacity(@RequestParam("type") StorageType type,@RequestParam("capacity") BigDecimal capacity){
+		List<StorageResponse> responses = storageService.findByTypeAndCapacity(type, capacity);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/storage-type-location-capacity")
+	public ResponseEntity<List<StorageResponse>> findByTypeAndLocationAndCapacity(@RequestParam("type") StorageType type,@RequestParam("location") String location,@RequestParam("capacity") BigDecimal capacity){
 		List<StorageResponse> responses = storageService.findByTypeAndLocationAndCapacity(type, location, capacity);
 		return ResponseEntity.ok(responses);
 	}
 	 
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(String name, String location){
+	@GetMapping("/search/storage-name-and-storage-location")
+	public ResponseEntity<List<StorageResponse>> findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(@RequestParam("name") String name,@RequestParam("location") String location){
 		List<StorageResponse> responses = storageService.findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(name, location);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByCapacityBetween(BigDecimal min, BigDecimal max){
+	@GetMapping("/search/storage-capacity-range")
+	public ResponseEntity<List<StorageResponse>> findByCapacityBetween(@RequestParam("min") BigDecimal min,@RequestParam("max") BigDecimal max){
 		List<StorageResponse> responses = storageService.findByCapacityBetween(min, max);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>>  findByTypeOrderByCapacityDesc(StorageType type){
+	@GetMapping("/search/storage-type-capacity-desc")
+	public ResponseEntity<List<StorageResponse>>  findByTypeOrderByCapacityDesc(@RequestParam("type") StorageType type){
 		List<StorageResponse> responses = storageService.findByTypeOrderByCapacityDesc(type);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByLocationOrderByNameAsc(String location){
+	@GetMapping("/search/location-order-name-asc")
+	public ResponseEntity<List<StorageResponse>> findByLocationOrderByNameAsc(@RequestParam("location") String location){
 		List<StorageResponse> responses = storageService.findByLocationOrderByNameAsc(location);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
+	@GetMapping("/search/storage-without-goods")
 	public ResponseEntity<List<StorageResponse>> findStoragesWithoutGoods(){
 		List<StorageResponse> responses = storageService.findStoragesWithoutGoods();
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByExactShelfCount(Integer shelfCount){
+	@GetMapping("/search/exact-shelf-count")
+	public ResponseEntity<List<StorageResponse>> findByExactShelfCount(@RequestParam("shelfCount") Integer shelfCount){
 		List<StorageResponse> responses = storageService.findByExactShelfCount(shelfCount);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findByLocationContainingIgnoreCaseAndType(String location, StorageType type){
+	@GetMapping("/search/location-and-type")
+	public ResponseEntity<List<StorageResponse>> findByLocationContainingIgnoreCaseAndType(@RequestParam("location") String location,@RequestParam("type") StorageType type){
 		List<StorageResponse> responses = storageService.findByLocationContainingIgnoreCaseAndType(location, type);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
+	@GetMapping("/search/storages-with-materials")
 	public ResponseEntity<List<StorageResponse>> findStoragesWithMaterials(){
 		List<StorageResponse> responses = storageService.findStoragesWithMaterials();
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
+	@GetMapping("/search/storages-with-work-centers")
 	public ResponseEntity<List<StorageResponse>> findStoragesWithWorkCenters(){
 		List<StorageResponse> responses = storageService.findStoragesWithWorkCenters();
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
+	@GetMapping("/search/storages-without-shelves")
 	public ResponseEntity<List<StorageResponse>> findStoragesWithoutShelves(){
 		List<StorageResponse> responses = storageService.findStoragesWithoutShelves();
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
+	@GetMapping("/search/available-storages")
 	public ResponseEntity<List<StorageResponse>> findAvailableStorages(){
 		List<StorageResponse> responses = storageService.findAvailableStorages();
 		return ResponseEntity.ok(responses);
 	}
 	 
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findSuitableStoragesForShipment( BigDecimal minCapacity){
+	@GetMapping("/search/suitable-storages-for-shipment")
+	public ResponseEntity<List<StorageResponse>> findSuitableStoragesForShipment(@RequestParam("minCapacity") BigDecimal minCapacity){
 		List<StorageResponse> responses = storageService.findSuitableStoragesForShipment(minCapacity);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
+	@GetMapping("/search/empty-storages")
 	public ResponseEntity<List<StorageResponse>> findEmptyStorages(){
 		List<StorageResponse> responses = storageService.findEmptyStorages();
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findStorageWithoutGoodsAndMaterialsByType( StorageType type){
+	@GetMapping("/search/storage/without-goods-and-materials-by-type")
+	public ResponseEntity<List<StorageResponse>> findStorageWithoutGoodsAndMaterialsByType(@RequestParam("type") StorageType type){
 		List<StorageResponse> responses = storageService.findStorageWithoutGoodsAndMaterialsByType(type);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findStorageWithGoodsAndMaterialsByType( StorageType type){
+	@GetMapping("/search/storage/with-goods-and-materials-by-type")
+	public ResponseEntity<List<StorageResponse>> findStorageWithGoodsAndMaterialsByType(@RequestParam("type") StorageType type){
 		List<StorageResponse> responses = storageService.findStorageWithGoodsAndMaterialsByType(type);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findStorageWithGoodsOrMaterialsByType( StorageType type){
+	@GetMapping("/search/with-goods-or-materials-by-type")
+	public ResponseEntity<List<StorageResponse>> findStorageWithGoodsOrMaterialsByType(@RequestParam("type") StorageType type){
 		List<StorageResponse> responses = storageService.findStorageWithGoodsOrMaterialsByType(type);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findAllByType(StorageType type){
+	@GetMapping("/search/storage/by-type")
+	public ResponseEntity<List<StorageResponse>> findAllByType(@RequestParam("type") StorageType type){
 		List<StorageResponse> responses = storageService.findAllByType(type);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
-	public ResponseEntity<List<StorageResponse>> findEmptyStorageByType( StorageType type){
+	@GetMapping("/search/empty-storages/by-type")
+	public ResponseEntity<List<StorageResponse>> findEmptyStorageByType(@RequestParam("type") StorageType type){
 		List<StorageResponse> responses = storageService.findEmptyStorageByType(type);
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
+	@GetMapping("/search/production-storages")
 	public ResponseEntity<List<StorageResponse>> findProductionStorage(){
 		List<StorageResponse> responses = storageService.findProductionStorage();
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
+	@GetMapping("/search/distribution-storages")
 	public ResponseEntity<List<StorageResponse>> findDistributionStorage(){
 		List<StorageResponse> responses = storageService.findDistributionStorage();
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
+	@GetMapping("/search/open-storages")
 	public ResponseEntity<List<StorageResponse>> findOpenStorage(){
 		List<StorageResponse> responses = storageService.findOpenStorage();
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
+	@GetMapping("/search/closed-storages")
 	public ResponseEntity<List<StorageResponse>> findClosedStorage(){
 		List<StorageResponse> responses = storageService.findClosedStorage();
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/")
+	@GetMapping("/search/interim-storages")
 	public ResponseEntity<List<StorageResponse>> findInterimStorage(){
 		List<StorageResponse> responses = storageService.findInterimStorage();
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/available-storages")
+	public ResponseEntity<List<StorageResponse>> findAvailableStorage(){
+		List<StorageResponse> responses = storageService.findAvailableStorage();
 		return ResponseEntity.ok(responses);
 	}
 }

@@ -7,6 +7,12 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.jovan.erp_v1.dto.AvgCostByProcurementResponse;
+import com.jovan.erp_v1.dto.ProcurementGlobalStatsResponse;
+import com.jovan.erp_v1.dto.ProcurementStatsPerEntityResponse;
+import com.jovan.erp_v1.dto.SumCostGroupedByProcurementResponse;
+import com.jovan.erp_v1.dto.SupplierItemCountResponse;
+import com.jovan.erp_v1.dto.SupplyItemStatsResponse;
 import com.jovan.erp_v1.exception.ProcurementNotFoundException;
 import com.jovan.erp_v1.exception.SupplierNotFoundException;
 import com.jovan.erp_v1.exception.SupplyItemNotFoundException;
@@ -17,6 +23,7 @@ import com.jovan.erp_v1.model.Vendor;
 import com.jovan.erp_v1.repository.ProcurementRepository;
 import com.jovan.erp_v1.repository.SupplyItemRepository;
 import com.jovan.erp_v1.repository.VendorRepository;
+import com.jovan.erp_v1.request.CostSumByProcurement;
 import com.jovan.erp_v1.request.SupplyItemRequest;
 import com.jovan.erp_v1.response.SupplyItemResponse;
 
@@ -158,5 +165,196 @@ public class SupplyItemService implements ISupplyItemService {
 				.findBySupplierNameAndProcurementDateAndMaxCost(supplierName, startDate, endDate, maxCost).stream()
 				.map(supplyItemMapper::toResponse)
 				.collect(Collectors.toList());
+	}
+	
+	//nove metode
+
+	@Override
+	public List<SupplyItemResponse> findBySupplier_NameContainingIgnoreCase(String supplierName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findBySupplier_PhoneNumberLikeIgnoreCase(String phoneNumber) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findBySupplier_EmailLikeIgnoreCase(String email) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findBySupplier_Address(String address) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findBySupplierNameContainingAndCostBetween(String supplierName, BigDecimal minCost,
+			BigDecimal maxCost) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findBySupplierNameAndProcurementDateBetween(String supplierName,
+			LocalDateTime start, LocalDateTime end) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findByAddressAndMinCost(String address, BigDecimal minCost) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findByPhoneNumberAndCost(String phoneNumber, BigDecimal cost) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findByProcurementSupplyItemCount(Integer count) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findByCost(BigDecimal cost) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findByCostGreaterThan(BigDecimal cost) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findByCostLessThan(BigDecimal cost) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findByProcurementTotalCostGreaterThan(BigDecimal minCost) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findByProcurementDate(LocalDateTime date) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findBySupplyAndSalesCountMismatch() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public SupplyItemStatsResponse countAllSupplyItems() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public SupplyItemStatsResponse countByProcurementId(Long procurementId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public SupplyItemStatsResponse sumAllCosts() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public SupplyItemStatsResponse averageCost() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public SupplyItemStatsResponse minCost() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public SupplyItemStatsResponse maxCost() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SumCostGroupedByProcurementResponse> sumCostGroupedByProcurement() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplierItemCountResponse> countBySupplier() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<AvgCostByProcurementResponse> avgCostByProcurement() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ProcurementGlobalStatsResponse procurementStats() {
+	    Object[] result = supplyItemRepository.procurementStats();
+	    return new ProcurementGlobalStatsResponse(
+	        ((Number) result[0]).longValue(),
+	        (BigDecimal) result[1],
+	        (BigDecimal) result[2],
+	        (BigDecimal) result[3],
+	        (BigDecimal) result[4]
+	    );
+	}
+
+	@Override
+	public List<ProcurementStatsPerEntityResponse> procurementPerEntityStats() {
+	    List<Object[]> results = supplyItemRepository.procurementPerEntityStats();
+	    return results.stream().map(obj -> new ProcurementStatsPerEntityResponse(
+	        ((Number) obj[0]).longValue(),
+	        ((Number) obj[1]).longValue(),
+	        (BigDecimal) obj[2],
+	        (BigDecimal) obj[3],
+	        (BigDecimal) obj[4],
+	        (BigDecimal) obj[5]
+	    )).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<CostSumByProcurement> findCostSumGroupedByProcurement() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findByProcurementWithSupplyCostOver(BigDecimal minTotal) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<SupplyItemResponse> findBySupplierWithMoreThanNItems(Long minCount) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

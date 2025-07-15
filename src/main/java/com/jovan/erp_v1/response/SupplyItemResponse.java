@@ -12,17 +12,15 @@ import lombok.NoArgsConstructor;
 public class SupplyItemResponse {
 
 	private Long id;
-	private Long procurementId;
-	private Long vendorId;
-	private String vendorName;
+	private ProcurementSupplyItemResponse procurementSupplyItemResponse;
+	private VendorResponse vendorResponse;
 	private BigDecimal cost;
 	
 	
 	public SupplyItemResponse(SupplyItem supplyItem) {
 		this.id = supplyItem.getId();
-		this.procurementId = supplyItem.getProcurement().getId();
-		this.vendorId = supplyItem.getSupplier().getId();
-		this.vendorName = supplyItem.getSupplier().getName();
+		this.procurementSupplyItemResponse = supplyItem.getProcurement() != null ? new ProcurementSupplyItemResponse(supplyItem.getProcurement()) : null;
+		this.vendorResponse = supplyItem.getSupplier() != null ? new VendorResponse(supplyItem.getSupplier()) : null;
 		this.cost = supplyItem.getCost();
 	}
 }

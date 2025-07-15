@@ -274,15 +274,30 @@ public class StorageService implements IStorageService {
 	}
 
 	@Override
-	public List<StorageResponse> findByLocationAndCapacity(StorageType type, BigDecimal capacity) {
-		validateStorageType(type);
+	public List<StorageResponse> findByLocationAndCapacity(String location, BigDecimal capacity) {
+		validateString(location);
 		validateBigDecimal(capacity);
-		if(!storageRepository.existsByLocationAndCapacity(type, capacity)) {
-			String msg = String.format("Storage with type %s and capacity %s not found",
-					type,capacity);
+		if(!storageRepository.existsByLocationAndCapacity(location, capacity)) {
+			String msg = String.format("Storage with location %s and capacity %s not found",
+					location,capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<Storage> items = storageRepository.findByLocationAndCapacity(type, capacity);
+		List<Storage> items = storageRepository.findByLocationAndCapacity(location, capacity);
+		return items.stream()
+				.map(storageMapper::toResponse)
+				.collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<StorageResponse> findByTypeAndCapacity(StorageType type, BigDecimal capacity) {
+		validateStorageType(type);
+		validateBigDecimal(capacity);
+		if(!storageRepository.existsByTypeAndCapacity(type, capacity)) {
+			String msg = String.format("Storage with type %s and capacity %s not found"
+					, type,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		List<Storage> items = storageRepository.findByTypeAndCapacity(type, capacity);
 		return items.stream()
 				.map(storageMapper::toResponse)
 				.collect(Collectors.toList());
@@ -586,6 +601,17 @@ public class StorageService implements IStorageService {
 				.collect(Collectors.toList());
 	}
 	
+	@Override
+	public List<StorageResponse> findAvailableStorage() {
+		if(!storageRepository.existsAvailableStorages()) {
+			throw new NoDataFoundException("No storage type equal to available found");
+		}
+		List<Storage> items = storageRepository.findAvailableStorage();
+		return items.stream()
+				.map(storageMapper::toResponse)
+				.collect(Collectors.toList());
+	}
+	
 	private void validateString(String str) {
 		if(str == null || str.trim().isEmpty()) {
 			throw new ValidationException("String must not be null nor empty");
@@ -725,5 +751,7 @@ public class StorageService implements IStorageService {
 			throw new ValidationException("Row-count must not be null nor negative number");
 		}
 	}
+
+	
 
 }

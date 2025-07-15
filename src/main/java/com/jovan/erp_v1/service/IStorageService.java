@@ -30,7 +30,8 @@ public interface IStorageService {
     List<StorageResponse> findByNameAndLocationAndCapacity(String name, String location, BigDecimal capacity);
     List<StorageResponse> findByTypeAndLocation(StorageType type, String location);
     List<StorageResponse> findByTypeAndName(StorageType type, String name);
-    List<StorageResponse> findByLocationAndCapacity(StorageType type, BigDecimal capacity);
+    List<StorageResponse> findByLocationAndCapacity(String location, BigDecimal capacity);
+    List<StorageResponse> findByTypeAndCapacity(StorageType type, BigDecimal capacity);
     List<StorageResponse> findByTypeAndLocationAndCapacity(StorageType type, String location, BigDecimal capacity);
     List<StorageResponse> findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(String name, String location);
     List<StorageResponse> findByCapacityBetween(BigDecimal min, BigDecimal max);
@@ -55,4 +56,5 @@ public interface IStorageService {
     List<StorageResponse> findOpenStorage();
     List<StorageResponse> findClosedStorage();
     List<StorageResponse> findInterimStorage();
+    List<StorageResponse> findAvailableStorage();
 }
