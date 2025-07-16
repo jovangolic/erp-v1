@@ -2,11 +2,10 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
-
 import com.jovan.erp_v1.dto.AvgCostByProcurementResponse;
 import com.jovan.erp_v1.dto.ProcurementGlobalStatsResponse;
 import com.jovan.erp_v1.dto.ProcurementStatsPerEntityResponse;
@@ -15,7 +14,6 @@ import com.jovan.erp_v1.dto.SupplierItemCountResponse;
 import com.jovan.erp_v1.dto.SupplyItemStatsResponse;
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ProcurementNotFoundException;
-import com.jovan.erp_v1.exception.SupplierNotFoundException;
 import com.jovan.erp_v1.exception.SupplyItemNotFoundException;
 import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.SupplyItemMapper;
@@ -29,6 +27,7 @@ import com.jovan.erp_v1.request.AvgCostByProcurementRecord;
 import com.jovan.erp_v1.request.CostSumByProcurement;
 import com.jovan.erp_v1.request.SupplyItemRequest;
 import com.jovan.erp_v1.response.SupplyItemResponse;
+import com.jovan.erp_v1.util.DateValidator;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -45,17 +44,13 @@ public class SupplyItemService implements ISupplyItemService {
 	@Transactional
 	@Override
 	public SupplyItemResponse createSupplyItem(SupplyItemRequest request) {
-		Procurement procurement = procurementRepository.findById(request.procurementId())
-				.orElseThrow(() -> new ProcurementNotFoundException(
-						"Procurement not found with id: " + request.procurementId()));
-
-		Vendor vendor = vendorRepository.findById(request.vendorId())
-				.orElseThrow(() -> new SupplierNotFoundException("Vendor not found with id: " + request.vendorId()));
-
-		SupplyItem supplyItem = supplyItemMapper.toEntity(request);
-		supplyItem.setProcurement(procurement);
-		supplyItem.setSupplier(vendor);
-
+		Procurement procurement = fetchProcurementId(request.procurementId());
+		Vendor vendor = fetchVendorId(request.vendorId());
+		validateBigDecimal(request.cost());
+		/*if (request.id() != null) {
+	        throw new ValidationException("ID must be null when creating a new SupplyItem");
+	    }*/
+		SupplyItem supplyItem = supplyItemMapper.toEntity(new SupplyItem(), request, procurement, vendor);
 		SupplyItem saved = supplyItemRepository.save(supplyItem);
 		return supplyItemMapper.toResponse(saved);
 	}
@@ -68,13 +63,10 @@ public class SupplyItemService implements ISupplyItemService {
 		}
 		SupplyItem supplyItem = supplyItemRepository.findById(id)
 				.orElseThrow(() -> new SupplyItemNotFoundException("SupplyItem not found wityh id: " + id));
-		Procurement procurement = procurementRepository.findById(request.procurementId()).orElseThrow(
-				() -> new ProcurementNotFoundException("Procurement not found wiht id: " + request.procurementId()));
-		Vendor vendor = vendorRepository.findById(request.vendorId())
-				.orElseThrow(() -> new SupplierNotFoundException("Vendor not found with id: " + request.vendorId()));
-		supplyItem.setProcurement(procurement);
-		supplyItem.setSupplier(vendor);
-		supplyItem.setCost(request.cost());
+		Procurement procurement = fetchProcurementId(request.procurementId());
+		Vendor vendor = fetchVendorId(request.vendorId());
+		validateBigDecimal(request.cost());
+		supplyItemMapper.toUpdateEntity(supplyItem, request, procurement, vendor);
 		SupplyItem saved = supplyItemRepository.save(supplyItem);
 		return supplyItemMapper.toResponse(saved);
 	}
@@ -97,35 +89,67 @@ public class SupplyItemService implements ISupplyItemService {
 
 	@Override
 	public List<SupplyItemResponse> getAllSupplyItem() {
-		return supplyItemRepository.findAll().stream()
+		List<SupplyItem> items = supplyItemRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No data for supply items found");
+		}
+		return items.stream()
 				.map(supplyItemMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> getByProcurementId(Long procurementId) {
-		return supplyItemRepository.findByProcurementId(procurementId).stream()
+		fetchProcurementId(procurementId);
+		List<SupplyItem> items = supplyItemRepository.findByProcurementId(procurementId);
+		if(items.isEmpty()) {
+			String msg = String.format("No data for procurement found equal to %d", procurementId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(supplyItemMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> getBySupplierId(Long supplierId) {
-		return supplyItemRepository.findBySupplierId(supplierId).stream()
+		fetchVendorId(supplierId);
+		List<SupplyItem> items = supplyItemRepository.findBySupplierId(supplierId);
+		if(items.isEmpty()) {
+			String msg = String.format("No data for supplier found equal to %d", supplierId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(supplyItemMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> getByCostBetween(BigDecimal min, BigDecimal max) {
-		return supplyItemRepository.findByCostBetween(min, max).stream()
+		validateBigDecimalNonNegative(min);
+		validateBigDecimal(max);
+		List<SupplyItem> items = supplyItemRepository.findByCostBetween(min, max);
+		if(items.isEmpty()) {
+			String msg = String.format("No data for supply items cost between %s and %s found",
+					min,max);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(supplyItemMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> getByProcurementDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
-		return supplyItemRepository.findByProcurementDateBetween(startDate, endDate).stream()
+		DateValidator.validateRange(startDate, endDate);
+		List<SupplyItem> items = supplyItemRepository.findByProcurementDateBetween(startDate, endDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH.mm.ss");
+			String msg = String.format("On data for procurement date between %s and %s found",
+					startDate.format(formatter),endDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(supplyItemMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -133,14 +157,27 @@ public class SupplyItemService implements ISupplyItemService {
 	@Override
 	public List<SupplyItemResponse> getByProcurementDateAndCostBetween(LocalDateTime startDate, LocalDateTime endDate,
 			BigDecimal min, BigDecimal max) {
-		return supplyItemRepository.findByProcurementDateAndCostBetween(startDate, endDate, min, max).stream()
+		DateValidator.validateRange(startDate, endDate);
+		validateBigDecimalNonNegative(min);
+		validateBigDecimal(max);
+		List<SupplyItem> items = supplyItemRepository.findByProcurementDateAndCostBetween(startDate, endDate, min, max);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No dataa for procurement date range and cost range found");
+		}
+		return items.stream()
 				.map(supplyItemMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> getByProcurementAndVendor(Long procurementId, Long vendorId) {
-		return supplyItemRepository.findByProcurementAndVendor(procurementId, vendorId).stream()
+		fetchProcurementId(procurementId);
+		fetchVendorId(vendorId);
+		List<SupplyItem> items = supplyItemRepository.findByProcurementAndVendor(procurementId, vendorId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No data for prcurement and vendor found");
+		}
+		return items.stream()
 				.map(supplyItemMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -148,7 +185,14 @@ public class SupplyItemService implements ISupplyItemService {
 	@Override
 	public List<SupplyItemResponse> getByVendorAndProcurementAndCost(Long supplierId, Long procurementId,
 			BigDecimal minCost) {
-		return supplyItemRepository.findByVendorAndProcurementAndCost(supplierId, procurementId, minCost).stream()
+		validateBigDecimal(minCost);
+		fetchProcurementId(procurementId);
+		fetchVendorId(procurementId);
+		List<SupplyItem> items = supplyItemRepository.findByVendorAndProcurementAndCost(supplierId, procurementId, minCost);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No data for vendor, procurement and cost found");
+		}
+		return items.stream()
 				.map(supplyItemMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -156,7 +200,17 @@ public class SupplyItemService implements ISupplyItemService {
 	@Override
 	public List<SupplyItemResponse> getByDateAndCost(LocalDateTime startDate, LocalDateTime endDate, BigDecimal min,
 			BigDecimal max) {
-		return supplyItemRepository.findByDateAndCost(startDate, endDate, min, max).stream()
+		DateValidator.validateRange(startDate, endDate);
+		validateBigDecimalNonNegative(min);
+		validateBigDecimal(max);
+		if(!supplyItemRepository.existsByDateAndCost(startDate, endDate, min, max)) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH.mm.ss");
+			String msg = String.format("Supplier with date between %s and %s and cost between %s and %s not found",
+					startDate.format(formatter),endDate.format(formatter),min,max);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findByDateAndCost(startDate, endDate, min, max);
+		return items.stream()
 				.map(supplyItemMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -164,8 +218,17 @@ public class SupplyItemService implements ISupplyItemService {
 	@Override
 	public List<SupplyItemResponse> getBySupplierNameAndProcurementDateAndMaxCost(String supplierName,
 			LocalDateTime startDate, LocalDateTime endDate, BigDecimal maxCost) {
-		return supplyItemRepository
-				.findBySupplierNameAndProcurementDateAndMaxCost(supplierName, startDate, endDate, maxCost).stream()
+		validateString(supplierName);
+		DateValidator.validateRange(startDate, endDate);
+		validateBigDecimal(maxCost);
+		if(!supplyItemRepository.existsBySupplierNameAndProcurementDateAndMaxCost(supplierName, startDate, endDate, maxCost)) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH.mm.ss");
+			String msg = String.format("Supplier with name %s and procurement date between %s and %s and max-cost %s not found",
+					supplierName,startDate.format(formatter),endDate.format(formatter),maxCost);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findBySupplierNameAndProcurementDateAndMaxCost(supplierName, startDate, endDate, maxCost);
+		return items.stream()
 				.map(supplyItemMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -174,94 +237,207 @@ public class SupplyItemService implements ISupplyItemService {
 
 	@Override
 	public List<SupplyItemResponse> findBySupplier_NameContainingIgnoreCase(String supplierName) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(supplierName);
+		if(!supplyItemRepository.existsBySupplier_NameContainingIgnoreCase(supplierName)) {
+			String msg = String.format("Supplier name equal to %s not found", supplierName);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findBySupplier_NameContainingIgnoreCase(supplierName);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findBySupplier_PhoneNumberLikeIgnoreCase(String phoneNumber) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(phoneNumber);
+		if(!supplyItemRepository.existsBySupplier_PhoneNumberLikeIgnoreCase(phoneNumber)) {
+			String msg = String.format("Supplier with phone-number not found %s", phoneNumber);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findBySupplier_PhoneNumberLikeIgnoreCase(phoneNumber);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findBySupplier_EmailLikeIgnoreCase(String email) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(email);
+		if(!supplyItemRepository.existsBySupplier_EmailLikeIgnoreCase(email)) {
+			String msg = String.format("Supplier with email not found %s", email);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findBySupplier_Address(email);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findBySupplier_Address(String address) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(address);
+		if(!supplyItemRepository.existsBySupplier_Address(address)) {
+			String msg = String.format("Supplier with address equal to not found %s", address);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findBySupplier_Address(address);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findBySupplierNameContainingAndCostBetween(String supplierName, BigDecimal minCost,
 			BigDecimal maxCost) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(supplierName);
+		validateBigDecimalNonNegative(minCost);
+		validateBigDecimal(maxCost);
+		if(!supplyItemRepository.existsBySupplierNameContainingAndCostBetween(supplierName, minCost, maxCost)) {
+			String msg = String.format("No supply items with name %s and cost between %s and %s found",
+					supplierName,minCost,maxCost);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findBySupplierNameContainingAndCostBetween(supplierName, minCost, maxCost);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findBySupplierNameAndProcurementDateBetween(String supplierName,
 			LocalDateTime start, LocalDateTime end) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(supplierName);
+		DateValidator.validateRange(start, end);
+		if(!supplyItemRepository.existsBySupplierNameAndProcurementDateBetween(supplierName, start, end)) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH.mm.ss");
+			String msg = String.format("No supply items with name %s and procurement date between %s and %s found",
+					supplierName,start.format(formatter),end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findBySupplierNameAndProcurementDateBetween(supplierName, start, end);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findByAddressAndMinCost(String address, BigDecimal minCost) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(address);
+		validateBigDecimalNonNegative(minCost);
+		if(!supplyItemRepository.existsByAddressAndMinCost(address, minCost)) {
+			String msg = String.format("Supply items not found with address %s and min-cost %s",
+					address, minCost);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findByAddressAndMinCost(address, minCost);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findByPhoneNumberAndCost(String phoneNumber, BigDecimal cost) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimalNonNegative(cost);
+		validateString(phoneNumber);
+		if(!supplyItemRepository.existsByPhoneNumberAndCost(phoneNumber, cost)) {
+			String msg = String.format("Supply items with phone number %s and cost %s not found",
+					phoneNumber,cost);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findByPhoneNumberAndCost(phoneNumber, cost);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findByProcurementSupplyItemCount(Integer count) {
-		// TODO Auto-generated method stub
-		return null;
+		validateInteger(count);
+		if(!supplyItemRepository.existsByProcurementSupplyItemCount(count)) {
+			String msg = String.format("No procurement for supply items count found %d", count);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findByProcurementSupplyItemCount(count);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findByCost(BigDecimal cost) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimalNonNegative(cost);
+		if(!supplyItemRepository.existsByCost(cost)) {
+			String msg = String.format("No supply items found wuth cost equal to %s", cost);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findByCost(cost);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findByCostGreaterThan(BigDecimal cost) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(cost);
+		if(!supplyItemRepository.existsByCostGreaterThan(cost)) {
+			String msg = String.format("No supply items found with cost greater than %s", cost);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findByCostGreaterThan(cost);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findByCostLessThan(BigDecimal cost) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimalNonNegative(cost);
+		if(!supplyItemRepository.existsByCostLessThan(cost)) {
+			String msg = String.format("No supply items found with cost less than %s", cost);
+			throw new NoDataFoundException(msg);
+		}
+		List<SupplyItem> items = supplyItemRepository.findByCostLessThan(cost);
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findByProcurementTotalCostGreaterThan(BigDecimal minCost) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(minCost);
+		List<SupplyItem> items = supplyItemRepository.findByProcurement_TotalCostGreaterThan(minCost);
+		if(items.isEmpty()) {
+			String msg = String.format("No procurement records found for total-cost greater than %s", minCost);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findByProcurementDate(LocalDateTime date) {
-		// TODO Auto-generated method stub
-		return null;
+		DateValidator.validateNotInFuture(date, "Procurement date");
+		List<SupplyItem> items = supplyItemRepository.findByProcurementDate(date);
+	    if (items.isEmpty()) {
+	        String formatted = date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy.HH:mm:ss"));
+	        throw new NoDataFoundException("No procurement records found for date " + formatted);
+	    }
+	    return items.stream()
+	                .map(supplyItemMapper::toResponse)
+	                .collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyItemResponse> findBySupplyAndSalesCountMismatch() {
-		// TODO Auto-generated method stub
-		return null;
+		if(!supplyItemRepository.existsBySupplyAndSalesCountMismatch()) {
+			throw new NoDataFoundException("No supply and sales for count mismatch found");
+		}
+		List<SupplyItem> items = supplyItemRepository.findBySupplyAndSalesCountMismatch();
+		return items.stream()
+				.map(supplyItemMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -278,8 +454,15 @@ public class SupplyItemService implements ISupplyItemService {
 
 	@Override
 	public SupplyItemStatsResponse countByProcurementId(Long procurementId) {
-		// TODO Auto-generated method stub
-		return null;
+		if (!supplyItemRepository.existsByProcurementId(procurementId)) {
+	        String msg = String.format("Procurement ID %d not found.", procurementId);
+	        throw new NoDataFoundException(msg);
+	    }
+	    Long count = supplyItemRepository.countByProcurementId(procurementId);
+	    if (count == null) {
+	        count = 0L;
+	    }
+	    return SupplyItemStatsResponse.ofProcurIdAndCount(procurementId, count);
 	}
 
 	@Override
@@ -411,8 +594,8 @@ public class SupplyItemService implements ISupplyItemService {
 	}
 
 	@Override
-	public List<SupplyItemResponse> findBySupplierWithMoreThanNItems(Long minCount) {
-		validateLong(minCount);
+	public List<SupplyItemResponse> findBySupplierWithMoreThanNItems(BigDecimal minCount) {
+		validateBigDecimalNonNegative(minCount);
 		if(!supplyItemRepository.existsSupplierWithMoreThanNItems(minCount)) {
 			String msg = String.format("Supplier with more than n items not found %d", minCount);
 			throw new NoDataFoundException(msg);
@@ -429,13 +612,28 @@ public class SupplyItemService implements ISupplyItemService {
 		}
 	}
 	
+	private void validateString(String str) {
+		if(str == null || str.trim().isEmpty()) {
+			throw new ValidationException("String must not be null nor empty");
+		}
+	}
+	
+	private void validateInteger(Integer num) {
+		if(num == null || num < 0) {
+			throw new ValidationException("Number must not be null nor negative");
+		}
+	}
+	
 	private void validateBigDecimalNonNegative(BigDecimal num) {
 		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
 			throw new ValidationException("Number must be zero or positive");
 		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
 	}
 	
-	private void createSupplyItemRequest(SupplyItemRequest request) {
+	private void validateSupplyItemRequest(SupplyItemRequest request) {
 		fetchProcurementId(request.procurementId());
 		fetchVendorId(request.vendorId());
 		validateBigDecimal(request.cost());
@@ -447,6 +645,7 @@ public class SupplyItemService implements ISupplyItemService {
 		}
 		return vendorRepository.findById(vendorId).orElseThrow(() -> new ValidationException("Vendor not found with id "+vendorId));
 	}
+	
 	
 	private Procurement fetchProcurementId(Long procurementId) {
 		if(procurementId == null) {

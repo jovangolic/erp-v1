@@ -99,13 +99,6 @@ public class SupplyService implements ISupplyService {
 	}
 
 	@Override
-	public List<SupplyResponse> getByStorage(Storage storage) {
-		return supplyRepository.findByStorage(storage).stream()
-				.map(supplyMapper::toResponse)
-				.collect(Collectors.toList());
-	}
-
-	@Override
 	public List<SupplyResponse> getBySuppliesByGoodsName(String name) {
 		return supplyRepository.findSuppliesByGoodsName(name).stream()
 				.map(supplyMapper::toResponse)

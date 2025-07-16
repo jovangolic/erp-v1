@@ -15,18 +15,14 @@ import lombok.NoArgsConstructor;
 public class SupplyResponse {
 
 	private Long id;
-	private String storageName;
-	private String storageLocation;
-	private BigDecimal storageCapacity;
+	private StorageResponse storageResponse;
 	private BigDecimal quantity;
 	private LocalDateTime updates;
 	private List<GoodsResponse> goods; // ako je potrebno samo odkomentarisi
 
 	public SupplyResponse(Supply supply) {
 		this.id = supply.getId();
-		this.storageName = supply.getStorage().getName();
-		this.storageLocation = supply.getStorage().getLocation();
-		this.storageCapacity = supply.getStorage().getCapacity();
+		this.storageResponse = supply.getStorage() != null ? new StorageResponse(supply.getStorage()) : null;
 		this.quantity = supply.getQuantity();
 		this.updates = supply.getUpdates();
 		this.goods = supply.getGoods()

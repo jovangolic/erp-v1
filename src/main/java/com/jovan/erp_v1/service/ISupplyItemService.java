@@ -4,17 +4,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import com.jovan.erp_v1.dto.AvgCostByProcurementResponse;
 import com.jovan.erp_v1.dto.ProcurementGlobalStatsResponse;
 import com.jovan.erp_v1.dto.ProcurementStatsPerEntityResponse;
-import com.jovan.erp_v1.dto.ProcurementStatsResponse;
 import com.jovan.erp_v1.dto.SumCostGroupedByProcurementResponse;
 import com.jovan.erp_v1.dto.SupplierItemCountResponse;
 import com.jovan.erp_v1.dto.SupplyItemStatsResponse;
-import com.jovan.erp_v1.model.SupplyItem;
 import com.jovan.erp_v1.request.CostSumByProcurement;
 import com.jovan.erp_v1.request.SupplyItemRequest;
 import com.jovan.erp_v1.response.SupplyItemResponse;
@@ -38,14 +34,14 @@ public interface ISupplyItemService {
 	List<SupplyItemResponse> getBySupplierNameAndProcurementDateAndMaxCost(String supplierName, LocalDateTime startDate, LocalDateTime endDate, BigDecimal maxCost);
 	//nove metode
 	List<SupplyItemResponse> findBySupplier_NameContainingIgnoreCase(String supplierName);
-	List<SupplyItemResponse> findBySupplier_PhoneNumberLikeIgnoreCase(@Param("phoneNumber") String phoneNumber);
+	List<SupplyItemResponse> findBySupplier_PhoneNumberLikeIgnoreCase( String phoneNumber);
 	List<SupplyItemResponse> findBySupplier_EmailLikeIgnoreCase( String email);
 	List<SupplyItemResponse> findBySupplier_Address(String address);
 	List<SupplyItemResponse> findBySupplierNameContainingAndCostBetween(String supplierName,BigDecimal minCost,BigDecimal maxCost);
 	List<SupplyItemResponse> findBySupplierNameAndProcurementDateBetween(String supplierName, LocalDateTime start, LocalDateTime end);
 	List<SupplyItemResponse> findByAddressAndMinCost( String address, BigDecimal minCost);
 	List<SupplyItemResponse> findByPhoneNumberAndCost(String phoneNumber, BigDecimal cost);
-	List<SupplyItemResponse> findByProcurementSupplyItemCount(@Param("count") Integer count);
+	List<SupplyItemResponse> findByProcurementSupplyItemCount( Integer count);
 	List<SupplyItemResponse> findByCost(BigDecimal cost);
 	List<SupplyItemResponse> findByCostGreaterThan(BigDecimal cost);
 	List<SupplyItemResponse> findByCostLessThan(BigDecimal cost);
@@ -65,6 +61,6 @@ public interface ISupplyItemService {
 	List<ProcurementStatsPerEntityResponse> procurementPerEntityStats(); // ima u sebi id
 	List<CostSumByProcurement> findCostSumGroupedByProcurement();
 	List<SupplyItemResponse> findByProcurementWithSupplyCostOver( BigDecimal minTotal);
-	List<SupplyItemResponse> findBySupplierWithMoreThanNItems( Long minCount);
+	List<SupplyItemResponse> findBySupplierWithMoreThanNItems( BigDecimal minCount);
 	List<CostSumByProcurement> findCostSumGroupedByProcurementWithMinTotal( BigDecimal minTotal);
 }

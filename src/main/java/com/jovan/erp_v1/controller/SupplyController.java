@@ -71,14 +71,6 @@ public class SupplyController {
 		return ResponseEntity.ok(responses);
 	}
 
-	@GetMapping("/supply/by-storageId")
-	public ResponseEntity<List<SupplyResponse>> getByStorage(@RequestParam("storageId") Long storageId) {
-		Storage storage = storageRepository.findById(storageId)
-				.orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " + storageId));
-		List<SupplyResponse> responses = supplyService.getByStorage(storage);
-		return ResponseEntity.ok(responses);
-	}
-
 	@GetMapping("/supply/by-goods-name")
 	public ResponseEntity<List<SupplyResponse>> getBySuppliesByGoodsName(@RequestParam("name") String name) {
 		List<SupplyResponse> responses = supplyService.getBySuppliesByGoodsName(name);

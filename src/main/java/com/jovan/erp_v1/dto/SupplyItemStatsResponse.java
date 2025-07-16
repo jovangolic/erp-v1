@@ -14,13 +14,15 @@ import lombok.NoArgsConstructor;
  */
 public class SupplyItemStatsResponse {
 
+	private Long procurementId;
 	private Long count;
     private BigDecimal sum;
     private BigDecimal avg;
     private BigDecimal min;
     private BigDecimal max;
 
-    public SupplyItemStatsResponse(Long count, BigDecimal sum, BigDecimal avg, BigDecimal min, BigDecimal max) {
+    public SupplyItemStatsResponse(Long procurementId, Long count, BigDecimal sum, BigDecimal avg, BigDecimal min, BigDecimal max) {
+    	this.procurementId = procurementId;
         this.count = count;
         this.sum = sum;
         this.avg = avg;
@@ -60,6 +62,14 @@ public class SupplyItemStatsResponse {
     public static SupplyItemStatsResponse ofMax(BigDecimal max) {
         return SupplyItemStatsResponse.builder()
                 .max(max)
+                .build();
+    }
+    
+    //Factory method for procurementId only
+    public static SupplyItemStatsResponse ofProcurIdAndCount(Long procurementId, Long count) {
+        return SupplyItemStatsResponse.builder()
+                .procurementId(procurementId)
+                .count(count)
                 .build();
     }
 }

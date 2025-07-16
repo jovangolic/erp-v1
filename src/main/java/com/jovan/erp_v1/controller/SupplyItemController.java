@@ -18,7 +18,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.dto.AvgCostByProcurementResponse;
+import com.jovan.erp_v1.dto.ProcurementGlobalStatsResponse;
+import com.jovan.erp_v1.dto.ProcurementStatsPerEntityResponse;
+import com.jovan.erp_v1.dto.SumCostGroupedByProcurementResponse;
+import com.jovan.erp_v1.dto.SupplierItemCountResponse;
+import com.jovan.erp_v1.dto.SupplyItemStatsResponse;
 import com.jovan.erp_v1.mapper.SupplyMapper;
+import com.jovan.erp_v1.request.CostSumByProcurement;
 import com.jovan.erp_v1.request.SupplyItemRequest;
 import com.jovan.erp_v1.response.SupplyItemResponse;
 import com.jovan.erp_v1.service.ISupplyItemService;
@@ -140,6 +147,190 @@ public class SupplyItemController {
 		List<SupplyItemResponse> responses = supplyItemService.getBySupplierNameAndProcurementDateAndMaxCost(supplierName, startDate, endDate, max);
 		return ResponseEntity.ok(responses);
 	}
+	
+	//nove metode
 		
+	@GetMapping("/search/supplier-name")
+	public ResponseEntity<List<SupplyItemResponse>> findBySupplier_NameContainingIgnoreCase(@RequestParam("supplierName") String supplierName){
+		List<SupplyItemResponse> responses = supplyItemService.findBySupplier_NameContainingIgnoreCase(supplierName);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/supplier-phone-number")
+	public ResponseEntity<List<SupplyItemResponse>> findBySupplier_PhoneNumberLikeIgnoreCase(@RequestParam("phoneNumber") String phoneNumber){
+		List<SupplyItemResponse> responses = supplyItemService.findBySupplier_PhoneNumberLikeIgnoreCase(phoneNumber);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/supplier-email")
+	public ResponseEntity<List<SupplyItemResponse>> findBySupplier_EmailLikeIgnoreCase(@RequestParam("email") String email){
+		List<SupplyItemResponse> responses = supplyItemService.findBySupplier_EmailLikeIgnoreCase(email);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/supplier-address")
+	public ResponseEntity<List<SupplyItemResponse>> findBySupplier_Address(@RequestParam("address") String address){
+		List<SupplyItemResponse> responses = supplyItemService.findBySupplier_Address(address);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/supplier-name-cost-range")
+	public ResponseEntity<List<SupplyItemResponse>> findBySupplierNameContainingAndCostBetween(@RequestParam("supplierName") String supplierName,
+			@RequestParam("minCost") BigDecimal minCost,@RequestParam("maxCost") BigDecimal maxCost){
+		List<SupplyItemResponse> responses = supplyItemService.findBySupplierNameContainingAndCostBetween(supplierName, minCost, maxCost);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/supplier-name-procurement-date-range")
+	public ResponseEntity<List<SupplyItemResponse>> findBySupplierNameAndProcurementDateBetween(@RequestParam("supplierName") String supplierName,
+			@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+			@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end){
+		List<SupplyItemResponse> responses = supplyItemService.findBySupplierNameAndProcurementDateBetween(supplierName, start, end);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/address-min-cost")
+	public ResponseEntity<List<SupplyItemResponse>> findByAddressAndMinCost(@RequestParam("address") String address,@RequestParam("minCost") BigDecimal minCost){
+		List<SupplyItemResponse> responses = supplyItemService.findByAddressAndMinCost(address, minCost);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/phone-number-cost")
+	public ResponseEntity<List<SupplyItemResponse>> findByPhoneNumberAndCost(@RequestParam("phoneNumber") String phoneNumber,@RequestParam("cost") BigDecimal cost){
+		List<SupplyItemResponse> responses = supplyItemService.findByPhoneNumberAndCost(phoneNumber, cost);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/procurement-supply-item-count")
+	public ResponseEntity<List<SupplyItemResponse>> findByProcurementSupplyItemCount(@RequestParam("count") Integer count){
+		List<SupplyItemResponse> responses = supplyItemService.findByProcurementSupplyItemCount(count);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/by-cost")
+	public ResponseEntity<List<SupplyItemResponse>> findByCost(@RequestParam("cost") BigDecimal cost){
+		List<SupplyItemResponse> responses = supplyItemService.findByCost(cost);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/cost-greater-than")
+	public ResponseEntity<List<SupplyItemResponse>> findByCostGreaterThan(@RequestParam("cost") BigDecimal cost){
+		List<SupplyItemResponse> responses = supplyItemService.findByCostGreaterThan(cost);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/cost-less-than")
+	public ResponseEntity<List<SupplyItemResponse>> findByCostLessThan(@RequestParam("cost") BigDecimal cost){
+		List<SupplyItemResponse> responses = supplyItemService.findByCostLessThan(cost);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/procurement/total-cost-greater-than")
+	public ResponseEntity<List<SupplyItemResponse>> findByProcurementTotalCostGreaterThan(@RequestParam("minCost") BigDecimal minCost){
+		List<SupplyItemResponse> responses = supplyItemService.findByProcurementTotalCostGreaterThan(minCost);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/procurement-date")
+	public ResponseEntity<List<SupplyItemResponse>> findByProcurementDate(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date){
+		List<SupplyItemResponse> responses = supplyItemService.findByProcurementDate(date);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/supply-sales-count-mismatch")
+	public ResponseEntity<List<SupplyItemResponse>> findBySupplyAndSalesCountMismatch(){
+		List<SupplyItemResponse> responses = supplyItemService.findBySupplyAndSalesCountMismatch();
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/procurement-with-supply-cost-over")
+	public ResponseEntity<List<SupplyItemResponse>> findByProcurementWithSupplyCostOver(@RequestParam("minCount") BigDecimal minTotal){
+		List<SupplyItemResponse> responses = supplyItemService.findByProcurementWithSupplyCostOver(minTotal);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/supplier-wuth-more-than-n-times")
+	public ResponseEntity<List<SupplyItemResponse>> findBySupplierWithMoreThanNItems(@RequestParam("minCount") BigDecimal minCount){
+		List<SupplyItemResponse> responses = supplyItemService.findBySupplierWithMoreThanNItems(minCount);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/sum-cost-group-by-procurement")
+	public ResponseEntity<List<SumCostGroupedByProcurementResponse>> sumCostGroupedByProcurement(){
+		List<SumCostGroupedByProcurementResponse> responses = supplyItemService.sumCostGroupedByProcurement();
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/count-by-supplier")
+	public ResponseEntity<List<SupplierItemCountResponse>> countBySupplier(){
+		List<SupplierItemCountResponse> responses = supplyItemService.countBySupplier();
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/avg-cost-by-procurement")
+	public ResponseEntity<List<AvgCostByProcurementResponse>> avgCostByProcurement(){
+		List<AvgCostByProcurementResponse> responses = supplyItemService.avgCostByProcurement();
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/procurement-per-entity-stats")
+	public ResponseEntity<List<ProcurementStatsPerEntityResponse>> procurementPerEntityStats(){
+		List<ProcurementStatsPerEntityResponse> responses = supplyItemService.procurementPerEntityStats();
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/cost-sum-grouped-by-procurement")
+	public ResponseEntity<List<CostSumByProcurement>> findCostSumGroupedByProcurement(){
+		List<CostSumByProcurement> responses = supplyItemService.findCostSumGroupedByProcurement();
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/cost-sum-by-procurement-with-min-total")
+	public ResponseEntity<List<CostSumByProcurement>> findCostSumGroupedByProcurementWithMinTotal(@RequestParam("minTotal") BigDecimal minTotal){
+		List<CostSumByProcurement> responses = supplyItemService.findCostSumGroupedByProcurementWithMinTotal(minTotal);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/procurement-stats")
+	public ResponseEntity<ProcurementGlobalStatsResponse> procurementStats(){
+		ProcurementGlobalStatsResponse responses = supplyItemService.procurementStats();
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/count-all-supply-items")
+	public ResponseEntity<SupplyItemStatsResponse> countAllSupplyItems(){
+		SupplyItemStatsResponse responses = supplyItemService.countAllSupplyItems();
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/count-by-procurement/{procurementId}")
+	public ResponseEntity<SupplyItemStatsResponse> countByProcurementId(@PathVariable Long procurementId){
+		SupplyItemStatsResponse responses = supplyItemService.countByProcurementId(procurementId);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/sum-all-costs")
+	public ResponseEntity<SupplyItemStatsResponse> sumAllCosts(){
+		SupplyItemStatsResponse responses = supplyItemService.sumAllCosts();
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/average-cost")
+	public ResponseEntity<SupplyItemStatsResponse> averageCost(){
+		SupplyItemStatsResponse responses = supplyItemService.averageCost();
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/min-cost")
+	public ResponseEntity<SupplyItemStatsResponse> minCost(){
+		SupplyItemStatsResponse responses = supplyItemService.minCost();
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/max-cost")
+	public ResponseEntity<SupplyItemStatsResponse> maxCost(){
+		SupplyItemStatsResponse responses = supplyItemService.maxCost();
+		return ResponseEntity.ok(responses);
+	}
 }
 
