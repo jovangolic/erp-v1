@@ -35,7 +35,7 @@ public class SupplyService implements ISupplyService {
 	@Transactional
 	@Override
 	public SupplyResponse createSupply(SupplyRequest request) {
-		Supply supply = supplyMapper.toEntity(request);
+		Supply supply = supplyMapper.toEntity(request,null,null);
 		Storage storage = storageRepository.findById(request.storageId())
 				.orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " + request.storageId()));
 		supply.setStorage(storage);
@@ -61,7 +61,6 @@ public class SupplyService implements ISupplyService {
 				.orElseThrow(() -> new SupplyNotFoundException("Supply not found with id: " + id));
 		existing.setQuantity(request.quantity());
 		existing.setUpdates(request.updates());
-
 		Storage storage = storageRepository.findById(request.storageId())
 				.orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " + request.storageId()));
 		existing.setStorage(storage);
@@ -70,7 +69,6 @@ public class SupplyService implements ISupplyService {
 			throw new GoodsNotFoundException("Some Goods not found by given IDs.");
 		}
 		existing.setGoods(goodsList);
-
 		Supply updated = supplyRepository.save(existing);
 		return supplyMapper.toResponse(updated);
 	}

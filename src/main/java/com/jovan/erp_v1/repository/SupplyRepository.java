@@ -44,7 +44,12 @@ public interface SupplyRepository extends JpaRepository<Supply, Long> {
     List<Supply> findByStorage_Type_AndCapacity(StorageType type, BigDecimal capacity);
     List<Supply> findByStorage_Type_AndCapacityGreaterThan(StorageType type, BigDecimal capacity);
     List<Supply> findByStorage_Type_AndCapacityLessThan(StorageType type, BigDecimal capacity);
-    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.type = 'PRODUCTION'")
+    List<Supply> findByStorage_Type_AndStatus(StorageType type, StorageStatus status);
+    List<Supply> findByStorage_Type_AndLocation(StorageType type, String location);
+    List<Supply> findByStorage_Location_AndCapacity(String location, BigDecimal capacity);
+    List<Supply> findByStorage_Location_AndCapacityGreaterThan(String location, BigDecimal capacity);
+    List<Supply> findByStorage_Location_AndCapacityLessThan(String location, BigDecimal capacity);
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.type = 'PRODUCTION'")
     List<Supply> findProductionStorage();
     @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.type = 'DISTRIBUTION'")
     List<Supply> findDistributionStorage();
@@ -56,6 +61,18 @@ public interface SupplyRepository extends JpaRepository<Supply, Long> {
     List<Supply> findInterimStorage();
     @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.type = 'AVAILABLE'")
     List<Supply> findAvailableStorage();
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status =  'ACTIVE'")
+    List<Supply> findActiveStorage();
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status =  'UNDER_MAINTENANCE'")
+    List<Supply> findUnderMaintenanceStorage();
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status =  'DECOMMISSIONED'")
+    List<Supply> findDecommissionedStorage();
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status =  'RESERVED'")
+    List<Supply> findReservedStorage();
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status =  'TEMPORARY'")
+    List<Supply> findTemporaryStorage();
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status =  'FULL'")
+    List<Supply> findFullStorage();
     
     //boolean
     boolean existsByStorage_Id(Long storageId);
@@ -82,4 +99,21 @@ public interface SupplyRepository extends JpaRepository<Supply, Long> {
     boolean existsInterimStorage();
     @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.type = 'AVAILABLE'")
     boolean existsAvailableStorages();
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status =  'ACTIVE'")
+    boolean existsActiveStorage();
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status =  'UNDER_MAINTENANCE'")
+    boolean existsUnderMaintenanceStorage();
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status =  'DECOMMISSIONED'")
+    boolean existsDecommissionedStorage();
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status =  'RESERVED'")
+    boolean existsReservedStorage();
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status =  'TEMPORARY'")
+    boolean existsTemporaryStorage();
+    @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status =  'FULL'")
+    boolean existsFullStorage();
+    boolean existsByStorage_Type_AndStatus(StorageType type, StorageStatus status);
+    boolean existsByStorage_Type_AndLocation(StorageType type, String location);
+    boolean existsByStorage_Location_AndCapacity(String location, BigDecimal capacity);
+    boolean existsByStorage_Location_AndCapacityGreaterThan(String location, BigDecimal capacity);
+    boolean existsByStorage_Location_AndCapacityLessThan(String location, BigDecimal capacity);
 }
