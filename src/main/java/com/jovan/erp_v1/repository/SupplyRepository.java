@@ -44,7 +44,7 @@ public interface SupplyRepository extends JpaRepository<Supply, Long> {
     //nove metode
     List<Supply> findByUpdatesBetween(LocalDateTime start, LocalDateTime end);
     List<Supply> findByStorage_NameContainingIgnoreCase(String name);
-    List<Supply> findByStorage_LocationContainingIgnoreCase(String locatin);
+    List<Supply> findByStorage_LocationContainingIgnoreCase(String location);
     List<Supply> findByStorage_Capacity(BigDecimal capacity);
     List<Supply> findByStorage_CapacityGreaterThan(BigDecimal capacity);
     List<Supply> findByStorage_CapacityLessThan(BigDecimal capacity);
@@ -129,7 +129,8 @@ public interface SupplyRepository extends JpaRepository<Supply, Long> {
     List<Supply> findFullStorage();
     
     //boolean
-    boolean existsByStorage_Id(Long storageId);
+    // Zakomentarisane metode provere postojanja entiteta u slucaju da zatrebaju u buducnosti.
+    /*boolean existsByStorage_Id(Long storageId);
     boolean existsByUpdatesBetween(LocalDateTime start, LocalDateTime end);
     boolean existsByStorage_Capacity(BigDecimal capacity);
     boolean existsByStorage_CapacityGreaterThan(BigDecimal capacity);
@@ -139,5 +140,5 @@ public interface SupplyRepository extends JpaRepository<Supply, Long> {
     @Query("SELECT COUNT(s) > 0 FROM Supply s WHERE s.storage.status = :status")
     boolean existsByStorageStatus(@Param("status") StorageStatus status);
     boolean existsByStorage_CapacityBetween(BigDecimal min, BigDecimal max);
-    boolean existsByStorage_IdAndGoodsIsNotEmpty(Long storageId);
+    boolean existsByStorage_IdAndGoodsIsNotEmpty(Long storageId);*/
 }

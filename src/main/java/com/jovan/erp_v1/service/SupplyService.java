@@ -2,15 +2,24 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.jovan.erp_v1.dto.StorageGoodsCountDTO;
+import com.jovan.erp_v1.dto.StorageIncomingMovementCountDTO;
+import com.jovan.erp_v1.dto.StorageIncomingTransferCountDTO;
+import com.jovan.erp_v1.dto.StorageMaterialCountDTO;
+import com.jovan.erp_v1.dto.StorageOutgoingMovementCountDTO;
+import com.jovan.erp_v1.dto.StorageOutgoingTransferCountDTO;
+import com.jovan.erp_v1.dto.StorageShelfCountDTO;
+import com.jovan.erp_v1.dto.StorageShipmentCountDTO;
+import com.jovan.erp_v1.dto.StorageWorkCenterCountDTO;
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
-import com.jovan.erp_v1.exception.GoodsNotFoundException;
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.StorageNotFoundException;
 import com.jovan.erp_v1.exception.SupplyNotFoundException;
@@ -157,158 +166,343 @@ public class SupplyService implements ISupplyService {
 
 	@Override
 	public List<SupplyResponse> findByUpdatesBetween(LocalDateTime start, LocalDateTime end) {
-		// TODO Auto-generated method stub
-		return null;
+		DateValidator.validateRange(start, end);
+		List<Supply> items = supplyRepository.findByUpdatesBetween(start, end);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("Storage with given updates date between %s and %s is not found",
+					start.format(formatter),end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_NameContainingIgnoreCase(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(name);
+		List<Supply> items = supplyRepository.findByStorage_NameContainingIgnoreCase(name);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with given name %s is not found", name);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
-	public List<SupplyResponse> findByStorage_LocationContainingIgnoreCase(String locatin) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<SupplyResponse> findByStorage_LocationContainingIgnoreCase(String location) {
+		validateString(location);
+		List<Supply> items = supplyRepository.findByStorage_LocationContainingIgnoreCase(location);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with given location %s uis not found", location);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_Capacity(BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(capacity);
+		List<Supply> items = supplyRepository.findByStorage_Capacity(capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with given capacity %s is not found", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_CapacityGreaterThan(BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(capacity);;
+		List<Supply> items = supplyRepository.findByStorage_CapacityGreaterThan(capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with capacity greater than %s is not found", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_CapacityLessThan(BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimalNonNegative(capacity);
+		List<Supply> items = supplyRepository.findByStorage_CapacityLessThan(capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with capacity less than %s is not found", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_Type(StorageType type) {
-		// TODO Auto-generated method stub
-		return null;
+		validateStorageType(type);
+		List<Supply> items = supplyRepository.findByStorage_Type(type);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with given type %s is not found",
+					type);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_Status(StorageStatus status) {
-		// TODO Auto-generated method stub
-		return null;
+		validateStorageStatus(status);
+		List<Supply> items = supplyRepository.findByStorage_Status(status);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with given status %s is not found", status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_Type_AndCapacity(StorageType type, BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateStorageType(type);
+		validateBigDecimal(capacity);
+		List<Supply> items = supplyRepository.findByStorageTypeAndCapacity(type, capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with given type %s and capacity %s is not found",
+					type,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_Type_AndCapacityGreaterThan(StorageType type, BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateStorageType(type);
+		validateBigDecimal(capacity);
+		List<Supply> items = supplyRepository.findByStorageTypeAndCapacityGreaterThan(type, capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with given type %s and capacity greater than %s is not found",
+					type,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_Type_AndCapacityLessThan(StorageType type, BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateStorageType(type);
+		validateBigDecimalNonNegative(capacity);
+		List<Supply> items = supplyRepository.findByStorageTypeAndCapacityLessThan(type, capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with given type %s and capacity less than %s is not found",
+					type,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_Type_AndStatus(StorageType type, StorageStatus status) {
-		// TODO Auto-generated method stub
-		return null;
+		validateStorageType(type);
+		validateStorageStatus(status);
+		List<Supply> items = supplyRepository.findByStorageTypeAndStatus(type, status);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with given type % and status %s is not found",
+					type,status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_Type_AndLocation(StorageType type, String location) {
-		// TODO Auto-generated method stub
-		return null;
+		validateStorageType(type);
+		validateString(location);
+		List<Supply> items = supplyRepository.findByStorageTypeAndLocation(type, location);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with type %s and location %s is not found",
+					type,location);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_Location_AndCapacity(String location, BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(location);
+		validateBigDecimal(capacity);
+		List<Supply> items = supplyRepository.findByStorageLocationAndCapacity(location, capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with location %s and capacity % is not found",
+					location,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_Location_AndCapacityGreaterThan(String location, BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(location);
+		validateBigDecimal(capacity);
+		List<Supply> items = supplyRepository.findByStorageLocationAndCapacityGreaterThan(location, capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with location %s and capacity greater than %s is not found",
+					location,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_Location_AndCapacityLessThan(String location, BigDecimal capacity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateString(location);
+		validateBigDecimalNonNegative(capacity);
+		List<Supply> items = supplyRepository.findByStorageLocationAndCapacityLessThan(location, capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with location %s and capacity less than %s is not found",
+					location,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SupplyResponse> findByStorage_CapacityBetween(BigDecimal min, BigDecimal max) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimalNonNegative(min);
+		validateBigDecimal(max);
+		List<Supply> items = supplyRepository.findByStorage_CapacityBetween(min, max);
+		if(items.isEmpty()) {
+			String msg = String.format("Storage with capacity between %s and %s is not found",
+					min,max);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(supplyMapper::toResponse)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageGoodsCountResponse> countGoodsPerStorage() {
-		// TODO Auto-generated method stub
-		return null;
+		List<StorageGoodsCountDTO> items = supplyRepository.countGoodsPerStorage();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Count for goods per storage is not found");
+		}
+		return items.stream()
+				.map(StorageGoodsCountResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageShelfCountResponse> countShelvesPerStorage() {
-		// TODO Auto-generated method stub
-		return null;
+		List<StorageShelfCountDTO> items = supplyRepository.countShelvesPerStorage();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Count for shelves per storage is not found");
+		}
+		return items.stream()
+				.map(StorageShelfCountResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageShipmentCountResponse> countOutgoingShipmentsPerStorage() {
-		// TODO Auto-generated method stub
-		return null;
+		List<StorageShipmentCountDTO> items = supplyRepository.countOutgoingShipmentsPerStorage();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Count for outgoing shipments per storage is not found");
+		}
+		return items.stream()
+				.map(StorageShipmentCountResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageOutgoingTransferCountResponse> countOutgoingTransfersPerStorage() {
-		// TODO Auto-generated method stub
-		return null;
+		List<StorageOutgoingTransferCountDTO> items = supplyRepository.countOutgoingTransfersPerStorage();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Count for outgoing transfers per storage is not found");
+		}
+		return items.stream()
+				.map(StorageOutgoingTransferCountResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageIncomingTransferCountResponse> countIncomingTransfersPerStorage() {
-		// TODO Auto-generated method stub
-		return null;
+		List<StorageIncomingTransferCountDTO> items = supplyRepository.countIncomingTransfersPerStorage();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Count for incoming transfers per storage is not found");
+		}
+		return items.stream()
+				.map(StorageIncomingTransferCountResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageMaterialCountResponse> countMaterialsPerStorage() {
-		// TODO Auto-generated method stub
-		return null;
+		List<StorageMaterialCountDTO> items = supplyRepository.countMaterialsPerStorage();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Count for materials per storage is not found");
+		}
+		return items.stream()
+				.map(StorageMaterialCountResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageOutgoingMovementCountResponse> countOutgoingMaterialMovementsPerStorage() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		List<StorageOutgoingMovementCountDTO> items = supplyRepository.countOutgoingMaterialMovementsPerStorage();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Count for outgoing material movements per storage is not found");
+		}
+		return items.stream()
+				.map(StorageOutgoingMovementCountResponse::new)
+				.collect(Collectors.toList());
+		}
 
 	@Override
 	public List<StorageIncomingMovementCountResponse> countIncomingMaterialMovementsPerStorage() {
-		// TODO Auto-generated method stub
-		return null;
+		List<StorageIncomingMovementCountDTO> items = supplyRepository.countIncomingMaterialMovementsPerStorage();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Count for incoming material movements per storage is not found");
+		}
+		return items.stream()
+				.map(StorageIncomingMovementCountResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StorageWorkCenterCountResponse> countWorkCentersPerStorage() {
-		// TODO Auto-generated method stub
-		return null;
+		List<StorageWorkCenterCountDTO> items = supplyRepository.countWorkCentersPerStorage();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Count for work-centers per storage is not found");
+		}
+		return items.stream()
+				.map(StorageWorkCenterCountResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -566,6 +760,18 @@ public class SupplyService implements ISupplyService {
 		return items.stream()
 				.map(supplyMapper::toResponse)
 				.collect(Collectors.toList());
+	}
+	
+	private void validateStorageType(StorageType type) {
+		if(type == null) {
+			throw new ValidationException("StorageType type must not be null");
+		}
+	}
+	
+	private void validateStorageStatus(StorageStatus status) {
+		if(status == null) {
+			throw new ValidationException("StorageStatus status must not be null");
+		}
 	}
 	
 	private void validateBigDecimal(BigDecimal num) {

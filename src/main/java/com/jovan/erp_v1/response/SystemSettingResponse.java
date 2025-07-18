@@ -3,6 +3,7 @@ package com.jovan.erp_v1.response;
 import java.time.LocalDateTime;
 
 import com.jovan.erp_v1.enumeration.SettingDataType;
+import com.jovan.erp_v1.enumeration.SystemSettingCategory;
 import com.jovan.erp_v1.model.SystemSetting;
 
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ public class SystemSettingResponse {
     private String settingKey;
     private String value;
     private String description;
-    private String category;
+    private SystemSettingCategory category;
     private SettingDataType dataType;
     private Boolean editable;
     private Boolean isVisible;

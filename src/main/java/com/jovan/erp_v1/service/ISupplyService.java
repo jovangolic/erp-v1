@@ -33,7 +33,7 @@ public interface ISupplyService {
 	//nove metode
 	List<SupplyResponse> findByUpdatesBetween(LocalDateTime start, LocalDateTime end);
     List<SupplyResponse> findByStorage_NameContainingIgnoreCase(String name);
-    List<SupplyResponse> findByStorage_LocationContainingIgnoreCase(String locatin);
+    List<SupplyResponse> findByStorage_LocationContainingIgnoreCase(String location);
     List<SupplyResponse> findByStorage_Capacity(BigDecimal capacity);
     List<SupplyResponse> findByStorage_CapacityGreaterThan(BigDecimal capacity);
     List<SupplyResponse> findByStorage_CapacityLessThan(BigDecimal capacity);
