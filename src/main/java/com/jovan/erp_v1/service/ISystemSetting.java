@@ -12,7 +12,6 @@ import com.jovan.erp_v1.response.SystemSettingResponse;
 public interface ISystemSetting {
 
     List<SystemSettingResponse> getAll();
-    List<SystemSettingResponse> getByCategory(String category);
     SystemSettingResponse getByKey(String key);
     SystemSettingResponse create(SystemSettingCreateRequest request);
     SystemSettingResponse update(SystemSettingUpdateRequest request);
@@ -21,7 +20,7 @@ public interface ISystemSetting {
     
     //nove metode
     List<SystemSettingResponse> findByDataType(SettingDataType dataType);
-    List<SystemSettingResponse> findByValueAndCategory(String value, String category);
+    List<SystemSettingResponse> findByValueAndCategory(String value, SystemSettingCategory category);
     List<SystemSettingResponse> findString();
     List<SystemSettingResponse> findInteger();
     List<SystemSettingResponse> findBoolean();
@@ -29,9 +28,8 @@ public interface ISystemSetting {
     List<SystemSettingResponse> findDate();
     List<SystemSettingResponse> findTime();
     List<SystemSettingResponse> findDateTime();
-    List<SystemSettingResponse> findByDateTypeAndValue(SettingDataType dateType, String value);
-    List<SystemSettingResponse> findByCategoryAndDataType(String category, SettingDataType dataType);
-    List<SystemSettingResponse> findByCategoryAndIsVisibleTrue();
+    List<SystemSettingResponse> findByDataTypeAndValue(SettingDataType dateType, String value);
+    List<SystemSettingResponse> findByCategoryAndIsVisibleTrue(SystemSettingCategory category);
     List<SystemSettingResponse> findByEditableTrueAndIsVisibleTrue();
     List<SystemSettingResponse> findBySettingKeyContainingIgnoreCase(String keyword);
     List<SystemSettingResponse> findBySettingKeyStartingWith(String prefix);
@@ -40,7 +38,7 @@ public interface ISystemSetting {
     List<SystemSettingResponse> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
     List<SystemSettingResponse> findByUpdatedAtAfter(LocalDateTime time);
     List<SystemSettingResponse> findByUpdatedAtBefore(LocalDateTime time);
-    List<SystemSettingResponse> findAllByCategoryOrderBySettingKeyAsc(String category);
+    List<SystemSettingResponse> findAllByCategoryOrderBySettingKeyAsc(SystemSettingCategory category);
     List<SystemSettingResponse> findAllByDataTypeOrderByUpdatedAtDesc(SettingDataType dataType);
     List<SystemSettingResponse> findByDataTypeIn(List<SettingDataType> types);
     List<SystemSettingResponse> findByDataTypeCustom( SettingDataType type);

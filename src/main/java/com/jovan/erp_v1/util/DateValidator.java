@@ -50,6 +50,15 @@ public class DateValidator {
         }
     }
     
+    public static void validateNotInPast(LocalDate dateTime, String fieldName) {
+    	if (dateTime == null) {
+            throw new IllegalArgumentException(fieldName + " ne sme biti prazan.");
+        }
+        if (dateTime.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException(fieldName + " ne sme biti u prošlosti.");
+        }
+    }
+    
     public static void validateNotNull(LocalDateTime dateTime, String fieldName) {
         if (dateTime == null) {
             throw new IllegalArgumentException(fieldName + " ne sme biti prazan.");
@@ -80,6 +89,15 @@ public class DateValidator {
         }
         if (dateTime.isAfter(LocalDateTime.now())) {
             throw new IllegalArgumentException(fieldName + " ne sme biti u budućnosti.");
+        }
+    }
+    
+    public static void validateNotInPast(LocalDateTime dateTime, String fieldName) {
+    	if (dateTime == null) {
+            throw new IllegalArgumentException(fieldName + " ne sme biti prazan.");
+        }
+        if (dateTime.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException(fieldName + " ne sme biti u prošlosti.");
         }
     }
 

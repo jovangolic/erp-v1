@@ -19,46 +19,45 @@ public interface SystemSettingRepository extends JpaRepository<SystemSetting, Lo
     Optional<SystemSetting> findBySettingKey(String settingKey);
     Optional<SystemSetting> findByValue(String value);
     boolean existsBySettingKey(String settingKey);
-    List<SystemSetting> findAllByCategory(String category);
     
     //nove metode
     List<SystemSetting> findByDataType(SettingDataType dataType);
-    List<SystemSetting> findByValueAndCategory(String value, String category);
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'STRING")
+    List<SystemSetting> findByValueAndCategory(String value, SystemSettingCategory category);
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'STRING' ")
     List<SystemSetting> findString();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'INTEGER")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'INTEGER' ")
     List<SystemSetting> findInteger();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'BOOLEAN")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'BOOLEAN' ")
     List<SystemSetting> findBoolean();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'DOUBLE")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'DOUBLE' ")
     List<SystemSetting> findDouble();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'DATE")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'DATE'")
     List<SystemSetting> findDate();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'TIME")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'TIME' ")
     List<SystemSetting> findTime();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'DATETIME")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'DATETIME' ")
     List<SystemSetting> findDateTime();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'GENERAL")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'GENERAL' ")
     List<SystemSetting> findGeneral();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'SECURITY")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'SECURITY' ")
     List<SystemSetting> findSecurity();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'NOTIFICATIONS")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'NOTIFICATIONS' ")
     List<SystemSetting> findNotifications();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'UI")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'UI' ")
     List<SystemSetting> findUi();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'PERFORMANCE")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'PERFORMANCE' ")
     List<SystemSetting> findPerformance();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'EMAIL")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'EMAIL' ")
     List<SystemSetting> findEmail();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'INTEGRATIONS")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'INTEGRATIONS' ")
     List<SystemSetting> findIntegrations();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'FEATURE_FLAGS")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'FEATURE_FLAGS' ")
     List<SystemSetting> findFeatureFlags();
-    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :'USER_MANAGEMENT")
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = 'USER_MANAGEMENT' ")
     List<SystemSetting> findUserManagement();
-    List<SystemSetting> findByDateTypeAndValue(SettingDataType dateType, String value);
-    List<SystemSetting> findByCategoryAndDataType(String category, SettingDataType dataType);
-    List<SystemSetting> findByCategoryAndIsVisibleTrue();
+    List<SystemSetting> findByDataTypeAndValue(SettingDataType dateType, String value);
+    @Query("SELECT ss FROM SystemSetting ss WHERE ss.category = :category AND ss.isVisible IS TRUE")
+    List<SystemSetting> findByCategoryAndIsVisibleTrue(@Param("category") SystemSettingCategory category);
     List<SystemSetting> findByEditableTrueAndIsVisibleTrue();
     List<SystemSetting> findBySettingKeyContainingIgnoreCase(String keyword);
     List<SystemSetting> findBySettingKeyStartingWith(String prefix);
@@ -67,7 +66,7 @@ public interface SystemSettingRepository extends JpaRepository<SystemSetting, Lo
     List<SystemSetting> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
     List<SystemSetting> findByUpdatedAtAfter(LocalDateTime time);
     List<SystemSetting> findByUpdatedAtBefore(LocalDateTime time);
-    List<SystemSetting> findAllByCategoryOrderBySettingKeyAsc(String category);
+    List<SystemSetting> findAllByCategoryOrderBySettingKeyAsc(SystemSettingCategory category);
     List<SystemSetting> findAllByDataTypeOrderByUpdatedAtDesc(SettingDataType dataType);
     List<SystemSetting> findByDataTypeIn(List<SettingDataType> types);
     @Query("SELECT ss FROM SystemSetting ss WHERE ss.dataType = :type")
