@@ -26,11 +26,11 @@ public class SystemState {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private boolean maintenanceMode; // Da li je sistem u režimu održavanja
+    @Column(nullable = false)
+    private Boolean maintenanceMode; // Da li je sistem u režimu održavanja
 
-    @Column
-    private boolean registrationEnabled; // Da li je omogućena registracija korisnika
+    @Column(nullable = false)
+    private Boolean registrationEnabled; // Da li je omogućena registracija korisnika
 
     @Column
     private LocalDateTime lastRestartTime; // Kada je poslednji put sistem restartovan
@@ -44,6 +44,8 @@ public class SystemState {
 
     @PrePersist
     public void onCreate() {
+    	if(this.maintenanceMode == null)this.maintenanceMode = false;
+    	if(this.registrationEnabled == null) this.registrationEnabled = false;
         this.lastRestartTime = LocalDateTime.now();
     }
 }

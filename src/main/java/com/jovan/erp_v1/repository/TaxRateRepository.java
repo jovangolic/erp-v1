@@ -16,24 +16,15 @@ import java.time.LocalDate;
 public interface TaxRateRepository extends JpaRepository<TaxRate, Long> {
 
     List<TaxRate> findByType(TaxType type);
-
     List<TaxRate> findByTaxName(String taxName);
-
     List<TaxRate> findByPercentage(BigDecimal percentage);
-
     List<TaxRate> findByTaxNameAndPercentage(String taxName, BigDecimal percentage);
-
     List<TaxRate> findByStartDateBeforeAndEndDateAfter(LocalDate date1, LocalDate date2);
-
     List<TaxRate> findByStartDateLessThanEqualAndEndDateGreaterThanEqual(LocalDate date1, LocalDate date2);
-
     @Query("SELECT t FROM TaxRate t WHERE t.startDate <= :end AND t.endDate >= :start")
     List<TaxRate> findOverlapping(@Param("start") LocalDate start, @Param("end") LocalDate end);
-
     List<TaxRate> findByStartDate(LocalDate startDate);
-
     List<TaxRate> findByEndDate(LocalDate endDate);
-
     @Query("SELECT t FROM TaxRate t WHERE t.type = :type AND :date BETWEEN t.startDate AND t.endDate")
     List<TaxRate> findActiveByType(@Param("type") TaxType type, @Param("date") LocalDate date);
 
@@ -75,4 +66,14 @@ public interface TaxRateRepository extends JpaRepository<TaxRate, Long> {
 
     List<TaxRate> findByTypeAndStartDateLessThanEqualAndEndDateGreaterThanEqual(TaxType type, LocalDate date1,
             LocalDate date2);
+    
+    //nove metode
+    @Query("SELECT t FROM TaxRate t WHERE t.type =  'VAT'")
+    List<TaxRate> findByVat();
+    @Query("SELECT t FROM TaxRate t WHERE t.type =  'INCOME_TAX'")
+    List<TaxRate> findByIncome_Tax();
+    @Query("SELECT t FROM TaxRate t WHERE t.type =  'SALES_TAX'")
+    List<TaxRate> findBySales_Tax();
+    @Query("SELECT t FROM TaxRate t WHERE t.type =  'CUSTOM'")
+    List<TaxRate> findByCustom();
 }

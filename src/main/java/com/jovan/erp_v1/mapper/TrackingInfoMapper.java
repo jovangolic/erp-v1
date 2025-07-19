@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,6 +81,9 @@ public class TrackingInfoMapper {
      * Kreira listu TrackingInfoResponse DTO-ova na osnovu liste entiteta.
      */
     public List<TrackingInfoResponse> toResponseList(List<TrackingInfo> infos) {
+    	if(infos == null || infos.isEmpty()) {
+    		return Collections.emptyList();
+    	}
         return infos.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());

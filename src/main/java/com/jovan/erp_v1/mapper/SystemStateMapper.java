@@ -12,8 +12,8 @@ public class SystemStateMapper {
     public SystemStateResponse toResponse(SystemState state) {
         SystemStateResponse response = new SystemStateResponse();
         response.setId(state.getId());
-        response.setMaintenanceMode(state.isMaintenanceMode());
-        response.setRegistrationEnabled(state.isRegistrationEnabled());
+        response.setMaintenanceMode(state.getMaintenanceMode());
+        response.setRegistrationEnabled(state.getRegistrationEnabled());
         response.setLastRestartTime(state.getLastRestartTime());
         response.setSystemVersion(state.getSystemVersion());
         response.setStatusMessage(state.getStatusMessage());

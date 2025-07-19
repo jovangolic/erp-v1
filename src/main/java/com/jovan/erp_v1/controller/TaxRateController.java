@@ -141,4 +141,30 @@ public class TaxRateController {
         List<TaxRateResponse> responses = taxRateService.findByTypeAndPeriod(type, startDate, endDate);
         return ResponseEntity.ok(responses);
     }
+    
+    //nove metode
+    
+    @GetMapping("/search/by-type-vat")
+    public ResponseEntity<List<TaxRateResponse>> findByVat(){
+    	List<TaxRateResponse> responses = taxRateService.findByVat();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/searh/by-type-income-tax")
+    public ResponseEntity<List<TaxRateResponse>> findByIncome_Tax(){
+    	List<TaxRateResponse> responses = taxRateService.findByIncome_Tax();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/by-type-sales-tax")
+    public ResponseEntity<List<TaxRateResponse>> findBySales_Tax(){
+    	List<TaxRateResponse> responses = taxRateService.findBySales_Tax();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/by-type-custom")
+    public ResponseEntity<List<TaxRateResponse>> findByCustom(){
+    	List<TaxRateResponse> responses = taxRateService.findByCustom();
+    	return ResponseEntity.ok(responses);
+    }
 }

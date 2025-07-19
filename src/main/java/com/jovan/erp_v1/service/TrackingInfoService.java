@@ -5,15 +5,19 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.ShipmentStatus;
+import com.jovan.erp_v1.enumeration.StorageStatus;
+import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.exception.ShipmentNotFoundException;
 import com.jovan.erp_v1.exception.TrackingInfoErrorException;
 import com.jovan.erp_v1.mapper.TrackingInfoMapper;
 import com.jovan.erp_v1.model.TrackingInfo;
 import com.jovan.erp_v1.repository.TrackingInfoRepository;
+import com.jovan.erp_v1.repository.specification.TrackingInfoSpecifications;
 import com.jovan.erp_v1.request.TrackingInfoRequest;
 import com.jovan.erp_v1.response.TrackingInfoResponse;
 
@@ -133,5 +137,19 @@ public class TrackingInfoService implements ITrackingInfoService {
         return trackingInfoRepository.findByUpdatedAtAfter(since).stream()
                 .map(TrackingInfoResponse::new)
                 .collect(Collectors.toList());
+    }
+    
+    public List<TrackingInfo> findByStorageTypeAndStatus(StorageType type, StorageStatus status) {
+        Specification<TrackingInfo> spec = Specification.where(TrackingInfoSpecifications.hasOriginStorageType(type))
+                                                        .and(TrackingInfoSpecifications.hasOriginStorageStatus(status));
+        return trackingInfoRepository.findAll(spec);
+    }
+    
+    public List<TrackingInfo> findByTypeAndStatus(StorageType type, StorageStatus status) {
+        List<TrackingInfo> byType = trackingInfoRepository.findByShipment_OriginStorage_Type(type);
+        List<TrackingInfo> byStatus = trackingInfoRepository.findByShipment_OriginStorage_Status(status);
+        return byType.stream()
+                     .filter(byStatus::contains)
+                     .collect(Collectors.toList());
     }
 }

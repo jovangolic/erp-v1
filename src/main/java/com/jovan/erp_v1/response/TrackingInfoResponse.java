@@ -30,7 +30,7 @@ public class TrackingInfoResponse {
         this.currentLocation = info.getCurrentLocation();
         this.estimatedDelivery = info.getEstimatedDelivery();
         this.currentStatus = info.getCurrentStatus();
-        this.shipment = new ShipmentResponse(info.getShipment());
+        this.shipment = info.getShipment() != null ? new ShipmentResponse(info.getShipment()) : null;
         this.createdAt = info.getCreatedAt();
         this.updatedAt = info.getUpdatedAt();
     }

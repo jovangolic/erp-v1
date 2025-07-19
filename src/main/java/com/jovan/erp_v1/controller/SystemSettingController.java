@@ -262,7 +262,7 @@ public class SystemSettingController {
     	return ResponseEntity.ok(responses);
     }
     
-    @GetMapping("/search/by-under-maintenance")
+    @GetMapping("/search/by-user-management")
     public ResponseEntity<List<SystemSettingResponse>> findUserManagement(){
     	List<SystemSettingResponse> responses = settings.findUserManagement();
     	return ResponseEntity.ok(responses);

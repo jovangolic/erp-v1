@@ -15,16 +15,16 @@ import lombok.NoArgsConstructor;
 public class SystemStateResponse {
 
     private Long id;
-    private boolean maintenanceMode;
-    private boolean registrationEnabled;
+    private Boolean maintenanceMode;
+    private Boolean registrationEnabled;
     private LocalDateTime lastRestartTime;
     private String systemVersion;
     private SystemStatus statusMessage;
 
     public SystemStateResponse(SystemState systemState) {
         this.id = systemState.getId();
-        this.maintenanceMode = systemState.isMaintenanceMode();
-        this.registrationEnabled = systemState.isRegistrationEnabled();
+        this.maintenanceMode = systemState.getMaintenanceMode();
+        this.registrationEnabled = systemState.getRegistrationEnabled();
         this.lastRestartTime = systemState.getLastRestartTime();
         this.systemVersion = systemState.getSystemVersion();
         this.statusMessage = systemState.getStatusMessage();
