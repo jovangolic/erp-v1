@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,7 +42,6 @@ public class UserMapper {
         } else {
             user.setRoles(new HashSet<>());
         }
-        // Ne mapiramo employeeInventories i foremanInventories ovde (ako treba, napravi posebne metode)
         return user;
 	}
 	
@@ -70,6 +70,9 @@ public class UserMapper {
 	}
 	
 	public List<UserResponse> toResponseList(List<User> users){
+		if(users == null || users.isEmpty()) {
+			return Collections.emptyList();
+		}
 		return users.stream()
 				.map(this::toResponse)
 				.collect(Collectors.toList());
@@ -91,6 +94,6 @@ public class UserMapper {
             Set<Role> roles = new HashSet<>(roleRepository.findAllById(request.roleIds()));
             user.setRoles(roles);
         }
-        // Ove inventure obično nećeš update-ovati kroz ovaj mapper, već posebnim servisom
+        
     }
 }

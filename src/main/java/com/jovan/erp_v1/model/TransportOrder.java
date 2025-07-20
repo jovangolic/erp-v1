@@ -11,6 +11,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
@@ -31,10 +32,12 @@ public class TransportOrder {
     private LocalDate scheduledDate;
 
     @ManyToOne
+    @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;
 
     @ManyToOne
-    private Driver driver; // misli se na jedninu da se ne bi sudaralo sa kljucnom recju Driver
+    @JoinColumn(name="driver_id")
+    private Driver driver; 
 
     @Enumerated(EnumType.STRING)
     private TransportStatus status;
