@@ -1,0 +1,40 @@
+package com.jovan.erp_v1.response;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
+import com.jovan.erp_v1.enumeration.TransactionType;
+import com.jovan.erp_v1.model.MaterialTransaction;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class MaterialTransactionForVendorResponse {
+
+	private Long id;
+    private MaterialResponse materialResponse;
+    private BigDecimal quantity;
+    private TransactionType type;
+    private LocalDate transactionDate;
+    private String documentReference;
+    private String notes;
+    private MaterialTransactionStatus status;
+    private UserResponse userResponse;
+    
+    public MaterialTransactionForVendorResponse(MaterialTransaction mt) {
+    	this.id = mt.getId();
+        this.materialResponse = mt.getMaterial() != null ? new MaterialResponse(mt.getMaterial()) : null;
+        this.quantity = mt.getQuantity();
+        this.type = mt.getType();
+        this.transactionDate = mt.getTransactionDate();
+        this.documentReference = mt.getDocumentReference();
+        this.notes = mt.getNotes();
+        this.status = mt.getStatus();
+        this.userResponse = mt.getCreatedByUser() != null ? new UserResponse(mt.getCreatedByUser()) : null;
+    }
+}
