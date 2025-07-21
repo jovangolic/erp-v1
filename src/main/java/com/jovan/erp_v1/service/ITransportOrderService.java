@@ -33,11 +33,11 @@ public interface ITransportOrderService {
     List<TransportOrderResponse> findByCompleted();
     List<TransportOrderResponse> findByFailed();
     List<TransportOrderResponse> findByVehicle_Status(VehicleStatus status);
-    List<TransportOrderResponse> findByVehice_Available();
-    List<TransportOrderResponse> findByVehice_In_Use();
-    List<TransportOrderResponse> findByVehice_Under_Maintenance();
-    List<TransportOrderResponse> findByVehice_Out_Of_Service();
-    List<TransportOrderResponse> findByVehice_Reserved();
+    List<TransportOrderResponse> findByVehicle_Available();
+    List<TransportOrderResponse> findByVehicle_In_Use();
+    List<TransportOrderResponse> findByVehicle_Under_Maintenance();
+    List<TransportOrderResponse> findByVehicle_Out_Of_Service();
+    List<TransportOrderResponse> findByVehicle_Reserved();
     List<TransportOrderResponse> findByVehicleAndDriver( String vehicleModel, String driverName);
     List<TransportOrderResponse> findByOutboundDelivery_Pending();
     List<TransportOrderResponse> findByOutboundDelivery_In_Transit();
@@ -56,7 +56,7 @@ public interface ITransportOrderService {
     List<TransportOrderResponse> findByOutboundDelivery_DeliveryDateAfter(LocalDate deliveryAfter);
     List<TransportOrderResponse> findByOutboundDelivery_DeliveryDateBefore(LocalDate deliveryBefore);
     TransportOrderResponse findByVehicle_RegistrationNumber(String registrationNumber);
-    Boolean existsByVehice_RegistrationNumber(String registrationNumber);
+    Boolean existsByVehicle_RegistrationNumber(String registrationNumber);
     List<TransportOrderResponse> findByStatus_AndVehicle_Status( TransportStatus transportStatus, VehicleStatus vehicleStatus);
     List<TransportOrderResponse> findByStatusIn(List<TransportStatus> statuses);
     List<TransportOrderResponse> findByVehicle_StatusIn(List<VehicleStatus> statuses);

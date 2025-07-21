@@ -1,12 +1,15 @@
 package com.jovan.erp_v1.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.VehicleStatus;
+import com.jovan.erp_v1.exception.NoDataFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.exception.VehicleErrorException;
 import com.jovan.erp_v1.mapper.VehicleMapper;
 import com.jovan.erp_v1.model.Vehicle;
@@ -26,11 +29,12 @@ public class VehicleService implements IVehicleService {
     @Transactional
     @Override
     public VehicleResponse create(VehicleRequest request) {
-        Vehicle vehicle = new Vehicle();
-        vehicle.setModel(request.model());
-        vehicle.setRegistrationNumber(request.registrationNumber());
-        vehicle.setStatus(request.status());
-        return new VehicleResponse(vehicle);
+    	validateString(request.registrationNumber());
+        validateString(request.model());
+        validateVehicleStatus(request.status());
+        Vehicle vehicle = vehicleMapper.toEntity(request);
+        Vehicle saved = vehicleRepository.save(vehicle);
+        return new VehicleResponse(saved);
     }
 
     @Transactional
@@ -41,10 +45,12 @@ public class VehicleService implements IVehicleService {
 		}
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new VehicleErrorException("Vehicle not found " + id));
-        vehicle.setModel(request.model());
-        vehicle.setRegistrationNumber(request.registrationNumber());
-        vehicle.setStatus(request.status());
-        return new VehicleResponse(vehicle);
+        validateString(request.registrationNumber());
+        validateString(request.model());
+        validateVehicleStatus(request.status());
+        vehicleMapper.toEntityUpdate(vehicle, request);
+        Vehicle v = vehicleRepository.save(vehicle);
+        return new VehicleResponse(v);
     }
 
     @Transactional
@@ -65,13 +71,18 @@ public class VehicleService implements IVehicleService {
 
     @Override
     public List<VehicleResponse> findAll() {
-        return vehicleRepository.findAll().stream()
+    	List<Vehicle> items = vehicleRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("List of vehicles is empty");
+    	}
+        return items.stream()
                 .map(VehicleResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public VehicleResponse findByRegistrationNumber(String registrationNumber) {
+    	validateString(registrationNumber);
         Vehicle vehicle = vehicleRepository.findByRegistrationNumber(registrationNumber)
                 .orElseThrow(() -> new VehicleErrorException("Vehicle with that registration number not found"));
         return new VehicleResponse(vehicle);
@@ -79,6 +90,8 @@ public class VehicleService implements IVehicleService {
 
     @Override
     public List<VehicleResponse> filterVehicles(String model, String status) {
+    	validateString(model);
+    	validateString(status);
         List<Vehicle> vehicles = vehicleRepository.findAll();
         List<Vehicle> filteredVehicles = vehicles.stream()
                 .filter(v -> {
@@ -94,6 +107,7 @@ public class VehicleService implements IVehicleService {
 
     @Override
     public List<VehicleResponse> search(String keyword) {
+    	validateString(keyword);
         List<Vehicle> vehicles = vehicleRepository.findAll();
         List<Vehicle> result = vehicles.stream()
                 .filter(v -> v.getModel() != null && v.getModel().toLowerCase().contains(keyword.toLowerCase()) ||
@@ -105,29 +119,65 @@ public class VehicleService implements IVehicleService {
 
     @Override
     public List<VehicleResponse> findByStatus(VehicleStatus status) {
-        return vehicleRepository.findByStatus(status).stream()
+    	validateVehicleStatus(status);
+    	List<Vehicle> items = vehicleRepository.findByStatus(status);
+    	if(items.isEmpty()) {
+    		String msg = String.format("Vehicle status %s is not found", status);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(VehicleResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<VehicleResponse> findByModelAndStatus(String model, VehicleStatus status) {
-        return vehicleRepository.findByModelAndStatus(model, status).stream()
+    	validateString(model);
+    	validateVehicleStatus(status);
+    	List<Vehicle> items = vehicleRepository.findByModelAndStatus(model, status);
+    	if(items.isEmpty()) {
+    		String msg = String.format("Vehicle model %s and vehicle status %s is not found", model,status);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(VehicleResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<VehicleResponse> findByModel(String model) {
-        return vehicleRepository.findByModel(model).stream()
+    	validateString(model);
+    	List<Vehicle> items = vehicleRepository.findByModel(model);
+    	if(items.isEmpty()) {
+    		String msg = String.format("Vehicle model equal to %s is not found", model);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(VehicleResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<VehicleResponse> findByModelContainingIgnoreCase(String modelFragment) {
-        return vehicleRepository.findByModelContainingIgnoreCase(modelFragment).stream()
+    	validateString(modelFragment);
+    	List<Vehicle> items = vehicleRepository.findByModelContainingIgnoreCase(modelFragment);
+    	if(items.isEmpty()) {
+    		String msg = String.format("Vehicle containing model fragment %s is not found", modelFragment);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(VehicleResponse::new)
                 .collect(Collectors.toList());
+    }
+    
+    private void validateString(String str) {
+    	if(str == null || str.trim().isEmpty()) {
+    		throw new ValidationException("String must not be null nor empty");
+    	}
+    }
+    
+    private void validateVehicleStatus(VehicleStatus status) {
+    	Optional.ofNullable(status)
+    		.orElseThrow(() -> new ValidationException("VehicleStatus status must not be null"));
     }
 }

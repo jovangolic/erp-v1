@@ -39,15 +39,15 @@ public interface TransportOrderRepository extends JpaRepository<TransportOrder, 
     List<TransportOrder> findByFailed();
     List<TransportOrder> findByVehicle_Status(VehicleStatus status);
     @Query("SELECT to FROM TransportOrder to WHERE to.vehicle.status = 'AVAILABLE'")
-    List<TransportOrder> findByVehice_Available();
+    List<TransportOrder> findByVehicle_Available();
     @Query("SELECT to FROM TransportOrder to WHERE to.vehicle.status = 'IN_USE'")
-    List<TransportOrder> findByVehice_In_Use();
+    List<TransportOrder> findByVehicle_In_Use();
     @Query("SELECT to FROM TransportOrder to WHERE to.vehicle.status = 'UNDER_MAINTENANCE'")
-    List<TransportOrder> findByVehice_Under_Maintenance();
+    List<TransportOrder> findByVehicle_Under_Maintenance();
     @Query("SELECT to FROM TransportOrder to WHERE to.vehicle.status = 'OUT_OF_SERVICE'")
-    List<TransportOrder> findByVehice_Out_Of_Service();
+    List<TransportOrder> findByVehicle_Out_Of_Service();
     @Query("SELECT to FROM TransportOrder to WHERE to.vehicle.status = 'RESERVED'")
-    List<TransportOrder> findByVehice_Reserved();
+    List<TransportOrder> findByVehicle_Reserved();
     @Query("SELECT to FROM TransportOrder to WHERE to.vehicle.model = :vehicleModel AND to.driver.name = :driverName")
     List<TransportOrder> findByVehicleAndDriver(@Param("vehicleModel") String vehicleModel,@Param("driverName") String driverName);
     @Query("SELECT to FROM TransportOrder to WHERE to.outboundDelivery.status  ='PENDING'")
@@ -84,7 +84,7 @@ public interface TransportOrderRepository extends JpaRepository<TransportOrder, 
     List<TransportOrder> findByOutboundDelivery_DeliveryDateAfter(LocalDate deliveryAfter);
     List<TransportOrder> findByOutboundDelivery_DeliveryDateBefore(LocalDate deliveryBefore);
     TransportOrder findByVehicle_RegistrationNumber(String registrationNumber);
-    Boolean existsByVehice_RegistrationNumber(String registrationNumber);
+    Boolean existsByVehicle_RegistrationNumber(String registrationNumber);
     @Query("SELECT to FROM TransportOrder to WHERE to.status = :transportStatus AND to.vehicle.status = :vehicleStatus")
     List<TransportOrder> findByStatus_AndVehicle_Status(@Param("transportStatus") TransportStatus transportStatus,@Param("vehicleStatus") VehicleStatus vehicleStatus);
     List<TransportOrder> findByStatusIn(List<TransportStatus> statuses);
