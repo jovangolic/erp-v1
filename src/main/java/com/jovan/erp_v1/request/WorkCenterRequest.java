@@ -8,11 +8,8 @@ import jakarta.validation.constraints.Positive;
 
 public record WorkCenterRequest(
         Long id,
-
         @NotBlank String name,
-
         @NotBlank String location,
-
         @NotNull @Positive BigDecimal capacity,
         @NotNull Long localStorageId) {
 }

@@ -4,33 +4,30 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
-import com.jovan.erp_v1.exception.StorageNotFoundException;
 import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.model.WorkCenter;
-import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.request.WorkCenterRequest;
 import com.jovan.erp_v1.response.WorkCenterResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
-public class WorkCenterMapper {
+public class WorkCenterMapper extends AbstractMapper<WorkCenterRequest> {
 
-    private final StorageRepository storageRepository;
-
-    public WorkCenter toEntity(WorkCenterRequest request) {
+    public WorkCenter toEntity(WorkCenterRequest request,Storage storage) {
         Objects.requireNonNull(request, "WorkCenterRequest must not be null");
-        return buildWorkCenterFromRequest(new WorkCenter(), request);
+        Objects.requireNonNull(storage, "Storage must not be null");
+        validateIdForCreate(request, WorkCenterRequest::id);
+        return buildWorkCenterFromRequest(new WorkCenter(), request,storage);
     }
 
-    public WorkCenter toUpdateEntity(WorkCenter wc, WorkCenterRequest request) {
+    public WorkCenter toUpdateEntity(WorkCenter wc, WorkCenterRequest request,Storage storage) {
         Objects.requireNonNull(request, "WorkCenterRequest must not be null");
         Objects.requireNonNull(wc, "WorkCenter must not be null");
-        return buildWorkCenterFromRequest(wc, request);
+        Objects.requireNonNull(storage, "Storage must not be null");
+        validateIdForUpdate(request, WorkCenterRequest::id);
+        return buildWorkCenterFromRequest(wc, request,storage);
     }
 
     public WorkCenterResponse toResponse(WorkCenter wc) {
@@ -45,19 +42,11 @@ public class WorkCenterMapper {
         return wc.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    private WorkCenter buildWorkCenterFromRequest(WorkCenter wc, WorkCenterRequest request) {
+    private WorkCenter buildWorkCenterFromRequest(WorkCenter wc, WorkCenterRequest request, Storage storage) {
         wc.setName(request.name());
         wc.setLocation(request.location());
         wc.setCapacity(request.capacity());
-        wc.setLocalStorage(fetchStorage(request.localStorageId()));
+        wc.setLocalStorage(storage);
         return wc;
-    }
-
-    private Storage fetchStorage(Long storageId) {
-        if (storageId == null) {
-            throw new StorageNotFoundException("Storage ID must not be null");
-        }
-        return storageRepository.findById(storageId)
-                .orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " + storageId));
     }
 }

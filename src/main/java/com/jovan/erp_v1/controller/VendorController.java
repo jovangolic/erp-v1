@@ -131,7 +131,7 @@ public class VendorController {
 		return ResponseEntity.ok(responses);
 	}
 	
-	@GetMapping("/search/coubnt-by-address-fragment")
+	@GetMapping("/search/count-by-address-fragment")
 	public ResponseEntity<Long> countByAddressContainingIgnoreCase(@RequestParam("addressFragment") String addressFragment){
 		Long responses = vendorService.countByAddressContainingIgnoreCase(addressFragment);
 		return ResponseEntity.ok(responses);

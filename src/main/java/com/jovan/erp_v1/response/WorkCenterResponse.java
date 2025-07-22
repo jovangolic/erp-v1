@@ -24,6 +24,6 @@ public class WorkCenterResponse {
         this.name = w.getName();
         this.location = w.getLocation();
         this.capacity = w.getCapacity();
-        this.storageBasicResponse = new StorageBasicResponse(w.getLocalStorage());
-    }
+        this.storageBasicResponse = w.getLocalStorage() != null ? new StorageBasicResponse(w.getLocalStorage()) : null;
+     }
 }

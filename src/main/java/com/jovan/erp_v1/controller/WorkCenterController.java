@@ -15,8 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.request.WorkCenterRequest;
+import com.jovan.erp_v1.response.CountWorkCenterCapacityResponse;
+import com.jovan.erp_v1.response.CountWorkCenterResultResponse;
+import com.jovan.erp_v1.response.CountWorkCentersByStorageStatusResponse;
+import com.jovan.erp_v1.response.CountWorkCentersByStorageTypeResponse;
 import com.jovan.erp_v1.response.WorkCenterResponse;
 import com.jovan.erp_v1.service.IWorkCenterService;
 
@@ -198,5 +203,231 @@ public class WorkCenterController {
             @RequestParam("localStorageType") StorageType localStorageType) {
         List<WorkCenterResponse> responses = workCenterService.findByLocalStorage_Type(localStorageType);
         return ResponseEntity.ok(responses);
+    }
+    
+    //nove metode
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/filter")
+    public ResponseEntity<List<WorkCenterResponse>> filter(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) BigDecimal capacityMin,
+            @RequestParam(required = false) BigDecimal capacityMax,
+            @RequestParam(required = false) StorageType type,
+            @RequestParam(required = false) StorageStatus status
+    ) {
+        List<WorkCenterResponse> result = workCenterService.filterWorkCenters(name, location, capacityMin, capacityMax, type, status);
+        return ResponseEntity.ok(result);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-type-production")
+    public ResponseEntity<List<WorkCenterResponse>> findByTypeProduction(){
+    	List<WorkCenterResponse> responses = workCenterService.findByTypeProduction();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-type-distribution")
+    public ResponseEntity<List<WorkCenterResponse>> findByTypeDistribution(){
+    	List<WorkCenterResponse> responses = workCenterService.findByTypeDistribution();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-type-open")
+    public ResponseEntity<List<WorkCenterResponse>> findByTypeOpen(){
+    	List<WorkCenterResponse> responses = workCenterService.findByTypeOpen();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-type-closed")
+    public ResponseEntity<List<WorkCenterResponse>> findByTypeClosed(){
+    	List<WorkCenterResponse> responses = workCenterService.findByTypeClosed();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-type-interim")
+    public ResponseEntity<List<WorkCenterResponse>> findByTypeInterim(){
+    	List<WorkCenterResponse> responses = workCenterService.findByTypeInterim();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-type-available")
+    public ResponseEntity<List<WorkCenterResponse>> findByTypeAvailable(){
+    	List<WorkCenterResponse> responses = workCenterService.findByTypeAvailable();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-status")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocalStorage_Status(@RequestParam("status") StorageStatus status){
+    	List<WorkCenterResponse> responses = workCenterService.findByLocalStorage_Status(status);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-status-active")
+    public ResponseEntity<List<WorkCenterResponse>> findByStatusActive(){
+    	List<WorkCenterResponse> responses = workCenterService.findByStatusActive();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-status-under-maintenance")
+    public ResponseEntity<List<WorkCenterResponse>> findByStatusUnder_Maintenance(){
+    	List<WorkCenterResponse> responses = workCenterService.findByStatusUnder_Maintenance();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-status-decommissioned")
+    public ResponseEntity<List<WorkCenterResponse>> findByStatusDecommissioned(){
+    	List<WorkCenterResponse> responses = workCenterService.findByStatusDecommissioned();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-status-reserved")
+    public ResponseEntity<List<WorkCenterResponse>> findByStatusReserved(){
+    	List<WorkCenterResponse> responses = workCenterService.findByStatusReserved();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-status-temporary")
+    public ResponseEntity<List<WorkCenterResponse>> findByStatusTemporary(){
+    	List<WorkCenterResponse> responses = workCenterService.findByStatusTemporary();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/storage-status-full")
+    public ResponseEntity<List<WorkCenterResponse>> findByStatusFull(){
+    	List<WorkCenterResponse> responses = workCenterService.findByStatusFull();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/location-and-capacity-greater-than")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocationAndCapacityGreaterThan(@RequestParam("location") String location,@RequestParam("capacity") BigDecimal capacity){
+    	List<WorkCenterResponse> responses = workCenterService.findByLocationAndCapacityGreaterThan(location, capacity);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/name-and-location")
+    public ResponseEntity<List<WorkCenterResponse>> findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(@RequestParam("name") String name,@RequestParam("location") String location){
+    	List<WorkCenterResponse> responses = workCenterService.findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(name, location);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/type-and-status")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocalStorage_TypeAndLocalStorage_Status(@RequestParam("type") StorageType type,@RequestParam("status") StorageStatus status){
+    	List<WorkCenterResponse> responses = workCenterService.findByLocalStorage_TypeAndLocalStorage_Status(type, status);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/ids-between")
+    public ResponseEntity<List<WorkCenterResponse>> findByIdBetween(@RequestParam("startId") Long startId,@RequestParam("endId") Long endId){
+    	List<WorkCenterResponse> responses = workCenterService.findByIdBetween(startId, endId);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/local-storage-is-null")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocalStorageIsNull(){
+    	List<WorkCenterResponse> responses = workCenterService.findByLocalStorageIsNull();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/local-storage-is-not-null")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocalStorageIsNotNull(){
+    	List<WorkCenterResponse> responses = workCenterService.findByLocalStorageIsNotNull();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/order-by-capacity-asc")
+    public ResponseEntity<List<WorkCenterResponse>> findAllByOrderByCapacityAsc(){
+    	List<WorkCenterResponse> responses = workCenterService.findAllByOrderByCapacityAsc();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/order-by-capacity-desc")
+    public ResponseEntity<List<WorkCenterResponse>> findAllByOrderByCapacityDesc(){
+    	List<WorkCenterResponse> responses = workCenterService.findAllByOrderByCapacityDesc();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/location-in")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocationIn(@RequestParam("locations") List<String> locations){
+    	List<WorkCenterResponse> responses = workCenterService.findByLocationIn(locations);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/name-and-storage-status")
+    public ResponseEntity<List<WorkCenterResponse>> findByNameContainingIgnoreCaseAndLocalStorage_Status(@RequestParam("status") String name, StorageStatus status){
+    	List<WorkCenterResponse> responses = workCenterService.findByNameContainingIgnoreCaseAndLocalStorage_Status(name, status);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/location-and-storage-type")
+    public ResponseEntity<List<WorkCenterResponse>> findByLocationContainingIgnoreCaseAndLocalStorage_Type(@RequestParam("location") String location,@RequestParam("type") StorageType type){
+    	List<WorkCenterResponse> responses = workCenterService.findByLocationContainingIgnoreCaseAndLocalStorage_Type(location, type);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/count-work-centers-by-capacity")
+    public ResponseEntity<List<CountWorkCenterCapacityResponse>>  countWorkCentersByCapacity(){
+    	List<CountWorkCenterCapacityResponse> responses = workCenterService.countWorkCentersByCapacity();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/count-work-centers-by-capacity-less-than")
+    public ResponseEntity<Long> countWorkCentersByCapacityLessThan(@RequestParam("capacity") BigDecimal capacity){
+    	Long responses = workCenterService.countWorkCentersByCapacityLessThan(capacity);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/count-work-centers-by-capacity-greater-than")
+    public ResponseEntity<Long> countWorkCentersByCapacityGreaterThan(@RequestParam("capacity") BigDecimal capacity){
+    	Long responses = workCenterService.countWorkCentersByCapacityGreaterThan(capacity);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/count-by-work-centers-location")
+    public ResponseEntity<List<CountWorkCenterResultResponse>>  countWorkCentersByLocation(){
+    	List<CountWorkCenterResultResponse> responses = workCenterService.countWorkCentersByLocation();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/count-by-work-centers-storage-status")
+    public ResponseEntity<List<CountWorkCentersByStorageStatusResponse>> countWorkCentersByStorageStatus(){
+    	List<CountWorkCentersByStorageStatusResponse> responses = workCenterService.countWorkCentersByStorageStatus();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','MANAGER','STORAGE_FOREMAN')")
+    @GetMapping("/search/count-by-work-centers-storage-type")
+    public ResponseEntity<List<CountWorkCentersByStorageTypeResponse>> countWorkCentersByStorageType(){
+    	List<CountWorkCentersByStorageTypeResponse> responses = workCenterService.countWorkCentersByStorageType();
+    	return ResponseEntity.ok(responses);
     }
 }

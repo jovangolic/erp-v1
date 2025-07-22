@@ -18,11 +18,9 @@ import com.jovan.erp_v1.dto.StorageOutgoingTransferCountDTO;
 import com.jovan.erp_v1.dto.StorageShelfCountDTO;
 import com.jovan.erp_v1.dto.StorageShipmentCountDTO;
 import com.jovan.erp_v1.dto.StorageWorkCenterCountDTO;
-import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.model.Goods;
-import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.model.Supply;
 
 @Repository

@@ -229,18 +229,15 @@ public class UserService implements IUserService {
 	@Transactional
 	@Override
 	public UserResponseForEmployees createEmployeesByAdmin(UserRequestForEmployees reqEmpo) {
-		// 1. Dohvati role po ID-jevima
 		Set<Role> roles = reqEmpo.roleIds().stream()
 				.map(roleId -> roleRepository.findById(roleId)
 						.orElseThrow(() -> new IllegalArgumentException("Rola sa ID " + roleId + " ne postoji")))
 				.collect(Collectors.toSet());
-		// 2. Generiši kredencijale
 		// String email = credentialGenerator.generateEmail(reqEmpo.firstName(),
 		// reqEmpo.lastName());
 		// String username = credentialGenerator.generateUsername(reqEmpo.firstName(),
 		// reqEmpo.lastName());
-		String rawPassword = credentialGenerator.generateRandomPassword(); // Možeš je sačuvati ako želiš poslati
-																			// korisniku
+		String rawPassword = credentialGenerator.generateRandomPassword(); 															
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 		// 3. Kreiraj novog korisnika
 		User user = new User();
@@ -252,7 +249,6 @@ public class UserService implements IUserService {
 		// user.setUsername(username);
 		user.setPassword(encodedPassword);
 		user.setRoles(roles);
-		// 4. Sačuvaj korisnika
 		User savedUser = userRepository.save(user);
 		// (opciono) Loguj šifru za testiranje – samo za development
 		// System.out.println("Nalog kreiran: " + username + " / " + rawPassword);
