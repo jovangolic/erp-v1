@@ -2,51 +2,36 @@ package com.jovan.erp_v1.mapper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
+import java.util.Objects;
 import org.springframework.stereotype.Component;
-
 import com.jovan.erp_v1.model.Buyer;
-
 import com.jovan.erp_v1.request.BuyerRequest;
 import com.jovan.erp_v1.response.BuyerResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class BuyerMapper {
+public class BuyerMapper extends AbstractMapper<BuyerRequest> {
 
-	
-	
 	public Buyer toEntity(BuyerRequest request) {
+		Objects.requireNonNull(request, "BuyerRequest must not be null");
+		validateIdForCreate(request, BuyerRequest::id);
 		Buyer buyer = new Buyer();
         buyer.setCompanyName(request.companyName());
         buyer.setAddress(request.address());
         buyer.setContactPerson(request.contactPerson());
         buyer.setEmail(request.email());
         buyer.setPhoneNumber(request.phoneNumber());
-        
-        // Automatski generišemo PIB
-        buyer.setPib(Buyer.generateRandomPib());
-
-        // salesOrders se ignoriše — inicijalno prazan
+        buyer.setPib(request.pib());
         buyer.setSalesOrders(new ArrayList<>());
-
         return buyer;
 	}
 	
 	public BuyerResponse toResponse(Buyer buyer) {
-        BuyerResponse response = new BuyerResponse();
-        response.setId(buyer.getId());
-        response.setCompanyName(buyer.getCompanyName());
-        response.setAddress(buyer.getAddress());
-        response.setContactPerson(buyer.getContactPerson());
-        response.setEmail(buyer.getEmail());
-        response.setPhoneNumber(buyer.getPhoneNumber());
-        response.setPib(buyer.getPib());
-
-        return response;
+        Objects.requireNonNull(buyer, "Buyer must not be null");
+        return new BuyerResponse(buyer);
     }
 
     public List<BuyerResponse> toResponseList(List<Buyer> buyers) {
@@ -57,12 +42,16 @@ public class BuyerMapper {
         return responses;
     }
     
-    public void updateBuyer(BuyerRequest request, Buyer buyer) {
+    public Buyer updateBuyer(BuyerRequest request, Buyer buyer) {
+    	Objects.requireNonNull(request, "BuyerRequest must not be null");
+    	Objects.requireNonNull(buyer, "Buyer must not be null");
+    	validateIdForUpdate(request, BuyerRequest::id);
         buyer.setCompanyName(request.companyName());
         buyer.setAddress(request.address());
         buyer.setContactPerson(request.contactPerson());
         buyer.setEmail(request.email());
         buyer.setPhoneNumber(request.phoneNumber());
-        // PIB se ne menja (osim ako želiš da ga ponovo generišeš ovde)
+        // PIB se ne menja 
+        return buyer;
     }
 }

@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -11,11 +12,15 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.jovan.erp_v1.enumeration.AuditActionType;
+import com.jovan.erp_v1.exception.NoDataFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.AuditLogMapper;
 import com.jovan.erp_v1.model.AuditLog;
 import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.AuditLogRepository;
+import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.response.AuditLogResponse;
+import com.jovan.erp_v1.util.DateValidator;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -26,16 +31,18 @@ public class AuditLogService implements IAuditLogService {
 
     private final AuditLogRepository auditLogRepository;
     private final AuditLogMapper auditLogMapper;
+    private final UserRepository userRepository;
 
     @Override
     public void log(AuditActionType action, User user, String details) {
+    	fetchUserId(user.getId());
+    	validateAuditActionType(action);
+    	validateString(details);
         AuditLog log = new AuditLog();
         log.setAction(action);
         log.setUser(user);
         log.setTimestamp(LocalDateTime.now());
         log.setDetails(details);
-
-        // Ako koristiš ServletRequest:
         try {
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
                     .getRequest();
@@ -65,28 +72,52 @@ public class AuditLogService implements IAuditLogService {
 
     @Override
     public List<AuditLogResponse> getAllLogs() {
-        return auditLogRepository.findAll().stream()
+    	List<AuditLog> items = auditLogRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("No items found for audit-logs");
+    	}
+        return items.stream()
                 .map(AuditLogResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<AuditLogResponse> getLogsByUserId(Long userId) {
-        return auditLogRepository.findByUser_Id(userId).stream()
+    	fetchUserId(userId);
+    	List<AuditLog> items = auditLogRepository.findByUser_Id(userId);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No audit logs with userId %d is found", userId);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(AuditLogResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<AuditLogResponse> getLogsByAction(AuditActionType action) {
-        return auditLogRepository.findByAction(action).stream()
+    	validateAuditActionType(action);
+    	List<AuditLog> items = auditLogRepository.findByAction(action);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No audti log with type action %s is found", action);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(AuditLogResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<AuditLogResponse> getLogsBetweenDates(LocalDateTime start, LocalDateTime end) {
-        return auditLogRepository.findByTimestampBetween(start, end).stream()
+    	DateValidator.validateRange(start, end);
+    	List<AuditLog> items = auditLogRepository.findByTimestampBetween(start, end);
+    	if(items.isEmpty()) {
+    		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+    		String msg = String.format("No audit-log with dates between %s and %s is found", 
+    				start.format(formatter),end.format(formatter));
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(AuditLogResponse::new)
                 .collect(Collectors.toList());
     }
@@ -125,5 +156,22 @@ public class AuditLogService implements IAuditLogService {
                 .map(AuditLogResponse::new)
                 .collect(Collectors.toList());
     }
+    
+    private void validateAuditActionType(AuditActionType action) {
+    	Optional.ofNullable(action)
+    		.orElseThrow(() -> new ValidationException("AuditActionType action must not be null"));
+    }
+    
+    private User fetchUserId(Long userId) {
+    	if(userId == null) {
+    		throw new ValidationException("User ID must not be null");
+    	}
+    	return userRepository.findById(userId).orElseThrow(() -> new ValidationException("User not found with id "+userId));
+    }
 
+    private void validateString(String str) {
+    	if(str == null || str.trim().isEmpty()) {
+    		throw new ValidationException("String must not be null nor empty");
+    	}
+    }
 }

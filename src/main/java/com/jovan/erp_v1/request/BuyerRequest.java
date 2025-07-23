@@ -2,8 +2,6 @@ package com.jovan.erp_v1.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-
 
 public record BuyerRequest(
 		

@@ -2,6 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,9 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.exception.BalanceSheetErrorException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.BalanceSheetMapper;
 import com.jovan.erp_v1.model.BalanceSheet;
+import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.repository.BalanceSheetRepository;
+import com.jovan.erp_v1.repository.FiscalYearRepository;
 import com.jovan.erp_v1.request.BalanceSheetRequest;
 import com.jovan.erp_v1.response.BalanceSheetResponse;
 import com.jovan.erp_v1.util.DateValidator;
@@ -26,6 +31,7 @@ public class BalanceSheetService implements IBalanceSheetService {
 
     private final BalanceSheetRepository balanceSheetRepository;
     private final BalanceSheetMapper balanceSheetMapper;
+    private final FiscalYearRepository fiscalYearRepository;
 
     @Transactional
     @Override
@@ -34,8 +40,8 @@ public class BalanceSheetService implements IBalanceSheetService {
         validateBigDecimal(request.totalAssets());
         validateBigDecimal(request.totalLiabilities());
         validateBigDecimal(request.totalEquity());
-        validatefiscalYear(request.fiscalYearId());
-        BalanceSheet sheet = balanceSheetMapper.toEntity(request);
+        FiscalYear year = fetchFiscalYearId(request.fiscalYearId());
+        BalanceSheet sheet = balanceSheetMapper.toEntity(request,year);
         BalanceSheet saved = balanceSheetRepository.save(sheet);
         return balanceSheetMapper.toResponse(balanceSheetRepository.save(saved));
     }
@@ -52,8 +58,11 @@ public class BalanceSheetService implements IBalanceSheetService {
         validateBigDecimal(request.totalAssets());
         validateBigDecimal(request.totalLiabilities());
         validateBigDecimal(request.totalEquity());
-        validatefiscalYear(request.fiscalYearId());
-        balanceSheetMapper.toEntityUpdate(sheet, request);
+        FiscalYear year = sheet.getFiscalYear();
+        if(request.fiscalYearId() != null && (sheet.getFiscalYear() == null || !request.fiscalYearId().equals(sheet.getFiscalYear().getId()))) {
+        	year = fetchFiscalYearId(request.fiscalYearId());
+        }
+        balanceSheetMapper.toEntityUpdate(sheet, request,year);
         return balanceSheetMapper.toResponse(balanceSheetRepository.save(sheet));
     }
 
@@ -75,7 +84,11 @@ public class BalanceSheetService implements IBalanceSheetService {
 
     @Override
     public List<BalanceSheetResponse> findAll() {
-        return balanceSheetRepository.findAll().stream()
+    	List<BalanceSheet> items = balanceSheetRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("List of items for balance sheet is empty");
+    	}
+        return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
     }
@@ -83,7 +96,12 @@ public class BalanceSheetService implements IBalanceSheetService {
     @Override
     public List<BalanceSheetResponse> findByTotalAssets(BigDecimal totalAssets) {
     	validateBigDecimal(totalAssets);
-        return balanceSheetRepository.findByTotalAssets(totalAssets).stream()
+    	List<BalanceSheet> items = balanceSheetRepository.findByTotalAssets(totalAssets);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No balance sheet for total assets %s is found", totalAssets);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
     }
@@ -99,7 +117,14 @@ public class BalanceSheetService implements IBalanceSheetService {
     @Override
     public List<BalanceSheetResponse> findByDateBetween(LocalDate start, LocalDate end) {
     	DateValidator.validateRange(start, end);
-        return balanceSheetRepository.findByDateBetween(start, end).stream()
+    	List<BalanceSheet> items = balanceSheetRepository.findByDateBetween(start, end);
+    	if(items.isEmpty()) {
+    		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    		String msg = String.format("No balance sheet for date between %s and %s is found",
+    				start.format(formatter), end.format(formatter));
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
     }
@@ -107,7 +132,12 @@ public class BalanceSheetService implements IBalanceSheetService {
     @Override
     public List<BalanceSheetResponse> findByTotalLiabilities(BigDecimal totalLiabilities) {
     	validateBigDecimal(totalLiabilities);
-        return balanceSheetRepository.findByTotalLiabilities(totalLiabilities).stream()
+    	List<BalanceSheet> items = balanceSheetRepository.findByTotalLiabilities(totalLiabilities);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No balance sheet for total liabilities %s is found", totalLiabilities);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
     }
@@ -115,7 +145,12 @@ public class BalanceSheetService implements IBalanceSheetService {
     @Override
     public List<BalanceSheetResponse> findByTotalEquity(BigDecimal totalEquity) {
     	validateBigDecimal(totalEquity);
-        return balanceSheetRepository.findByTotalEquity(totalEquity).stream()
+    	List<BalanceSheet> items = balanceSheetRepository.findByTotalEquity(totalEquity);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No balance sheet for total equity %s is found", totalEquity);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
     }
@@ -123,7 +158,12 @@ public class BalanceSheetService implements IBalanceSheetService {
     @Override
     public List<BalanceSheetResponse> findByFiscalYear_Id(Long id) {
     	validatefiscalYear(id);
-        return balanceSheetRepository.findByFiscalYear_Id(id).stream()
+    	List<BalanceSheet> items = balanceSheetRepository.findByFiscalYear_Id(id);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No balance sheet found for fiscal year id %d", id);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
     }
@@ -131,7 +171,12 @@ public class BalanceSheetService implements IBalanceSheetService {
     @Override
     public List<BalanceSheetResponse> findByFiscalYear_Year(Integer year) {
     	validateInteger(year);
-        return balanceSheetRepository.findByFiscalYear_Year(year).stream()
+    	List<BalanceSheet> items = balanceSheetRepository.findByFiscalYear_Year(year);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No balance sheet found for given fiscal year %d", year);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
     }
@@ -139,6 +184,11 @@ public class BalanceSheetService implements IBalanceSheetService {
     @Override
     public List<BalanceSheetResponse> findByFiscalYear_YearStatus(FiscalYearStatus yearStatus) {
     	validateFiscalYearStatus(yearStatus);
+    	List<BalanceSheet> items = balanceSheetRepository.findByFiscalYear_YearStatus(yearStatus);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No balance sheet with fiscal year status %s is not found", yearStatus);
+    		throw new NoDataFoundException(msg);
+    	}
         return balanceSheetRepository.findByFiscalYear_YearStatus(yearStatus).stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
@@ -147,7 +197,12 @@ public class BalanceSheetService implements IBalanceSheetService {
     @Override
     public List<BalanceSheetResponse> findByFiscalYear_QuarterStatus(FiscalQuarterStatus quarterStatus) {
     	validateFiscalQuarterStatus(quarterStatus);
-        return balanceSheetRepository.findByFiscalYear_QuarterStatus(quarterStatus).stream()
+    	List<BalanceSheet> items = balanceSheetRepository.findByFiscalYear_QuarterStatus(quarterStatus);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No balance sheet with fiscal year quarter status %s is not found", quarterStatus);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
     }
@@ -157,7 +212,14 @@ public class BalanceSheetService implements IBalanceSheetService {
             LocalDate end) {
     	validateFiscalYearStatus(status);
     	DateValidator.validateRange(start, end);
-        return balanceSheetRepository.findByStatusAndDateRange(status, start, end).stream()
+    	List<BalanceSheet> items = balanceSheetRepository.findByStatusAndDateRange(status, start, end);
+    	if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No balance sheet with status %s and date range between %s and %s is not found",
+					status,start.format(formatter),end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+        return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
     }
@@ -165,6 +227,11 @@ public class BalanceSheetService implements IBalanceSheetService {
     @Override
 	public List<BalanceSheetResponse> findByTotalAssetsGreaterThan(BigDecimal totalAssets) {
 		validateBigDecimal(totalAssets);
+		List<BalanceSheet> items = balanceSheetRepository.findByTotalAssetsGreaterThan(totalAssets);
+		if(items.isEmpty()) {
+			String msg = String.format("Balance sheet with total assets greater than %s is not found", totalAssets);
+			throw new NoDataFoundException(msg);
+		}
 		return balanceSheetRepository.findByTotalAssetsGreaterThan(totalAssets).stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
@@ -172,8 +239,13 @@ public class BalanceSheetService implements IBalanceSheetService {
 
 	@Override
 	public List<BalanceSheetResponse> findByTotalAssetsLessThan(BigDecimal totalAssets) {
-		validateBigDecimal(totalAssets);
-		return balanceSheetRepository.findByTotalAssetsLessThan(totalAssets).stream()
+		validateBigDecimalNonNegative(totalAssets);
+		List<BalanceSheet> items = balanceSheetRepository.findByTotalAssetsLessThan(totalAssets);
+		if(items.isEmpty()) {
+			String msg = String.format("Balance sheet with total assets less than %s is not found", totalAssets);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
 	}
@@ -182,15 +254,25 @@ public class BalanceSheetService implements IBalanceSheetService {
 	@Override
 	public List<BalanceSheetResponse> findByTotalEquityGreaterThan(BigDecimal totalEquity) {
 		validateBigDecimal(totalEquity);
-		return balanceSheetRepository.findByTotalEquityGreaterThan(totalEquity).stream()
+		List<BalanceSheet> items = balanceSheetRepository.findByTotalEquityGreaterThan(totalEquity);
+		if(items.isEmpty()) {
+			String msg = String.format("Balance sheet with total equity greater than %s is not found", totalEquity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
 	}
 
 	@Override
 	public List<BalanceSheetResponse> findByTotalEquityLessThan(BigDecimal totalEquity) {
-		validateBigDecimal(totalEquity);
-		return balanceSheetRepository.findByTotalEquityLessThan(totalEquity).stream()
+		validateBigDecimalNonNegative(totalEquity);
+		List<BalanceSheet> items = balanceSheetRepository.findByTotalEquityLessThan(totalEquity);
+		if(items.isEmpty()) {
+			String msg = String.format("Balance sheet with total equity less than %s is not found", totalEquity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
 	}
@@ -224,6 +306,22 @@ public class BalanceSheetService implements IBalanceSheetService {
     	if(quarterStatus == null) {
     		throw new IllegalArgumentException("QuarterStatus za FiscalQuarterStatus ne sme biti null");
     	}
+    }
+    
+    private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
+    
+    private FiscalYear fetchFiscalYearId(Long fiscalYearId) {
+    	if(fiscalYearId == null) {
+    		throw new ValidationException("Fiscal Year ID must not be null");
+    	}
+    	return fiscalYearRepository.findById(fiscalYearId).orElseThrow(() -> new ValidationException("Fiscal Year not found with id "+fiscalYearId));
     }
 
 }

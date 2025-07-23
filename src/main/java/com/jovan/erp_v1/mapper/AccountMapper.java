@@ -12,10 +12,8 @@ import com.jovan.erp_v1.request.AccountRequest;
 import com.jovan.erp_v1.response.AccountResponse;
 import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class AccountMapper extends AbstractMapper<AccountRequest> {
 
     public Account toEntity(AccountRequest request) {

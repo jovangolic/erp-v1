@@ -4,41 +4,41 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
-import com.jovan.erp_v1.exception.NoSuchProductException;
 import com.jovan.erp_v1.model.BillOfMaterials;
 import com.jovan.erp_v1.model.Product;
-import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.request.BillOfMaterialsRequest;
 import com.jovan.erp_v1.response.BillOfMaterialsResponse;
 import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
-
 @Component
-@RequiredArgsConstructor
 public class BillOfMaterialsMapper extends AbstractMapper<BillOfMaterialsRequest>{
 
-    private final ProductRepository productRepository;
-
-    public BillOfMaterials toEntity(BillOfMaterialsRequest request) {
+    public BillOfMaterials toEntity(BillOfMaterialsRequest request, Product parentProduct, Product component) {
         Objects.requireNonNull(request, "BillOfMaterialsRequest must not be null");
+        Objects.requireNonNull(parentProduct, "ParentProduct must not be null");
+        Objects.requireNonNull(component, "Component must not be null");
         validateIdForCreate(request, BillOfMaterialsRequest::id);
-        return buildBillOfMaterialsFromRequest(new BillOfMaterials(), request);
+        BillOfMaterials bom = new BillOfMaterials();
+        bom.setId(request.id());
+        bom.setParentProduct(parentProduct);
+        bom.setComponent(component);
+        bom.setQuantity(request.quantity());
+        return bom;
     }
 
-    public BillOfMaterials toUpdateEntity(BillOfMaterials bom, BillOfMaterialsRequest request) {
+    public BillOfMaterials toUpdateEntity(BillOfMaterials bom, BillOfMaterialsRequest request, Product parentProduct, Product component) {
         Objects.requireNonNull(request, "BillOfMaterialsRequest must not be null");
         Objects.requireNonNull(bom, "BillOfMaterial must not be null");
+        Objects.requireNonNull(parentProduct, "ParentProduct must not be null");
+        Objects.requireNonNull(component, "Component must not be null");
         validateIdForUpdate(request, BillOfMaterialsRequest::id);
-        return buildBillOfMaterialsFromRequest(bom, request);
+        return buildBillOfMaterialsFromRequest(bom, request,parentProduct,component);
     }
 
-    private BillOfMaterials buildBillOfMaterialsFromRequest(BillOfMaterials bom, BillOfMaterialsRequest request) {
-        bom.setParentProduct(fetchProduct(request.parentProductId()));
-        bom.setComponent(fetchComponent(request.componentId()));
+    private BillOfMaterials buildBillOfMaterialsFromRequest(BillOfMaterials bom, BillOfMaterialsRequest request, Product parentProduct, Product component) {
+        bom.setParentProduct(parentProduct);
+        bom.setComponent(component);
         bom.setQuantity(request.quantity());
         return bom;
     }
@@ -53,21 +53,5 @@ public class BillOfMaterialsMapper extends AbstractMapper<BillOfMaterialsRequest
     		return Collections.emptyList();
     	}
         return bom.stream().map(this::toResponse).collect(Collectors.toList());
-    }
-
-    private Product fetchProduct(Long productId) {
-        if (productId == null) {
-            throw new NoSuchProductException("Product must not be null");
-        }
-        return productRepository.findById(productId)
-                .orElseThrow(() -> new NoSuchProductException("Product not found with id: " + productId));
-    }
-
-    private Product fetchComponent(Long componentId) {
-        if (componentId == null) {
-            throw new NoSuchProductException("Component ID must not be null");
-        }
-        return productRepository.findById(componentId)
-                .orElseThrow(() -> new NoSuchProductException("Component not found with id: " + componentId));
     }
 }

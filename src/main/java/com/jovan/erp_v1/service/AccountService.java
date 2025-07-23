@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.AccountType;
 import com.jovan.erp_v1.exception.AccountNotFoundErrorException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.AccountMapper;
 import com.jovan.erp_v1.model.Account;
 import com.jovan.erp_v1.repository.AccountRepository;
@@ -51,7 +53,6 @@ public class AccountService implements IAccountService {
     	      accountRepository.existsByAccountNumber(request.accountNumber())) {
     	      throw new IllegalArgumentException("Račun sa datim brojem već postoji.");
     	}
-
     	validateDoubleString(request.accountName(), request.accountNumber());
     	validAccountType(request.type());
     	validateBigDecimal(request.balance());
@@ -79,7 +80,11 @@ public class AccountService implements IAccountService {
 
     @Override
     public List<AccountResponse> findAll() {
-        return accountRepository.findAll().stream()
+    	List<Account> items = accountRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("List for accounts is empty");
+    	}
+        return items.stream()
                 .map(AccountResponse::new)
                 .collect(Collectors.toList());
     }
@@ -87,7 +92,12 @@ public class AccountService implements IAccountService {
     @Override
     public List<AccountResponse> findByType(AccountType type) {
     	validAccountType(type);
-        return accountRepository.findByType(type).stream()
+    	List<Account> items = accountRepository.findByType(type);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No account for type equal to %s is found", type);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(AccountResponse::new)
                 .collect(Collectors.toList());
     }
@@ -127,7 +137,12 @@ public class AccountService implements IAccountService {
     @Override
     public List<AccountResponse> findByBalance(BigDecimal balance) {
     	validateBigDecimal(balance);
-        return accountRepository.findByBalance(balance).stream()
+    	List<Account> items = accountRepository.findByBalance(balance);
+    	if(items.isEmpty()) {
+    		String msg = String.format("Account for balance %s is not found",balance);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(AccountResponse::new)
                 .collect(Collectors.toList());
     }
@@ -135,7 +150,12 @@ public class AccountService implements IAccountService {
     @Override
     public List<AccountResponse> findByBalanceBetween(BigDecimal min, BigDecimal max) {
     	validateMinAndMax(min, max);
-        return accountRepository.findByBalanceBetween(min, max).stream()
+    	List<Account> items = accountRepository.findByBalanceBetween(min, max);
+    	if(items.isEmpty()) {
+    		String msg = String.format("Account with balance between %s and %s is not found", min,max);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(AccountResponse::new)
                 .collect(Collectors.toList());
     }
@@ -143,18 +163,37 @@ public class AccountService implements IAccountService {
     @Override
     public List<AccountResponse> findByBalanceGreaterThan(BigDecimal amount) {
     	validateBigDecimal(amount);
-        return accountRepository.findByBalanceGreaterThan(amount).stream()
+    	List<Account> items = accountRepository.findByBalanceGreaterThan(amount);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No account with balance greater than %s is found", amount);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(AccountResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<AccountResponse> findByBalanceLessThan(BigDecimal amount) {
-    	validateBigDecimal(amount);
-        return accountRepository.findByBalanceLessThan(amount).stream()
+    	validateBigDecimalNonNegative(amount);
+    	List<Account> items = accountRepository.findByBalanceLessThan(amount);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No account with balance less than %s is found", amount);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(AccountResponse::new)
                 .collect(Collectors.toList());
     }
+    
+    private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
     
     private void validateBigDecimal(BigDecimal num) {
         if (num == null || num.compareTo(BigDecimal.ZERO) <= 0) {

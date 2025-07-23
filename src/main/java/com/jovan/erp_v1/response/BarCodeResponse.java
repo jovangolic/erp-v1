@@ -20,17 +20,13 @@ public class BarCodeResponse {
 	private String code;
 	private LocalDateTime scannedAt;
 	private UserResponse scannedBy;
-	private Long goodsId;
-    private String goodsName;
-    private GoodsType goodsType;
+	private BasicGoodsForBarCodeResponse basicGoodsForBarCodeResponse;
 	
 	public BarCodeResponse(BarCode code) {
 		this.id = code.getId();
 		this.code = code.getCode();
 		this.scannedAt = code.getScannedAt();
 		this.scannedBy = code.getScannedBy() != null ? new UserResponse(code.getScannedBy()) : null;
-		this.goodsId = code.getGoods().getId();
-		this.goodsName = code.getGoods().getName();
-		this.goodsType = code.getGoods().getGoodsType();
+		this.basicGoodsForBarCodeResponse = code.getGoods() != null ? new BasicGoodsForBarCodeResponse(code.getGoods()) : null;
 	}
 }

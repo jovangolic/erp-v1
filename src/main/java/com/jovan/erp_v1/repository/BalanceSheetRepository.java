@@ -33,7 +33,7 @@ public interface BalanceSheetRepository extends JpaRepository<BalanceSheet, Long
 
     List<BalanceSheet> findByFiscalYear_Id(Long id);
 
-    List<BalanceSheet> findByFiscalYear_Year(int year);
+    List<BalanceSheet> findByFiscalYear_Year(Integer year);
 
     List<BalanceSheet> findByFiscalYear_YearStatus(FiscalYearStatus yearStatus);
 

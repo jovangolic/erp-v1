@@ -1,19 +1,23 @@
 package com.jovan.erp_v1.service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.exception.BarCodeNotFoundException;
-import com.jovan.erp_v1.exception.BarCodeNotUniqueException;
 import com.jovan.erp_v1.exception.GoodsNotFoundException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.BarCodeMapper;
 import com.jovan.erp_v1.model.BarCode;
 import com.jovan.erp_v1.model.Goods;
+import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.BarCodeRepository;
 import com.jovan.erp_v1.repository.GoodsRepository;
+import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.BarCodeRequest;
 import com.jovan.erp_v1.response.BarCodeResponse;
 import com.jovan.erp_v1.util.DateValidator;
@@ -28,6 +32,7 @@ public class BarCodeService implements IBarcodeService {
 	private final BarCodeRepository barCodeRepository;
 	private final GoodsRepository goodsRepository;
 	private final BarCodeMapper barCodeMapper;
+	private final UserRepository userRepository;
 	
 
 	@Transactional
@@ -35,9 +40,9 @@ public class BarCodeService implements IBarcodeService {
 	public BarCodeResponse createBarCode(BarCodeRequest request) {
 		validateUniqueCode(request.code());
 		DateValidator.validateNotNull(request.scannedAt(), "Datum i vreme ne smeju biti null");
-		validateScannedById(request.scannedById());
-		validateGoodsId(request.goodsId());
-		BarCode code = barCodeMapper.toEntity(request);
+		Goods goods = validateGoodsId(request.goodsId());
+		User scannedBy = validateScannedById(request.scannedById());
+		BarCode code = barCodeMapper.toEntity(request,scannedBy,goods);
 		BarCode saved = barCodeRepository.save(code);
 		return barCodeMapper.toResponse(saved);
 	}
@@ -52,9 +57,17 @@ public class BarCodeService implements IBarcodeService {
 				.orElseThrow(() -> new BarCodeNotFoundException("Bar-code not found with id: " + id));
 		validateUniqueCode(request.code());
 		DateValidator.validateNotNull(request.scannedAt(), "Datum i vreme ne smeju biti null");
-		validateScannedById(request.scannedById());
-		validateGoodsId(request.goodsId());
-		barCodeMapper.toUpdateEntity(barCode, request);
+		User scannedBy = barCode.getScannedBy();
+		if (request.scannedById() != null &&
+		    (barCode.getScannedBy() == null || !request.scannedById().equals(barCode.getScannedBy().getId()))) {
+			scannedBy = validateScannedById(request.scannedById());
+		}
+		Goods goods = barCode.getGoods();
+		if (request.goodsId() != null &&
+		    (barCode.getGoods() == null || !request.goodsId().equals(barCode.getGoods().getId()))) {
+			goods = validateGoodsId(request.goodsId());
+		}
+		barCodeMapper.toUpdateEntity(barCode, request, scannedBy, goods);
 		return barCodeMapper.toResponse(barCodeRepository.save(barCode));
 	}
 
@@ -76,7 +89,11 @@ public class BarCodeService implements IBarcodeService {
 
 	@Override
 	public List<BarCodeResponse> getAll() {
-		return barCodeRepository.findAll().stream()
+		List<BarCode> items = barCodeRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("List of bar-codes is empty");
+		}
+		return items.stream()
 				.map(BarCodeResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -91,7 +108,12 @@ public class BarCodeService implements IBarcodeService {
 	@Override
 	public List<BarCodeResponse> findByGoods_Id(Long goodsId) {
 		validateGoodsId(goodsId);
-		return barCodeRepository.findByGoods_Id(goodsId).stream()
+		List<BarCode> items = barCodeRepository.findByGoods_Id(goodsId);
+		if(items.isEmpty()) {
+			String msg = String.format("No bar-codes for goodsId %d is found", goodsId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(BarCodeResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -99,7 +121,12 @@ public class BarCodeService implements IBarcodeService {
 	@Override
 	public List<BarCodeResponse> findByGoods_Name(String goodsName) {
 		validateString(goodsName);
-		return barCodeRepository.findByGoods_Name(goodsName).stream()
+		List<BarCode> items = barCodeRepository.findByGoods_Name(goodsName);
+		if(items.isEmpty()) {
+			String msg = String.format("No bar-codes with goods name %s is gound", goodsName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(BarCodeResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -107,7 +134,14 @@ public class BarCodeService implements IBarcodeService {
 	@Override
 	public List<BarCodeResponse> findByScannedAtBetween(LocalDateTime from, LocalDateTime to) {
 		DateValidator.validateRange(from, to);
-		return barCodeRepository.findByScannedAtBetween(from, to).stream()
+		List<BarCode> items = barCodeRepository.findByScannedAtBetween(from, to);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No bar-codes with scannedAt between %s and %s is found",
+					from.format(formatter),to.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(BarCodeResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -115,7 +149,12 @@ public class BarCodeService implements IBarcodeService {
 	@Override
 	public List<BarCodeResponse> findByScannedBy_Id(Long scannedById) {
 		validateScannedById(scannedById);
-		return barCodeRepository.findByScannedBy_Id(scannedById).stream()
+		List<BarCode> items = barCodeRepository.findByScannedBy_Id(scannedById);
+		if(items.isEmpty()) {
+			String msg = String.format("No bar-codes fr scannedBy ID %d is found", scannedById);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(BarCodeResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -124,7 +163,13 @@ public class BarCodeService implements IBarcodeService {
 	public List<BarCodeResponse> findByScannedBy_FirstNameContainingIgnoreCaseAndScannedBy_LastNameContainingIgnoreCase(
 			String userFirstName, String userLastName) {
 		validateDoubleString(userFirstName, userLastName);
-		return barCodeRepository.findByScannedBy_FirstNameContainingIgnoreCaseAndScannedBy_LastNameContainingIgnoreCase(userFirstName, userLastName).stream()
+		List<BarCode> items = barCodeRepository.findByScannedBy_FirstNameContainingIgnoreCaseAndScannedBy_LastNameContainingIgnoreCase(userFirstName, userLastName);
+		if(items.isEmpty()) {
+			String msg = String.format("No bar-codes with scannedBy user-first-name %s and user-last-name %s is found",
+					userFirstName,userLastName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(BarCodeResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -141,10 +186,11 @@ public class BarCodeService implements IBarcodeService {
         }
     }
 	
-	private void validateGoodsId(Long goodsId) {
+	private Goods validateGoodsId(Long goodsId) {
 		if(goodsId == null) {
 			throw new GoodsNotFoundException("Goods ID "+goodsId+" ne postoji");
 		}
+		return goodsRepository.findById(goodsId).orElseThrow(() -> new ValidationException("Goods not found with id "+goodsId));
 	}
 	
 	private void validateUniqueCode(String code) {
@@ -156,10 +202,11 @@ public class BarCodeService implements IBarcodeService {
 	    }
 	}
 	
-	private void validateScannedById(Long scannedById) {
+	private User validateScannedById(Long scannedById) {
 		if(scannedById == null) {
 			throw new IllegalArgumentException("User ID "+scannedById+" ne postoji");
 		}
+		return userRepository.findById(scannedById).orElseThrow(() -> new ValidationException("User not found with id "+scannedById));
 	}
 
 	
