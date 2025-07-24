@@ -2,41 +2,41 @@ package com.jovan.erp_v1.mapper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-import com.jovan.erp_v1.exception.NoSuchProductException;
+
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.model.DeliveryItem;
 import com.jovan.erp_v1.model.Product;
-import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.request.DeliveryItemInboundRequest;
 import com.jovan.erp_v1.request.DeliveryItemOutboundRequest;
 import com.jovan.erp_v1.response.DeliveryItemInboundResponse;
 import com.jovan.erp_v1.response.DeliveryItemOutboundResponse;
 
-import lombok.RequiredArgsConstructor;
-
 @Component
-@RequiredArgsConstructor
-public class DeliveryItemMapper {
+public class DeliveryItemMapper  {
 
-    private final ProductRepository productRepository;
-
-    public DeliveryItem toInEntity(DeliveryItemInboundRequest request) {
+    public DeliveryItem toInEntity(DeliveryItemInboundRequest request, Product product) {
+    	Objects.requireNonNull(request, "DeliveryItemInboundRequest must not be null");
+    	Objects.requireNonNull(product, "Product must not be null");
+    	if(request.id() != null) {
+    		throw new ValidationException("DeliveryItem ID must be null, while being created");
+    	}
         DeliveryItem item = new DeliveryItem();
-        Product product = productRepository.findById(request.productId())
-                .orElseThrow(() -> new NoSuchProductException("Product not found"));
         item.setProduct(product);
         item.setQuantity(request.quantity());
-        // Ne setuj inboundDelivery ovde!
         item.setOutboundDelivery(null);
         return item;
     }
 
-    public DeliveryItem toOutEntity(DeliveryItemOutboundRequest request) {
+    public DeliveryItem toOutEntity(DeliveryItemOutboundRequest request, Product product) {
+    	Objects.requireNonNull(request, "DeliveryItemOutboundRequest must not be null");
+    	Objects.requireNonNull(product, "Product must not be null");
+    	if(request.id() != null) {
+    		throw new ValidationException("DeliveryItem ID must be null, while being created");
+    	}
         DeliveryItem item = new DeliveryItem();
-        Product product = productRepository.findById(request.productId())
-                .orElseThrow(() -> new NoSuchProductException("Product not found"));
         item.setProduct(product);
         item.setQuantity(request.quantity());
         item.setInboundDelivery(null);
@@ -44,6 +44,7 @@ public class DeliveryItemMapper {
     }
 
     public DeliveryItemInboundResponse toInResponse(DeliveryItem item) {
+    	Objects.requireNonNull(item, "DeliveryItem must not be null");
         DeliveryItemInboundResponse response = new DeliveryItemInboundResponse();
         response.setId(item.getId());
         response.setProductName(item.getProduct() != null ? item.getProduct().getName() : null);
@@ -53,6 +54,7 @@ public class DeliveryItemMapper {
     }
 
     public DeliveryItemOutboundResponse toOutResponse(DeliveryItem item) {
+    	Objects.requireNonNull(item, "DeliveryItem must not be null");
         DeliveryItemOutboundResponse response = new DeliveryItemOutboundResponse();
         response.setId(item.getId());
         response.setProductName(item.getProduct() != null ? item.getProduct().getName() : null);
@@ -62,7 +64,7 @@ public class DeliveryItemMapper {
     }
 
     public List<DeliveryItemInboundResponse> toInResponseList(List<DeliveryItem> items) {
-        if (items == null) {
+        if (items == null || items.isEmpty()) {
             return Collections.emptyList();
         }
         return items.stream()
@@ -71,7 +73,7 @@ public class DeliveryItemMapper {
     }
 
     public List<DeliveryItemOutboundResponse> toOutResponseList(List<DeliveryItem> items) {
-        if (items == null) {
+        if (items == null || items.isEmpty()) {
             return Collections.emptyList();
         }
         return items.stream()

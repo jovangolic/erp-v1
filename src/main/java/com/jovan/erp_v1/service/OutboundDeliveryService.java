@@ -2,7 +2,12 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -12,13 +17,18 @@ import com.jovan.erp_v1.enumeration.DeliveryStatus;
 import com.jovan.erp_v1.exception.BuyerNotFoundException;
 import com.jovan.erp_v1.exception.OutboundDeliveryErrorException;
 import com.jovan.erp_v1.exception.ProductNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.DeliveryItemMapper;
 import com.jovan.erp_v1.mapper.OutboundDeliveryMapper;
 import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.DeliveryItem;
+import com.jovan.erp_v1.model.InboundDelivery;
 import com.jovan.erp_v1.model.OutboundDelivery;
+import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.repository.BuyerRepository;
 import com.jovan.erp_v1.repository.OutboundDeliveryRepository;
+import com.jovan.erp_v1.repository.ProductRepository;
+import com.jovan.erp_v1.request.DeliveryItemInboundRequest;
 import com.jovan.erp_v1.request.DeliveryItemOutboundRequest;
 import com.jovan.erp_v1.request.OutboundDeliveryRequest;
 import com.jovan.erp_v1.response.OutboundDeliveryResponse;
@@ -32,8 +42,9 @@ public class OutboundDeliveryService implements IOutboundDeliveryService {
 
     private OutboundDeliveryRepository outboundDeliveryRepository;
     private OutboundDeliveryMapper outboundDeliveryMapper;
-    private BuyerRepository buyerRepository;
+    private final BuyerRepository buyerRepository;
     private final DeliveryItemMapper deliveryItemMapper;
+    private final ProductRepository productRepository;
 
     @Transactional
     @Override
@@ -44,7 +55,14 @@ public class OutboundDeliveryService implements IOutboundDeliveryService {
         }
         validateDeliveryStatus(request.status());
         validateDeliveryItems(request.itemRequest());
-        OutboundDelivery delivery = outboundDeliveryMapper.toEntity(request);
+        Buyer buyer = fetchBuyer(request.buyerId());
+        Set<Long> productIds = request.itemRequest().stream()
+    	        .map(DeliveryItemOutboundRequest::productId)
+    	        .collect(Collectors.toSet());
+        List<Product> products = productRepository.findAllById(productIds);
+    	Map<Long, Product> productMap = products.stream()
+    	        .collect(Collectors.toMap(Product::getId, Function.identity()));
+        OutboundDelivery delivery = outboundDeliveryMapper.toEntity(request,buyer,productMap);
         OutboundDelivery saved = outboundDeliveryRepository.save(delivery);
         return new OutboundDeliveryResponse(saved);
     }
@@ -65,13 +83,7 @@ public class OutboundDeliveryService implements IOutboundDeliveryService {
         delivery.setStatus(request.status());
         delivery.setBuyer(buyer);
         delivery.getItems().clear();
-        List<DeliveryItem> items = request.itemRequest().stream()
-                .map(itemReq -> {
-                    DeliveryItem item = deliveryItemMapper.toOutEntity(itemReq);
-                    item.setOutboundDelivery(delivery);
-                    return item;
-                })
-                .collect(Collectors.toList());
+        List<DeliveryItem> items = mapOutboundDeliveryItems(request.itemRequest(), delivery);
         delivery.getItems().addAll(items);
         OutboundDelivery saved = outboundDeliveryRepository.save(delivery);
         return new OutboundDeliveryResponse(saved);
@@ -126,8 +138,29 @@ public class OutboundDeliveryService implements IOutboundDeliveryService {
 
     @Override
     public List<OutboundDeliveryResponse> createAll(List<OutboundDeliveryRequest> requests) {
+    	if (requests == null || requests.isEmpty()) {
+            return Collections.emptyList();
+        }
+    	Set<Long> buyerIds = requests.stream()
+    			.map(OutboundDeliveryRequest::buyerId)
+    			.collect(Collectors.toSet());
+    	Map<Long, Buyer> buyerMap = buyerRepository.findAllById(buyerIds).stream()
+    			.collect(Collectors.toMap(Buyer::getId, Function.identity()));
+    	Set<Long> productIds = requests.stream()
+    	        .flatMap(req -> req.itemRequest().stream())
+    	        .map(DeliveryItemOutboundRequest::productId)
+    	        .collect(Collectors.toSet());
+
+    	Map<Long, Product> productMap = productRepository.findAllById(productIds).stream()
+    	        .collect(Collectors.toMap(Product::getId, Function.identity()));
         List<OutboundDelivery> deliveries = requests.stream()
-                .map(outboundDeliveryMapper::toEntity)
+                .map(req -> {
+                	Buyer buyer = buyerMap.get(req.buyerId());
+                	if(buyer == null) {
+                		throw new ValidationException("Buyer not found "+req.buyerId());
+                	}
+                	return outboundDeliveryMapper.toEntity(req, buyer, productMap);
+                })
                 .collect(Collectors.toList());
         List<OutboundDelivery> saved = outboundDeliveryRepository.saveAll(deliveries);
 
@@ -139,6 +172,33 @@ public class OutboundDeliveryService implements IOutboundDeliveryService {
     @Override
     public void deleteAllByIds(List<Long> ids) {
         outboundDeliveryRepository.deleteAllById(ids);
+    }
+    
+    private List<DeliveryItem> mapOutboundDeliveryItems(List<DeliveryItemOutboundRequest> itemRequests, OutboundDelivery delivery) {
+    	if (itemRequests == null || itemRequests.isEmpty()) {
+    	    return Collections.emptyList();
+    	}
+    	Set<Long> productIds = itemRequests.stream()
+    	        .map(DeliveryItemOutboundRequest::productId)
+    	        .collect(Collectors.toSet());
+    	Map<Long, Product> productMap = productRepository.findAllById(productIds).stream()
+    	        .collect(Collectors.toMap(Product::getId, Function.identity()));
+    	if (productMap.size() != productIds.size()) {
+    	    Set<Long> notFound = new HashSet<>(productIds);
+    	    notFound.removeAll(productMap.keySet());
+    	    throw new ProductNotFoundException("Products not found: " + notFound);
+    	}
+        return itemRequests.stream()
+            .map(itemReq -> {
+            	Product product = productMap.get(itemReq.productId());
+            	if (product == null) {
+                    throw new ProductNotFoundException("Product not found: " + itemReq.productId());
+                }
+                DeliveryItem item = deliveryItemMapper.toOutEntity(itemReq,product);
+                item.setOutboundDelivery(delivery);
+                return item;
+            })
+            .collect(Collectors.toList());
     }
     
     private Buyer fetchBuyer(Long buyerId) {

@@ -35,7 +35,7 @@ public class InboundDelivery {
 
     @ManyToOne
     @JoinColumn(name = "supply_id")
-    private Supply supply; // Možeš dodati entitet Supplier
+    private Supply supply; 
 
     @Enumerated(EnumType.STRING)
     private DeliveryStatus status;

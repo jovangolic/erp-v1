@@ -116,13 +116,13 @@ public class BuyerController {
 		return ResponseEntity.ok(results);
 	}
 	
-	@GetMapping("/search/buyer-without-sales-orders")
+	@GetMapping("/search/buyer-with-sales-orders")
 	public ResponseEntity<List<BuyerResponse>> findBuyersWithSalesOrders(){
 		List<BuyerResponse> results = buyerService.findBuyersWithSalesOrders();
 		return ResponseEntity.ok(results);
 	}
 	
-	@GetMapping("/search/buyer-with-sales-orders")
+	@GetMapping("/search/buyer-without-sales-orders")
 	public ResponseEntity<List<BuyerResponse>> findBuyersWithoutSalesOrders(){
 		List<BuyerResponse> results = buyerService.findBuyersWithoutSalesOrders();
 		return ResponseEntity.ok(results);

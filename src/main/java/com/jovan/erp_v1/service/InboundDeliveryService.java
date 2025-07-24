@@ -5,7 +5,9 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -13,13 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
 import com.jovan.erp_v1.exception.InboundDeliveryErrorException;
 import com.jovan.erp_v1.exception.NoSuchProductException;
+import com.jovan.erp_v1.exception.ProductNotFoundException;
 import com.jovan.erp_v1.exception.SupplyNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.DeliveryItemMapper;
 import com.jovan.erp_v1.mapper.InboundDeliveryMapper;
 import com.jovan.erp_v1.model.DeliveryItem;
 import com.jovan.erp_v1.model.InboundDelivery;
+import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.model.Supply;
 import com.jovan.erp_v1.repository.InboundDeliveryRepository;
+import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.SupplyRepository;
 import com.jovan.erp_v1.request.DeliveryItemInboundRequest;
 import com.jovan.erp_v1.request.InboundDeliveryRequest;
@@ -36,15 +42,22 @@ public class InboundDeliveryService implements InterfejsInboundDeliveryService {
     private final InboundDeliveryMapper inboundDeliveryMapper;
     private final DeliveryItemMapper deliveryItemMapper;
     private final SupplyRepository supplyRepository;
+    private final ProductRepository productRepository;
 
     @Transactional
     @Override
     public InboundDeliveryResponse create(InboundDeliveryRequest request) {
     	DateValidator.validateNotNull(request.deliveryDate(), "Datum ne sme biti null");
-    	validateSupplyId(request.supplyId());
+    	Supply supply = validateSupplyId(request.supplyId());
+    	Set<Long> productIds = request.itemRequest().stream()
+    	        .map(DeliveryItemInboundRequest::productId)
+    	        .collect(Collectors.toSet());
+    	List<Product> products = productRepository.findAllById(productIds);
+    	Map<Long, Product> productMap = products.stream()
+    	        .collect(Collectors.toMap(Product::getId, Function.identity()));
     	validateDeliveryStatus(request.status());
     	validateInboundDeliveryItems(request);
-        InboundDelivery delivery = inboundDeliveryMapper.toInboundEntity(request);
+        InboundDelivery delivery = inboundDeliveryMapper.toInboundEntity(request,supply,productMap);
         InboundDelivery saved = inboundDeliveryRepository.save(delivery);
         return new InboundDeliveryResponse(saved);
     }
@@ -125,14 +138,30 @@ public class InboundDeliveryService implements InterfejsInboundDeliveryService {
     	if(requests == null || requests.isEmpty()) {
     		return Collections.emptyList();
     	}
-        List<InboundDelivery> deliveries = requests.stream()
-                .map(inboundDeliveryMapper::toInboundEntity)
-                .collect(Collectors.toList());
-        List<InboundDelivery> saved = inboundDeliveryRepository.saveAll(deliveries);
-
-        return saved.stream()
-                .map(inboundDeliveryMapper::toResponse)
-                .collect(Collectors.toList());
+    	Set<Long> supplyIds = requests.stream()
+    	        .map(InboundDeliveryRequest::supplyId)
+    	        .collect(Collectors.toSet());
+    	Map<Long, Supply> supplyMap = supplyRepository.findAllById(supplyIds).stream()
+    	        .collect(Collectors.toMap(Supply::getId, Function.identity()));
+    	Set<Long> productIds = requests.stream()
+    	        .flatMap(req -> req.itemRequest().stream())
+    	        .map(DeliveryItemInboundRequest::productId)
+    	        .collect(Collectors.toSet());
+    	Map<Long, Product> productMap = productRepository.findAllById(productIds).stream()
+    	        .collect(Collectors.toMap(Product::getId, Function.identity()));
+    	List<InboundDelivery> deliveries = requests.stream()
+    	        .map(req -> {
+    	            Supply supply = supplyMap.get(req.supplyId());
+    	            if (supply == null) {
+    	                throw new SupplyNotFoundException("Supply not found: " + req.supplyId());
+    	            }
+    	            return inboundDeliveryMapper.toInboundEntity(req, supply, productMap);
+    	        })
+    	        .collect(Collectors.toList());
+    	 List<InboundDelivery> saved = inboundDeliveryRepository.saveAll(deliveries);
+    	 return saved.stream()
+    	        .map(inboundDeliveryMapper::toResponse)
+    	        .collect(Collectors.toList());
     }
 
     @Override
@@ -146,16 +175,34 @@ public class InboundDeliveryService implements InterfejsInboundDeliveryService {
     	}
     }
     
-    private void validateSupplyId(Long supplyId) {
+    private Supply validateSupplyId(Long supplyId) {
     	if(supplyId == null) {
     		throw new IllegalArgumentException("Supply Id ne sme biti null.");
     	}
+    	return supplyRepository.findById(supplyId).orElseThrow(() -> new ValidationException("Supply not found with id "+supplyId));
     }
     
     private List<DeliveryItem> mapInboundDeliveryItems(List<DeliveryItemInboundRequest> itemRequests, InboundDelivery delivery) {
+    	if (itemRequests == null || itemRequests.isEmpty()) {
+    	    return Collections.emptyList();
+    	}
+    	Set<Long> productIds = itemRequests.stream()
+    	        .map(DeliveryItemInboundRequest::productId)
+    	        .collect(Collectors.toSet());
+    	Map<Long, Product> productMap = productRepository.findAllById(productIds).stream()
+    	        .collect(Collectors.toMap(Product::getId, Function.identity()));
+    	if (productMap.size() != productIds.size()) {
+    	    Set<Long> notFound = new HashSet<>(productIds);
+    	    notFound.removeAll(productMap.keySet());
+    	    throw new ProductNotFoundException("Products not found: " + notFound);
+    	}
         return itemRequests.stream()
             .map(itemReq -> {
-                DeliveryItem item = deliveryItemMapper.toInEntity(itemReq);
+            	Product product = productMap.get(itemReq.productId());
+            	if (product == null) {
+                    throw new ProductNotFoundException("Product not found: " + itemReq.productId());
+                }
+                DeliveryItem item = deliveryItemMapper.toInEntity(itemReq,product);
                 item.setInboundDelivery(delivery);
                 return item;
             })
@@ -172,7 +219,7 @@ public class InboundDeliveryService implements InterfejsInboundDeliveryService {
     			throw new NoSuchProductException("Product ID ne sme biti null");
     		}
     		if(item == null || item.quantity().compareTo(BigDecimal.ZERO) <= 0) {
-    			throw new IllegalArgumentException("Kolicina mora biti veća od nule");
+    			throw new IllegalArgumentException("Kolicina mora biti veca od nule");
     		}
     		if(item.inboundDeliveryId() == null) {
     			throw new InboundDeliveryErrorException("InboundDelivery ID ne sme biti null");
@@ -185,6 +232,13 @@ public class InboundDeliveryService implements InterfejsInboundDeliveryService {
     			throw new IllegalArgumentException("Duplikat pronadjen za proizvod ID: " + item.productId());
     		}
     	}
+    }
+    
+    private Product validateProductId(Long productId) {
+    	if(productId == null) {
+    		throw new ValidationException("Product ID must not be null");
+    	}
+    	return productRepository.findById(productId).orElseThrow(() -> new ValidationException("Product not found with id "+productId));
     }
 
 }

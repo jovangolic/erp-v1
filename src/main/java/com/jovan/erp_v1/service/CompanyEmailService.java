@@ -1,15 +1,12 @@
 package com.jovan.erp_v1.service;
 
-import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import com.jovan.erp_v1.enumeration.RoleTypes;
 import com.jovan.erp_v1.exception.CompanyEmailErrorException;
 import com.jovan.erp_v1.model.CompanyEmail;
 import com.jovan.erp_v1.model.Role;
@@ -19,10 +16,7 @@ import com.jovan.erp_v1.repository.RoleRepository;
 import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.CompanyEmailDTO;
 import com.jovan.erp_v1.response.CompanyEmailResponse;
-import com.jovan.erp_v1.model.CompanyEmail;
 import com.jovan.erp_v1.util.RandomUtil;
-
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 @Service

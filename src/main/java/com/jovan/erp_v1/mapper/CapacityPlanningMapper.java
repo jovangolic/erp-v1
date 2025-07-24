@@ -5,25 +5,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
 import com.jovan.erp_v1.model.CapacityPlanning;
 import com.jovan.erp_v1.model.WorkCenter;
 import com.jovan.erp_v1.request.CapacityPlanningRequest;
 import com.jovan.erp_v1.response.CapacityPlanningResponse;
 import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
-
 @Component
-@RequiredArgsConstructor
 public class CapacityPlanningMapper extends AbstractMapper<CapacityPlanningRequest> {
 
     public CapacityPlanning toEntity(CapacityPlanningRequest request, WorkCenter workCenter) {
         Objects.requireNonNull(request, "CapacityPlanningRequest cannot be null");
         Objects.requireNonNull(workCenter, "WorkCenter cannot be null");
-
         CapacityPlanning cp = new CapacityPlanning();
         validateIdForCreate(request, CapacityPlanningRequest::id);
         cp.setWorkCenter(workCenter);

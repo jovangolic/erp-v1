@@ -15,24 +15,13 @@ import com.jovan.erp_v1.model.DeliveryItem;
 public interface DeliveryItemRepository extends JpaRepository<DeliveryItem, Long> {
 
     List<DeliveryItem> findByInboundDeliveryId(Long inboundId);
-
     List<DeliveryItem> findByOutboundDeliveryId(Long outboundId);
-
     List<DeliveryItem> findByQuantity(BigDecimal quantity);
-
     List<DeliveryItem> findByQuantityGreaterThan(BigDecimal quantity);
-
     List<DeliveryItem> findByQuantityLessThan(BigDecimal quantity);
-
     @Query("SELECT d FROM DeliveryItem d WHERE d.product.id = :productId")
     DeliveryItem findByProductId(@Param("productId") Long productId);
-
-    // Pretraga po nazivu proizvoda
     List<DeliveryItem> findByProduct_Name(String name);
-
-    // Po opsegu datuma ulazne isporuke
     List<DeliveryItem> findByInboundDelivery_DeliveryDateBetween(LocalDate start, LocalDate end);
-
-    // Po opsegu datuma izlazne isporuke
     List<DeliveryItem> findByOutboundDelivery_DeliveryDateBetween(LocalDate start, LocalDate end);
 }

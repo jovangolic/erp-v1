@@ -2,6 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.exception.CapacityPlanningErrorException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.exception.WorkCenterErrorException;
 import com.jovan.erp_v1.mapper.CapacityPlanningMapper;
 import com.jovan.erp_v1.model.CapacityPlanning;
@@ -18,8 +21,6 @@ import com.jovan.erp_v1.repository.WorkCenterRepository;
 import com.jovan.erp_v1.request.CapacityPlanningRequest;
 import com.jovan.erp_v1.response.CapacityPlanningResponse;
 import com.jovan.erp_v1.util.DateValidator;
-
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -80,7 +81,11 @@ public class CapacityPlanningService implements ICapacityPlanningService {
 
     @Override
     public List<CapacityPlanningResponse> findAll() {
-        return capacityPlanningRepository.findAll().stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("List of capacity-planning is empty");
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -88,7 +93,12 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Override
     public List<CapacityPlanningResponse> findByWorkCenter_Id(Long id) {
     	validateWorkCenterId(id);
-        return capacityPlanningRepository.findByWorkCenter_Id(id).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByWorkCenter_Id(id);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Capacity-planning for work-center id %d is found", id);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -96,7 +106,12 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Override
     public List<CapacityPlanningResponse> findByWorkCenter_NameContainingIgnoreCase(String name) {
     	validateString(name);
-        return capacityPlanningRepository.findByWorkCenter_NameContainingIgnoreCase(name).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByWorkCenter_NameContainingIgnoreCase(name);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Capacity-planning for work-center name %s is found", name);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -104,7 +119,12 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Override
     public List<CapacityPlanningResponse> findByWorkCenter_LocationContainingIgnoreCase(String location) {
     	validateString(location);
-        return capacityPlanningRepository.findByWorkCenter_LocationContainingIgnoreCase(location).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByWorkCenter_LocationContainingIgnoreCase(location);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Capacity-planning for work-center location %s is found", location);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -112,7 +132,14 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Override
     public List<CapacityPlanningResponse> findByDateBetween(LocalDate start, LocalDate end) {
     	DateValidator.validateRange(start, end);
-        return capacityPlanningRepository.findByDateBetween(start, end).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByDateBetween(start, end);
+    	if(items.isEmpty()) {
+    		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    		String msg = String.format("No Capacity-planning with date between %s and %s ,is found", 
+    				start.format(formatter), end.format(formatter));
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -120,7 +147,13 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Override
     public List<CapacityPlanningResponse> findByDate(LocalDate date) {
     	DateValidator.validateNotNull(date, "Datun ne sme biti null");
-        return capacityPlanningRepository.findByDate(date).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByDate(date);
+    	if(items.isEmpty()) {
+    		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    		String msg = String.format("No Capacity-planning with date %s ,is found", date.format(formatter));
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -128,7 +161,13 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Override
     public List<CapacityPlanningResponse> findByDateGreaterThanEqual(LocalDate date) {
     	DateValidator.validateNotNull(date, "Datun ne sme biti null");
-        return capacityPlanningRepository.findByDateGreaterThanEqual(date).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByDateGreaterThanEqual(date);
+    	if(items.isEmpty()) {
+    		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    		String msg = String.format("No Capacity-planning with date greater than %s ,is found", date.format(formatter));
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -136,7 +175,12 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Override
     public List<CapacityPlanningResponse> findByAvailableCapacity(BigDecimal availableCapacity) {
     	validateAvailableCapacity(availableCapacity);
-        return capacityPlanningRepository.findByAvailableCapacity(availableCapacity).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByAvailableCapacity(availableCapacity);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Capacity-planning with available capacity  %s, is found", availableCapacity);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -144,7 +188,12 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Override
     public List<CapacityPlanningResponse> findByAvailableCapacityGreaterThan(BigDecimal availableCapacity) {
     	validateAvailableCapacity(availableCapacity);
-        return capacityPlanningRepository.findByAvailableCapacityGreaterThan(availableCapacity).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByAvailableCapacityGreaterThan(availableCapacity);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Capacity-planning with available capacity greater than %s, is found", availableCapacity);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -152,7 +201,12 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Override
     public List<CapacityPlanningResponse> findByAvailableCapacityLessThan(BigDecimal availableCapacity) {
     	validateAvailableCapacity(availableCapacity);
-        return capacityPlanningRepository.findByAvailableCapacityLessThan(availableCapacity).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByAvailableCapacityLessThan(availableCapacity);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Capacity-planning with available capacity less than %s, is found", availableCapacity);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -160,7 +214,12 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Override
     public List<CapacityPlanningResponse> findByPlannedLoad(BigDecimal plannedLoad) {
     	validatePlannedLoad(plannedLoad);
-        return capacityPlanningRepository.findByPlannedLoad(plannedLoad).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByPlannedLoad(plannedLoad);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Capacity-planning with planned load %s, is found", plannedLoad);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -168,7 +227,12 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Override
     public List<CapacityPlanningResponse> findByPlannedLoadGreaterThan(BigDecimal plannedLoad) {
     	validatePlannedLoad(plannedLoad);
-        return capacityPlanningRepository.findByPlannedLoadGreaterThan(plannedLoad).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByPlannedLoadGreaterThan(plannedLoad);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Capacity-planning with planned load greater than %s, is found", plannedLoad);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -176,7 +240,12 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     @Override
     public List<CapacityPlanningResponse> findByPlannedLoadLessThan(BigDecimal plannedLoad) {
     	validatePlannedLoad(plannedLoad);
-        return capacityPlanningRepository.findByPlannedLoadLessThan(plannedLoad).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByPlannedLoadLessThan(plannedLoad);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Capacity-planning with planned load less than %s, is found", plannedLoad);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
@@ -185,53 +254,102 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     public List<CapacityPlanningResponse> findByPlannedLoadAndAvailableCapacity(BigDecimal plannedLoad,
             BigDecimal availableCapacity) {
     	validateDoubleBigDecimal(availableCapacity, plannedLoad);
-        return capacityPlanningRepository.findByPlannedLoadAndAvailableCapacity(plannedLoad, availableCapacity).stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByPlannedLoadAndAvailableCapacity(plannedLoad, availableCapacity);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Capacity-plannig with planned load %s and available capacity %s is found",
+    				plannedLoad,availableCapacity);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<CapacityPlanningResponse> findByRemainingCapacity(BigDecimal remainingCapacity) {
+    	validateBigDecimalNonNegative(remainingCapacity);
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByRemainingCapacity(remainingCapacity);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Capacity-planning with remaining capacity %s, is found", remainingCapacity);
+    		throw new NoDataFoundException(msg);
+    	}
     	validateRemainingCapacity(remainingCapacity);
-        return capacityPlanningRepository.findByRemainingCapacity(remainingCapacity).stream()
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<CapacityPlanningResponse> findWhereRemainingCapacityIsLessThanAvailableCapacity() {
-        return capacityPlanningRepository.findWhereRemainingCapacityIsLessThanAvailableCapacity().stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findWhereRemainingCapacityIsLessThanAvailableCapacity();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("No Capacity-planning where remaining capacity is less than available capacity, is found");
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<CapacityPlanningResponse> findWhereRemainingCapacityIsGreaterThanAvailableCapacity() {
-        return capacityPlanningRepository.findWhereRemainingCapacityIsGreaterThanAvailableCapacity().stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findWhereRemainingCapacityIsGreaterThanAvailableCapacity();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("No Capacity-planning where remaining capacity is greater than available capacity, is found");
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<CapacityPlanningResponse> findAllOrderByUtilizationDesc() {
-        return capacityPlanningRepository.findAllOrderByUtilizationDesc().stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findAllOrderByUtilizationDesc();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("No Capacity-planning with utilization in descending order, found");
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<CapacityPlanningResponse> findWhereLoadExceedsCapacity() {
-        return capacityPlanningRepository.findWhereLoadExceedsCapacity().stream()
+    	List<CapacityPlanning> items = capacityPlanningRepository.findWhereLoadExceedsCapacity();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("No Capacity-planning where load exceeds capacity is found");
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<CapacityPlanningResponse> findByUtilizationGreaterThan(BigDecimal threshold) {
-        return capacityPlanningRepository.findByUtilizationGreaterThan(threshold).stream()
+    	validateBigDecimal(threshold);
+    	List<CapacityPlanning> items = capacityPlanningRepository.findByUtilizationGreaterThan(threshold);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Capacity-planning for utilization greater than  with given threshold %d found", threshold);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(CapacityPlanningResponse::new)
                 .collect(Collectors.toList());
     }
+    
+    private void validateBigDecimal(BigDecimal num) {
+        if (num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Mora biti pozitivan broj");
+        }
+    }
+    
+    private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
     
     private void validateRemainingCapacity(BigDecimal remainingCapacity) {
     	if(remainingCapacity == null) {
