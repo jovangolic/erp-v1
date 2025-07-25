@@ -612,6 +612,44 @@ public class StorageService implements IStorageService {
 				.collect(Collectors.toList());
 	}
 	
+	@Override
+	public BigDecimal getAvailableCapacity(Long storageId) {
+		Storage storage = storageRepository.findById(storageId).orElseThrow(() -> new ValidationException("Storage not found with id "+storageId));
+		return storage.countAvailableCapacity();
+	}
+
+	@Override
+	public void allocateCapacity(Long storageId, BigDecimal amount) {
+		Storage storage = storageRepository.findById(storageId)
+				.orElseThrow(() -> new ValidationException("Storage not found with id "+storageId));
+		validateBigDecimal(amount);
+		if (!storage.hasCapacityFor(amount)) {
+            throw new ValidationException("Not enough capacity");
+        }
+        storage.setUsedCapacity(storage.getUsedCapacity().add(amount));
+        storageRepository.save(storage);
+	}
+
+	@Override
+	public void releaseCapacity(Long storageId, BigDecimal amount) {
+		Storage storage = storageRepository.findById(storageId)
+				.orElseThrow(() -> new ValidationException("Storage not found with id "+storageId));
+		validateBigDecimal(amount);
+		if (amount.compareTo(storage.getUsedCapacity()) > 0) {
+		    throw new ValidationException("Cannot release more capacity than is currently used");
+		}
+		storage.setUsedCapacity(storage.getUsedCapacity().subtract(amount));
+		storageRepository.save(storage);
+	}
+
+	@Override
+	public boolean hasCapacity(Long storageId, BigDecimal amount) {
+		Storage storage = storageRepository.findById(storageId)
+				.orElseThrow(() -> new ValidationException("Storage not found with id "+storageId));
+		validateBigDecimal(amount);
+		return storage.hasCapacityFor(amount);
+	}
+	
 	private void validateString(String str) {
 		if(str == null || str.trim().isEmpty()) {
 			throw new ValidationException("String must not be null nor empty");
@@ -751,7 +789,5 @@ public class StorageService implements IStorageService {
 			throw new ValidationException("Row-count must not be null nor negative number");
 		}
 	}
-
-	
 
 }

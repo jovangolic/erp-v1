@@ -14,18 +14,16 @@ import lombok.NoArgsConstructor;
 public class DeliveryItemResponse {
 
     private Long id;
-    private Long productId;
-    private String productName;
+    private DeliveryItemProductResponse deliveryItemProductResponse;
     private BigDecimal quantity;
-    private Long inboundDeliveryId;
-    private Long outboundDeliveryId;
+    private InboundDeliveryItemResponse inboundDeliveryItemResponse;
+    private OutboundDeliveryItemResponse outboundDeliveryItemResponse;
 
     public DeliveryItemResponse(DeliveryItem item) {
         this.id = item.getId();
-        this.productId = item.getProduct().getId();
-        this.productName = item.getProduct().getName();
+        this.deliveryItemProductResponse = item.getProduct() != null ? new DeliveryItemProductResponse(item.getProduct()) : null;
         this.quantity = item.getQuantity();
-        this.inboundDeliveryId = item.getInboundDelivery().getId();
-        this.outboundDeliveryId = item.getOutboundDelivery().getId();
+        this.inboundDeliveryItemResponse = item.getInboundDelivery() != null ? new InboundDeliveryItemResponse(item.getInboundDelivery()) : null;
+        this.outboundDeliveryItemResponse = item.getOutboundDelivery() != null ? new OutboundDeliveryItemResponse(item.getOutboundDelivery()) : null;
     }
 }

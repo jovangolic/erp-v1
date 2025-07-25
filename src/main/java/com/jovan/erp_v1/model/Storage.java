@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
+import com.jovan.erp_v1.exception.ValidationException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -86,6 +87,47 @@ public class Storage {
 		}
 		shelves.add(shelf);
 		shelf.setStorage(this);
+	}
+	
+	public BigDecimal countAvailableCapacity() {
+		if(this.capacity == null || this.usedCapacity == null) {
+			return BigDecimal.ZERO;
+		}
+		if(this.usedCapacity.compareTo(this.capacity) > 0) {
+			throw new ValidationException("UsedCapacity must not be greater than capacity");
+		}
+		if(this.capacity.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Capacity must not be negative number");
+		}
+		BigDecimal total = this.capacity.subtract(this.usedCapacity).max(BigDecimal.ZERO);
+		return total;
+	}
+	
+	public boolean hasCapacityFor(BigDecimal amount) {
+		if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+			throw new ValidationException("Amount must be a positive number.");
+		}
+		return countAvailableCapacity().compareTo(amount) >= 0;
+	}
+	
+	public void allocateCapacity(BigDecimal amount) {
+		if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+			throw new ValidationException("Amount must be a positive number.");
+		}
+		if (!hasCapacityFor(amount)) {
+			throw new ValidationException("Not enough available capacity in the storage.");
+		}
+		this.usedCapacity = this.usedCapacity.add(amount);
+	}
+	
+	public void releaseCapacity(BigDecimal amount) {
+		if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+			throw new ValidationException("Amount must be a positive number.");
+		}
+		if (amount.compareTo(this.usedCapacity) > 0) {
+			throw new ValidationException("Cannot release more than currently used capacity.");
+		}
+		this.usedCapacity = this.usedCapacity.subtract(amount);
 	}
 
 	/*

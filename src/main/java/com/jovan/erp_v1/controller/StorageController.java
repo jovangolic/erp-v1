@@ -3,12 +3,11 @@ package com.jovan.erp_v1.controller;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,10 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.jovan.erp_v1.enumeration.StorageType;
-import com.jovan.erp_v1.exception.StorageNotFoundException;
-import com.jovan.erp_v1.mapper.StorageMapper;
 import com.jovan.erp_v1.request.StorageRequest;
 import com.jovan.erp_v1.response.StorageResponse;
 import com.jovan.erp_v1.service.IStorageService;
@@ -35,7 +31,6 @@ import lombok.RequiredArgsConstructor;
 public class StorageController {
 
 	private final IStorageService storageService;
-	private final StorageMapper storageMapper;
 
 	@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
 	@PostMapping("/create/new-storage")
@@ -313,6 +308,33 @@ public class StorageController {
 	public ResponseEntity<List<StorageResponse>> findInterimStorage(){
 		List<StorageResponse> responses = storageService.findInterimStorage();
 		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/{id}/available-capacity")
+    public ResponseEntity<BigDecimal> getAvailableCapacity(@PathVariable Long id) {
+        return ResponseEntity.ok(storageService.getAvailableCapacity(id));
+    }
+	
+	@PostMapping("/{id}/allocate")
+    public ResponseEntity<Void> allocateCapacity(
+        @PathVariable Long id,
+        @RequestParam BigDecimal amount) {
+        storageService.allocateCapacity(id, amount);
+        return ResponseEntity.ok().build();
+    }
+	
+	@PutMapping("/storage/{id}/release-capacity")
+	public ResponseEntity<Void> releaseCapacity(
+	        @PathVariable Long id,
+	        @RequestParam BigDecimal amount) {
+	    storageService.releaseCapacity(id, amount);
+	    return ResponseEntity.noContent().build(); 
+	}
+	
+	@GetMapping("/storage/{storageId}/has-capacity")
+	public ResponseEntity<Boolean> hasCapacity(@PathVariable Long storageId,@RequestParam BigDecimal amount){
+		Boolean total = storageService.hasCapacity(storageId, amount);
+		return ResponseEntity.ok(total);
 	}
 
 }

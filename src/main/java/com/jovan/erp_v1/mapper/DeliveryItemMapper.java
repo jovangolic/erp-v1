@@ -8,14 +8,18 @@ import org.springframework.stereotype.Component;
 
 import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.model.DeliveryItem;
+import com.jovan.erp_v1.model.InboundDelivery;
+import com.jovan.erp_v1.model.OutboundDelivery;
 import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.request.DeliveryItemInboundRequest;
 import com.jovan.erp_v1.request.DeliveryItemOutboundRequest;
+import com.jovan.erp_v1.request.DeliveryItemRequest;
 import com.jovan.erp_v1.response.DeliveryItemInboundResponse;
 import com.jovan.erp_v1.response.DeliveryItemOutboundResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
 @Component
-public class DeliveryItemMapper  {
+public class DeliveryItemMapper extends AbstractMapper<DeliveryItemRequest>  {
 
     public DeliveryItem toInEntity(DeliveryItemInboundRequest request, Product product) {
     	Objects.requireNonNull(request, "DeliveryItemInboundRequest must not be null");
@@ -79,5 +83,33 @@ public class DeliveryItemMapper  {
         return items.stream()
                 .map(this::toOutResponse)
                 .collect(Collectors.toList());
+    }
+    
+    public DeliveryItem toDeliveryItemEntity(DeliveryItemRequest request, Product product, InboundDelivery in, OutboundDelivery out) {
+    	Objects.requireNonNull(request, "DeliveryItemRequest must not be null");
+    	Objects.requireNonNull(product, "Product must not be null");
+    	Objects.requireNonNull(in, "InboundDelivery must not be null");
+    	Objects.requireNonNull(out, "OutboundDelivery must not be null");
+    	validateIdForCreate(request, DeliveryItemRequest::id);
+    	DeliveryItem item = new DeliveryItem();
+    	item.setProduct(product);
+    	item.setQuantity(request.quantity());
+    	item.setInboundDelivery(in);
+    	item.setOutboundDelivery(out);
+    	return item;
+    }
+    
+    public DeliveryItem toDeliveryItemEntityUpdate(DeliveryItem item, DeliveryItemRequest request, Product product, InboundDelivery in, OutboundDelivery out) {
+    	Objects.requireNonNull(item, "DeliveryItem must not be null");
+    	Objects.requireNonNull(request, "DeliveryItemRequest must not be null");
+    	Objects.requireNonNull(product, "Product must not be null");
+    	Objects.requireNonNull(in, "InboundDelivery must not be null");
+    	Objects.requireNonNull(out, "OutboundDelivery must not be null");
+    	validateIdForUpdate(request, DeliveryItemRequest::id);
+    	item.setProduct(product);
+    	item.setQuantity(request.quantity());
+    	item.setInboundDelivery(in);
+    	item.setOutboundDelivery(out);
+    	return item;
     }
 }

@@ -57,4 +57,10 @@ public interface IStorageService {
     List<StorageResponse> findClosedStorage();
     List<StorageResponse> findInterimStorage();
     List<StorageResponse> findAvailableStorage();
+    
+    //dodato
+    BigDecimal getAvailableCapacity(Long storageId);
+    void allocateCapacity(Long storageId, BigDecimal amount);
+    void releaseCapacity(Long storageId, BigDecimal amount);
+    boolean hasCapacity(Long storageId, BigDecimal amount);
 }
