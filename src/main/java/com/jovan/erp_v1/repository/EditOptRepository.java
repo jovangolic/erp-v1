@@ -12,8 +12,6 @@ import com.jovan.erp_v1.model.EditOpt;
 public interface EditOptRepository extends JpaRepository<EditOpt, Long> {
 
     List<EditOpt> findByType(EditOptType type);
-
     EditOpt findByName(String name);
-
     EditOpt findByValue(String value);
 }

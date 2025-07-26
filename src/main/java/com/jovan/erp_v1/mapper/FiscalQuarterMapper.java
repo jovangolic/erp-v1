@@ -4,38 +4,38 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
 import com.jovan.erp_v1.model.FiscalQuarter;
+import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.request.FiscalQuarterRequest;
 import com.jovan.erp_v1.response.FiscalQuarterResponse;
 import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class FiscalQuarterMapper extends AbstractMapper<FiscalQuarterRequest> {
 
-    public FiscalQuarter toEntity(FiscalQuarterRequest request) {
+    public FiscalQuarter toEntity(FiscalQuarterRequest request, FiscalYear fiscalYear) {
     	Objects.requireNonNull(request,"FiscalQuarterRequest must not be null");
+    	Objects.requireNonNull(fiscalYear,"FiscalYear must not be null");
     	validateIdForCreate(request, FiscalQuarterRequest::id);
-    	return buildFiscalQuarterFromRequest(new FiscalQuarter(), request);
+    	return buildFiscalQuarterFromRequest(new FiscalQuarter(), request, fiscalYear);
     }
 
-    public FiscalQuarter updateEntity(FiscalQuarter q, FiscalQuarterRequest request) {
+    public FiscalQuarter updateEntity(FiscalQuarter q, FiscalQuarterRequest request, FiscalYear fiscalYear) {
     	Objects.requireNonNull(request,"FiscalQuarterRequest must not be null");
     	Objects.requireNonNull(q,"FiscalQuarter must not be null");
+    	Objects.requireNonNull(fiscalYear,"FiscalYear must not be null");
     	validateIdForUpdate(request, FiscalQuarterRequest::id);
-    	return buildFiscalQuarterFromRequest(q, request);
+    	return buildFiscalQuarterFromRequest(q, request, fiscalYear);
         
     }
     
-    private FiscalQuarter buildFiscalQuarterFromRequest(FiscalQuarter q, FiscalQuarterRequest request) {
+    private FiscalQuarter buildFiscalQuarterFromRequest(FiscalQuarter q, FiscalQuarterRequest request, FiscalYear fiscalYear) {
     	q.setQuarterStatus(request.quarterStatus());
         q.setStartDate(request.startDate());
         q.setEndDate(request.endDate());
+        q.setFiscalYear(fiscalYear);
         return q;
     }
 

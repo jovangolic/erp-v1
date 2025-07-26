@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.exception.FiscalYearErrorException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.mapper.FiscalYearMapper;
 import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.repository.FiscalYearRepository;
@@ -76,6 +78,10 @@ public class FiscalYearService implements IFiscalYearService {
 
     @Override
     public List<FiscalYearResponse> findAll() {
+    	List<FiscalYear> items = fiscalYearRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("FiscalYear list is empty");
+    	}
         return fiscalYearRepository.findAll().stream()
                 .map(FiscalYearResponse::new)
                 .collect(Collectors.toList());
@@ -93,7 +99,14 @@ public class FiscalYearService implements IFiscalYearService {
     @Override
     public List<FiscalYearResponse> findBetweenStartAndEndDates(LocalDate start, LocalDate end) {
     	DateValidator.validateRange(start, end);
-        return fiscalYearRepository.findBetweenStartAndEndDates(start, end).stream()
+    	List<FiscalYear> items = fiscalYearRepository.findBetweenStartAndEndDates(start, end);
+    	if(items.isEmpty()) {
+    		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    		String msg = String.format("No FiscalYear for start date %s and end date %s is found",
+    				start.format(formatter), end.format(formatter));
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(FiscalYearResponse::new)
                 .collect(Collectors.toList());
     }
@@ -126,7 +139,13 @@ public class FiscalYearService implements IFiscalYearService {
     @Override
     public List<FiscalYearResponse> findByStartDateAfter(LocalDate date) {
     	DateValidator.validateNotNull(date, "Datum ne sme biti null");
-        return fiscalYearRepository.findByStartDateAfter(date).stream()
+    	List<FiscalYear> items = fiscalYearRepository.findByStartDateAfter(date);
+    	if(items.isEmpty()) {
+    		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    		String msg = String.format("No FiscalYear found for start date after %s", date.format(formatter));
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(FiscalYearResponse::new)
                 .collect(Collectors.toList());
     }
@@ -134,7 +153,13 @@ public class FiscalYearService implements IFiscalYearService {
     @Override
     public List<FiscalYearResponse> findByEndDateBefore(LocalDate date) {
     	DateValidator.validateNotNull(date, "Datum ne sme biti null");
-        return fiscalYearRepository.findByEndDateBefore(date).stream()
+    	List<FiscalYear> items = fiscalYearRepository.findByEndDateBefore(date);
+    	if(items.isEmpty()) {
+    		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    		String msg = String.format("No FiscalYear end date before found %s", date.format(formatter));
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(FiscalYearResponse::new)
                 .collect(Collectors.toList());
     }
@@ -142,7 +167,12 @@ public class FiscalYearService implements IFiscalYearService {
     @Override
     public List<FiscalYearResponse> findByYearStatus(FiscalYearStatus yearStatus) {
     	validateFiscalYearStatus(yearStatus);
-        return fiscalYearRepository.findByYearStatus(yearStatus).stream()
+    	List<FiscalYear> items = fiscalYearRepository.findByYearStatus(yearStatus);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No FiscalYear found for year status %s", yearStatus);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(FiscalYearResponse::new)
                 .collect(Collectors.toList());
     }
@@ -150,7 +180,12 @@ public class FiscalYearService implements IFiscalYearService {
     @Override
     public List<FiscalYearResponse> findByQuarterStatus(FiscalQuarterStatus quarterStatus) {
     	validateFiscalQuarterStatus(quarterStatus);
-        return fiscalYearRepository.findByQuarterStatus(quarterStatus).stream()
+    	List<FiscalYear> items = fiscalYearRepository.findByQuarterStatus(quarterStatus);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No FiscalYear found for quarter status %s", quarterStatus);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(FiscalYearResponse::new)
                 .collect(Collectors.toList());
     }
@@ -158,7 +193,12 @@ public class FiscalYearService implements IFiscalYearService {
     @Override
     public List<FiscalYearResponse> findByQuarterLessThan(FiscalQuarterStatus quarterStatus) {
     	validateFiscalQuarterStatus(quarterStatus);
-        return fiscalYearRepository.findByQuarterLessThan(quarterStatus).stream()
+    	List<FiscalYear> items = fiscalYearRepository.findByQuarterLessThan(quarterStatus);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No FiscalYear found for quarter status less than %s", quarterStatus);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(FiscalYearResponse::new)
                 .collect(Collectors.toList());
     }
@@ -166,7 +206,12 @@ public class FiscalYearService implements IFiscalYearService {
     @Override
     public List<FiscalYearResponse> findByQuarterGreaterThan(FiscalQuarterStatus quarterStatus) {
     	validateFiscalQuarterStatus(quarterStatus);
-        return fiscalYearRepository.findByQuarterGreaterThan(quarterStatus).stream()
+    	List<FiscalYear> items = fiscalYearRepository.findByQuarterGreaterThan(quarterStatus);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No FiscalYear found for quarter status greater than %s", quarterStatus);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(FiscalYearResponse::new)
                 .collect(Collectors.toList());
     }

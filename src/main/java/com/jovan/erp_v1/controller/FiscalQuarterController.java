@@ -134,4 +134,116 @@ public class FiscalQuarterController {
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear_StartDateBetween(start, end);
     	return ResponseEntity.ok(responses);
     }
+    
+    //nove metode
+    
+    @GetMapping("/quarter-status-q1")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByQuarterStatusQ1(){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByQuarterStatusQ1();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/quarter-status-q2")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByQuarterStatusQ2(){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByQuarterStatusQ2();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/quarter-status-q3")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByQuarterStatusQ3(){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByQuarterStatusQ3();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/quarter-status-q4")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByQuarterStatusQ4(){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByQuarterStatusQ4();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/year-status-open")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStatusOpen(){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStatusOpen();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/year-status-closed")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStatusClosed(){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStatusClosed();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/year-status-archived")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStatusArchived(){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStatusArchived();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/year-start-date")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStartDate(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStartDate(startDate);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/year-start-date-after")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStartDateAfter(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStartDateAfter(startDate);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/year-start-date-before")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStartDateBefore(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStartDateBefore(startDate);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/year-end-date")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearEndDate(@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearEndDate(endDate);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/year-start-date-range")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStartDateBetween(@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+    		@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStartDateBetween(start, end);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/year-end-date-range")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearEndDateBetween(@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+    		@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearEndDateBetween(start, end);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/year-quarter-status")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear_QuarterStatus(@RequestParam("quarterStatus") FiscalQuarterStatus quarterStatus){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear_QuarterStatus(quarterStatus);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search-active-quarters")
+    public ResponseEntity<List<FiscalQuarterResponse>> findActiveQuarters(){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findActiveQuarters();
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/quarters-end-soon")
+    public ResponseEntity<List<FiscalQuarterResponse>> findQuartersEndingSoon(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findQuartersEndingSoon(date);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/year-and-quarter-status")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear_YearAndQuarterStatus(@RequestParam("year") Integer year,@RequestParam("status") FiscalQuarterStatus status){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear_YearAndQuarterStatus(year, status);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/year-range")
+    public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearBetweenYears(@RequestParam("start") Integer start,@RequestParam("end")  Integer end){
+    	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearBetweenYears(start, end);
+    	return ResponseEntity.ok(responses);
+    }
 }

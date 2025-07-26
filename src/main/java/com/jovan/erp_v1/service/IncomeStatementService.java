@@ -2,15 +2,18 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jovan.erp_v1.dto.MonthlyNetProfitDTO;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
-import com.jovan.erp_v1.exception.FiscalYearErrorException;
 import com.jovan.erp_v1.exception.IncomeStatementErrorException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.IncomeStatementMapper;
 import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.model.IncomeStatement;
@@ -32,17 +35,12 @@ public class IncomeStatementService implements IntIncomeStatementService {
     @Transactional
     @Override
     public IncomeStatementResponse create(IncomeStatementRequest request) {
-        // 1. Validacija da su datumi prisutni (može se preskočiti zbog @NotNull)
         validateFieldRequest(request);
-        // 3. Učitavanje i provera da je u okviru fiskalne godine
-        FiscalYear fiscalYear = fiscalYearRepository.findById(request.fiscalYearId())
-                .orElseThrow(
-                        () -> new FiscalYearErrorException("Fiscal year not found with ID: " + request.fiscalYearId()));
+        FiscalYear fiscalYear = validateFiscalYear(request.fiscalYearId());
         if (request.periodStart().isBefore(fiscalYear.getStartDate()) ||
                 request.periodEnd().isAfter(fiscalYear.getEndDate())) {
             throw new IncomeStatementErrorException("Income statement period must be within the fiscal year period.");
         }
-        // 4. (Opcionalno) Preklapanje sa drugim izveštajima
         List<IncomeStatement> existingStatements = incomeStatementRepository.findByFiscalYearId(request.fiscalYearId());
         boolean overlaps = existingStatements.stream()
                 .anyMatch(statement -> !(request.periodEnd().isBefore(statement.getPeriodStart()) ||
@@ -50,7 +48,7 @@ public class IncomeStatementService implements IntIncomeStatementService {
         if (overlaps) {
             throw new IncomeStatementErrorException("Income statement period overlaps with an existing statement.");
         }
-        IncomeStatement st = incomeStatementMapper.toEntity(request);
+        IncomeStatement st = incomeStatementMapper.toEntity(request,fiscalYear);
         IncomeStatement saved = incomeStatementRepository.save(st);
         return incomeStatementMapper.toResponse(saved);
     }
@@ -64,22 +62,23 @@ public class IncomeStatementService implements IntIncomeStatementService {
         IncomeStatement st = incomeStatementRepository.findById(id)
                 .orElseThrow(() -> new IncomeStatementErrorException("Income statement not found"));
         validateFieldRequest(request);
-        FiscalYear fiscalYear = fiscalYearRepository.findById(request.fiscalYearId())
-                .orElseThrow(
-                        () -> new FiscalYearErrorException("Fiscal year not found with ID: " + request.fiscalYearId()));
+        FiscalYear fiscalYear = st.getFiscalYear();
         if (request.periodStart().isBefore(fiscalYear.getStartDate()) ||
                 request.periodEnd().isAfter(fiscalYear.getEndDate())) {
             throw new IncomeStatementErrorException("Income statement period must be within the fiscal year period.");
         }
         List<IncomeStatement> existingStatements = incomeStatementRepository.findByFiscalYearId(request.fiscalYearId());
         boolean overlaps = existingStatements.stream()
-                .filter(statement -> !statement.getId().equals(id)) // IGNORIŠI trenutni
+                .filter(statement -> !statement.getId().equals(id))
                 .anyMatch(statement -> !(request.periodEnd().isBefore(statement.getPeriodStart()) ||
                         request.periodStart().isAfter(statement.getPeriodEnd())));
         if (overlaps) {
             throw new IncomeStatementErrorException("Income statement period overlaps with an existing statement.");
         }
-        incomeStatementMapper.toEntityUpdate(st, request);
+        if(request.fiscalYearId() != null && (st.getFiscalYear() == null || !request.fiscalYearId().equals(st.getFiscalYear().getId()))) {
+        	fiscalYear = validateFiscalYear(request.fiscalYearId());
+        }
+        incomeStatementMapper.toEntityUpdate(st, request, fiscalYear);
         return incomeStatementMapper.toResponse(incomeStatementRepository.save(st));
     }
 
@@ -101,7 +100,11 @@ public class IncomeStatementService implements IntIncomeStatementService {
 
     @Override
     public List<IncomeStatementResponse> findAll() {
-        return incomeStatementRepository.findAll().stream()
+    	List<IncomeStatement> items = incomeStatementRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("IncomeStatement list is empty");
+    	}
+        return items.stream()
                 .map(IncomeStatementResponse::new)
                 .collect(Collectors.toList());
     }
@@ -109,7 +112,12 @@ public class IncomeStatementService implements IntIncomeStatementService {
     @Override
     public List<IncomeStatementResponse> findByTotalRevenue(BigDecimal totalRevenue) {
     	validateBigDecimal(totalRevenue);
-        return incomeStatementRepository.findByTotalRevenue(totalRevenue).stream()
+    	List<IncomeStatement> items = incomeStatementRepository.findByTotalRevenue(totalRevenue);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No IncomeStatement found for total revenue %s", totalRevenue);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(IncomeStatementResponse::new)
                 .collect(Collectors.toList());
     }
@@ -117,7 +125,12 @@ public class IncomeStatementService implements IntIncomeStatementService {
     @Override
     public List<IncomeStatementResponse> findByTotalExpenses(BigDecimal totalExpenses) {
     	validateBigDecimal(totalExpenses);
-        return incomeStatementRepository.findByTotalExpenses(totalExpenses).stream()
+    	List<IncomeStatement> items = incomeStatementRepository.findByTotalExpenses(totalExpenses);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No IncomeStatement found for total expenses %s", totalExpenses);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(IncomeStatementResponse::new)
                 .collect(Collectors.toList());
     }
@@ -125,7 +138,12 @@ public class IncomeStatementService implements IntIncomeStatementService {
     @Override
     public List<IncomeStatementResponse> findByNetProfit(BigDecimal netProfit) {
     	validateBigDecimal(netProfit);
-        return incomeStatementRepository.findByNetProfit(netProfit).stream()
+    	List<IncomeStatement> items = incomeStatementRepository.findByNetProfit(netProfit);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No IncomeStatement found for net profit %s", netProfit);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(IncomeStatementResponse::new)
                 .collect(Collectors.toList());
     }
@@ -133,7 +151,12 @@ public class IncomeStatementService implements IntIncomeStatementService {
     @Override
     public List<IncomeStatementResponse> findByFiscalYear_Year(Integer year) {
     	validateInteger(year);
-        return incomeStatementRepository.findByFiscalYear_Year(year).stream()
+    	List<IncomeStatement> items = incomeStatementRepository.findByFiscalYear_Year(year);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No IncomeStatement found for fiscal year %d", year);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(IncomeStatementResponse::new)
                 .collect(Collectors.toList());
     }
@@ -141,7 +164,12 @@ public class IncomeStatementService implements IntIncomeStatementService {
     @Override
     public List<IncomeStatementResponse> findByFiscalYear_QuarterStatus(FiscalQuarterStatus quarterStatus) {
     	validateFiscalQuarterStatus(quarterStatus);
-        return incomeStatementRepository.findByFiscalYear_QuarterStatus(quarterStatus).stream()
+    	List<IncomeStatement> items = incomeStatementRepository.findByFiscalYear_QuarterStatus(quarterStatus);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No IncomeStatement found for quarter status %s", quarterStatus);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(IncomeStatementResponse::new)
                 .collect(Collectors.toList());
     }
@@ -155,6 +183,12 @@ public class IncomeStatementService implements IntIncomeStatementService {
             throw new IncomeStatementErrorException("Start date must be before end date");
         }
         List<IncomeStatement> st = incomeStatementRepository.findByPeriodStartBetween(start, end);
+        if(st.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        	String msg = String.format("No IncomeStatement found for period start between %s and %s", 
+        			start.format(formatter),end.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
         return incomeStatementMapper.toResponseList(st);
     }
 
@@ -167,6 +201,12 @@ public class IncomeStatementService implements IntIncomeStatementService {
             throw new IncomeStatementErrorException("Start date must be before end date");
         }
         List<IncomeStatement> st = incomeStatementRepository.findByPeriodEndBetween(start, end);
+        if(st.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        	String msg = String.format("No IncomeStatement found for period end between %s and %s", 
+        			start.format(formatter),end.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
         return incomeStatementMapper.toResponseList(st);
     }
 
@@ -179,6 +219,12 @@ public class IncomeStatementService implements IntIncomeStatementService {
             throw new IncomeStatementErrorException("Start date must be before end date");
         }
         List<IncomeStatement> st = incomeStatementRepository.findWithinPeriod(start, end);
+        if(st.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        	String msg = String.format("No IncomeStatement found for within period between %s and %s", 
+        			start.format(formatter),end.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
         return incomeStatementMapper.toResponseList(st);
     }
 
@@ -188,7 +234,25 @@ public class IncomeStatementService implements IntIncomeStatementService {
             throw new IncomeStatementErrorException("Dates must be provided");
         }
         List<IncomeStatement> st = incomeStatementRepository.findByDateWithinPeriod(date);
+        if(st.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        	String msg = String.format("No IncomeStatement found for date within period %s",date.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
         return incomeStatementMapper.toResponseList(st);
+    }
+    
+    @Override
+    public List<MonthlyNetProfitDTO> getMonthlyNetProfitForYear(Integer year) {
+        List<Object[]> results = incomeStatementRepository.findMonthlyNetProfitByYear(year);
+        List<MonthlyNetProfitDTO> dtos = new ArrayList<>();
+        for (Object[] row : results) {
+            int month = ((Integer) row[0]);
+            int yr = ((Integer) row[1]);
+            BigDecimal netProfit = (BigDecimal) row[2];
+            dtos.add(new MonthlyNetProfitDTO(month, yr, netProfit));
+        }
+        return dtos;
     }
     
     private void validateBigDecimal(BigDecimal num) {
@@ -213,7 +277,6 @@ public class IncomeStatementService implements IntIncomeStatementService {
     	if (request.periodStart() == null || request.periodEnd() == null) {
             throw new IncomeStatementErrorException("Start and end dates must be provided.");
         }
-        // 2. Start pre end
         if (request.periodStart().isAfter(request.periodEnd())) {
             throw new IncomeStatementErrorException("Start date cannot be after end date.");
         }
@@ -223,6 +286,13 @@ public class IncomeStatementService implements IntIncomeStatementService {
         validateBigDecimal(request.totalRevenue());
         validateBigDecimal(request.totalExpenses());
         validateBigDecimal(request.netProfit());
+    }
+    
+    private FiscalYear validateFiscalYear(Long yearId) {
+    	if(yearId == null) {
+    		throw new ValidationException("FiscalYear ID must not be null");
+    	}
+    	return fiscalYearRepository.findById(yearId).orElseThrow(() -> new ValidationException("FiscalYear not found with id"+yearId));
     }
 
 }

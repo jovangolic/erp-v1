@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.Objects;
+
 import org.springframework.stereotype.Component;
 
 import com.jovan.erp_v1.model.FileOpt;
@@ -10,6 +12,7 @@ import com.jovan.erp_v1.response.FileOptResponse;
 public class FileOptMapper {
 
     public FileOpt toEntity(FileOptRequest request) {
+    	Objects.requireNonNull(request, "FileOptRequest must not be null");
         FileOpt fileOpt = new FileOpt();
         fileOpt.setExtension(request.extension());
         fileOpt.setMimeType(request.mimeType());

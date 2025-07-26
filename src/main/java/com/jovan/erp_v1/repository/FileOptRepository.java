@@ -13,6 +13,5 @@ import com.jovan.erp_v1.model.FileOpt;
 public interface FileOptRepository extends JpaRepository<FileOpt, Long> {
 
     List<FileOpt> findByExtension(FileExtension extension);
-
     List<FileOpt> findByAvailableActions(FileAction action);
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.exception.DriverErrorException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.model.Driver;
 import com.jovan.erp_v1.repository.DriversRepository;
 import com.jovan.erp_v1.request.DriverRequest;
@@ -62,7 +63,11 @@ public class DriverService implements IDriverService {
 
     @Override
     public List<DriverResponse> findAllDrivers() {
-        return driversRepository.findAll().stream()
+    	List<Driver> items = driversRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("Driver list is empty");
+    	}
+        return items.stream()
                 .map(DriverResponse::new)
                 .collect(Collectors.toList());
     }
@@ -70,7 +75,12 @@ public class DriverService implements IDriverService {
     @Override
     public List<DriverResponse> findByName(String name) {
     	validateString(name);
-        return driversRepository.findByName(name).stream()
+    	List<Driver> items = driversRepository.findByName(name);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Driver with name equal to %s is found", name);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(DriverResponse::new)
                 .collect(Collectors.toList());
     }

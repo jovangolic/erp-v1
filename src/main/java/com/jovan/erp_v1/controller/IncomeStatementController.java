@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.dto.MonthlyNetProfitDTO;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.request.IncomeStatementRequest;
 import com.jovan.erp_v1.response.IncomeStatementResponse;
@@ -127,5 +128,12 @@ public class IncomeStatementController {
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start) {
         List<IncomeStatementResponse> responses = incomeStatementService.findByDateWithinPeriod(start);
         return ResponseEntity.ok(responses);
+    }
+    
+    //nove metode
+    
+    @GetMapping("/net-profit/monthly/{year}")
+    public ResponseEntity<List<MonthlyNetProfitDTO>> getMonthlyNetProfit(@PathVariable Integer year) {
+        return ResponseEntity.ok(incomeStatementService.getMonthlyNetProfitForYear(year));
     }
 }

@@ -3,6 +3,7 @@ package com.jovan.erp_v1.request;
 import jakarta.validation.constraints.NotBlank;
 
 public record EmailSettingRequest(
+		Long id,
 		@NotBlank String smtpServer,
 	    @NotBlank String smtpPort,
 	    @NotBlank String fromEmail,

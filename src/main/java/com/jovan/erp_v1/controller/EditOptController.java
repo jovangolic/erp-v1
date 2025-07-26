@@ -70,4 +70,17 @@ public class EditOptController {
         List<EditOptResponse> responses = editOptService.getByType(type);
         return ResponseEntity.ok(responses);
     }
+    
+    @GetMapping("/by-name")
+    public ResponseEntity<EditOptResponse> findByName(String name){
+    	EditOptResponse response = editOptService.findByName(name);
+    	return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/by-value")
+    public ResponseEntity<EditOptResponse> findByValue(String value){
+    	EditOptResponse response = editOptService.findByValue(value);
+    	return ResponseEntity.ok(response);
+    }
+    
 }

@@ -10,31 +10,58 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
+import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.model.IncomeStatement;
 
 @Repository
 public interface IncomeStatementRepository extends JpaRepository<IncomeStatement, Long> {
 
     List<IncomeStatement> findByTotalRevenue(BigDecimal totalRevenue);
-
     List<IncomeStatement> findByTotalExpenses(BigDecimal totalExpenses);
-
     List<IncomeStatement> findByNetProfit(BigDecimal netProfit);
-
     List<IncomeStatement> findByFiscalYear_Year(Integer year);
-
     List<IncomeStatement> findByFiscalYear_QuarterStatus(FiscalQuarterStatus quarterStatus);
-
     List<IncomeStatement> findByPeriodStartBetween(LocalDate start, LocalDate end);
-
     List<IncomeStatement> findByPeriodEndBetween(LocalDate start, LocalDate end);
-
     @Query("SELECT i FROM IncomeStatement i WHERE i.periodStart >= :start AND i.periodEnd <= :end")
     List<IncomeStatement> findWithinPeriod(@Param("start") LocalDate start, @Param("end") LocalDate end);
-
     @Query("SELECT i FROM IncomeStatement i WHERE :date BETWEEN i.periodStart AND i.periodEnd")
     List<IncomeStatement> findByDateWithinPeriod(@Param("date") LocalDate date);
-
     List<IncomeStatement> findByFiscalYearId(Long id);
-
+    
+    //nove metode
+    
+    @Query("SELECT SUM(i.netProfit) FROM IncomeStatement i WHERE i.fiscalYear.id = :fiscalYearId")
+    BigDecimal calculateTotalNetProfitByFiscalYear(@Param("fiscalYearId") Long fiscalYearId);
+    @Query("SELECT SUM(i.totalRevenue - i.totalExpenses) FROM IncomeStatement i WHERE i.fiscalYear.id = :fiscalYearId")
+    BigDecimal findTotalNetProfitByFiscalYear(@Param("fiscalYearId") Long fiscalYearId);
+    List<IncomeStatement> findByTotalRevenueGreaterThan(BigDecimal totalRevenue);
+    List<IncomeStatement> findByTotalExpensesGreaterThan(BigDecimal totalExpenses);
+    List<IncomeStatement> findByNetProfitGreaterThan(BigDecimal netProfit);
+    List<IncomeStatement> findByTotalRevenueLessThan(BigDecimal totalRevenue);
+    List<IncomeStatement> findByTotalExpensesLessThan(BigDecimal totalExpenses);
+    List<IncomeStatement> findByNetProfitLessThan(BigDecimal netProfit);
+    List<IncomeStatement> findByFiscalYear_YearStatus(FiscalYearStatus yearStatus);
+    List<IncomeStatement> findByFiscalYear_QuarterStatusAndYearStatus(FiscalYearStatus yearStatus, FiscalQuarterStatus quarterStatus);
+    @Query("SELECT SUM(i.totalRevenue) FROM IncomeStatement i WHERE i.periodStart >= :start AND i.periodEnd <= :end")
+    BigDecimal sumTotalRevenueBetweenDates(@Param("start") LocalDate start, @Param("end") LocalDate end);
+    @Query("SELECT SUM(i.totalExpenses) FROM IncomeStatement i WHERE i.periodStart >= :start AND i.periodEnd <= :end")
+    BigDecimal sumTotalExpensesBetweenDates(@Param("start") LocalDate start, @Param("end") LocalDate end);
+    @Query("SELECT SUM(i.netProfit) FROM IncomeStatement i WHERE i.periodStart >= :start AND i.periodEnd <= :end")
+    BigDecimal sumNetProfitBetweenDates(@Param("start") LocalDate start, @Param("end") LocalDate end);
+    @Query("SELECT SUM(i.netProfit) FROM IncomeStatement i WHERE i.fiscalYear.quarterStatus = :quarterStatus")
+    BigDecimal sumNetProfitByQuarterStatus(@Param("quarterStatus") FiscalQuarterStatus quarterStatus);
+    @Query("SELECT i FROM IncomeStatement i WHERE i.fiscalYear.quarterStatus = :quarterStatus AND i.totalRevenue > :minRevenue")
+    List<IncomeStatement> findByQuarterStatusAndMinRevenue(@Param("quarterStatus") FiscalQuarterStatus quarterStatus,
+                                                           @Param("minRevenue") BigDecimal minRevenue);
+    @Query("SELECT SUM(i.totalRevenue) FROM IncomeStatement i WHERE i.fiscalYear.yearStatus = :yearStatus")
+    BigDecimal sumRevenueByFiscalYearStatus(@Param("yearStatus") FiscalYearStatus yearStatus);
+    List<IncomeStatement> findByFiscalYear_StartDate(LocalDate startDate);
+    List<IncomeStatement> findByFiscalYear_EndDate(LocalDate endDate);
+    @Query("SELECT MONTH(i.periodStart) AS mesec, YEAR(i.periodStart) AS godina, SUM(i.netProfit) AS ukupnaDobit " +
+    	       "FROM IncomeStatement i " +
+    	       "WHERE YEAR(i.periodStart) = :year " +
+    	       "GROUP BY YEAR(i.periodStart), MONTH(i.periodStart) " +
+    	       "ORDER BY mesec")
+    List<Object[]> findMonthlyNetProfitByYear(@Param("year") Integer year);
 }

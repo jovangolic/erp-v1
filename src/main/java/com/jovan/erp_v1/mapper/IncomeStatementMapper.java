@@ -17,34 +17,39 @@ import com.jovan.erp_v1.response.FiscalYearResponse;
 import com.jovan.erp_v1.response.IncomeStatementResponse;
 import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class IncomeStatementMapper extends AbstractMapper<IncomeStatementRequest> {
 
-    private final FiscalYearRepository fiscalYearRepository;
 
-    public IncomeStatement toEntity(IncomeStatementRequest request) {
+    public IncomeStatement toEntity(IncomeStatementRequest request,FiscalYear year) {
         Objects.requireNonNull(request, "IncomeStatementRequest must not be null");
         validateIdForCreate(request, IncomeStatementRequest::id);
-        return  buildIncomeStatementFromRequest(new IncomeStatement(), request);
+        IncomeStatement stat = new IncomeStatement();
+        stat.setPeriodStart(request.periodStart());
+        stat.setPeriodEnd(request.periodEnd());
+        stat.setTotalRevenue(request.totalRevenue());
+        stat.setTotalExpenses(request.totalExpenses());
+        stat.setNetProfit(request.netProfit());
+        stat.setFiscalYear(year);
+        return stat;
     }
 
-    public IncomeStatement toEntityUpdate(IncomeStatement income, IncomeStatementRequest request) {
+    public IncomeStatement toEntityUpdate(IncomeStatement income, IncomeStatementRequest request,FiscalYear year) {
     	Objects.requireNonNull(request, "IncomeStatementRequest must not be null");
     	Objects.requireNonNull(income, "IncomeStatement must not be null");
+    	Objects.requireNonNull(year, "FiscalYear must not be null");
     	validateIdForUpdate(request, IncomeStatementRequest::id);
-    	return buildIncomeStatementFromRequest(income, request);
+    	return buildIncomeStatementFromRequest(income, request,year);
     }
     
-    private IncomeStatement buildIncomeStatementFromRequest(IncomeStatement income, IncomeStatementRequest request) {
+    private IncomeStatement buildIncomeStatementFromRequest(IncomeStatement income, IncomeStatementRequest request, FiscalYear year) {
     	income.setPeriodStart(request.periodStart());
         income.setPeriodEnd(request.periodEnd());
         income.setTotalRevenue(request.totalRevenue());
         income.setTotalExpenses(request.totalExpenses());
         income.setNetProfit(request.netProfit());
-        income.setFiscalYear(fetchFiscalYear(request.fiscalYearId()));
+        income.setFiscalYear(year);
         return income;
     }
 
@@ -77,10 +82,5 @@ public class IncomeStatementMapper extends AbstractMapper<IncomeStatementRequest
     		return Collections.emptyList();
     	}
         return income.stream().map(this::toResponse).collect(Collectors.toList());
-    }
-
-    private FiscalYear fetchFiscalYear(Long id) {
-        return fiscalYearRepository.findById(id)
-                .orElseThrow(() -> new FiscalYearErrorException("Fiscal-year not found with id: " + id));
     }
 }
