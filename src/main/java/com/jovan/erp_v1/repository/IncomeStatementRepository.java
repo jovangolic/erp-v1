@@ -64,4 +64,12 @@ public interface IncomeStatementRepository extends JpaRepository<IncomeStatement
     	       "GROUP BY YEAR(i.periodStart), MONTH(i.periodStart) " +
     	       "ORDER BY mesec")
     List<Object[]> findMonthlyNetProfitByYear(@Param("year") Integer year);
+    @Query("SELECT SUM(i.totalRevenue) FROM IncomeStatement i WHERE i.periodStart >= :start AND i.periodEnd <= :end")
+    BigDecimal sumTotalRevenue(@Param("start") LocalDate start, @Param("end") LocalDate end);
+    @Query("SELECT SUM(i.totalExpenses) FROM IncomeStatement i WHERE i.periodStart >= :start AND i.periodEnd <= :end")
+    BigDecimal sumTotalExpenses(@Param("start") LocalDate start, @Param("end") LocalDate end);
+    @Query("SELECT SUM(i.netProfit) FROM IncomeStatement i WHERE i.periodStart >= :start AND i.periodEnd <= :end")
+    BigDecimal sumNetProfit(@Param("start") LocalDate start, @Param("end") LocalDate end);
+    @Query("SELECT SUM(i.netProfit) FROM IncomeStatement i WHERE i.fiscalYear.yearStatus = :yearStatus")
+    BigDecimal sumNetProfitByYearStatus(@Param("yearStatus") FiscalYearStatus yearStatus);
 }

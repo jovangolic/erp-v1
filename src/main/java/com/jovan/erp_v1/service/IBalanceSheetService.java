@@ -3,10 +3,10 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.request.BalanceSheetRequest;
+import com.jovan.erp_v1.request.BalanceSheetSearchRequest;
 import com.jovan.erp_v1.response.BalanceSheetResponse;
 
 public interface IBalanceSheetService {
@@ -30,4 +30,11 @@ public interface IBalanceSheetService {
     List<BalanceSheetResponse> findByTotalAssetsLessThan(BigDecimal totalAssets);
     List<BalanceSheetResponse> findByTotalEquityGreaterThan(BigDecimal totalEquity);
     List<BalanceSheetResponse> findByTotalEquityLessThan(BigDecimal totalEquity);
+    //nove metode
+    List<BalanceSheetResponse> searchBalanceSheets(LocalDate startDate, LocalDate endDate, Long fiscalYearId, BigDecimal minAssets);
+    List<BalanceSheetResponse> findByTotalLiabilitiesLessThan(BigDecimal totalLiabilities);
+    List<BalanceSheetResponse> findByTotalLiabilitiesGreaterThan(BigDecimal totalLiabilities);
+    List<BalanceSheetResponse> findSolventBalanceSheets();
+    BalanceSheetResponse findFirstByOrderByDateDesc();
+    List<BalanceSheetResponse> searchBalanceSheets(BalanceSheetSearchRequest request);
 }

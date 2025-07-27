@@ -28,7 +28,7 @@ public class InventoryItemsMapper {
 	        .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + request.productId()));
 
 	    InventoryItems items = new InventoryItems();
-	    items.setInventory(inventory); // koristi već postojeći objekat
+	    items.setInventory(inventory); 
 	    items.setProduct(product);
 	    items.setQuantity(request.quantity());
 	    items.setItemCondition(request.condition());

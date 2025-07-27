@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +20,9 @@ import com.jovan.erp_v1.model.BalanceSheet;
 import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.repository.BalanceSheetRepository;
 import com.jovan.erp_v1.repository.FiscalYearRepository;
+import com.jovan.erp_v1.repository.specification.BalanceSheetSpecification;
 import com.jovan.erp_v1.request.BalanceSheetRequest;
+import com.jovan.erp_v1.request.BalanceSheetSearchRequest;
 import com.jovan.erp_v1.response.BalanceSheetResponse;
 import com.jovan.erp_v1.util.DateValidator;
 
@@ -275,6 +278,84 @@ public class BalanceSheetService implements IBalanceSheetService {
 		return items.stream()
                 .map(BalanceSheetResponse::new)
                 .collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<BalanceSheetResponse> searchBalanceSheets(LocalDate startDate, LocalDate endDate, Long fiscalYearId, BigDecimal minAssets) {
+	    Specification<BalanceSheet> spec = Specification.where(null);
+	    if (fiscalYearId != null) {
+	        spec = spec.and(BalanceSheetSpecification.hasFiscalYearId(fiscalYearId));
+	    }
+	    if (startDate != null || endDate != null) {
+	        spec = spec.and(BalanceSheetSpecification.dateBetween(startDate, endDate));
+	    }
+	    if (minAssets != null) {
+	        spec = spec.and(BalanceSheetSpecification.assetsGreaterThan(minAssets));
+	    }
+	    List<BalanceSheet> items = balanceSheetRepository.findAll(spec);
+	    return items.stream().map(balanceSheetMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<BalanceSheetResponse> searchBalanceSheets(BalanceSheetSearchRequest request) {
+        Specification<BalanceSheet> spec = Specification.where(null);
+        if (request.fiscalYearId() != null) {
+            spec = spec.and(BalanceSheetSpecification.hasFiscalYearId(request.fiscalYearId()));
+        }
+        if (request.startDate() != null || request.endDate() != null) {
+            spec = spec.and(BalanceSheetSpecification.dateBetween(request.startDate(), request.endDate()));
+        }
+        if (request.minAssets() != null) {
+            spec = spec.and(BalanceSheetSpecification.assetsGreaterThan(request.minAssets()));
+        }
+        if (request.minEquity() != null) {
+            spec = spec.and(BalanceSheetSpecification.equityGreaterThan(request.minEquity()));
+        }
+        if (request.minLiabilities() != null) {
+            spec = spec.and(BalanceSheetSpecification.liabilitiesGreaterThan(request.minLiabilities()));
+        }
+        if (Boolean.TRUE.equals(request.onlySolvent())) {
+            spec = spec.and(BalanceSheetSpecification.isSolvent());
+        }
+        List<BalanceSheet> items =  balanceSheetRepository.findAll(spec);
+        return items.stream().map(balanceSheetMapper::toResponse).collect(Collectors.toList());
+    }
+	
+	@Override
+	public List<BalanceSheetResponse> findByTotalLiabilitiesLessThan(BigDecimal totalLiabilities) {
+		validateBigDecimalNonNegative(totalLiabilities);
+		List<BalanceSheet> items = balanceSheetRepository.findByTotalLiabilitiesLessThan(totalLiabilities);
+		if(items.isEmpty()) {
+			String msg = String.format("No BalanceSheet found for total liabilities less tha %s", totalLiabilities);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(balanceSheetMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<BalanceSheetResponse> findByTotalLiabilitiesGreaterThan(BigDecimal totalLiabilities) {
+		validateBigDecimal(totalLiabilities);
+		List<BalanceSheet> items = balanceSheetRepository.findByTotalLiabilitiesGreaterThan(totalLiabilities);
+		if(items.isEmpty()) {
+			String msg = String.format("No BalanceSheet found for total liabilities greater tha %s", totalLiabilities);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(balanceSheetMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<BalanceSheetResponse> findSolventBalanceSheets() {
+		List<BalanceSheet> items = balanceSheetRepository.findSolventBalanceSheets();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Solvent balance-sheets are not found");
+		}
+		return items.stream().map(balanceSheetMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public BalanceSheetResponse findFirstByOrderByDateDesc() {
+		BalanceSheet items = balanceSheetRepository.findFirstByOrderByDateDesc();
+		return new BalanceSheetResponse(items);
 	}
 
     

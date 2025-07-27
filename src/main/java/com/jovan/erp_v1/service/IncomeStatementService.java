@@ -5,12 +5,14 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.dto.MonthlyNetProfitDTO;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
+import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.exception.IncomeStatementErrorException;
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ValidationException;
@@ -21,6 +23,7 @@ import com.jovan.erp_v1.repository.FiscalYearRepository;
 import com.jovan.erp_v1.repository.IncomeStatementRepository;
 import com.jovan.erp_v1.request.IncomeStatementRequest;
 import com.jovan.erp_v1.response.IncomeStatementResponse;
+import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -255,6 +258,210 @@ public class IncomeStatementService implements IntIncomeStatementService {
         return dtos;
     }
     
+    @Override
+	public BigDecimal calculateTotalNetProfitByFiscalYear(Long fiscalYearId) {
+		validateFiscalYear(fiscalYearId);
+		return incomeStatementRepository.calculateTotalNetProfitByFiscalYear(fiscalYearId);
+	}
+
+	@Override
+	public BigDecimal findTotalNetProfitByFiscalYear(Long fiscalYearId) {
+		validateFiscalYear(fiscalYearId);
+		return incomeStatementRepository.findTotalNetProfitByFiscalYear(fiscalYearId);
+	}
+
+	@Override
+	public List<IncomeStatementResponse> findByTotalRevenueGreaterThan(BigDecimal totalRevenue) {
+		validateBigDecimal(totalRevenue);
+		List<IncomeStatement> items = incomeStatementRepository.findByTotalRevenueGreaterThan(totalRevenue);
+		if(items.isEmpty()) {
+			String msg = String.format("No IncomeStatement found for total revenue greater than %s", totalRevenue);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<IncomeStatementResponse> findByTotalExpensesGreaterThan(BigDecimal totalExpenses) {
+		validateBigDecimal(totalExpenses);
+		List<IncomeStatement> items = incomeStatementRepository.findByTotalExpensesGreaterThan(totalExpenses);
+		if(items.isEmpty()) {
+			String msg = String.format("No IncomeStatement found for total expenses greater than %s", totalExpenses);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<IncomeStatementResponse> findByNetProfitGreaterThan(BigDecimal netProfit) {
+		validateBigDecimal(netProfit);
+		List<IncomeStatement> items = incomeStatementRepository.findByNetProfitGreaterThan(netProfit);
+		if(items.isEmpty()) {
+			String msg = String.format("No IncomeStatement found for net profit greater than %s", netProfit);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<IncomeStatementResponse> findByTotalRevenueLessThan(BigDecimal totalRevenue) {
+		validateBigDecimalNonNegative(totalRevenue);
+		List<IncomeStatement> items = incomeStatementRepository.findByTotalRevenueLessThan(totalRevenue);
+		if(items.isEmpty()) {
+			String msg = String.format("No IncomeStatement found for total revenue less than %s", totalRevenue);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<IncomeStatementResponse> findByTotalExpensesLessThan(BigDecimal totalExpenses) {
+		validateBigDecimalNonNegative(totalExpenses);
+		List<IncomeStatement> items = incomeStatementRepository.findByTotalExpensesLessThan(totalExpenses);
+		if(items.isEmpty()) {
+			String msg = String.format("No IncomeStatement found for total expenses less than %s", totalExpenses);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<IncomeStatementResponse> findByNetProfitLessThan(BigDecimal netProfit) {
+		validateBigDecimalNonNegative(netProfit);
+		List<IncomeStatement> items = incomeStatementRepository.findByNetProfitLessThan(netProfit);
+		if(items.isEmpty()) {
+			String msg = String.format("No IncomeStatement found for net profit less than %s", netProfit);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<IncomeStatementResponse> findByFiscalYear_YearStatus(FiscalYearStatus yearStatus) {
+		validateFiscalYearStatus(yearStatus);
+		List<IncomeStatement> items = incomeStatementRepository.findByFiscalYear_YearStatus(yearStatus);
+		if(items.isEmpty()) {
+			String msg = String.format("No IncomeStatement for fiscal year status %s is found", yearStatus);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<IncomeStatementResponse> findByFiscalYear_QuarterStatusAndYearStatus(FiscalYearStatus yearStatus,
+			FiscalQuarterStatus quarterStatus) {
+		validateFiscalYearStatus(yearStatus);
+		validateFiscalQuarterStatus(quarterStatus);
+		List<IncomeStatement> items = incomeStatementRepository.findByFiscalYear_QuarterStatusAndYearStatus(yearStatus, quarterStatus);
+		if(items.isEmpty()) {
+			String msg = String.format("No IncomeStatement for fiscal quarter status %s and year status %s is found",
+					yearStatus, quarterStatus);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public BigDecimal sumTotalRevenueBetweenDates(LocalDate start, LocalDate end) {
+		DateValidator.validateRange(start, end);
+		return incomeStatementRepository.sumTotalRevenueBetweenDates(start, end);
+	}
+
+	@Override
+	public BigDecimal sumTotalExpensesBetweenDates(LocalDate start, LocalDate end) {
+		DateValidator.validateRange(start, end);
+		return incomeStatementRepository.sumTotalExpensesBetweenDates(start, end);
+	}
+
+	@Override
+	public BigDecimal sumNetProfitBetweenDates(LocalDate start, LocalDate end) {
+		DateValidator.validateRange(start, end);
+		return incomeStatementRepository.sumNetProfitBetweenDates(start, end);
+	}
+
+	@Override
+	public BigDecimal sumNetProfitByQuarterStatus(FiscalQuarterStatus quarterStatus) {
+		validateFiscalQuarterStatus(quarterStatus);
+		return incomeStatementRepository.sumNetProfitByQuarterStatus(quarterStatus);
+	}
+
+	@Override
+	public List<IncomeStatementResponse> findByQuarterStatusAndMinRevenue(FiscalQuarterStatus quarterStatus,
+			BigDecimal minRevenue) {
+		validateFiscalQuarterStatus(quarterStatus);
+		validateBigDecimalNonNegative(minRevenue);
+		List<IncomeStatement> items = incomeStatementRepository.findByQuarterStatusAndMinRevenue(quarterStatus, minRevenue);
+		if(items.isEmpty()) {
+			String msg = String.format("No IncomeStatement for quarter status %s and min-revenue %s is found",
+					quarterStatus,minRevenue);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public BigDecimal sumRevenueByFiscalYearStatus(FiscalYearStatus yearStatus) {
+		validateFiscalYearStatus(yearStatus);
+		return incomeStatementRepository.sumRevenueByFiscalYearStatus(yearStatus);
+	}
+
+	@Override
+	public List<IncomeStatementResponse> findByFiscalYear_StartDate(LocalDate startDate) {
+		DateValidator.validateNotNull(startDate, "Start date");
+		List<IncomeStatement> items = incomeStatementRepository.findByFiscalYear_StartDate(startDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No IncomeStatement found fiscal year start-date %s", startDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<IncomeStatementResponse> findByFiscalYear_EndDate(LocalDate endDate) {
+		DateValidator.validateNotInPast(endDate, "End date");
+		List<IncomeStatement> items = incomeStatementRepository.findByFiscalYear_EndDate(endDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No IncomeStatement found fiscal year end-date %s", endDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public BigDecimal sumTotalRevenue(LocalDate start, LocalDate end) {
+		DateValidator.validateRange(start, end);
+		return incomeStatementRepository.sumTotalRevenue(start, end);
+	}
+
+	@Override
+	public BigDecimal sumTotalExpenses(LocalDate start, LocalDate end) {
+		DateValidator.validateRange(start, end);
+		return incomeStatementRepository.sumTotalExpenses(start, end);
+	}
+
+	@Override
+	public BigDecimal sumNetProfit(LocalDate start, LocalDate end) {
+		DateValidator.validateRange(start, end);
+		return incomeStatementRepository.sumNetProfit(start, end);
+	}
+
+	@Override
+	public BigDecimal sumNetProfitByYearStatus(FiscalYearStatus yearStatus) {
+		validateFiscalYearStatus(yearStatus);
+		return incomeStatementRepository.sumNetProfitByYearStatus(yearStatus);
+	}
+	
+	private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
+    
     private void validateBigDecimal(BigDecimal num) {
         if (num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Mora biti pozitivan broj");
@@ -265,6 +472,11 @@ public class IncomeStatementService implements IntIncomeStatementService {
     	if(num == null || num < 0) {
     		throw new IllegalArgumentException("Must be positive number");
     	}
+    }
+    
+    private void validateFiscalYearStatus(FiscalYearStatus yearStatus) {
+    	Optional.ofNullable(yearStatus)
+    		.orElseThrow(() -> new ValidationException("FiscalYearStatus yearStatus must not be null"));
     }
     
     private void validateFiscalQuarterStatus(FiscalQuarterStatus quarterStatus) {

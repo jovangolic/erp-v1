@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.request.BalanceSheetRequest;
+import com.jovan.erp_v1.request.BalanceSheetSearchRequest;
 import com.jovan.erp_v1.response.BalanceSheetResponse;
 import com.jovan.erp_v1.service.IBalanceSheetService;
 
@@ -159,5 +160,47 @@ public class BalanceSheetController {
     	List<BalanceSheetResponse> responses = balanceSheetService.findByTotalAssetsLessThan(totalEquity);
     	return ResponseEntity.ok(responses);
     }
-
+    
+    //nove metode
+    
+    @PostMapping("/search")
+    public ResponseEntity<List<BalanceSheetResponse>> searchBalanceSheets(@RequestBody BalanceSheetSearchRequest request) {
+        List<BalanceSheetResponse> result = balanceSheetService.searchBalanceSheets(request);
+        return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/by-total-liabilities-less-than")
+    public ResponseEntity<List<BalanceSheetResponse>> findByTotalLiabilitiesLessThan(@RequestParam("totalLiabilities") BigDecimal totalLiabilities){
+    	List<BalanceSheetResponse> result = balanceSheetService.findByTotalLiabilitiesLessThan(totalLiabilities);
+    	return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/filter-balance-sheet")
+    public ResponseEntity<List<BalanceSheetResponse>> searchBalanceSheets(
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam("fiscalYearId") Long fiscalYearId,
+            @RequestParam("minAssets") BigDecimal minAssets) {
+       List<BalanceSheetResponse> result = balanceSheetService.searchBalanceSheets(startDate, endDate, fiscalYearId, minAssets);
+       return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/by-total-liabilities-greater-than")
+    public ResponseEntity<List<BalanceSheetResponse>> findByTotalLiabilitiesGreaterThan(@RequestParam("totalLiabilities") BigDecimal totalLiabilities){
+    	List<BalanceSheetResponse> result = balanceSheetService.findByTotalLiabilitiesGreaterThan(totalLiabilities);
+    	return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/find-solvent-balance-sheet")
+    public ResponseEntity<List<BalanceSheetResponse>> findSolventBalanceSheets(){
+    	List<BalanceSheetResponse> result = balanceSheetService.findSolventBalanceSheets();
+    	return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/find-first-by-order-date-desc")
+    public ResponseEntity<BalanceSheetResponse> findFirstByOrderByDateDesc(){
+    	BalanceSheetResponse item = balanceSheetService.findFirstByOrderByDateDesc();
+    	return ResponseEntity.ok(item);
+    }
+   
 }

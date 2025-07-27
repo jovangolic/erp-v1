@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.dto.MonthlyNetProfitDTO;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
+import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.request.IncomeStatementRequest;
 import com.jovan.erp_v1.response.IncomeStatementResponse;
 import com.jovan.erp_v1.service.IntIncomeStatementService;
@@ -136,4 +137,145 @@ public class IncomeStatementController {
     public ResponseEntity<List<MonthlyNetProfitDTO>> getMonthlyNetProfit(@PathVariable Integer year) {
         return ResponseEntity.ok(incomeStatementService.getMonthlyNetProfitForYear(year));
     }
+    
+    @GetMapping("/calculate-net-proft-by-year/{fiscalYearId}")
+    public ResponseEntity<BigDecimal> calculateTotalNetProfitByFiscalYear(@PathVariable Long fiscalYearId){
+    	BigDecimal responses = incomeStatementService.calculateTotalNetProfitByFiscalYear(fiscalYearId);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/find-net-profit-by-year/{fiscalYearId}")
+    public ResponseEntity<BigDecimal> findTotalNetProfitByFiscalYear(@PathVariable Long fiscalYearId){
+    	BigDecimal responses = incomeStatementService.findTotalNetProfitByFiscalYear(fiscalYearId);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/total-revenue-greater-than")
+    public ResponseEntity<List<IncomeStatementResponse>> findByTotalRevenueGreaterThan(@RequestParam("totalRevenue") BigDecimal totalRevenue){
+    	List<IncomeStatementResponse> responses = incomeStatementService.findByTotalRevenueGreaterThan(totalRevenue);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/total-expenses-greater-than")
+    public ResponseEntity<List<IncomeStatementResponse>> findByTotalExpensesGreaterThan(@RequestParam("totalExpenses") BigDecimal totalExpenses){
+    	List<IncomeStatementResponse> responses = incomeStatementService.findByTotalExpensesGreaterThan(totalExpenses);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/net-profit-greater-than")
+    public ResponseEntity<List<IncomeStatementResponse>> findByNetProfitGreaterThan(@RequestParam("netProfit") BigDecimal netProfit){
+    	List<IncomeStatementResponse> responses = incomeStatementService.findByNetProfitGreaterThan(netProfit);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/total-revenue-less-than")
+    public ResponseEntity<List<IncomeStatementResponse>> findByTotalRevenueLessThan(@RequestParam("totalRevenue") BigDecimal totalRevenue){
+    	List<IncomeStatementResponse> responses = incomeStatementService.findByTotalRevenueLessThan(totalRevenue);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/total-expenses-less-than")
+    public ResponseEntity<List<IncomeStatementResponse>> findByTotalExpensesLessThan(@RequestParam("totalExpenses") BigDecimal totalExpenses){
+    	List<IncomeStatementResponse> responses = incomeStatementService.findByTotalExpensesLessThan(totalExpenses);
+    	return ResponseEntity.ok(responses);
+    }
+     
+    @GetMapping("/search/net-profit-less-than")
+    public ResponseEntity<List<IncomeStatementResponse>> findByNetProfitLessThan(@RequestParam("netProfit") BigDecimal netProfit){
+    	List<IncomeStatementResponse> responses = incomeStatementService.findByNetProfitLessThan(netProfit);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search-year-status")
+    public ResponseEntity<List<IncomeStatementResponse>> findByFiscalYear_YearStatus(@RequestParam("yearStatus") FiscalYearStatus yearStatus){
+    	List<IncomeStatementResponse> responses = incomeStatementService.findByFiscalYear_YearStatus(yearStatus);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search-year-status-and-quarter-status")
+    public ResponseEntity<List<IncomeStatementResponse>> findByFiscalYear_QuarterStatusAndYearStatus(@RequestParam("yearStatus") FiscalYearStatus yearStatus,
+    		@RequestParam("quarterStatus") FiscalQuarterStatus quarterStatus){
+    	List<IncomeStatementResponse> responses = incomeStatementService.findByFiscalYear_QuarterStatusAndYearStatus(yearStatus, quarterStatus);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/total-revenue-date-range")
+    public ResponseEntity<BigDecimal> sumTotalRevenueBetweenDates(@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+    		@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+    	BigDecimal responses = incomeStatementService.sumTotalRevenueBetweenDates(start, end);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/total-expenses-date-range")
+    public ResponseEntity<BigDecimal> sumTotalExpensesBetweenDates(@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+    		@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+    	BigDecimal responses = incomeStatementService.sumTotalExpensesBetweenDates(start, end);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/net-profit-date-range")
+    public ResponseEntity<BigDecimal> sumNetProfitBetweenDates(@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+    		@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+    	BigDecimal responses = incomeStatementService.sumNetProfitBetweenDates(start, end);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/net-profit-quarter-status")
+    public ResponseEntity<BigDecimal> sumNetProfitByQuarterStatus(@RequestParam("quarterStatus") FiscalQuarterStatus quarterStatus){
+    	BigDecimal responses = incomeStatementService.sumNetProfitByQuarterStatus(quarterStatus);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/quarter-status-min-revenue")
+    public ResponseEntity<List<IncomeStatementResponse>> findByQuarterStatusAndMinRevenue(@RequestParam("quarterStatus") FiscalQuarterStatus quarterStatus,
+    		@RequestParam("minRevenue") BigDecimal minRevenue){
+    	List<IncomeStatementResponse> responses = incomeStatementService.findByQuarterStatusAndMinRevenue(quarterStatus, minRevenue);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/revenue-by-year-status")
+    public ResponseEntity<BigDecimal> sumRevenueByFiscalYearStatus(@RequestParam("yearStatus") FiscalYearStatus yearStatus){
+    	BigDecimal responses = incomeStatementService.sumRevenueByFiscalYearStatus(yearStatus);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/fiscal-year-start-date")
+    public ResponseEntity<List<IncomeStatementResponse>> findByFiscalYear_StartDate(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate){
+    	List<IncomeStatementResponse> responses = incomeStatementService.findByFiscalYear_StartDate(startDate);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/fiscal-year-end-date")
+    public ResponseEntity<List<IncomeStatementResponse>> findByFiscalYear_EndDate(@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate){
+    	List<IncomeStatementResponse> responses = incomeStatementService.findByFiscalYear_EndDate(endDate);
+    	return ResponseEntity.ok(responses);
+    }
+     
+    @GetMapping("/search/sum-total-revenue-date-range")
+    public ResponseEntity<BigDecimal> sumTotalRevenue(@RequestParam("start")@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+    		@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+    	BigDecimal responses = incomeStatementService.sumTotalRevenue(start, end);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/sum-total-expenses-date-range")
+    public ResponseEntity<BigDecimal> sumTotalExpenses(@RequestParam("start")@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate start,
+    		@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+    	BigDecimal responses = incomeStatementService.sumTotalExpenses(start, end);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/sum-net-profit-date-range")
+    public ResponseEntity<BigDecimal> sumNetProfit(@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+    		@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
+    	BigDecimal responses = incomeStatementService.sumNetProfit(start, end);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/net-profit-by-year-status")
+    public ResponseEntity<BigDecimal> sumNetProfitByYearStatus(@RequestParam("yearStatus") FiscalYearStatus yearStatus){
+    	BigDecimal responses = incomeStatementService.sumNetProfitByYearStatus(yearStatus);
+    	return ResponseEntity.ok(responses);
+    }
+    
 }

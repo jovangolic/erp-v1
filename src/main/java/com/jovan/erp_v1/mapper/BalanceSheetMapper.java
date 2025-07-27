@@ -16,7 +16,6 @@ import com.jovan.erp_v1.util.AbstractMapper;
 @Component
 public class BalanceSheetMapper extends AbstractMapper<BalanceSheetRequest> {
 
-
     public BalanceSheet toEntity(BalanceSheetRequest request, FiscalYear fiscalYear) {
     	Objects.requireNonNull(request, "BalanceSheetRequest must not be null");
     	Objects.requireNonNull(fiscalYear, "FiscalYear must not be null");
