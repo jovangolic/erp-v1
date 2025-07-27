@@ -17,23 +17,16 @@ import jakarta.transaction.Transactional;
 public interface InventoryItemsRepository extends JpaRepository<InventoryItems, Long> {
 
 	List<InventoryItems> findByInventoryId(Long inventoryId);
-
 	List<InventoryItems> findByProductId(Long productId);
-
 	@Query("SELECT it FROM InventoryItems it WHERE it.product.name = :productName")
 	List<InventoryItems> findByProductName(@Param("productName") String productName);
-
 	List<InventoryItems> findByDifferenceGreaterThan(BigDecimal threshold);
-
 	List<InventoryItems> findByQuantity(BigDecimal quantity);
-
-	List<InventoryItems> findByItemCondition(Integer itemCondition);
-
+	List<InventoryItems> findByItemCondition(BigDecimal itemCondition);
 	// void deleteAllByInventoryId(Long inventoryId);
 	@Modifying
 	@Query("DELETE FROM InventoryItems i WHERE i.inventory.id = :inventoryId")
 	void deleteAllByInventoryId(@Param("inventoryId") Long inventoryId);
-
 	@Transactional
 	void deleteAllById(Long inventoryId);
 

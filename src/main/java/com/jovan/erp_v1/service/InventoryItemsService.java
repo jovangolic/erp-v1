@@ -35,7 +35,7 @@ public class InventoryItemsService implements IInventoryItemsService {
 		Inventory inventory = validateInventory(request.inventoryId());
 		Product product = validateProduct(request.productId());
 		validateBigDecimal(request.quantity());
-		validateInteger(request.condition());
+		validateBigDecimal(request.condition());
 		items.setInventory(inventory);
 		items.setProduct(product);
 		items.setItemCondition(request.condition());
@@ -56,7 +56,7 @@ public class InventoryItemsService implements IInventoryItemsService {
 		Inventory inventory = validateInventory(request.inventoryId());
 		Product product = validateProduct(request.productId());
 		validateBigDecimal(request.quantity());
-		validateInteger(request.condition());
+		validateBigDecimal(request.condition());
 		items.setInventory(inventory);
 		items.setProduct(product);
 		items.setItemCondition(request.condition());
@@ -85,8 +85,8 @@ public class InventoryItemsService implements IInventoryItemsService {
 	}
 
 	@Override
-	public List<InventoryItemsResponse> getByItemCondition(Integer itemCondition) {
-		validateInteger(itemCondition);
+	public List<InventoryItemsResponse> getByItemCondition(BigDecimal itemCondition) {
+		validateBigDecimal(itemCondition);
 		return inventoryItemsRepository.findByItemCondition(itemCondition).stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
@@ -139,14 +139,14 @@ public class InventoryItemsService implements IInventoryItemsService {
 				.collect(Collectors.toList());
 	}
 
-	private BigDecimal calculateDifference(BigDecimal quantity, Integer condition) {
+	private BigDecimal calculateDifference(BigDecimal quantity, BigDecimal condition) {
 		if (quantity == null || condition == null) {
 	        throw new IllegalArgumentException("Quantity and condition must not be null.");
 	    }
 		if(quantity.compareTo(BigDecimal.ZERO) <= 0) {
 			throw new IllegalArgumentException("Quantity must be at least 0");
 		}
-		return quantity.subtract(BigDecimal.valueOf(condition));
+		return quantity.subtract(condition);
 	}
 	
 	private void validateBigDecimal(BigDecimal num) {

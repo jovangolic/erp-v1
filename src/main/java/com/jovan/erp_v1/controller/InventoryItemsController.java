@@ -73,7 +73,7 @@ public class InventoryItemsController {
 	
 	
 	@GetMapping("/by-condition")
-	public ResponseEntity<List<InventoryItemsResponse>> getByCondition(@RequestParam("condition") Integer itemCondition){
+	public ResponseEntity<List<InventoryItemsResponse>> getByCondition(@RequestParam("condition") BigDecimal itemCondition){
 		List<InventoryItemsResponse> responses = inventoryItemsService.getByItemCondition(itemCondition);
 		return ResponseEntity.ok(responses);
 	}

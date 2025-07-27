@@ -1,10 +1,7 @@
 package com.jovan.erp_v1.response;
 
 import java.math.BigDecimal;
-
-import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.InventoryItems;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,22 +12,19 @@ import lombok.NoArgsConstructor;
 public class InventoryItemsResponse {
 
     private Long id;
-    private Long inventoryId;
-    private Long productId;
-    private String productName;
+    private InventoryForItemResponse inventoryForItemResponse;
+    private ProductResponse productResponse;
     private BigDecimal quantity;
-    private Integer itemCondition;
+    private BigDecimal itemCondition;
     private BigDecimal difference;
-    private UnitMeasure unitMeasure;
+    
 
     public InventoryItemsResponse(InventoryItems items) {
         this.id = items.getId();
-        this.inventoryId = items.getInventory().getId();
-        this.productId = items.getProduct().getId();
-        this.productName = items.getProduct().getName();
+        this.inventoryForItemResponse = items.getInventory() != null ? new InventoryForItemResponse(items.getInventory()) : null;
+        this.productResponse = items.getProduct() != null ? new ProductResponse(items.getProduct()) : null;
         this.quantity = items.getQuantity();
         this.itemCondition = items.getItemCondition();
         this.difference = items.getDifference();
-        this.unitMeasure = items.getProduct().getUnitMeasure();
     }
 }

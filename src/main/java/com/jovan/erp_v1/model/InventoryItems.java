@@ -2,6 +2,8 @@ package com.jovan.erp_v1.model;
 
 import java.math.BigDecimal;
 
+import com.jovan.erp_v1.exception.ValidationException;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,8 +39,26 @@ public class InventoryItems {
 	private BigDecimal quantity; //Količina proizvoda koja je inventurisana
 	
 	@Column(name = "item_condition", nullable = false)
-	private Integer itemCondition;// Stanje proizvoda u skladištu (pre inventure)
+	private BigDecimal itemCondition;// Stanje proizvoda u skladištu (pre inventure)
 	
 	@Column(nullable = true)
 	private BigDecimal difference; //Razlika između stanja na skladištu i inventurisanog
+	
+	public BigDecimal calculateDifference() {
+		if(this.quantity == null || this.itemCondition == null) {
+			throw new ValidationException("Quantity and itemCondition must not be null");
+		}
+		if(this.itemCondition.compareTo(this.quantity) > 0) {
+			throw new ValidationException("ItemCondition must not be greater than quantity");
+		}
+		return this.quantity.subtract(this.itemCondition).max(BigDecimal.ZERO);
+	}
+	
+	//ako se dozvoljava manjak
+	public BigDecimal calculateDifferenceWithShortage() {
+		if(this.quantity == null || this.itemCondition == null) {
+			throw new ValidationException("Quantity and itemCondition must not be null");
+		}
+		return this.quantity.subtract(this.itemCondition).max(BigDecimal.ZERO);
+	}
 }

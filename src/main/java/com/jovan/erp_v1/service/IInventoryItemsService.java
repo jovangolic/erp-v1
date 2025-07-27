@@ -12,12 +12,11 @@ public interface IInventoryItemsService {
 	InventoryItemsResponse update(Long id, InventoryItemsRequest request);
 	void delete(Long id);
 	List<InventoryItemsResponse> getByQuantity(BigDecimal quantity);
-	List<InventoryItemsResponse> getByItemCondition(Integer itemCondition);
+	List<InventoryItemsResponse> getByItemCondition(BigDecimal itemCondition);
 	List<InventoryItemsResponse> getByInventoryId(Long inventoryId);
 	List<InventoryItemsResponse> getByProductId(Long productId);
 	List<InventoryItemsResponse> getByProductName(String productName);
 	InventoryItemsResponse findById(Long id);
 	List<InventoryItemsResponse> findAllInventories();
-
     List<InventoryItemsResponse> findItemsWithDifference(BigDecimal threshold);
 }

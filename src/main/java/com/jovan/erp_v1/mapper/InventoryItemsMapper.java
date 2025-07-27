@@ -2,55 +2,54 @@ package com.jovan.erp_v1.mapper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
-import com.jovan.erp_v1.exception.NoSuchProductException;
-import com.jovan.erp_v1.exception.ProductNotFoundException;
 import com.jovan.erp_v1.model.Inventory;
 import com.jovan.erp_v1.model.InventoryItems;
 import com.jovan.erp_v1.model.Product;
-import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.request.InventoryItemsRequest;
 import com.jovan.erp_v1.response.InventoryItemsResponse;
-
-import lombok.RequiredArgsConstructor;
+import com.jovan.erp_v1.util.AbstractMapper;
 
 @Component
-@RequiredArgsConstructor
-public class InventoryItemsMapper {
+public class InventoryItemsMapper extends AbstractMapper<InventoryItemsRequest> {
 
-	private final ProductRepository productRepository;
-	
-	public InventoryItems toEntity(InventoryItemsRequest request, Inventory inventory) {
-	    Product product = productRepository.findById(request.productId())
-	        .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + request.productId()));
-
+	public InventoryItems toEntity(InventoryItemsRequest request, Inventory inventory, Product product) {
+		Objects.requireNonNull(request, "InventoryItemsRequest must not be null");
+		Objects.requireNonNull(inventory, "Inventory must not be null");
+		Objects.requireNonNull(product, "Product must not be null");
+		validateIdForCreate(request, InventoryItemsRequest::id);
 	    InventoryItems items = new InventoryItems();
 	    items.setInventory(inventory); 
 	    items.setProduct(product);
 	    items.setQuantity(request.quantity());
 	    items.setItemCondition(request.condition());
+	    items.setDifference(request.difference());
 	    return items;
 	}
 	
+	public InventoryItems toEntityUpdate(InventoryItems items, InventoryItemsRequest request, Inventory inventory, Product product) {
+		Objects.requireNonNull(items, "InventoryItems must not be null");
+		Objects.requireNonNull(request, "InventoryItemsRequest must not be null");
+		Objects.requireNonNull(inventory, "Inventory must not be null");
+		Objects.requireNonNull(product, "Product must not be null");
+		validateIdForUpdate(request, InventoryItemsRequest::id);
+		return buildInventoryItemsForRequest(items, request, inventory, product);
+	}
+	
+	private InventoryItems buildInventoryItemsForRequest(InventoryItems items, InventoryItemsRequest request, Inventory inventory, Product product) {
+		items.setInventory(inventory);
+		items.setProduct(product);
+		items.setQuantity(request.quantity());
+		items.setItemCondition(request.condition());
+		items.setDifference(request.difference());
+		return items;
+	}
+	
 	public InventoryItemsResponse toResponse(InventoryItems items) {
-		InventoryItemsResponse response = new InventoryItemsResponse();
-		if(items.getInventory() != null) {
-			response.setInventoryId(items.getInventory().getId());
-		}
-		if(items.getProduct() != null) {
-			response.setProductId(items.getProduct().getId());
-			response.setProductName(items.getProduct().getName());
-		}
-		response.setQuantity(items.getQuantity());
-		response.setItemCondition(items.getItemCondition());
-		response.setDifference(items.getDifference());
-		if (items.getProduct() != null) {
-		    response.setUnitMeasure(items.getProduct().getUnitMeasure());
-		}
-		return response;
+		Objects.requireNonNull(items, "InventoryItems must not be null");
+		return new InventoryItemsResponse(items);
 	}
 	
 	public List<InventoryItemsResponse> toResponseList(List<InventoryItems> items){
