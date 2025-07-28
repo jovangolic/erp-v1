@@ -25,7 +25,6 @@ public class InventoryItemsMapper extends AbstractMapper<InventoryItemsRequest> 
 	    items.setProduct(product);
 	    items.setQuantity(request.quantity());
 	    items.setItemCondition(request.condition());
-	    items.setDifference(request.difference());
 	    return items;
 	}
 	
@@ -43,7 +42,6 @@ public class InventoryItemsMapper extends AbstractMapper<InventoryItemsRequest> 
 		items.setProduct(product);
 		items.setQuantity(request.quantity());
 		items.setItemCondition(request.condition());
-		items.setDifference(request.difference());
 		return items;
 	}
 	

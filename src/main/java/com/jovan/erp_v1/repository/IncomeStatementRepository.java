@@ -42,7 +42,8 @@ public interface IncomeStatementRepository extends JpaRepository<IncomeStatement
     List<IncomeStatement> findByTotalExpensesLessThan(BigDecimal totalExpenses);
     List<IncomeStatement> findByNetProfitLessThan(BigDecimal netProfit);
     List<IncomeStatement> findByFiscalYear_YearStatus(FiscalYearStatus yearStatus);
-    List<IncomeStatement> findByFiscalYear_QuarterStatusAndYearStatus(FiscalYearStatus yearStatus, FiscalQuarterStatus quarterStatus);
+    @Query("SELECT is FROM IncomeStatement is WHERE is.fiscalYear.yearStatus = :yearStatus AND is.fiscalYear.quarterStatus = :quarterStatus")
+    List<IncomeStatement> findByFiscalYear_QuarterStatusAndYearStatus(@Param("yearStatus") FiscalYearStatus yearStatus,@Param("quarterStatus") FiscalQuarterStatus quarterStatus);
     @Query("SELECT SUM(i.totalRevenue) FROM IncomeStatement i WHERE i.periodStart >= :start AND i.periodEnd <= :end")
     BigDecimal sumTotalRevenueBetweenDates(@Param("start") LocalDate start, @Param("end") LocalDate end);
     @Query("SELECT SUM(i.totalExpenses) FROM IncomeStatement i WHERE i.periodStart >= :start AND i.periodEnd <= :end")

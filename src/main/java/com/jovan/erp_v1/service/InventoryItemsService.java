@@ -1,22 +1,50 @@
 package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
-
+import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.InventoryStatus;
+import com.jovan.erp_v1.enumeration.StorageStatus;
+import com.jovan.erp_v1.enumeration.StorageType;
+import com.jovan.erp_v1.enumeration.SupplierType;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.exception.InventoryItemsNotFoundException;
-import com.jovan.erp_v1.exception.InventoryNotFoundException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ProductNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
+import com.jovan.erp_v1.mapper.InventoryItemsMapper;
 import com.jovan.erp_v1.model.Inventory;
 import com.jovan.erp_v1.model.InventoryItems;
 import com.jovan.erp_v1.model.Product;
+import com.jovan.erp_v1.model.Shelf;
+import com.jovan.erp_v1.model.Storage;
+import com.jovan.erp_v1.model.Supply;
+import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.InventoryItemsRepository;
 import com.jovan.erp_v1.repository.InventoryRepository;
 import com.jovan.erp_v1.repository.ProductRepository;
+import com.jovan.erp_v1.repository.ShelfRepository;
+import com.jovan.erp_v1.repository.StorageRepository;
+import com.jovan.erp_v1.repository.SupplyRepository;
+import com.jovan.erp_v1.repository.UserRepository;
+import com.jovan.erp_v1.request.InventoryItemCalculateRequest;
 import com.jovan.erp_v1.request.InventoryItemsRequest;
+import com.jovan.erp_v1.response.InventoryItemCalculateResponse;
+import com.jovan.erp_v1.response.InventoryItemStorageCapacityResponse;
 import com.jovan.erp_v1.response.InventoryItemsResponse;
+import com.jovan.erp_v1.response.InventorySummaryResponse;
+import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponse;
+import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponseFull;
+import com.jovan.erp_v1.response.StorageCapacityResponse;
+import com.jovan.erp_v1.response.StorageItemSummaryResponse;
+import com.jovan.erp_v1.util.DateValidator;
+
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -27,19 +55,20 @@ public class InventoryItemsService implements IInventoryItemsService {
 	private final InventoryItemsRepository inventoryItemsRepository;
 	private final InventoryRepository inventoryRepository;
 	private final ProductRepository productRepository;
+	private final InventoryItemsMapper inventoryItemsMapper;
+	private final ShelfRepository shelfRepository;
+	private final StorageRepository storageRepository;
+	private final SupplyRepository supplyRepository;
+	private final UserRepository userRepository;
 
 	@Transactional
 	@Override
 	public InventoryItemsResponse create(InventoryItemsRequest request) {
-		InventoryItems items = new InventoryItems();
 		Inventory inventory = validateInventory(request.inventoryId());
 		Product product = validateProduct(request.productId());
 		validateBigDecimal(request.quantity());
 		validateBigDecimal(request.condition());
-		items.setInventory(inventory);
-		items.setProduct(product);
-		items.setItemCondition(request.condition());
-		items.setQuantity(request.quantity());
+		InventoryItems items = inventoryItemsMapper.toEntity(request, inventory, product);
 		items.setDifference(calculateDifference(request.quantity(), request.condition()));
 		InventoryItems saved = inventoryItemsRepository.save(items);
 		return new InventoryItemsResponse(saved);
@@ -57,10 +86,7 @@ public class InventoryItemsService implements IInventoryItemsService {
 		Product product = validateProduct(request.productId());
 		validateBigDecimal(request.quantity());
 		validateBigDecimal(request.condition());
-		items.setInventory(inventory);
-		items.setProduct(product);
-		items.setItemCondition(request.condition());
-		items.setQuantity(request.quantity());
+		inventoryItemsMapper.toEntityUpdate(items, request, inventory, product);
 		items.setDifference(calculateDifference(request.quantity(), request.condition()));
 		InventoryItems updated = inventoryItemsRepository.save(items);
 		return new InventoryItemsResponse(updated);
@@ -79,7 +105,12 @@ public class InventoryItemsService implements IInventoryItemsService {
 	@Override
 	public List<InventoryItemsResponse> getByQuantity(BigDecimal quantity) {
 		validateBigDecimal(quantity);
-		return inventoryItemsRepository.findByQuantity(quantity).stream()
+		List<InventoryItems> items = inventoryItemsRepository.findByQuantity(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems found for quantity %s", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -87,24 +118,38 @@ public class InventoryItemsService implements IInventoryItemsService {
 	@Override
 	public List<InventoryItemsResponse> getByItemCondition(BigDecimal itemCondition) {
 		validateBigDecimal(itemCondition);
-		return inventoryItemsRepository.findByItemCondition(itemCondition).stream()
+		List<InventoryItems> items = inventoryItemsRepository.findByItemCondition(itemCondition);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems found for item-condition %s", itemCondition);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InventoryItemsResponse> getByInventoryId(Long inventoryId) {
-		Inventory inventory = inventoryRepository.findById(inventoryId)
-				.orElseThrow(() -> new InventoryNotFoundException("Inventory not found"));
-		return inventoryItemsRepository.findByInventoryId(inventory.getId()).stream()
+		validateInventory(inventoryId);
+		List<InventoryItems> items = inventoryItemsRepository.findByInventoryId(inventoryId);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems found for inventory-id %d", inventoryId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InventoryItemsResponse> getByProductId(Long productId) {
-		Product product = validateProduct(productId);
-		return inventoryItemsRepository.findByProductId(product.getId()).stream()
+		validateProduct(productId);
+		List<InventoryItems> items = inventoryItemsRepository.findByProductId(productId);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems found for product-id %d", productId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -112,7 +157,12 @@ public class InventoryItemsService implements IInventoryItemsService {
 	@Override
 	public List<InventoryItemsResponse> getByProductName(String productName) {
 		validateString(productName);
-		return inventoryItemsRepository.findByProductName(productName).stream()
+		List<InventoryItems> items = inventoryItemsRepository.findByProductName(productName);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems found for product-name %s", productName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -126,7 +176,11 @@ public class InventoryItemsService implements IInventoryItemsService {
 
 	@Override
 	public List<InventoryItemsResponse> findAllInventories() {
-		return inventoryItemsRepository.findAll().stream()
+		List<InventoryItems> items = inventoryItemsRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("List of InventoryItems is empty");
+		}
+		return items.stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -134,9 +188,679 @@ public class InventoryItemsService implements IInventoryItemsService {
 	@Override
 	public List<InventoryItemsResponse> findItemsWithDifference(BigDecimal threshold) {
 		validateBigDecimal(threshold);
-		return inventoryItemsRepository.findByDifferenceGreaterThan(threshold).stream()
+		List<InventoryItems> items = inventoryItemsRepository.findByDifferenceGreaterThan(threshold);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems found with difference greter than %s", threshold);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InventoryItemsResponse::new)
 				.collect(Collectors.toList());
+	}
+	
+	//nove metode
+	
+	@Override
+	public List<InventoryItemsResponse> findByDifference(BigDecimal difference) {
+		validateBigDecimal(difference);
+		List<InventoryItems> items = inventoryItemsRepository.findByDifference(difference);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems for difference %s is found", difference);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByDifferenceLessThan(BigDecimal difference) {
+		validateBigDecimalNonNegative(difference);
+		List<InventoryItems> items = inventoryItemsRepository.findByDifferenceLessThan(difference);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems for difference less than %s is found", difference);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByQuantityGreaterThan(BigDecimal quantity) {
+		validateBigDecimal(quantity);
+		List<InventoryItems> items = inventoryItemsRepository.findByQuantityGreaterThan(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems for quantity greater than %s is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByQuantityLessThan(BigDecimal quantity) {
+		validateBigDecimalNonNegative(quantity);
+		List<InventoryItems> items = inventoryItemsRepository.findByQuantityLessThan(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems for quantity less than %s is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByItemConditionGreaterThan(BigDecimal itemCondition) {
+		validateBigDecimal(itemCondition);
+		List<InventoryItems> items = inventoryItemsRepository.findByItemConditionGreaterThan(itemCondition);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems for item-condition greater than %s is found", itemCondition);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByItemConditionLessThan(BigDecimal itemCondition) {
+		validateBigDecimalNonNegative(itemCondition);
+		List<InventoryItems> items = inventoryItemsRepository.findByItemConditionLessThan(itemCondition);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems for item-condition less than %s is found", itemCondition);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByItemConditionAndQuantity(BigDecimal itemCondition, BigDecimal quantity) {
+		validateBigDecimal(itemCondition);
+		validateBigDecimal(quantity);
+		List<InventoryItems> items = inventoryItemsRepository.findByItemConditionAndQuantity(itemCondition, quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems for item-condition %s and quantity %s , is found", 
+					itemCondition, quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemCalculateResponse> findInventoryItemsForCalculation(Long inventoryId) {
+		List<InventoryItemCalculateRequest> items = inventoryItemsRepository.findInventoryItemsForCalculation(inventoryId);
+	    return items.stream()
+	        .map(item -> {
+	            BigDecimal quantity = item.quantity();
+	            BigDecimal condition = item.itemCondition();
+	            BigDecimal difference = quantity.subtract(condition).max(BigDecimal.ZERO);
+	            return new InventoryItemCalculateResponse(item.id(), quantity, condition, difference);
+	        })
+	        .toList();
+	}
+
+	@Override
+	public List<InventoryItemCalculateResponse> findItemsForShortageAllowed(Long inventoryId) {
+		List<InventoryItemCalculateRequest> items = inventoryItemsRepository.findItemsForShortageAllowed(inventoryId);
+	    return items.stream()
+	        .map(item -> {
+	            BigDecimal quantity = item.quantity();
+	            BigDecimal condition = item.itemCondition();
+	            BigDecimal difference = (quantity != null && condition != null)
+	                ? quantity.subtract(condition)
+	                : BigDecimal.ZERO;
+	            return new InventoryItemCalculateResponse(item.id(), quantity, condition, difference);
+	        })
+	        .toList();
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByInventory_StorageEmployee_Id(Long storageEmployeeId) {
+		validateUserId(storageEmployeeId);
+		List<InventoryItems> items = inventoryItemsRepository.findByInventory_StorageEmployee_Id(storageEmployeeId);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for inventory's storage employee-id %d is found", storageEmployeeId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByInventory_StorageForeman_Id(Long storageForemanId) {
+		validateUserId(storageForemanId);
+		List<InventoryItems> items = inventoryItemsRepository.findByInventory_StorageForeman_Id(storageForemanId);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for inventory's storage foreman-id %d is found", storageForemanId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByInventoryDate(LocalDate date) {
+		DateValidator.validateNotInFuture(date, "Inventory date");
+		List<InventoryItems> items = inventoryItemsRepository.findByInventoryDate(date);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No InventoryItems bound for inventory's date %s is found", date.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByInventoryDateBetween(LocalDate start, LocalDate end) {
+		DateValidator.validateRange(start, end);
+		List<InventoryItems> items = inventoryItemsRepository.findByInventoryDateBetween(start, end);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No InventoryItems bound for inventory date between %s and %s is found",
+					start.format(formatter), end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByInventoryDateAfter(LocalDate date) {
+		DateValidator.validateNotInPast(date, "Inventory date after");
+		List<InventoryItems> items = inventoryItemsRepository.findByInventoryDateAfter(date);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No InventoryItems bound for inventory's date after %s is found", date.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByInventoryDateBefore(LocalDate date) {
+		DateValidator.validateNotInFuture(date, "Inventory date before");
+		List<InventoryItems> items = inventoryItemsRepository.findByInventoryDateBefore(date);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No InventoryItems bound for inventory's date before %s is found", date.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByInventory_Status(InventoryStatus status) {
+		validateInventoryStatus(status);
+		List<InventoryItems> items = inventoryItemsRepository.findByInventory_Status(status);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for inventory's status %s is found", status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public Boolean existsByInventory_Aligned(Boolean aligned) {
+		return inventoryItemsRepository.existsByInventory_Aligned(aligned);
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByInventoryAlignedFalse() {
+		List<InventoryItems> items = inventoryItemsRepository.findByInventoryAlignedFalse();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InventoryItems for inventory aligned equal to false, is found");
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByInventoryStatusAndInventoryStorageEmployeeId(InventoryStatus status,
+			Long storageEmployeeId) {
+		validateInventoryStatus(status);
+		validateUserId(storageEmployeeId);
+		List<InventoryItems> items = inventoryItemsRepository.findByInventoryStatusAndInventoryStorageEmployeeId(status, storageEmployeeId);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for inventory's status %s and storage employee-id %d is found", 
+					status,storageEmployeeId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByInventoryStatusAndInventoryStorageForemanId(InventoryStatus status,
+			Long storageForemanId) {
+		validateInventoryStatus(status);
+		validateUserId(storageForemanId);
+		List<InventoryItems> items = inventoryItemsRepository.findByInventoryStatusAndInventoryStorageForemanId(status, storageForemanId);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for inventory's status %s and storage foreman-id %d is found", 
+					status,storageForemanId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public Boolean existsByInventoryAlignedFalseAndInventoryStorageEmployeeId(Long employeeId) {
+		validateUserId(employeeId);
+		return inventoryItemsRepository.existsByInventoryAlignedFalseAndInventoryStorageEmployeeId(employeeId);
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findItemsWithNonZeroDifference() {
+		List<InventoryItems> items = inventoryItemsRepository.findItemsWithNonZeroDifference();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InventoryItems with non-zero difference is found");
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByInventoryStatusAndInventoryAlignedFalse(InventoryStatus status) {
+		validateInventoryStatus(status);
+		List<InventoryItems> items = inventoryItemsRepository.findByInventoryStatusAndInventoryAlignedFalse(status);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for inventory's status %s and aligned equal false, is found", status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByInventoryDateAndInventoryStorageForemanId(LocalDate date,
+			Long foremanId) {
+		DateValidator.validatePastOrPresent(date, "inventory date");
+		validateUserId(foremanId);
+		List<InventoryItems> items = inventoryItemsRepository.findByInventoryDateAndInventoryStorageForemanId(date, foremanId);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No InventoryItems bound for inventory's date %s and storage foreman-id %d, is found",
+					date.format(formatter), foremanId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventorySummaryResponse> fetchInventorySummaries() {
+		List<InventorySummaryResponse> items = inventoryItemsRepository.fetchInventorySummaries();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InventoryItems for inventory summaries is found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long inventoryId = item.inventoryId();
+				    Long itemCount = item.itemCount();
+				    BigDecimal totalQuantity = item.totalQuantity();
+				    return new InventorySummaryResponse(inventoryId, itemCount, totalQuantity);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_CurrentQuantity(BigDecimal currentQuantity) {
+		validateBigDecimal(currentQuantity);;
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_CurrentQuantity(currentQuantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's current quantity %s is found", currentQuantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_CurrentQuantityGreaterThan(BigDecimal currentQuantity) {
+		validateBigDecimal(currentQuantity);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_CurrentQuantityGreaterThan(currentQuantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's current quantity greater than %s is found", currentQuantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_CurrentQuantityLessThan(BigDecimal currentQuantity) {
+		validateBigDecimalNonNegative(currentQuantity);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_CurrentQuantityLessThan(currentQuantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's current quantity less than %s is found", currentQuantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_UnitMeasure(UnitMeasure unitMeasure) {
+		validateUnitMeasure(unitMeasure);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_UnitMeasure(unitMeasure);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's unit-measure %s is found", unitMeasure);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_SupplierType(SupplierType supplierType) {
+		validateSupplierType(supplierType);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_SupplierType(supplierType);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's supplier-type %s is found", supplierType);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_StorageType(StorageType storageType) {
+		validateStorageType(storageType);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_StorageType(storageType);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's storage-type %s is found", storageType);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_GoodsType(GoodsType type) {
+		validateGoodsType(type);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_GoodsType(type);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's goods-type %s is found", type);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_StorageId(Long storageId) {
+		validateStorageId(storageId);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_StorageId(storageId);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's storage-id %d, is found", storageId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_StorageNameContainingIgnoreCase(String storageName) {
+		validateString(storageName);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_StorageNameContainingIgnoreCase(storageName);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's storage name %s is found",
+					storageName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_StorageLocationContainingIgnoreCase(String storageLocation) {
+		validateString(storageLocation);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_StorageLocationContainingIgnoreCase(storageLocation);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's storage location %s is found",
+					storageLocation);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_StorageCapacity(BigDecimal capacity) {
+		validateBigDecimal(capacity);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_StorageCapacity(capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's storage capacity %s is found", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_StorageCapacityGreaterThan(BigDecimal capacity) {
+		validateBigDecimal(capacity);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_StorageCapacityGreaterThan(capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's storage capacity greater than %s is found", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_StorageCapacityLessThan(BigDecimal capacity) {
+		validateBigDecimalNonNegative(capacity);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_StorageCapacityLessThan(capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's storage capacity less than %s is found", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_Storage_Status(StorageStatus status) {
+		validateStorageStatus(status);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_Storage_Status(status);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventoryitems bound for product's storage status %s is found", status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemStorageCapacityResponse> fetchUsedCapacitiesForItems() {
+		List<InventoryItemStorageCapacityResponse> items = inventoryItemsRepository.fetchUsedCapacitiesForItems();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InventoryItems found for used capacity items");
+		}
+		return items.stream()
+				.map(item -> {
+					Long inventoryItemId = item.inventoryItemId();
+				    Long productId = item.productId();
+				    Long storageId = item.storageId();
+				    BigDecimal usedCapacity = item.usedCapacity();
+				    return new InventoryItemStorageCapacityResponse(inventoryItemId, productId, storageId, usedCapacity);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<StorageCapacityResponse> fetchAllStorageCapacities() {
+		List<StorageCapacityResponse> items = inventoryItemsRepository.fetchAllStorageCapacities();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No ImvemtoryItems found for all storage capacities");
+		}
+		return items.stream()
+				.map(item -> {
+					Long storageId = item.storageId();
+				    BigDecimal usedCapacity = item.usedCapacity();
+				    return new StorageCapacityResponse(storageId, usedCapacity);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<StorageItemSummaryResponse> fetchItemQuantitiesPerStorage() {
+		List<StorageItemSummaryResponse> items = inventoryItemsRepository.fetchItemQuantitiesPerStorage();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InventoryItems found for item quantities per storage");
+		}
+		return items.stream()
+				.map(item -> {
+					Long storageId = item.storageId();
+					BigDecimal totalItemQuantity = item.totalItemQuantity();
+					return new StorageItemSummaryResponse(storageId, totalItemQuantity);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<StorageCapacityAndInventorySummaryResponseFull> fetchStorageCapacityAndInventorySummary() {
+	    List<StorageCapacityAndInventorySummaryResponse> items =
+	            inventoryItemsRepository.fetchStorageCapacityAndInventorySummary();
+	    if (items.isEmpty()) {
+	        throw new NoDataFoundException("No InventoryItems found for storage capacity and inventory summary");
+	    }
+	    return items.stream()
+	            .map(item -> {
+	                BigDecimal available = item.capacity().subtract(item.usedCapacity());
+	                return new StorageCapacityAndInventorySummaryResponseFull(
+	                    item.storageId(),
+	                    item.capacity(),
+	                    item.usedCapacity(),
+	                    available,
+	                    item.totalItemQuantity()
+	                );
+	            })
+	            .toList();
+	}
+
+	@Override
+	public List<StorageCapacityAndInventorySummaryResponseFull> fetchDetailedStorageStats() {
+		List<StorageCapacityAndInventorySummaryResponse> items = inventoryItemsRepository.fetchDetailedStorageStats();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InventoryItems found for detailed storage stats");
+		}
+		return items.stream()
+	            .map(item -> {
+	                BigDecimal available = item.capacity().subtract(item.usedCapacity());
+	                return new StorageCapacityAndInventorySummaryResponseFull(
+	                    item.storageId(),
+	                    item.capacity(),
+	                    item.usedCapacity(),
+	                    available,
+	                    item.totalItemQuantity()
+	                );
+	            })
+	            .toList();
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_SupplyId(Long supplyId) {
+		validateSupplyId(supplyId);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_SupplyId(supplyId);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's supply id %d, is found", supplyId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_SupplyQuantity(BigDecimal quantity) {
+		validateBigDecimal(quantity);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_SupplyQuantity(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's supply %s, is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_SupplyQuantityGreaterThan(BigDecimal quantity) {
+		validateBigDecimal(quantity);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_SupplyQuantityGreaterThan(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's supply quantity greater than %s, is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_SupplyQuantityLessThan(BigDecimal quantity) {
+		validateBigDecimalNonNegative(quantity);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_SupplyQuantityLessThan(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems bound for product's supply quantity less than %s, is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_SupplyUpdates(LocalDateTime updates) {
+		DateValidator.validateNotNull(updates, "Date updates");
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_SupplyUpdates(updates);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No InventoryItems bound for product's supply updates %s, is found",
+					updates.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_SupplyUpdatesBetween(LocalDateTime start, LocalDateTime end) {
+		DateValidator.validateRange(start, end);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_SupplyUpdatesBetween(start, end);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Inventoryitems bound for product's supply date between %s and %s is found", 
+					start.format(formatter),end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_SupplyStorageId(Long storageId) {
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_SupplyStorageId(storageId);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems with product, for supply storage-id %d. is found", storageId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_ShelfId(Long shelfId) {
+		validateShelfId(shelfId);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_ShelfId(shelfId);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems with product, for shelf-id %d. is found", shelfId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_ShelfRowCount(Integer rowCount) {
+		validateInteger(rowCount);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_ShelfRowCount(rowCount);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems for product with shelf row-count %d is found", rowCount);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_ShelfCols(Integer cols) {
+		validateInteger(cols);
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_ShelfCols(cols);
+		if(items.isEmpty()) {
+			String msg = String.format("No InventoryItems for product with shelf cols %d is found", cols);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findInventoryItemsWithoutShelf() {
+		List<InventoryItems> items = inventoryItemsRepository.findInventoryItemsWithoutShelf();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InventoryItems without shelf is found");
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryItemsResponse> findByProduct_ShelfIsNotNull() {
+		List<InventoryItems> items = inventoryItemsRepository.findByProduct_ShelfIsNotNull();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InventoryItems for product, where shelf is not null, found");
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
 	}
 
 	private BigDecimal calculateDifference(BigDecimal quantity, BigDecimal condition) {
@@ -146,7 +870,7 @@ public class InventoryItemsService implements IInventoryItemsService {
 		if(quantity.compareTo(BigDecimal.ZERO) <= 0) {
 			throw new IllegalArgumentException("Quantity must be at least 0");
 		}
-		return quantity.subtract(condition);
+		return quantity.subtract(condition).max(BigDecimal.ZERO);
 	}
 	
 	private void validateBigDecimal(BigDecimal num) {
@@ -179,5 +903,72 @@ public class InventoryItemsService implements IInventoryItemsService {
 			throw new InventoryItemsNotFoundException("Inventory must not be null");
 		}
 		return inventoryRepository.findById(inventoryId).orElseThrow(() -> new InventoryItemsNotFoundException("Inventory ID "+inventoryId +" not found"));
+	}
+
+	private Shelf validateShelfId(Long shelfId) {
+		if(shelfId == null) {
+			throw new ValidationException("Shelf ID must not be null");
+		}
+		return shelfRepository.findById(shelfId).orElseThrow(() -> new ValidationException("Shelf not found with id "+shelfId));
+	}
+	
+	private Storage validateStorageId(Long storageId) {
+		if(storageId == null) {
+			throw new ValidationException("Storage ID must not be null");
+		}
+		return storageRepository.findById(storageId).orElseThrow(() -> new ValidationException("Storage not found with id "+storageId));
+	}
+	
+	private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
+	
+	private void validateStorageStatus(StorageStatus status) {
+		Optional.ofNullable(status)
+			.orElseThrow(() -> new ValidationException("StorageStatus status must not be null"));
+	}
+	
+	private void validateGoodsType(GoodsType type) {
+		Optional.ofNullable(type)
+			.orElseThrow(() -> new ValidationException("GoodsType type must not be null"));
+	}
+	
+	private void validateStorageType(StorageType storageType) {
+		Optional.ofNullable(storageType)
+			.orElseThrow(() -> new ValidationException("StorageType storageType must not be null"));
+	}
+	
+	private void validateSupplierType(SupplierType supplierType) {
+		Optional.ofNullable(supplierType)
+			.orElseThrow(() -> new ValidationException("SupplierType supplierType must not be null"));
+	}
+	
+	private void validateUnitMeasure(UnitMeasure unitMeasure) {
+		Optional.ofNullable(unitMeasure)
+			.orElseThrow(() -> new ValidationException("UnitMeasure unitMeasure must not be null"));
+	}
+	
+	private void validateInventoryStatus(InventoryStatus status) {
+		Optional.ofNullable(status)
+			.orElseThrow(() -> new ValidationException("InventoryStatus status must not be null"));
+	}
+	
+	private Supply validateSupplyId(Long supplyId) {
+		if(supplyId == null) {
+			throw new ValidationException("Supply ID must not be null");
+		}
+		return supplyRepository.findById(supplyId).orElseThrow(() -> new ValidationException("Supply not found with id "+supplyId));
+	}
+	
+	private User validateUserId(Long userId) {
+		if(userId == null) {
+			throw new ValidationException("User ID must not be null");
+		}
+		return userRepository.findById(userId).orElseThrow(() -> new ValidationException("User not found with id "+userId));
 	}
 }

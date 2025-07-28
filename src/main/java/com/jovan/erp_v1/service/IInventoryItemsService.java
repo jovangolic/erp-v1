@@ -1,10 +1,24 @@
 package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-
+import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.InventoryStatus;
+import com.jovan.erp_v1.enumeration.StorageStatus;
+import com.jovan.erp_v1.enumeration.StorageType;
+import com.jovan.erp_v1.enumeration.SupplierType;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.InventoryItemsRequest;
+import com.jovan.erp_v1.response.InventoryItemCalculateResponse;
+import com.jovan.erp_v1.response.InventoryItemStorageCapacityResponse;
 import com.jovan.erp_v1.response.InventoryItemsResponse;
+import com.jovan.erp_v1.response.InventorySummaryResponse;
+import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponse;
+import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponseFull;
+import com.jovan.erp_v1.response.StorageCapacityResponse;
+import com.jovan.erp_v1.response.StorageItemSummaryResponse;
 
 public interface IInventoryItemsService {
 
@@ -19,4 +33,62 @@ public interface IInventoryItemsService {
 	InventoryItemsResponse findById(Long id);
 	List<InventoryItemsResponse> findAllInventories();
     List<InventoryItemsResponse> findItemsWithDifference(BigDecimal threshold);
+    
+    //nove metode
+    List<InventoryItemsResponse> findByDifference(BigDecimal difference);
+	List<InventoryItemsResponse> findByDifferenceLessThan(BigDecimal difference);
+	List<InventoryItemsResponse> findByQuantityGreaterThan(BigDecimal quantity);
+	List<InventoryItemsResponse> findByQuantityLessThan(BigDecimal quantity);
+	List<InventoryItemsResponse> findByItemConditionGreaterThan(BigDecimal itemCondition);
+	List<InventoryItemsResponse> findByItemConditionLessThan(BigDecimal itemCondition);
+	List<InventoryItemsResponse> findByItemConditionAndQuantity(BigDecimal itemCondition, BigDecimal quantity);
+	List<InventoryItemCalculateResponse> findInventoryItemsForCalculation( Long inventoryId);
+	List<InventoryItemCalculateResponse> findItemsForShortageAllowed( Long inventoryId);
+	List<InventoryItemsResponse> findByInventory_StorageEmployee_Id( Long storageEmployeeId);
+	List<InventoryItemsResponse> findByInventory_StorageForeman_Id( Long storageForemanId);
+	List<InventoryItemsResponse> findByInventoryDate(LocalDate date);
+	List<InventoryItemsResponse> findByInventoryDateBetween(LocalDate start, LocalDate end);
+	List<InventoryItemsResponse> findByInventoryDateAfter(LocalDate date);
+	List<InventoryItemsResponse> findByInventoryDateBefore(LocalDate date);
+	List<InventoryItemsResponse> findByInventory_Status(InventoryStatus status);
+	Boolean existsByInventory_Aligned(Boolean aligned);
+	List<InventoryItemsResponse> findByInventoryAlignedFalse();
+	List<InventoryItemsResponse> findByInventoryStatusAndInventoryStorageEmployeeId( InventoryStatus status, Long storageEmployeeId);
+	List<InventoryItemsResponse> findByInventoryStatusAndInventoryStorageForemanId( InventoryStatus status, Long storageForemanId);
+	Boolean existsByInventoryAlignedFalseAndInventoryStorageEmployeeId(Long employeeId);
+	List<InventoryItemsResponse> findItemsWithNonZeroDifference();
+	List<InventoryItemsResponse> findByInventoryStatusAndInventoryAlignedFalse(InventoryStatus status);
+	List<InventoryItemsResponse> findByInventoryDateAndInventoryStorageForemanId(LocalDate date, Long foremanId);
+	List<InventorySummaryResponse> fetchInventorySummaries();
+	List<InventoryItemsResponse> findByProduct_CurrentQuantity(BigDecimal currentQuantity);
+	List<InventoryItemsResponse> findByProduct_CurrentQuantityGreaterThan(BigDecimal currentQuantity);
+	List<InventoryItemsResponse> findByProduct_CurrentQuantityLessThan(BigDecimal currentQuantity);
+	List<InventoryItemsResponse> findByProduct_UnitMeasure(UnitMeasure unitMeasure);
+	List<InventoryItemsResponse> findByProduct_SupplierType(SupplierType supplierType);
+	List<InventoryItemsResponse> findByProduct_StorageType(StorageType storageType);
+	List<InventoryItemsResponse> findByProduct_GoodsType(GoodsType type);
+	List<InventoryItemsResponse> findByProduct_StorageId( Long storageId);
+	List<InventoryItemsResponse> findByProduct_StorageNameContainingIgnoreCase( String storageName);
+	List<InventoryItemsResponse> findByProduct_StorageLocationContainingIgnoreCase( String storageLocation);
+	List<InventoryItemsResponse> findByProduct_StorageCapacity( BigDecimal capacity);
+	List<InventoryItemsResponse> findByProduct_StorageCapacityGreaterThan( BigDecimal capacity);
+	List<InventoryItemsResponse> findByProduct_StorageCapacityLessThan( BigDecimal capacity);
+	List<InventoryItemsResponse> findByProduct_Storage_Status( StorageStatus status);
+	List<InventoryItemStorageCapacityResponse> fetchUsedCapacitiesForItems();
+	List<StorageCapacityResponse> fetchAllStorageCapacities();
+	List<StorageItemSummaryResponse> fetchItemQuantitiesPerStorage();
+	List<StorageCapacityAndInventorySummaryResponseFull> fetchStorageCapacityAndInventorySummary();
+	List<StorageCapacityAndInventorySummaryResponseFull> fetchDetailedStorageStats();
+	List<InventoryItemsResponse> findByProduct_SupplyId( Long supplyId);
+	List<InventoryItemsResponse> findByProduct_SupplyQuantity( BigDecimal quantity);
+	List<InventoryItemsResponse> findByProduct_SupplyQuantityGreaterThan( BigDecimal quantity);
+	List<InventoryItemsResponse> findByProduct_SupplyQuantityLessThan( BigDecimal quantity);
+	List<InventoryItemsResponse> findByProduct_SupplyUpdates( LocalDateTime updates);
+	List<InventoryItemsResponse> findByProduct_SupplyUpdatesBetween( LocalDateTime start, LocalDateTime end);
+	List<InventoryItemsResponse> findByProduct_SupplyStorageId( Long storageId);
+	List<InventoryItemsResponse> findByProduct_ShelfId( Long shelfId);
+	List<InventoryItemsResponse> findByProduct_ShelfRowCount( Integer rowCount);
+	List<InventoryItemsResponse> findByProduct_ShelfCols( Integer cols);
+	List<InventoryItemsResponse> findInventoryItemsWithoutShelf();
+	List<InventoryItemsResponse> findByProduct_ShelfIsNotNull();
 }
