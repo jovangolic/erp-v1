@@ -3,6 +3,7 @@ package com.jovan.erp_v1.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.exception.JournalEntryErrorException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.mapper.JournalEntryMapper;
 import com.jovan.erp_v1.model.JournalEntry;
 import com.jovan.erp_v1.repository.JournalEntryRepository;
@@ -74,6 +76,10 @@ public class JournalEntryService implements IJournalEntryService {
 
     @Override
     public List<JournalEntryResponse> findAll() {
+    	List<JournalEntry> items = journalEntryRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("JournalEntry list is empty");
+    	}
         return journalEntryRepository.findAll().stream()
                 .map(JournalEntryResponse::new)
                 .collect(Collectors.toList());
@@ -82,7 +88,12 @@ public class JournalEntryService implements IJournalEntryService {
     @Override
     public List<JournalEntryResponse> findByDescription(String description) {
     	validateString(description, "Description");
-        return journalEntryRepository.findByDescription(description).stream()
+    	List<JournalEntry> items = journalEntryRepository.findByDescription(description);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No JournalEntry found for desription %s", description);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(JournalEntryResponse::new)
                 .collect(Collectors.toList());
     }
@@ -91,6 +102,12 @@ public class JournalEntryService implements IJournalEntryService {
     public List<JournalEntryResponse> findByEntryDateBetween(LocalDateTime start, LocalDateTime end) {
         validateDateRange(start, end);
         List<JournalEntry> entries = journalEntryRepository.findByEntryDateBetween(start, end);
+        if(entries.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+        	String msg = String.format("No JournalEntry found for date between %s and %s", 
+        			start.format(formatter),end.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
         return journalEntryMapper.toResponseList(entries);
     }
 
@@ -102,6 +119,11 @@ public class JournalEntryService implements IJournalEntryService {
         LocalDateTime startOfDay = date.atStartOfDay(); // 00:00:00
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX); // 23:59:59.999999999
         List<JournalEntry> entries = journalEntryRepository.findByEntryDateBetween(startOfDay, endOfDay);
+        if(entries.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+        	String msg = String.format("No JournalEntry found for date on %s", date.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
         return journalEntryMapper.toResponseList(entries);
     }
 
@@ -110,8 +132,13 @@ public class JournalEntryService implements IJournalEntryService {
         if (dateTime == null) {
             throw new JournalEntryErrorException("Date and time must be provided");
         }
-        List<JournalEntry> enteies = journalEntryRepository.findByEntryDateBefore(dateTime);
-        return journalEntryMapper.toResponseList(enteies);
+        List<JournalEntry> entries = journalEntryRepository.findByEntryDateBefore(dateTime);
+        if(entries.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+        	String msg = String.format("No JournalEntry found for date before %s", dateTime.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
+        return journalEntryMapper.toResponseList(entries);
     }
 
     @Override
@@ -120,13 +147,23 @@ public class JournalEntryService implements IJournalEntryService {
             throw new JournalEntryErrorException("Date and time must be provided");
         }
         List<JournalEntry> entries = journalEntryRepository.findByEntryDateAfter(dateTime);
+        if(entries.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+        	String msg = String.format("No JournalEntry found for date after %s", dateTime.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
         return journalEntryMapper.toResponseList(entries);
     }
 
     @Override
     public List<JournalEntryResponse> findByYear(Integer year) {
     	validateInteger(year);
-        return journalEntryRepository.findByYear(year).stream()
+    	List<JournalEntry> items = journalEntryRepository.findByYear(year);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No JournalEntry found for given year %d", year);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(JournalEntryResponse::new)
                 .collect(Collectors.toList());
     }
@@ -140,6 +177,12 @@ public class JournalEntryService implements IJournalEntryService {
         validateDateRange(start, end);
         List<JournalEntry> entries = journalEntryRepository.findByDescriptionAndEntryDateBetween(description, start,
                 end);
+        if(entries.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+        	String msg = String.format("No JournalEntry found for description %s and date between %s and %s", 
+        			description,start.format(formatter),end.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
         return journalEntryMapper.toResponseList(entries);
     }
 

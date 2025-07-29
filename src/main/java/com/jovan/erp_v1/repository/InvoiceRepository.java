@@ -62,5 +62,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 	List<Invoice> findByCreatedBy_EmailContainingIgnoreCase(String createdByEmail);
 	List<Invoice> findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(String createdByFirstName, String createdByLastName);
 	boolean existsByBuyer_Pib(String pib);
+	Integer countByIssueDateBetween(LocalDateTime atStartOfDay, LocalDateTime atStartOfDay2);
 	
 }

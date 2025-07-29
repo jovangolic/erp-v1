@@ -4,17 +4,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
-
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record InvoiceRequest(
 		
 		Long id,
-		@NotBlank(message = "Broj fakture je obavezan")
-	    String invoiceNumber,
 	    @NotNull(message = "Datum izdavanja je obavezan")
 	    LocalDateTime issueDate,
 	    @NotNull(message = "Datum dospeća je obavezan")

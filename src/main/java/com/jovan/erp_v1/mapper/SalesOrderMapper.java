@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -8,7 +9,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.Invoice;
-import com.jovan.erp_v1.model.ItemSales;
 import com.jovan.erp_v1.model.SalesOrder;
 import com.jovan.erp_v1.repository.BuyerRepository;
 import com.jovan.erp_v1.repository.InvoiceRepository;
@@ -47,12 +47,7 @@ public class SalesOrderMapper {
             order.setInvoice(invoice);
         }
         // Items
-        if (request.items() != null) {
-            List<ItemSales> itemList = request.items().stream()
-                .map(itemSalesMapper::toEntity)
-                .collect(Collectors.toList());
-            order.setItems(itemList);
-        }
+        order.setItems(new ArrayList<>());
         return order;
     }
 

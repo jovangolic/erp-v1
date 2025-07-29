@@ -15,19 +15,13 @@ import com.jovan.erp_v1.model.JournalEntry;
 public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long> {
 
     List<JournalEntry> findByDescription(String description);
-
     List<JournalEntry> findByEntryDateBetween(LocalDateTime start, LocalDateTime end);
-
     @Query("SELECT je FROM JournalEntry je WHERE DATE(je.entryDate) = :date")
     List<JournalEntry> findByEntryDateOn(@Param("date") LocalDate date);
-
     List<JournalEntry> findByEntryDateBefore(LocalDateTime dateTime);
-
     List<JournalEntry> findByEntryDateAfter(LocalDateTime dateTime);
-
     @Query("SELECT je FROM JournalEntry je WHERE FUNCTION('YEAR', je.entryDate) = :year")
     List<JournalEntry> findByYear(@Param("year") Integer year);
-
     List<JournalEntry> findByDescriptionAndEntryDateBetween(String description, LocalDateTime start, LocalDateTime end);
 
 }

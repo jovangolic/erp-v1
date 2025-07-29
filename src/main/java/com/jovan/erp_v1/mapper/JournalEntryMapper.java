@@ -11,15 +11,19 @@ import com.jovan.erp_v1.model.JournalEntry;
 import com.jovan.erp_v1.model.JournalItem;
 import com.jovan.erp_v1.request.JournalEntryRequest;
 import com.jovan.erp_v1.response.JournalEntryResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
+
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class JournalEntryMapper {
+public class JournalEntryMapper extends AbstractMapper<JournalEntryRequest> {
 
     private final JournalItemMapper journalItemMapper;
 
     public JournalEntry toEntity(JournalEntryRequest request) {
+    	Objects.requireNonNull(request, "JournalEntryRequest must not be null");
+    	validateIdForCreate(request, JournalEntryRequest::id);
         JournalEntry j = new JournalEntry();
         j.setEntryDate(request.entryDate());
         j.setDescription(request.description());
@@ -35,6 +39,9 @@ public class JournalEntryMapper {
     }
 
     public void toUpdateEntity(JournalEntry entry, JournalEntryRequest request) {
+    	Objects.requireNonNull(entry, "JournalEntry must not be null");
+    	Objects.requireNonNull(request, "JournalEntryRequest must not be null");
+    	validateIdForUpdate(request, JournalEntryRequest::id);
         entry.setEntryDate(request.entryDate());
         entry.setDescription(request.description());
         entry.getItems().clear();

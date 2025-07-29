@@ -2,6 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,12 +19,14 @@ import com.jovan.erp_v1.exception.BuyerNotFoundException;
 import com.jovan.erp_v1.exception.GoodsNotFoundException;
 import com.jovan.erp_v1.exception.InvoiceNotFoundException;
 import com.jovan.erp_v1.exception.ItemSalesNotFoundException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ProcurementNotFoundException;
 import com.jovan.erp_v1.exception.SalesNotFoundException;
 import com.jovan.erp_v1.exception.SalesOrderNotFoundException;
 import com.jovan.erp_v1.exception.ShelfNotFoundException;
 import com.jovan.erp_v1.exception.StorageNotFoundException;
 import com.jovan.erp_v1.exception.SupplyNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.ItemSalesMapper;
 import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.Goods;
@@ -91,9 +94,13 @@ public class ItemSalesService implements INTERItemSales {
 		}
     	ItemSales existing = itemSalesRepository.findById(id)
     	        .orElseThrow(() -> new ItemSalesNotFoundException("ItemSales not found with id: " + id));
-    	validateBigDecimal(request.quantity());
-    	validateBigDecimal(request.unitPrice());
-    	ItemSales updated = itemSalesMapper.toUpdateEntity(existing, request);
+    	Goods goods = findGoodsById(request.goodsId());
+		Sales sales = findSalesById(request.salesId());
+		Procurement procurement = findProcurementById(request.procurementId());
+		SalesOrder so = findBySalesOrderId(request.salesOrderId());
+		validateBigDecimal(request.quantity());
+		validateBigDecimal(request.unitPrice());
+    	ItemSales updated = itemSalesMapper.toUpdateEntity(existing, request,goods,sales,procurement,so);
     	ItemSales saved = itemSalesRepository.save(updated);
     	return itemSalesMapper.toResponse(saved);
 	}
@@ -113,6 +120,10 @@ public class ItemSalesService implements INTERItemSales {
 	}
 	@Override
     public List<ItemSalesResponse> getAll() {
+		List<ItemSales> items = itemSalesRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("ItemSales list is empty");
+		}
         return itemSalesRepository.findAll().stream()
                 .map(itemSalesMapper::toResponse)
                 .collect(Collectors.toList());
@@ -120,99 +131,170 @@ public class ItemSalesService implements INTERItemSales {
 	
 	@Override
 	public List<ItemSalesResponse> findByGoods_Id(Long goodsId) {
-		Goods goods = findGoodsById(goodsId);
-		return itemSalesRepository.findByGoods_Id(goods.getId()).stream()
+		findGoodsById(goodsId);
+		List<ItemSales> items = itemSalesRepository.findByGoods_Id(goodsId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for goods-id %d is found", goodsId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByGoods_NameContainingIgnoreCase(String goodsName) {
 		validateString(goodsName);
-		return itemSalesRepository.findByGoods_NameContainingIgnoreCase(goodsName).stream()
+		List<ItemSales> items = itemSalesRepository.findByGoods_NameContainingIgnoreCase(goodsName);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for goods-name %s is found", goodsName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByGoods_UnitMeasure(UnitMeasure unitMeasure) {
 		fetchUnitMeasure(unitMeasure);
-		return itemSalesRepository.findByGoods_UnitMeasure(unitMeasure).stream()
+		List<ItemSales> items = itemSalesRepository.findByGoods_UnitMeasure(unitMeasure);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for goods unit measure %s is found", unitMeasure);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByGoods_SupplierType(SupplierType supplierType) {
 		fetchSupplierType(supplierType);
-		return itemSalesRepository.findByGoods_SupplierType(supplierType).stream()
+		List<ItemSales> items = itemSalesRepository.findByGoods_SupplierType(supplierType);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for goods supplier-type %s is found", supplierType);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByGoods_StorageType(StorageType storageType) {
 		fetchStorageType(storageType);
-		return itemSalesRepository.findByGoods_StorageType(storageType).stream()
+		List<ItemSales> items = itemSalesRepository.findByGoods_StorageType(storageType);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for goods storage-type %s is found", storageType);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByGoods_GoodsType(GoodsType goodsType) {
 		fetchGoodsType(goodsType);
-		return itemSalesRepository.findByGoods_GoodsType(goodsType).stream()
+		List<ItemSales> items = itemSalesRepository.findByGoods_GoodsType(goodsType);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for goods-type %s is found", goodsType);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByGoods_Storage_Id(Long storageId) {
-		Storage storage = fetchStorage(storageId);
-		return itemSalesRepository.findByGoods_Storage_Id(storage.getId()).stream()
+		fetchStorage(storageId);
+		List<ItemSales> items = itemSalesRepository.findByGoods_Storage_Id(storageId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for goods storage-id %d is found", storageId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByGoods_Supply_Id(Long supplyId) {
-		Supply supply = fetchSupply(supplyId);
-		return itemSalesRepository.findByGoods_Supply_Id(supply.getId()).stream()
+		fetchSupply(supplyId);
+		List<ItemSales> items = itemSalesRepository.findByGoods_Supply_Id(supplyId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for goods supply-id %d is found", supplyId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByGoods_Shelf_Id(Long shelfId) {
-		Shelf shelf = fetchShelf(shelfId);
-		return itemSalesRepository.findByGoods_Shelf_Id(shelf.getId()).stream()
+		fetchShelf(shelfId);
+		List<ItemSales> items = itemSalesRepository.findByGoods_Shelf_Id(shelfId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for goods shelf-id %d is found", shelfId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByGoods_Shelf_RowCount(Integer rowCount) {
 		validateInteger(rowCount);
-		return itemSalesRepository.findByGoods_Shelf_RowCount(rowCount).stream()
+		List<ItemSales> items = itemSalesRepository.findByGoods_Shelf_RowCount(rowCount);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for goods shelf row-count %d is found", rowCount);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByGoods_Shelf_Cols(Integer cols) {
 		validateInteger(cols);
-		return itemSalesRepository.findByGoods_Shelf_Cols(cols).stream()
+		List<ItemSales> items = itemSalesRepository.findByGoods_Shelf_Cols(cols);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for goods shelf-cols %d is found", cols);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySales_Id(Long salesId) {
-		Sales sales = findSalesById(salesId);
-		return itemSalesRepository.findBySales_Id(sales.getId()).stream()
+		findSalesById(salesId);
+		List<ItemSales> items = itemSalesRepository.findBySales_Id(salesId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales-id %d is found", salesId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySales_Buyer_Id(Long buyerId) {
-		Buyer buyer = findByBuyerId(buyerId);
-		return itemSalesRepository.findBySales_Buyer_Id(buyer.getId()).stream()
+		findByBuyerId(buyerId);
+		List<ItemSales> items = itemSalesRepository.findBySales_Buyer_Id(buyerId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales buyer-id %d is found", buyerId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySales_CreatedAt(LocalDateTime createdAt) {
 		DateValidator.validateNotNull(createdAt, "Date and Time");
-		return itemSalesRepository.findBySales_CreatedAt(createdAt).stream()
+		List<ItemSales> items = itemSalesRepository.findBySales_CreatedAt(createdAt);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No ItemSales for sales created-at %s is found", createdAt.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -220,84 +302,149 @@ public class ItemSalesService implements INTERItemSales {
 	public List<ItemSalesResponse> findBySales_CreatedAtBetween(LocalDateTime createdAtStart,
 			LocalDateTime createdAtEnd) {
 		DateValidator.validateRange(createdAtStart, createdAtEnd);
-		return itemSalesRepository.findBySales_CreatedAtBetween(createdAtStart, createdAtEnd).stream()
+		List<ItemSales> items = itemSalesRepository.findBySales_CreatedAtBetween(createdAtStart, createdAtEnd);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No ItemSales for sales created-at between %s and %s is found", 
+					createdAtStart.format(formatter), createdAtEnd.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySales_TotalPrice(BigDecimal totalPrice) {
 		validateBigDecimal(totalPrice);
-		return itemSalesRepository.findBySales_TotalPrice(totalPrice).stream()
+		List<ItemSales> items = itemSalesRepository.findBySales_TotalPrice(totalPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales total price %s is found", totalPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySales_TotalPriceGreaterThan(BigDecimal totalPrice) {
 		validateBigDecimal(totalPrice);
-		return itemSalesRepository.findBySales_TotalPriceGreaterThan(totalPrice).stream()
+		List<ItemSales> items = itemSalesRepository.findBySales_TotalPriceGreaterThan(totalPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales total price greater than %s is found", totalPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySales_TotalPriceLessThan(BigDecimal totalPrice) {
-		validateBigDecimal(totalPrice);
-		return itemSalesRepository.findBySales_TotalPriceLessThan(totalPrice).stream()
+		validateBigDecimalNonNegative(totalPrice);
+		List<ItemSales> items = itemSalesRepository.findBySales_TotalPriceLessThan(totalPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales total price less than %s is found", totalPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySales_SalesDescription(String salesDescription) {
 		validateString(salesDescription);
-		return itemSalesRepository.findBySales_SalesDescription(salesDescription).stream()
+		List<ItemSales> items = itemSalesRepository.findBySales_SalesDescription(salesDescription);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales description %s is found", salesDescription);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByProcurement_Id(Long procurementId) {
-		Procurement p = findProcurementById(procurementId);
-		return itemSalesRepository.findByProcurement_Id(p.getId()).stream()
+		findProcurementById(procurementId);
+		List<ItemSales> items = itemSalesRepository.findByProcurement_Id(procurementId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for procurement-id %d is found", procurementId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByProcurement_Date(LocalDateTime date) {
 		DateValidator.validateNotNull(date, "Date and Time");
-		return itemSalesRepository.findByProcurement_Date(date).stream()
+		List<ItemSales> items = itemSalesRepository.findByProcurement_Date(date);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No ItemSales for procurement date %s is found", date.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByProcurement_DateBetween(LocalDateTime dateStart, LocalDateTime dateEnd) {
 		DateValidator.validateRange(dateStart, dateEnd);
-		return itemSalesRepository.findByProcurement_DateBetween(dateStart, dateEnd).stream()
+		List<ItemSales> items = itemSalesRepository.findByProcurement_DateBetween(dateStart, dateEnd);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No ItemSales for procurement date between %s and %s is found",
+					dateStart.format(formatter), dateEnd.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByProcurement_TotalCost(BigDecimal totalCost) {
 		validateBigDecimal(totalCost);
-		return itemSalesRepository.findByProcurement_TotalCost(totalCost).stream()
+		List<ItemSales> items = itemSalesRepository.findByProcurement_TotalCost(totalCost);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for procurement total cost %s is found", totalCost);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByProcurement_TotalCostGreaterThan(BigDecimal totalCost) {
 		validateBigDecimal(totalCost);
-		return itemSalesRepository.findByProcurement_TotalCostGreaterThan(totalCost).stream()
+		List<ItemSales> items = itemSalesRepository.findByProcurement_TotalCostGreaterThan(totalCost);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for procurement total cost greater than %s is found", totalCost);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByProcurement_TotalCostLessThan(BigDecimal totalCost) {
-		validateBigDecimal(totalCost);
-		return itemSalesRepository.findByProcurement_TotalCostLessThan(totalCost).stream()
+		validateBigDecimalNonNegative(totalCost);
+		List<ItemSales> items = itemSalesRepository.findByProcurement_TotalCostLessThan(totalCost);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for procurement total cost less than %s is found", totalCost);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySalesOrder_Id(Long salesOrderId) {
-		SalesOrder so = findBySalesOrderId(salesOrderId);
-		return itemSalesRepository.findBySales_Id(so.getId()).stream()
+		findBySalesOrderId(salesOrderId);
+		List<ItemSales> items = itemSalesRepository.findBySalesOrder_Id(salesOrderId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales-order id %d is found", salesOrderId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -314,7 +461,13 @@ public class ItemSalesService implements INTERItemSales {
 	@Override
 	public List<ItemSalesResponse> findBySalesOrder_OrderDate(LocalDateTime orderDate) {
 		DateValidator.validateNotNull(orderDate, "Date and Time");
-		return itemSalesRepository.findBySalesOrder_OrderDate(orderDate).stream()
+		List<ItemSales> items = itemSalesRepository.findBySalesOrder_OrderDate(orderDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No ItemSales for sales-order date %s is found", orderDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -322,69 +475,121 @@ public class ItemSalesService implements INTERItemSales {
 	public List<ItemSalesResponse> findBySalesOrder_OrderDateBetween(LocalDateTime orderDateStart,
 			LocalDateTime orderDateEnd) {
 		DateValidator.validateRange(orderDateStart, orderDateEnd);
-		return itemSalesRepository.findBySalesOrder_OrderDateBetween(orderDateStart, orderDateEnd).stream()
+		List<ItemSales> items = itemSalesRepository.findBySalesOrder_OrderDateBetween(orderDateStart, orderDateEnd);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No ItemSales for sales-order date between %s and %s is found", 
+					orderDateStart.format(formatter),orderDateEnd.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySalesOrder_TotalAmount(BigDecimal totalAmount) {
 		validateBigDecimal(totalAmount);
-		return itemSalesRepository.findBySalesOrder_TotalAmount(totalAmount).stream()
+		List<ItemSales> items = itemSalesRepository.findBySalesOrder_TotalAmount(totalAmount);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales-order total amount %s is found", totalAmount);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySalesOrder_TotalAmountGreaterThan(BigDecimal totalAmount) {
 		validateBigDecimal(totalAmount);
-		return itemSalesRepository.findBySalesOrder_TotalAmountGreaterThan(totalAmount).stream()
+		List<ItemSales> items = itemSalesRepository.findBySalesOrder_TotalAmountGreaterThan(totalAmount);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales-order total amount greater than %s is found", totalAmount);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySalesOrder_TotalAmountLessThan(BigDecimal totalAmount) {
-		validateBigDecimal(totalAmount);
-		return itemSalesRepository.findBySalesOrder_TotalAmountLessThan(totalAmount).stream()
+		validateBigDecimalNonNegative(totalAmount);
+		List<ItemSales> items = itemSalesRepository.findBySalesOrder_TotalAmountLessThan(totalAmount);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales-order total amount less than %s is found", totalAmount);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySalesOrder_Buyer_Id(Long buyerId) {
-		Buyer buyer = findByBuyerId(buyerId);
-		return itemSalesRepository.findBySalesOrder_Buyer_Id(buyer.getId()).stream()
+		findByBuyerId(buyerId);
+		List<ItemSales> items = itemSalesRepository.findBySalesOrder_Buyer_Id(buyerId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales-order buyerId %d is found", buyerId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySalesOrder_OrderStatus(OrderStatus status) {
 		validateOrderStatus(status);
-		return itemSalesRepository.findBySalesOrder_OrderStatus(status).stream()
+		List<ItemSales> items = itemSalesRepository.findBySalesOrder_OrderStatus(status);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales-order status %s is found", status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findBySalesOrder_Invoice_Id(Long invoiceId) {
-		Invoice invoice = findByInvoiceId(invoiceId);
-		return itemSalesRepository.findBySalesOrder_Invoice_Id(invoice.getId()).stream()
+		findByInvoiceId(invoiceId);
+		List<ItemSales> items = itemSalesRepository.findBySalesOrder_Invoice_Id(invoiceId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for sales-order invoiceId %d is found", invoiceId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByQuantity(BigDecimal quantity) {
 		validateBigDecimal(quantity);
-		return itemSalesRepository.findByQuantity(quantity).stream()
+		List<ItemSales> items = itemSalesRepository.findByQuantity(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for quantity %s is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByQuantityLessThan(BigDecimal quantity) {
-		validateBigDecimal(quantity);
-		return itemSalesRepository.findByQuantityLessThan(quantity).stream()
+		validateBigDecimalNonNegative(quantity);
+		List<ItemSales> items = itemSalesRepository.findByQuantityLessThan(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for quantity less than %s is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByQuantityGreaterThan(BigDecimal quantity) {
 		validateBigDecimal(quantity);
+		List<ItemSales> items = itemSalesRepository.findByQuantityGreaterThan(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for quantity greater than %s is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
 		return itemSalesRepository.findByQuantityGreaterThan(quantity).stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
@@ -392,25 +597,39 @@ public class ItemSalesService implements INTERItemSales {
 	@Override
 	public List<ItemSalesResponse> findByUnitPrice(BigDecimal unitPrice) {
 		validateBigDecimal(unitPrice);
-		return itemSalesRepository.findByUnitPrice(unitPrice).stream()
+		List<ItemSales> items = itemSalesRepository.findByUnitPrice(unitPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for unit-price %s is found", unitPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByUnitPriceGreaterThan(BigDecimal unitPrice) {
 		validateBigDecimal(unitPrice);
+		List<ItemSales> items = itemSalesRepository.findByUnitPriceGreaterThan(unitPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for unit-price greater than %s is found", unitPrice);
+			throw new NoDataFoundException(msg);
+		}
 		return itemSalesRepository.findByUnitPriceGreaterThan(unitPrice).stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
 	@Override
 	public List<ItemSalesResponse> findByUnitPriceLessThan(BigDecimal unitPrice) {
-		validateBigDecimal(unitPrice);
-		return itemSalesRepository.findByUnitPriceLessThan(unitPrice).stream()
+		validateBigDecimalNonNegative(unitPrice);
+		List<ItemSales> items = itemSalesRepository.findByUnitPriceLessThan(unitPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No ItemSales for unit-price less than %s is found", unitPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ItemSalesResponse::new)
 				.collect(Collectors.toList());
 	}
-	
 	
 	@Override
 	public List<ItemSalesResponse> filter(ItemSalesFilterRequest filterRequest) {
@@ -435,6 +654,15 @@ public class ItemSalesService implements INTERItemSales {
 	    }
 	    List<ItemSales> result = itemSalesRepository.findAll(spec);
 	    return result.stream().map(itemSalesMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
 	}
 	
 	private Supply fetchSupply(Long supplyId) {

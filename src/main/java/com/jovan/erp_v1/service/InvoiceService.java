@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
@@ -56,27 +57,37 @@ public class InvoiceService implements IInvoiceService {
 	@Transactional
 	@Override
 	public InvoiceResponse createInvoice(InvoiceRequest request) {
-		
+		DateValidator.validateNotNull(request.issueDate(), "Issue date");
+		DateValidator.validateNotNull(request.dueDate(), "Due date");
+		validateInvoiceStatus(request.status());
+		validateBigDecimal(request.totalAmount());
+		validateString(request.note(), "Note");
 		Buyer buyer = fetchBuyer(request.buyerId());
 		User user = fetchCreatedBy(request.createdById());
 		Sales sales = fetchSales(request.salesId());
 		Payment payment = fetchPayment(request.paymentId());
 		SalesOrder salesOrder = fetchSalesOrder(request.salesOrderId());
-		Invoice invoice = invoiceMapper.toEntity(request,buyer,sales,payment,salesOrder,user);
-		if (invoice.getDueDate().isBefore(invoice.getIssueDate())) {
-			throw new IllegalArgumentException("Due date cannot be before issue date");
-		}
 		// PROVERA da salesOrder vec nema fakturu
 		if (salesOrder.getInvoice() != null) {
 			throw new IllegalStateException("Sales order already has an invoice");
 		}
-		invoice.setSalesOrder(salesOrder);
+		String generatedInvoiceNumber;
+		do {
+			generatedInvoiceNumber = generateInvoiceNumber();
+		} while (invoiceRepository.existsByInvoiceNumber(generatedInvoiceNumber));
+		Invoice invoice = invoiceMapper.toEntity(request,buyer,sales,payment,salesOrder,user);
+		if (invoice.getDueDate().isBefore(invoice.getIssueDate())) {
+			throw new IllegalArgumentException("Due date cannot be before issue date");
+		}
 		// Vezanje fakture i na drugoj strani
 		salesOrder.setInvoice(invoice);
-		invoice.setIssueDate(LocalDateTime.now());
-		invoice.setInvoiceNumber(generateInvoiceNumber());
-		Invoice saved = invoiceRepository.save(invoice);
-		return invoiceMapper.toResponse(saved);
+		try {
+			Invoice saved = invoiceRepository.save(invoice);
+			return invoiceMapper.toResponse(saved);
+		}
+		catch(DataIntegrityViolationException e) {
+			throw new IllegalStateException("InvoiceNumber already exists due to concurrent write");
+		}
 	}
 
 	@Transactional
@@ -87,31 +98,26 @@ public class InvoiceService implements IInvoiceService {
 		}
 		Invoice invoice = invoiceRepository.findById(id)
 				.orElseThrow(() -> new InvoiceNotFoundException("Invoice not found with id: " + id));
-		Buyer buyer = fetchBuyer(request.buyerId());
-		invoice.setBuyer(buyer);
-		User user = fetchCreatedBy(request.createdById());
-		invoice.setCreatedBy(user);
-		Sales sales = fetchSales(request.salesId());
-		invoice.setRelatedSales(sales);
-		Payment payment = fetchPayment(request.paymentId());
-		invoice.setPayment(payment);
-		SalesOrder salesOrder = fetchSalesOrder(request.salesOrderId());
-		DateValidator.validateRange(request.issueDate(), request.dueDate());
+		DateValidator.validateNotNull(request.issueDate(), "Issue date");
+		DateValidator.validateNotNull(request.dueDate(), "Due date");
 		validateInvoiceStatus(request.status());
 		validateBigDecimal(request.totalAmount());
-		validateString(request.note(),"Note");
-		invoice.setIssueDate(request.issueDate());
-		invoice.setDueDate(request.dueDate());
-		invoice.setStatus(request.status());
-		invoice.setTotalAmount(request.totalAmount());
-		invoice.setNote(request.note());
-		// Ako se menja SalesOrder, proveri da li novi već ima neku drugu fakturu
+		validateString(request.note(), "Note");
+		Buyer buyer = fetchBuyer(request.buyerId());
+		User user = fetchCreatedBy(request.createdById());
+		Sales sales = fetchSales(request.salesId());
+		Payment payment = fetchPayment(request.paymentId());
+		SalesOrder salesOrder = fetchSalesOrder(request.salesOrderId());
+		// Ako se menja SalesOrder, provera da li novi vec ima neku drugu fakturu
 		if (salesOrder.getInvoice() != null && !salesOrder.getInvoice().getId().equals(invoice.getId())) {
 			throw new IllegalStateException("The new sales order is already linked to another invoice");
 		}
 		invoice.setSalesOrder(salesOrder);
 		salesOrder.setInvoice(invoice);
-		invoice.setInvoiceNumber(generateInvoiceNumber());
+		invoiceMapper.toUpdateEntity(invoice, request, buyer, sales, payment, salesOrder, user);
+		if (invoice.getDueDate().isBefore(invoice.getIssueDate())) {
+			throw new IllegalArgumentException("Due date cannot be before issue date");
+		}
 		Invoice saved = invoiceRepository.save(invoice);
 		return invoiceMapper.toResponse(saved);
 	}
@@ -643,16 +649,13 @@ public class InvoiceService implements IInvoiceService {
 
 	private String generateInvoiceNumber() {
 		String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-		long count = invoiceRepository.count() + 1;
+		long count = invoiceRepository.countByIssueDateBetween(
+			LocalDate.now().atStartOfDay(),
+			LocalDate.now().plusDays(1).atStartOfDay()
+		) + 1;
 		return String.format("INV-%s-%04d", datePart, count);
 	}
-	
-	private Boolean invoiceNumberExists(String num) {
-		if(num == null || num.trim().isEmpty()) {
-			throw new ValidationException("InvoiceNumber doesn't exist");
-		}
-		return invoiceRepository.existsByInvoiceNumber(num);
-	}
+
 	
 	private void validateDoubleString(String s1, String s2) {
         if (s1 == null || s1.trim().isEmpty() || s2 == null || s2.trim().isEmpty()) {

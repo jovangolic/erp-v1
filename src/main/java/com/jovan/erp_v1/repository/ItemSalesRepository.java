@@ -79,7 +79,4 @@ public interface ItemSalesRepository extends JpaRepository<ItemSales, Long>, Jpa
 	List<ItemSales> findByUnitPrice(BigDecimal unitPrice);
 	List<ItemSales> findByUnitPriceGreaterThan(BigDecimal unitPrice);
 	List<ItemSales> findByUnitPriceLessThan(BigDecimal unitPrice);
-	
-	
-	
 }

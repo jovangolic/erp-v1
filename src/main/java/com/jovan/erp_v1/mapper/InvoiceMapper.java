@@ -29,7 +29,6 @@ public class InvoiceMapper extends AbstractMapper<InvoiceRequest> {
         validateIdForCreate(request, InvoiceRequest::id);
         Invoice invoice = new Invoice();
         invoice.setId(request.id());
-        invoice.setInvoiceNumber(request.invoiceNumber());
         invoice.setIssueDate(LocalDateTime.now());
         invoice.setDueDate(request.dueDate());
         invoice.setStatus(request.status());
@@ -55,13 +54,7 @@ public class InvoiceMapper extends AbstractMapper<InvoiceRequest> {
 		return buildInvoiceFromRequest(invoice, request,buyer,sales,payment,so,createdAt);
 	}
 
-    public InvoiceResponse toResponse(Invoice invoice) {
-    	Objects.requireNonNull(invoice,"Invoice must not be null");
-        return new InvoiceResponse(invoice);
-    }
-    
     private Invoice buildInvoiceFromRequest(Invoice invoice, InvoiceRequest request, Buyer buyer,Sales sales,Payment payment,SalesOrder so,User createdAt) {
-    	invoice.setInvoiceNumber(request.invoiceNumber());
     	invoice.setIssueDate(request.issueDate());
     	invoice.setDueDate(request.dueDate());
     	invoice.setStatus(request.status());
@@ -73,6 +66,11 @@ public class InvoiceMapper extends AbstractMapper<InvoiceRequest> {
     	invoice.setRelatedSales(sales);
     	invoice.setCreatedBy(createdAt);
     	return invoice;
+    }
+    
+    public InvoiceResponse toResponse(Invoice invoice) {
+    	Objects.requireNonNull(invoice,"Invoice must not be null");
+        return new InvoiceResponse(invoice);
     }
 
     public List<InvoiceResponse> toResponseList(List<Invoice> invoices) {
