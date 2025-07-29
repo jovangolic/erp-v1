@@ -4,10 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import org.mapstruct.control.MappingControl.Use;
 import org.springframework.stereotype.Component;
-
 import com.jovan.erp_v1.exception.UserNotFoundException;
 import com.jovan.erp_v1.model.Shift;
 import com.jovan.erp_v1.model.User;

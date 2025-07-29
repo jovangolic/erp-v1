@@ -4,13 +4,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
-import com.jovan.erp_v1.exception.FiscalYearErrorException;
 import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.model.IncomeStatement;
-import com.jovan.erp_v1.repository.FiscalYearRepository;
 import com.jovan.erp_v1.request.IncomeStatementRequest;
 import com.jovan.erp_v1.response.FiscalQuarterResponse;
 import com.jovan.erp_v1.response.FiscalYearResponse;

@@ -31,7 +31,6 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin("http://localhost:5173")
 public class InventoryController {
 
-	
 	private final IInventoryService inventoryService;
 	
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
@@ -121,4 +120,129 @@ public class InventoryController {
 		List<InventoryResponse> responses = inventoryService.findPendingInventories();
 		return ResponseEntity.ok(responses);
 	}
+	
+	//nove metode
+	
+	@GetMapping("/date-after")
+	public ResponseEntity<List<InventoryResponse>> findByDateAfter(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+		List<InventoryResponse> responses = inventoryService.findByDateAfter(date);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/date-before")
+	public ResponseEntity<List<InventoryResponse>> findByDateBefore(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+		List<InventoryResponse> responses = inventoryService.findByDateBefore(date);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/employee-full-name")
+	public ResponseEntity<List<InventoryResponse>> findByStorageEmployee_FullNameContainingIgnoreCase(@RequestParam("firstName") String firstName,@RequestParam("lastName") String lastName){
+		List<InventoryResponse> responses = inventoryService.findByStorageEmployee_FullNameContainingIgnoreCase(firstName, lastName);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/foreman-full-name")
+	public ResponseEntity<List<InventoryResponse>> findBystorageForeman_FullNameContainingIgnoreCase(@RequestParam("firstName") String firstName,@RequestParam("lastName") String lastName){
+		List<InventoryResponse> responses = inventoryService.findBystorageForeman_FullNameContainingIgnoreCase(firstName, lastName);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/employee-email")
+	public ResponseEntity<List<InventoryResponse>> findByStorageEmployee_EmailILikegnoreCase(@RequestParam("email") String email){
+		List<InventoryResponse> responses = inventoryService.findByStorageEmployee_EmailILikegnoreCase(email);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/employee-address")
+	public ResponseEntity<List<InventoryResponse>> findByStorageEmployee_Address(@RequestParam("address") String address){
+		List<InventoryResponse> responses = inventoryService.findByStorageEmployee_Address(address);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/employee-phone-number")
+	public ResponseEntity<List<InventoryResponse>> findByStorageEmployee_PhoneNumberLikeIgnoreCase(@RequestParam("phoneNumber") String phoneNumber){
+		List<InventoryResponse> responses = inventoryService.findByStorageEmployee_PhoneNumberLikeIgnoreCase(phoneNumber);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/foreman-address")
+	public ResponseEntity<List<InventoryResponse>> findByStorageForeman_Address(@RequestParam("address")String address){
+		List<InventoryResponse> responses = inventoryService.findByStorageForeman_Address(address);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/foreman-phone-number")
+	public ResponseEntity<List<InventoryResponse>> findByStorageForeman_PhoneNumberLikeIgnoreCase(@RequestParam("phoneNumber") String phoneNumber){
+		List<InventoryResponse> responses = inventoryService.findByStorageForeman_PhoneNumberLikeIgnoreCase(phoneNumber);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/foreman-email")
+	public ResponseEntity<List<InventoryResponse>> findByStorageForeman_EmailLikeIgnoreCase(@RequestParam("email") String email){
+		List<InventoryResponse> responses = inventoryService.findByStorageForeman_EmailLikeIgnoreCase(email);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/status-and-employee-full-name")
+	public ResponseEntity<List<InventoryResponse>> findByStatusAndStorageEmployeeFullNameContainingIgnoreCase(@RequestParam("status") InventoryStatus status,
+			@RequestParam("firstName") String firstName,@RequestParam("lastName") String lastName){
+		List<InventoryResponse> responses = inventoryService.findByStatusAndStorageEmployeeFullNameContainingIgnoreCase(status, firstName, lastName);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/status-and-foreman-full-name")
+	public ResponseEntity<List<InventoryResponse>> findByStatusAndStorageForemanFullNameContainingIgnoreCase(@RequestParam("status") InventoryStatus status,
+			@RequestParam("firstName") String firstName,@RequestParam("lastName") String lastName){
+		List<InventoryResponse> responses = inventoryService.findByStatusAndStorageForemanFullNameContainingIgnoreCase(status, firstName, lastName);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/foreman/{foremanId}/inventory-date-range")
+	public ResponseEntity<List<InventoryResponse>> findInventoryByStorageForemanIdAndDateRange(@PathVariable Long foremanId,
+			@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate){
+		List<InventoryResponse> responses = inventoryService.findInventoryByStorageForemanIdAndDateRange(foremanId, startDate, endDate);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/employee/{employeeId}/status")
+	public ResponseEntity<List<InventoryResponse>> findByStorageEmployeeIdAndStatus(@PathVariable Long employeeId,@RequestParam("status") InventoryStatus status){
+		List<InventoryResponse> responses = inventoryService.findByStorageEmployeeIdAndStatus(employeeId, status);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/search/foreman/{foremanId}/status")
+	public ResponseEntity<List<InventoryResponse>> findByStorageForemanIdAndStatus(@PathVariable Long foremanId,@RequestParam("status") InventoryStatus status){
+		List<InventoryResponse> responses = inventoryService.findByStorageForemanIdAndStatus(foremanId, status);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/employee/{employeeId}/date-range")
+	public ResponseEntity<List<InventoryResponse>> findByStorageEmployeeIdAndDateBetween(@PathVariable Long employeeId,
+			@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate){
+		List<InventoryResponse> responses = inventoryService.findByStorageEmployeeIdAndDateBetween(employeeId, startDate, endDate);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/foreman/{foremanId}/date-range")
+	public ResponseEntity<List<InventoryResponse>> findByStorageForemanIdAndDateBetween(@PathVariable Long foremanId,
+			@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate){
+		List<InventoryResponse> responses = inventoryService.findByStorageForemanIdAndDateBetween(foremanId, startDate, endDate);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/count-by/{foremanId}")
+	public ResponseEntity<Long> countByStorageForemanId(@PathVariable Long foremanId){
+		Long responses = inventoryService.countByStorageForemanId(foremanId);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@GetMapping("/exists-by-status")
+	public ResponseEntity<Boolean> existsByStatus(@RequestParam("status") InventoryStatus status){
+		Boolean responses = inventoryService.existsByStatus(status);
+		return ResponseEntity.ok(responses);
+	}
+	
 }

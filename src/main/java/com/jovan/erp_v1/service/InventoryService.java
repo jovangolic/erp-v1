@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,9 +10,10 @@ import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.enumeration.InventoryStatus;
 import com.jovan.erp_v1.exception.InventoryNotFoundException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ProductNotFoundException;
-import com.jovan.erp_v1.exception.StorageEmployeeNotFoundException;
-import com.jovan.erp_v1.exception.StorageForemanNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
+import com.jovan.erp_v1.mapper.InventoryMapper;
 import com.jovan.erp_v1.model.Inventory;
 import com.jovan.erp_v1.model.InventoryItems;
 import com.jovan.erp_v1.model.Product;
@@ -36,6 +38,7 @@ public class InventoryService implements IInventoryService {
 	private final UserRepository userRepository;
 	private final InventoryItemsRepository inventoryItemsRepository;
 	private final ProductRepository productRepository;
+	private final InventoryMapper inventoryMapper;
 
 	@Transactional
 	@Override
@@ -53,16 +56,12 @@ public class InventoryService implements IInventoryService {
 		inventory.setDate(request.date());
 		inventory.setAligned(request.aligned());
 		inventory.setStatus(request.status());
-		// Sačuvaj osnovni inventory (da dobije ID)
 		Inventory savedInventory = inventoryRepository.save(inventory);
-		// Mapiraj stavke i poveži sa tim inventarom
 		if (request.inventoryItems() == null || request.inventoryItems().isEmpty()) {
 		    throw new IllegalArgumentException("Inventory must contain at least one item.");
 		}
 		List<InventoryItems> items = mapInventoryItemRequestsToEntities(request.inventoryItems(), savedInventory);
-		// Sačuvaj sve stavke
 		inventoryItemsRepository.saveAll(items);
-		// Postavi u savedInventory da bi response imao popunjenu listu (opciono)
 		savedInventory.setInventoryItems(items);
 		return new InventoryResponse(savedInventory);
 	}
@@ -80,7 +79,7 @@ public class InventoryService implements IInventoryService {
 		DateValidator.validateNotNull(request.date(), "Date must not be null");
 		validateBoolean(request.aligned(), "Must not be null");
 		validateInventoryStatus(request.status());
-		inventory.getInventoryItems().clear(); //dodao ovu liniju koda prilikom azuriranja
+		inventory.getInventoryItems().clear();
 		inventory.setStorageEmployee(storageEmployee);
 		inventory.setStorageForeman(storageForeman);
 		inventory.setDate(request.date());
@@ -108,7 +107,12 @@ public class InventoryService implements IInventoryService {
 	@Override
 	public List<InventoryResponse> findInventoryByStatus(InventoryStatus status) {
 		validateInventoryStatus(status);
-		return inventoryRepository.findByStatus(status).stream()
+		List<Inventory> items = inventoryRepository.findByStatus(status);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory found for status %s", status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InventoryResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -116,7 +120,12 @@ public class InventoryService implements IInventoryService {
 	@Override
 	public List<InventoryResponse> findByStorageEmployeeId(Long storageEmployeeId) {
 		validateStorageEmployee(storageEmployeeId);
-		return inventoryRepository.findByStorageEmployeeId(storageEmployeeId).stream()
+		List<Inventory> items = inventoryRepository.findByStorageEmployeeId(storageEmployeeId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory found for storage employee id %d", storageEmployeeId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InventoryResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -124,7 +133,12 @@ public class InventoryService implements IInventoryService {
 	@Override
 	public List<InventoryResponse> findByStorageForemanId(Long storageForemanId) {
 		validateStorageForeman(storageForemanId);
-		return inventoryRepository.findByStorageForemanId(storageForemanId).stream()
+		List<Inventory> items = inventoryRepository.findByStorageForemanId(storageForemanId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory found for storage foreman id %d", storageForemanId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InventoryResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -138,7 +152,11 @@ public class InventoryService implements IInventoryService {
 
 	@Override
 	public List<InventoryResponse> findAll() {
-		return inventoryRepository.findAll().stream()
+		List<Inventory> items = inventoryRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Inventory list is empty");
+		}
+		return items.stream()
 				.map(InventoryResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -146,7 +164,13 @@ public class InventoryService implements IInventoryService {
 	@Override
 	public List<InventoryResponse> findByDate(LocalDate date) {
 		DateValidator.validateNotNull(date, "Date must not be null");
-		return inventoryRepository.findByDate(date).stream()
+		List<Inventory> items = inventoryRepository.findByDate(date);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg  =String.format("No Inventory found for given date %s", date.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InventoryResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -154,7 +178,14 @@ public class InventoryService implements IInventoryService {
 	@Override
 	public List<InventoryResponse> findByDateRange(LocalDate startDate, LocalDate endDate) {
 		DateValidator.validateRange(startDate, endDate);
-		return inventoryRepository.findByDateBetween(startDate, endDate).stream()
+		List<Inventory> items = inventoryRepository.findByDateBetween(startDate, endDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No Inventory found for date between %s and %s",
+					startDate.format(formatter),endDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InventoryResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -170,9 +201,244 @@ public class InventoryService implements IInventoryService {
 
 	@Override
 	public List<InventoryResponse> findPendingInventories() {
-		return inventoryRepository.findPendingInventories().stream()
+		List<Inventory> items = inventoryRepository.findPendingInventories();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inventory found for pending");
+		}
+		return items.stream()
 				.map(InventoryResponse::new)
 				.collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<InventoryResponse> findByDateAfter(LocalDate date) {
+		DateValidator.validateNotInPast(date, "Date after");
+		List<Inventory> items = inventoryRepository.findByDateAfter(date);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No Inventory found for date after %s", date.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByDateBefore(LocalDate date) {
+		DateValidator.validateNotInFuture(date, "Date before");
+		List<Inventory> items = inventoryRepository.findByDateBefore(date);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No Inventory found for date before %s", date.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStorageEmployee_FullNameContainingIgnoreCase(String firstName,
+			String lastName) {
+		validateString(firstName);
+		validateString(lastName);
+		List<Inventory> items = inventoryRepository.findByStorageEmployee_FullNameContainingIgnoreCase(firstName, lastName);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory for employee first-name %s and last-name %s is found", 
+					firstName,lastName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findBystorageForeman_FullNameContainingIgnoreCase(String firstName,
+			String lastName) {
+		validateString(firstName);
+		validateString(lastName);
+		List<Inventory> items = inventoryRepository.findBystorageForeman_FullNameContainingIgnoreCase(firstName, lastName);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory for foreman first-name %s and last-name %s is found", 
+					firstName,lastName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStorageEmployee_EmailILikegnoreCase(String email) {
+		validateString(email);
+		List<Inventory> items = inventoryRepository.findByStorageEmployee_EmailLikeIgnoreCase(email);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory for employee email %s is found", email);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStorageEmployee_Address(String address) {
+		validateString(address);
+		List<Inventory> items = inventoryRepository.findByStorageEmployee_Address(address);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory for employee address %s is found", address);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStorageEmployee_PhoneNumberLikeIgnoreCase(String phoneNumber) {
+		validateString(phoneNumber);
+		List<Inventory> items = inventoryRepository.findByStorageEmployee_PhoneNumberLikeIgnoreCase(phoneNumber);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory for employee phone-number %s is found", phoneNumber);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStorageForeman_Address(String address) {
+		validateString(address);
+		List<Inventory> items = inventoryRepository.findByStorageForeman_Address(address);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory for foreman address %s is found", address);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStorageForeman_PhoneNumberLikeIgnoreCase(String phoneNumber) {
+		validateString(phoneNumber);
+		List<Inventory> items = inventoryRepository.findByStorageForeman_PhoneNumberLikeIgnoreCase(phoneNumber);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory for foreman phone-number %s is found", phoneNumber);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStorageForeman_EmailLikeIgnoreCase(String email) {
+		validateString(email);
+		List<Inventory> items = inventoryRepository.findByStorageForeman_EmailLikeIgnoreCase(email);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory for foreman email %s is found", email);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStatusAndStorageEmployeeFullNameContainingIgnoreCase(InventoryStatus status,
+			String firstName, String lastName) {
+		validateInventoryStatus(status);
+		validateString(firstName);
+		validateString(lastName);
+		List<Inventory> items = inventoryRepository.findByStatusAndStorageEmployeeFullNameContainingIgnoreCase(status, firstName, lastName);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory for status %s, and first-name %s, last-name $s is found", 
+					status,firstName,lastName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStatusAndStorageForemanFullNameContainingIgnoreCase(InventoryStatus status,
+			String firstName, String lastName) {
+		validateInventoryStatus(status);
+		validateString(firstName);
+		validateString(lastName);
+		List<Inventory> items = inventoryRepository.findByStatusAndStorageForemanFullNameContainingIgnoreCase(status, firstName, lastName);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory for status %s, and first-name %s, last-name $s is found", 
+					status,firstName,lastName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public Long countByStorageForemanId(Long foremanId) {
+		validateStorageForeman(foremanId);
+		return inventoryRepository.countByStorageForemanId(foremanId);
+	}
+
+	@Override
+	public Boolean existsByStatus(InventoryStatus status) {
+		validateInventoryStatus(status);
+		return inventoryRepository.existsByStatus(status);
+	}
+	
+	@Override
+	public List<InventoryResponse> findInventoryByStorageForemanIdAndDateRange(Long foremanId, LocalDate startDate,
+			LocalDate endDate) {
+		validateStorageForeman(foremanId);
+		DateValidator.validateRange(startDate, endDate);
+		List<Inventory> items = inventoryRepository.findInventoryByStorageForemanIdAndDateRange(foremanId, startDate, endDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No Inventory for foreman-id %d and date between %s and %s is found", 
+					foremanId,startDate.format(formatter), endDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStorageEmployeeIdAndStatus(Long employeeId, InventoryStatus status) {
+		validateStorageEmployee(employeeId);
+		validateInventoryStatus(status);
+		List<Inventory> items = inventoryRepository.findByStorageEmployeeIdAndStatus(employeeId, status);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory for employee-id %d and status %s is found", 
+					employeeId,status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStorageForemanIdAndStatus(Long foremanId, InventoryStatus status) {
+		validateStorageForeman(foremanId);
+		validateInventoryStatus(status);
+		List<Inventory> items = inventoryRepository.findByStorageForemanIdAndStatus(foremanId, status);
+		if(items.isEmpty()) {
+			String msg = String.format("No Inventory for foreman-id %d and status %s is found",
+					foremanId, status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStorageEmployeeIdAndDateBetween(Long employeeId, LocalDate startDate,
+			LocalDate endDate) {
+		validateStorageEmployee(employeeId);
+		DateValidator.validateRange(startDate, endDate);
+		List<Inventory> items = inventoryRepository.findByStorageEmployeeIdAndDateBetween(employeeId, startDate, endDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No Inventory for employee-id %d and date between %s and %s is found",
+					employeeId,startDate.format(formatter), endDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryResponse> findByStorageForemanIdAndDateBetween(Long foremanId, LocalDate startDate,
+			LocalDate endDate) {
+		validateStorageForeman(foremanId);
+		DateValidator.validateRange(startDate, endDate);
+		List<Inventory> items = inventoryRepository.findByStorageForemanIdAndDateBetween(foremanId, startDate, endDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No Inventory for foreman-id %d and date between %s and %s is found", 
+					foremanId,startDate.format(formatter),endDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
 	}
 
 	private List<InventoryItems> mapInventoryItemRequestsToEntities(List<InventoryItemsRequest> requests,
@@ -222,4 +488,11 @@ public class InventoryService implements IInventoryService {
 			throw new IllegalArgumentException("InventoryStatus status must not be null");
 		}
 	}
+
+	private void validateString(String str) {
+		if(str == null || str.trim().isEmpty()) {
+			throw new ValidationException("String must not be null nor empty");
+		}
+	}
+
 }

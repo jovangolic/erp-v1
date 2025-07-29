@@ -2,42 +2,35 @@ package com.jovan.erp_v1.mapper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
-
-import com.jovan.erp_v1.exception.ShipmentNotFoundException;
 import com.jovan.erp_v1.exception.TrackingInfoErrorException;
 import com.jovan.erp_v1.model.Shipment;
 import com.jovan.erp_v1.model.TrackingInfo;
-import com.jovan.erp_v1.repository.ShipmentRepository;
 import com.jovan.erp_v1.request.TrackingInfoRequest;
 import com.jovan.erp_v1.response.TrackingInfoResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
-public class TrackingInfoMapper {
-
-    private final ShipmentRepository shipmentRepository;
+public class TrackingInfoMapper extends AbstractMapper<TrackingInfoRequest> {
 
     /**
      * Kreira novi TrackingInfo entitet na osnovu TrackingInfoRequest objekta.
      * Koristi se prilikom kreiranja nove pošiljke ili direktnog kreiranja
      * TrackingInfo entiteta.
      */
-    public TrackingInfo toEntity(TrackingInfoRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("TrackingInfoRequest is null");
-        }
+    public TrackingInfo toEntity(TrackingInfoRequest request, Shipment ship) {
+    	Objects.requireNonNull(request, "TrackingInfoRequest must not be null");
+    	Objects.requireNonNull(ship, "Shipment must not be null");
+    	validateIdForCreate(request, TrackingInfoRequest::id);
         TrackingInfo info = new TrackingInfo();
         info.setTrackingNumber(request.trackingNumber());
         info.setCurrentLocation(request.currentLocation());
         info.setEstimatedDelivery(request.estimatedDelivery());
         info.setCurrentStatus(request.currentStatus());
-        Shipment ship = shipmentRepository.findById(request.shipmentId())
-                .orElseThrow(() -> new ShipmentNotFoundException("Shipment not found " + request.shipmentId()));
         info.setShipment(ship);
         return info;
     }

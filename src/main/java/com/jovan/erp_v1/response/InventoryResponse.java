@@ -17,10 +17,8 @@ import lombok.NoArgsConstructor;
 public class InventoryResponse {
 
         private Long id;
-        private Long storageEmployeeId;
-        private Long storageForemanId;
-        private String storageEmployeeName;
-        private String storageForemanName;
+        private StorageEmployeeForUserResponse storageEmployeeForUserResponse;
+        private StorageForemanForUserResponse storageForemanForUserResponse;
         private LocalDate date;
         private Boolean aligned;
         private List<InventoryItemsResponse> inventoryItems;
@@ -28,12 +26,8 @@ public class InventoryResponse {
 
         public InventoryResponse(Inventory inventory) {
                 this.id = inventory.getId();
-                this.storageEmployeeId = inventory.getStorageEmployee().getId();
-                this.storageForemanId = inventory.getStorageForeman().getId();
-                this.storageEmployeeName = inventory.getStorageEmployee().getFirstName() + " "
-                                + inventory.getStorageEmployee().getLastName();
-                this.storageForemanName = inventory.getStorageForeman().getFirstName() + " "
-                                + inventory.getStorageForeman().getLastName();
+                this.storageEmployeeForUserResponse = inventory.getStorageEmployee() != null ? new StorageEmployeeForUserResponse(inventory.getStorageEmployee()) : null;
+                this.storageForemanForUserResponse = inventory.getStorageForeman() != null ? new StorageForemanForUserResponse(inventory.getStorageForeman()) : null;
                 this.date = inventory.getDate();
                 this.aligned = inventory.getAligned();
                 this.status = inventory.getStatus(); // ne koristi .name()

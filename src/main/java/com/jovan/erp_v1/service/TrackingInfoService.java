@@ -54,7 +54,11 @@ public class TrackingInfoService implements ITrackingInfoService {
     @Override
     public TrackingInfoResponse create(TrackingInfoRequest request) {
     	validateCreateTrackingInfoRequest(request);
-        TrackingInfo info = infoMapper.toEntity(request);
+    	Shipment ship = fetchShipmentId(request.shipmentId());
+    	if (ship.getTrackingInfo() != null) {
+		    throw new ValidationException("TrackingInfo already exists for this shipment.");
+    	}
+        TrackingInfo info = infoMapper.toEntity(request, ship);
         TrackingInfo saved = trackingInfoRepository.save(info);
         return infoMapper.toResponse(saved);
     }
@@ -614,10 +618,5 @@ public class TrackingInfoService implements ITrackingInfoService {
     	    throw new IllegalArgumentException(request.estimatedDelivery() + " must not be in past.");
     	}
     	validateShipmentStatus(request.currentStatus());
-    	Shipment shipment = shipmentRepository.findById(request.shipmentId())
-    		    .orElseThrow(() -> new ValidationException("Shipment not found"));
-    	if (shipment.getTrackingInfo() != null) {
-    		    throw new ValidationException("TrackingInfo already exists for this shipment.");
-    	}
 	}
 }

@@ -30,7 +30,6 @@ import com.jovan.erp_v1.response.InventoryItemCalculateResponse;
 import com.jovan.erp_v1.response.InventoryItemStorageCapacityResponse;
 import com.jovan.erp_v1.response.InventoryItemsResponse;
 import com.jovan.erp_v1.response.InventorySummaryResponse;
-import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponse;
 import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponseFull;
 import com.jovan.erp_v1.response.StorageCapacityResponse;
 import com.jovan.erp_v1.response.StorageItemSummaryResponse;
