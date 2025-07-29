@@ -646,7 +646,7 @@ public class WorkCenterService implements IWorkCenterService {
 		}
 	}
     
-    private void validateBigDecimalNonNegative(BigDecimal num) {
+	private void validateBigDecimalNonNegative(BigDecimal num) {
 		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
 			throw new ValidationException("Number must be zero or positive");
 		}

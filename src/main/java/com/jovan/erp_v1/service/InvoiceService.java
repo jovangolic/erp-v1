@@ -15,10 +15,12 @@ import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
 import com.jovan.erp_v1.exception.BuyerNotFoundException;
 import com.jovan.erp_v1.exception.InvoiceNotFoundException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.PaymentNotFoundException;
 import com.jovan.erp_v1.exception.SalesNotFoundException;
 import com.jovan.erp_v1.exception.SalesOrderNotFoundException;
 import com.jovan.erp_v1.exception.UserNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.InvoiceMapper;
 import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.Invoice;
@@ -54,16 +56,13 @@ public class InvoiceService implements IInvoiceService {
 	@Transactional
 	@Override
 	public InvoiceResponse createInvoice(InvoiceRequest request) {
-		Invoice invoice = invoiceMapper.toEntity(request);
+		
 		Buyer buyer = fetchBuyer(request.buyerId());
-		invoice.setBuyer(buyer);
 		User user = fetchCreatedBy(request.createdById());
-		invoice.setCreatedBy(user);
 		Sales sales = fetchSales(request.salesId());
-		invoice.setRelatedSales(sales);
 		Payment payment = fetchPayment(request.paymentId());
-		invoice.setPayment(payment);
 		SalesOrder salesOrder = fetchSalesOrder(request.salesOrderId());
+		Invoice invoice = invoiceMapper.toEntity(request,buyer,sales,payment,salesOrder,user);
 		if (invoice.getDueDate().isBefore(invoice.getIssueDate())) {
 			throw new IllegalArgumentException("Due date cannot be before issue date");
 		}
@@ -126,7 +125,11 @@ public class InvoiceService implements IInvoiceService {
 
 	@Override
 	public List<InvoiceResponse> getAllInvoices() {
-		return invoiceRepository.findAll().stream()
+		List<Invoice> items = invoiceRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Invoice list is empty");
+		}
+		return items.stream()
 				.map(invoiceMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -140,15 +143,27 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByStatus(InvoiceStatus status) {
 		validateInvoiceStatus(status);
-		return invoiceRepository.findByStatus(status).stream()
+		List<Invoice> items = invoiceRepository.findByStatus(status);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for status %s is found", status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(invoiceMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByBuyerIdAndStatus( Long buyerId,  InvoiceStatus status) {
-		
-		return invoiceRepository.findByBuyerIdAndStatus(buyerId, status).stream()
+		fetchBuyer(buyerId);
+		validateInvoiceStatus(status);
+		List<Invoice> items = invoiceRepository.findByBuyerIdAndStatus(buyerId, status);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for buyer-id %d and invoice-status %s is found",
+					buyerId,status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(invoiceMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -164,8 +179,13 @@ public class InvoiceService implements IInvoiceService {
 
 	@Override
 	public List<InvoiceResponse> findByBuyerId(Long buyerId) {
-		Buyer buyer = fetchBuyer(buyerId);
-		return invoiceRepository.findByBuyerId(buyer.getId()).stream()
+		fetchBuyer(buyerId);
+		List<Invoice> items = invoiceRepository.findByBuyerId(buyerId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for buyer-id %d is found", buyerId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(invoiceMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -189,7 +209,14 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByIssueDateBetween(LocalDateTime start, LocalDateTime end) {
 		DateValidator.validateRange(start, end);
-		return invoiceRepository.findByIssueDateBetween(start, end).stream()
+		List<Invoice> items = invoiceRepository.findByIssueDateBetween(start, end);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Invoice for issued date between %s and %s is found",
+					start.format(formatter),end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(invoiceMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -197,7 +224,14 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByDueDateBefore(LocalDateTime date) {
 		DateValidator.validateNotNull(date, "Date and time must not be null");
-		return invoiceRepository.findByDueDateBefore(date).stream()
+		List<Invoice> items = invoiceRepository.findByDueDateBefore(date);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Invoice for due date before %s is found",
+					date.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(invoiceMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -218,7 +252,13 @@ public class InvoiceService implements IInvoiceService {
 
 	@Override
 	public List<InvoiceResponse> findInvoicesByBuyerSortedByIssueDate(Long buyerId) {
-		return invoiceRepository.findInvoicesByBuyerSortedByIssueDate(buyerId).stream()
+		validateBuyerExists(buyerId);
+		List<Invoice> items = invoiceRepository.findInvoicesByBuyerSortedByIssueDate(buyerId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for buyer-id %s sorted by issue date is found", buyerId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(invoiceMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -234,7 +274,12 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByPaymentStatus(PaymentStatus status) {
 		validatePaymentStatus(status);
-		return invoiceRepository.findByPaymentStatus(status).stream()
+		List<Invoice> items = invoiceRepository.findByPaymentStatus(status);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for payment status %s is found", status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -242,7 +287,12 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByBuyerIdOrderByIssueDateDesc(Long buyerId) {
 		validateBuyerExists(buyerId);
-		return invoiceRepository.findByBuyerIdOrderByIssueDateDesc(buyerId).stream()
+		List<Invoice> items = invoiceRepository.findByBuyerId(buyerId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for buyer id %d is found", buyerId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -250,7 +300,12 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByBuyerCompanyNameContainingIgnoreCase(String companyName) {
 		validateString(companyName, "Company name");
-		return invoiceRepository.findByBuyerCompanyNameContainingIgnoreCase(companyName).stream()
+		List<Invoice> items = invoiceRepository.findByBuyerCompanyNameContainingIgnoreCase(companyName);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for buyer company-name %s is found", companyName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -271,7 +326,12 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByBuyerEmailContainingIgnoreCase(String email) {
 		validateString(email, "Email");
-		return invoiceRepository.findByBuyerEmailContainingIgnoreCase(email).stream()
+		List<Invoice> items = invoiceRepository.findByBuyerEmailContainingIgnoreCase(email);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for buyer email %s is found", email);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -279,7 +339,12 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByBuyerPhoneNumber(String phoneNumber) {
 		validateString(phoneNumber, "Phone number");
-		return invoiceRepository.findByBuyerPhoneNumber(phoneNumber).stream()
+		List<Invoice> items = invoiceRepository.findByBuyerPhoneNumber(phoneNumber);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for buyer phone-number %s is found", phoneNumber);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -287,7 +352,12 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByNoteContainingIgnoreCase(String note) {
 		validateString(note, "Note");
-		return invoiceRepository.findByNoteContainingIgnoreCase(note).stream()
+		List<Invoice> items = invoiceRepository.findByNoteContainingIgnoreCase(note);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for note %s is found", note);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -295,7 +365,12 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByRelatedSales_TotalPrice(BigDecimal totalPrice) {
 		validateBigDecimal(totalPrice);
-		return invoiceRepository.findByRelatedSales_TotalPrice(totalPrice).stream()
+		List<Invoice> items = invoiceRepository.findByRelatedSales_TotalPrice(totalPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for related-sales with total price %s is found", totalPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -303,15 +378,25 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByRelatedSales_TotalPriceGreaterThan(BigDecimal totalPrice) {
 		validateBigDecimal(totalPrice);
-		return invoiceRepository.findByRelatedSales_TotalPriceGreaterThan(totalPrice).stream()
+		List<Invoice> items = invoiceRepository.findByRelatedSales_TotalPriceGreaterThan(totalPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for related-sales with total price greater than %s is found", totalPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByRelatedSales_TotalPriceLessThan(BigDecimal totalPrice) {
-		validateBigDecimal(totalPrice);
-		return invoiceRepository.findByRelatedSales_TotalPriceLessThan(totalPrice).stream()
+		validateBigDecimalNonNegative(totalPrice);
+		List<Invoice> items = invoiceRepository.findByRelatedSales_TotalPriceLessThan(totalPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for related-sales with total price less than %s is found", totalPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -319,7 +404,12 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByPayment_Amount(BigDecimal amount) {
 		validateBigDecimal(amount);
-		return invoiceRepository.findByPayment_Amount(amount).stream()
+		List<Invoice> items = invoiceRepository.findByPayment_Amount(amount);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for payment amound %s is found", amount);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -327,7 +417,14 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByPayment_PaymentDate(LocalDateTime paymentDate) {
 		DateValidator.validateNotNull(paymentDate, "Date and time");
-		return invoiceRepository.findByPayment_PaymentDate(paymentDate).stream()
+		List<Invoice> items = invoiceRepository.findByPayment_PaymentDate(paymentDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Invoice for payment date %s is found",
+					paymentDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -336,7 +433,14 @@ public class InvoiceService implements IInvoiceService {
 	public List<InvoiceResponse> findByPayment_PaymentDateBetween(LocalDateTime paymentDateStart,
 			LocalDateTime paymentDateEnd) {
 		DateValidator.validateRange(paymentDateStart, paymentDateEnd);
-		return invoiceRepository.findByPayment_PaymentDateBetween(paymentDateStart, paymentDateEnd).stream()
+		List<Invoice> items = invoiceRepository.findByPayment_PaymentDateBetween(paymentDateStart, paymentDateEnd);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Invoice for payment date between %s and %s is found", 
+					paymentDateStart.format(formatter), paymentDateEnd.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -344,7 +448,12 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByPayment_Method(PaymentMethod method) {
 		validatePaymentMehod(method);
-		return invoiceRepository.findByPayment_Method(method).stream()
+		List<Invoice> items = invoiceRepository.findByPayment_Method(method);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for payment method %s is found", method);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -352,15 +461,25 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByPayment_ReferenceNumberContainingIgnoreCase(String referenceNumber) {
 		validateString(referenceNumber, "Reference number");
-		return invoiceRepository.findByPayment_ReferenceNumberContainingIgnoreCase(referenceNumber).stream()
+		List<Invoice> items = invoiceRepository.findByPayment_ReferenceNumberContainingIgnoreCase(referenceNumber);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for payment reference-number %s is found", referenceNumber);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_Id(Long salesOrderId) {
-		SalesOrder so = fetchSalesOrder(salesOrderId);
-		return invoiceRepository.findBySalesOrder_Id(so.getId()).stream()
+		fetchSalesOrder(salesOrderId);
+		List<Invoice> items = invoiceRepository.findBySalesOrder_Id(salesOrderId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for sales-order id %d is found", salesOrderId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -379,7 +498,14 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_OrderDate(LocalDateTime orderDate) {
 		DateValidator.validateNotNull(orderDate, "Date and time");
-		return invoiceRepository.findBySalesOrder_OrderDate(orderDate).stream()
+		List<Invoice> items = invoiceRepository.findBySalesOrder_OrderDate(orderDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Invoice for sales-order date %s is found", 
+					orderDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -388,7 +514,14 @@ public class InvoiceService implements IInvoiceService {
 	public List<InvoiceResponse> findBySalesOrder_OrderDateBetween(LocalDateTime orderDateStart,
 			LocalDateTime orderDateEnd) {
 		DateValidator.validateRange(orderDateStart, orderDateEnd);
-		return invoiceRepository.findBySalesOrder_OrderDateBetween(orderDateStart, orderDateEnd).stream()
+		List<Invoice> items = invoiceRepository.findBySalesOrder_OrderDateBetween(orderDateStart, orderDateEnd);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Invoice for sales-order date between %s and %s is found", 
+					orderDateStart.format(formatter),orderDateEnd.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -396,6 +529,11 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_TotalAmount(BigDecimal totalAmount) {
 		validateBigDecimal(totalAmount);
+		List<Invoice> items = invoiceRepository.findBySalesOrder_TotalAmount(totalAmount);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for sales-order total amount %s is found", totalAmount);
+			throw new NoDataFoundException(msg);
+		}
 		return invoiceRepository.findBySalesOrder_TotalAmount(totalAmount).stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
@@ -404,6 +542,11 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_TotalAmountGreaterThan(BigDecimal totalAmount) {
 		validateBigDecimal(totalAmount);
+		List<Invoice> items = invoiceRepository.findBySalesOrder_TotalAmountGreaterThan(totalAmount);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for sales-order total amount greater than %s is found", totalAmount);
+			throw new NoDataFoundException(msg);
+		}
 		return invoiceRepository.findBySalesOrder_TotalAmountGreaterThan(totalAmount).stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
@@ -411,8 +554,13 @@ public class InvoiceService implements IInvoiceService {
 
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_TotalAmountLessThan(BigDecimal totalAmount) {
-		validateBigDecimal(totalAmount);
-		return invoiceRepository.findBySalesOrder_TotalAmountLessThan(totalAmount).stream()
+		validateBigDecimalNonNegative(totalAmount);
+		List<Invoice> items = invoiceRepository.findBySalesOrder_TotalAmountLessThan(totalAmount);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for sales-order total amount less than %s is found", totalAmount);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -420,7 +568,12 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_Status(OrderStatus status) {
 		validateOrderStatus(status);
-		return invoiceRepository.findBySalesOrder_Status(status).stream()
+		List<Invoice> items = invoiceRepository.findBySalesOrder_Status(status);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice found for sales-order status %s", status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -428,15 +581,25 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findBySalesOrder_NoteContainingIgnoreCase(String note) {
 		validateString(note, "Note");
-		return invoiceRepository.findBySalesOrder_NoteContainingIgnoreCase(note).stream()
+		List<Invoice> items = invoiceRepository.findBySalesOrder_NoteContainingIgnoreCase(note);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice found for note %s", note);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<InvoiceResponse> findByCreatedBy_Id(Long createdById) {
-		User user = fetchCreatedBy(createdById);
-		return invoiceRepository.findByCreatedBy_Id(user.getId()).stream()
+		fetchCreatedBy(createdById);
+		List<Invoice> items = invoiceRepository.findByCreatedBy_Id(createdById);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice for createdby id %d, is found", createdById);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -444,7 +607,12 @@ public class InvoiceService implements IInvoiceService {
 	@Override
 	public List<InvoiceResponse> findByCreatedBy_EmailContainingIgnoreCase(String createdByEmail) {
 		validateString(createdByEmail, "createdByEmail");
-		return invoiceRepository.findByCreatedBy_EmailContainingIgnoreCase(createdByEmail).stream()
+		List<Invoice> items = invoiceRepository.findByCreatedBy_EmailContainingIgnoreCase(createdByEmail);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice createdby email %s is found", createdByEmail);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -453,15 +621,37 @@ public class InvoiceService implements IInvoiceService {
 	public List<InvoiceResponse> findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(
 			String createdByFirstName, String createdByLastName) {
 		validateDoubleString(createdByFirstName, createdByLastName);
-		return invoiceRepository.findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(createdByFirstName, createdByLastName).stream()
+		List<Invoice> items = invoiceRepository.findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(createdByFirstName, createdByLastName);
+		if(items.isEmpty()) {
+			String msg = String.format("No Invoice createdby first-name %s and last-name %s is found", 
+					createdByFirstName,createdByLastName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(InvoiceResponse::new)
 				.collect(Collectors.toList());
+	}
+	
+	private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
 	}
 
 	private String generateInvoiceNumber() {
 		String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 		long count = invoiceRepository.count() + 1;
 		return String.format("INV-%s-%04d", datePart, count);
+	}
+	
+	private Boolean invoiceNumberExists(String num) {
+		if(num == null || num.trim().isEmpty()) {
+			throw new ValidationException("InvoiceNumber doesn't exist");
+		}
+		return invoiceRepository.existsByInvoiceNumber(num);
 	}
 	
 	private void validateDoubleString(String s1, String s2) {

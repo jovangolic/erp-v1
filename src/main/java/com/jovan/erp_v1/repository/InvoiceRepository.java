@@ -4,17 +4,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
 import com.jovan.erp_v1.enumeration.OrderStatus;
 import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
-import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.Invoice;
 
 @Repository
