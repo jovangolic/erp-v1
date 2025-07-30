@@ -15,13 +15,9 @@ import com.jovan.erp_v1.model.LocalizedOption;
 public interface LocalizedOptionRepository extends JpaRepository<LocalizedOption, Long> {
 
     List<LocalizedOption> findByOptionId(Long optionId);
-
     List<LocalizedOption> findByLanguageId(Long languageId);
-
     Optional<LocalizedOption> findByOptionIdAndLanguageId(Long optionId, Long languageId);
-
     Optional<LocalizedOption> findByLocalizedLabel(String localizedLabel);
-
     void deleteByOptionId(Long optionId);
     //nove metode
     List<LocalizedOption> findByOption_Label(String label);

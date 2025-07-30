@@ -2,6 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,10 +12,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jovan.erp_v1.enumeration.MaterialRequestStatus;
 import com.jovan.erp_v1.enumeration.UnitOfMeasure;
 import com.jovan.erp_v1.exception.MaterialRequestObjectErrorException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.MaterialRequestMapper;
+import com.jovan.erp_v1.model.Material;
 import com.jovan.erp_v1.model.MaterialRequest;
+import com.jovan.erp_v1.model.WorkCenter;
 import com.jovan.erp_v1.repository.MaterialRepository;
 import com.jovan.erp_v1.repository.MaterialRequestRepository;
+import com.jovan.erp_v1.repository.WorkCenterRepository;
 import com.jovan.erp_v1.request.MaterialRequestDTO;
 import com.jovan.erp_v1.response.MaterialRequestResponse;
 import com.jovan.erp_v1.util.DateValidator;
@@ -28,16 +34,17 @@ public class MaterialRequestService implements IMaterialRequestService {
     private final MaterialRequestRepository materialRequestRepository;
     private final MaterialRequestMapper materialRequestMapper;
     private final MaterialRepository materialRepository;
+    private final WorkCenterRepository workCenterRepository;
 
     @Transactional
     @Override
     public MaterialRequestResponse create(MaterialRequestDTO dto) {
-        validateMaterialId(dto.materialId());
-        validateWorkCenter(dto.requestingWorkCenterId());
+        Material material = validateMaterialId(dto.materialId());
+        WorkCenter wc = validateWorkCenter(dto.requestingWorkCenterId());
         validateBigDecimal(dto.quantity());
         DateValidator.validateRange(dto.requestDate(), dto.neededBy());
         validateMovementType(dto.status());
-        MaterialRequest req = materialRequestMapper.toEntity(dto);
+        MaterialRequest req = materialRequestMapper.toEntity(dto,wc, material);
         MaterialRequest saved = materialRequestRepository.save(req);
         return materialRequestMapper.toResponse(saved);
     }
@@ -50,12 +57,18 @@ public class MaterialRequestService implements IMaterialRequestService {
 		}
         MaterialRequest req = materialRequestRepository.findById(id).orElseThrow(
                 () -> new MaterialRequestObjectErrorException("MaterilaRequestObject not found with id :" + id));
-        validateMaterialId(dto.materialId());
-        validateWorkCenter(dto.requestingWorkCenterId());
+        WorkCenter wc = req.getRequestingWorkCenter();
+        if(dto.requestingWorkCenterId() != null && (wc.getId() == null || !dto.requestingWorkCenterId().equals(wc.getId()))) {
+        	wc = validateWorkCenter(dto.requestingWorkCenterId());
+        }
+        Material material = req.getMaterial();
+        if(dto.materialId() != null && (material.getId() == null || !dto.materialId().equals(material.getId()))) {
+        	material = validateMaterialId(dto.materialId());
+        }
         validateBigDecimal(dto.quantity());
         DateValidator.validateRange(dto.requestDate(), dto.neededBy());
         validateMovementType(dto.status());
-        materialRequestMapper.toUpdateEntity(req, dto);
+        materialRequestMapper.toUpdateEntity(req, dto, wc, material);
         return materialRequestMapper.toResponse(materialRequestRepository.save(req));
     }
 
@@ -77,7 +90,11 @@ public class MaterialRequestService implements IMaterialRequestService {
 
     @Override
     public List<MaterialRequestResponse> findAll() {
-        return materialRequestRepository.findAll().stream()
+    	List<MaterialRequest> items = materialRequestRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("MaterialRequest list is empty");
+    	}
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -85,7 +102,12 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByRequestingWorkCenter_NameContainingIgnoreCase(String workCenterName) {
         validateString(workCenterName);
-        return materialRequestRepository.findByRequestingWorkCenter_NameContainingIgnoreCase(workCenterName).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByRequestingWorkCenter_NameContainingIgnoreCase(workCenterName);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for work-center name %s is found", workCenterName);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -94,7 +116,12 @@ public class MaterialRequestService implements IMaterialRequestService {
     public List<MaterialRequestResponse> findByRequestingWorkCenter_LocationContainingIgnoreCase(
             String workCenterLocation) {
         validateString(workCenterLocation);
-        return materialRequestRepository.findByRequestingWorkCenter_LocationContainingIgnoreCase(workCenterLocation)
+        List<MaterialRequest> items = materialRequestRepository.findByRequestingWorkCenter_LocationContainingIgnoreCase(workCenterLocation);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for work-center location %s is found", workCenterLocation);
+        	throw new NoDataFoundException(msg);
+        }
+        return items
                 .stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
@@ -103,7 +130,12 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByRequestingWorkCenter_Capacity(BigDecimal workCenterCapacity) {
         validateBigDecimal(workCenterCapacity);
-        return materialRequestRepository.findByRequestingWorkCenter_Capacity(workCenterCapacity).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByRequestingWorkCenter_Capacity(workCenterCapacity);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for work-center capacity %s is found", workCenterCapacity);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -111,15 +143,25 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByRequestingWorkCenter_CapacityGreaterThan(BigDecimal workCenterCapacity) {
         validateBigDecimal(workCenterCapacity);
-        return materialRequestRepository.findByRequestingWorkCenter_CapacityGreaterThan(workCenterCapacity).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByRequestingWorkCenter_CapacityGreaterThan(workCenterCapacity);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for work-center capacity greater than %s is found", workCenterCapacity);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<MaterialRequestResponse> findByRequestingWorkCenter_CapacityLessThan(BigDecimal workCenterCapacity) {
-        validateBigDecimal(workCenterCapacity);
-        return materialRequestRepository.findByRequestingWorkCenter_CapacityLessThan(workCenterCapacity).stream()
+        validateBigDecimalNonNegative(workCenterCapacity);
+        List<MaterialRequest> items = materialRequestRepository.findByRequestingWorkCenter_CapacityLessThan(workCenterCapacity);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for work-center capacity less than %s is found", workCenterCapacity);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -127,7 +169,12 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByQuantity(BigDecimal quantity) {
         validateBigDecimal(quantity);
-        return materialRequestRepository.findByQuantity(quantity).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByQuantity(quantity);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for quantity %s is found", quantity);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -135,15 +182,25 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByQuantityGreaterThan(BigDecimal quantity) {
         validateBigDecimal(quantity);
-        return materialRequestRepository.findByQuantityGreaterThan(quantity).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByQuantityGreaterThan(quantity);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for quantity greater than %s is found", quantity);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<MaterialRequestResponse> findByQuantityLessThan(BigDecimal quantity) {
-        validateBigDecimal(quantity);
-        return materialRequestRepository.findByQuantityLessThan(quantity).stream()
+        validateBigDecimalNonNegative(quantity);
+        List<MaterialRequest> items = materialRequestRepository.findByQuantityLessThan(quantity);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for quantity less than %s is found", quantity);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -151,7 +208,12 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByMaterial_Id(Long materialId) {
         validateMaterialId(materialId);
-        return materialRequestRepository.findByMaterial_Id(materialId).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByMaterial_Id(materialId);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for material-id %d is found", materialId);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -173,7 +235,12 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByMaterial_NameContainingIgnoreCase(String name) {
         validateString(name);
-        return materialRequestRepository.findByMaterial_NameContainingIgnoreCase(name).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByMaterial_NameContainingIgnoreCase(name);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for material name %s is found", name);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -181,7 +248,12 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByMaterial_Unit(UnitOfMeasure unit) {
         validateUnitOfMeasure(unit);
-        return materialRequestRepository.findByMaterial_Unit(unit).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByMaterial_Unit(unit);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for material unit %s is found", unit);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -189,15 +261,25 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByMaterial_CurrentStock(BigDecimal currentStock) {
         validateBigDecimal(currentStock);
-        return materialRequestRepository.findByMaterial_CurrentStock(currentStock).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByMaterial_CurrentStock(currentStock);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for material current-stock %s is found", currentStock);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<MaterialRequestResponse> findByMaterial_CurrentStockLessThan(BigDecimal currentStock) {
-        validateBigDecimal(currentStock);
-        return materialRequestRepository.findByMaterial_CurrentStockLessThan(currentStock).stream()
+        validateBigDecimalNonNegative(currentStock);
+        List<MaterialRequest> items = materialRequestRepository.findByMaterial_CurrentStockLessThan(currentStock);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for material current-stock less than %s is found", currentStock);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -205,7 +287,12 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByMaterial_CurrentStockGreaterThan(BigDecimal currentStock) {
         validateBigDecimal(currentStock);
-        return materialRequestRepository.findByMaterial_CurrentStockGreaterThan(currentStock).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByMaterial_CurrentStockGreaterThan(currentStock);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for material current-stock greater than %s is found", currentStock);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -213,7 +300,12 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByMaterial_ReorderLevel(BigDecimal reorderLevel) {
         validateBigDecimal(reorderLevel);
-        return materialRequestRepository.findByMaterial_ReorderLevel(reorderLevel).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByMaterial_ReorderLevel(reorderLevel);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for material reorder-level %s is found", reorderLevel);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -221,7 +313,12 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByMaterial_Storage_Id(Long storageId) {
         validateStorageId(storageId);
-        return materialRequestRepository.findByMaterial_Storage_Id(storageId).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByMaterial_Storage_Id(storageId);
+        if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for material storage-id %d is found", storageId);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -229,7 +326,14 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByRequestDate(LocalDate requestDate) {
         DateValidator.validateNotNull(requestDate, "Datum ne sme biti null");
-        return materialRequestRepository.findByRequestDate(requestDate).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByRequestDate(requestDate);
+        if(items.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        	String msg = String.format("No MaterialRequest for request-date %s is found",
+        			requestDate.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -237,7 +341,14 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByRequestDateBefore(LocalDate requestDate) {
         DateValidator.validateNotNull(requestDate, "Datum ne sme biti null");
-        return materialRequestRepository.findByRequestDateBefore(requestDate).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByRequestDateBefore(requestDate);
+        if(items.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        	String msg = String.format("No MaterialRequest for request-date before %s is found",
+        			requestDate.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -245,7 +356,14 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByRequestDateAfter(LocalDate requestDate) {
         DateValidator.validateNotNull(requestDate, "Datum ne sme biti null");
-        return materialRequestRepository.findByRequestDateAfter(requestDate).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByRequestDateAfter(requestDate);
+        if(items.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        	String msg = String.format("No MaterialRequest for request-date after %s is found",
+        			requestDate.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -253,7 +371,14 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByRequestDateBetween(LocalDate startDate, LocalDate endDate) {
         DateValidator.validateRange(startDate, endDate);
-        return materialRequestRepository.findByRequestDateBetween(startDate, endDate).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByRequestDateBetween(startDate, endDate);
+        if(items.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        	String msg = String.format("No MaterialRequest for request-date between %s and %s is found",
+        			startDate.format(formatter), endDate.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -261,7 +386,14 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByNeededBy(LocalDate neededBy) {
         DateValidator.validateNotNull(neededBy, "Datum ne sme biti null");
-        return materialRequestRepository.findByNeededBy(neededBy).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByNeededBy(neededBy);
+        if(items.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        	String msg = String.format("No MaterialRequest for neededBy date %s is found",
+        			neededBy.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -269,7 +401,14 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByNeededByBefore(LocalDate neededBy) {
         DateValidator.validateNotNull(neededBy, "Datum ne sme biti null");
-        return materialRequestRepository.findByNeededByBefore(neededBy).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByNeededByBefore(neededBy);
+        if(items.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        	String msg = String.format("No MaterialRequest for neededBy date before %s is found",
+        			neededBy.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -277,7 +416,14 @@ public class MaterialRequestService implements IMaterialRequestService {
     @Override
     public List<MaterialRequestResponse> findByNeededByAfter(LocalDate neededBy) {
         DateValidator.validateNotNull(neededBy, "Datum ne sme biti null");
-        return materialRequestRepository.findByNeededByAfter(neededBy).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByNeededByAfter(neededBy);
+        if(items.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        	String msg = String.format("No MaterialRequest for neededBy date after %s is found",
+        			neededBy.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
@@ -287,32 +433,41 @@ public class MaterialRequestService implements IMaterialRequestService {
         DateValidator.validateNotNull(startDate, "Start datum ne sme biti null");
         DateValidator.validateNotNull(endDate, "End datum ne sme biti null");
         DateValidator.validateRange(startDate, endDate);
-        return materialRequestRepository.findByNeededByBetween(startDate, endDate).stream()
+        List<MaterialRequest> items = materialRequestRepository.findByNeededByBetween(startDate, endDate);
+        if(items.isEmpty()) {
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        	String msg = String.format("No MaterialRequest for neededBy date between %s and %s is found",
+        			startDate.format(formatter), endDate.format(formatter));
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
 
-    private void validateMaterialId(Long materialId) {
-        if (!materialRepository.existsById(materialId)) {
-            throw new IllegalArgumentException("Materijal sa ID " + materialId + " ne postoji.");
+    private Material validateMaterialId(Long materialId) {
+        if(materialId == null) {
+        	throw new ValidationException("Material ID must not be null");
         }
+        return materialRepository.findById(materialId).orElseThrow(() -> new ValidationException("Material not found with id "+materialId));
     }
 
     private void validateMovementType(MaterialRequestStatus status) {
         if (status == null) {
-            throw new IllegalArgumentException("Status za  MaterialRequestStatus ne sme biti null.");
+            throw new ValidationException("Status za  MaterialRequestStatus ne sme biti null.");
         }
     }
 
-    private void validateWorkCenter(Long workCenterId) {
+    private WorkCenter validateWorkCenter(Long workCenterId) {
         if (workCenterId == null) {
-            throw new IllegalArgumentException("ID za workCenter ne sme biti null");
+            throw new ValidationException("ID za workCenter ne sme biti null");
         }
+        return workCenterRepository.findById(workCenterId).orElseThrow(() -> new ValidationException("WorkCenter not found with id "+workCenterId));
     }
 
     private void validateStorageId(Long storageId) {
         if (storageId == null) {
-            throw new IllegalArgumentException("ID za skladiste ne sme biti null");
+            throw new ValidationException("ID za skladiste ne sme biti null");
         }
     }
 
@@ -333,5 +488,13 @@ public class MaterialRequestService implements IMaterialRequestService {
             throw new IllegalArgumentException("Tekstualni karakter ne sme biti null ili prazan");
         }
     }
-
+    
+    private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
 }

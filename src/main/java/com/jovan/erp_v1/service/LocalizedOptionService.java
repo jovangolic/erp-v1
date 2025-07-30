@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.exception.LocalizedOptionErrorException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.OptionErrorException;
 import com.jovan.erp_v1.mapper.LocalizedOptionMapper;
 import com.jovan.erp_v1.model.Language;
@@ -36,23 +37,34 @@ public class LocalizedOptionService implements ILocalizedOptionService {
     @Transactional
     @Override
     public LocalizedOptionResponse create(LocalizedOptionRequest request) {
-    	validateIds(request.getOptionId(), request.getLanguageId());
+    	Option opt = fetchOption(request.getOptionId());
+    	Language lang = fetchLanguage(request.getLanguageId());
     	validateString(request.getLocalizedLabel());
-        LocalizedOption entity = localizedOptionMapper.toEntity(request);
+        LocalizedOption entity = localizedOptionMapper.toEntity(request,opt,lang);
         localizedOptionRepository.save(entity);
         return localizedOptionMapper.toResponse(entity);
     }
 
     @Override
     public List<LocalizedOptionResponse> getAll() {
-        return localizedOptionRepository.findAll().stream()
+    	List<LocalizedOption> items = localizedOptionRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("LocalizedOption list is empty");
+    	}
+        return items.stream()
                 .map(localizedOptionMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<LocalizedOptionResponse> getTranslationsForOption(Long optionId) {
-        return localizedOptionRepository.findByOptionId(optionId).stream()
+    	fetchOption(optionId);
+    	List<LocalizedOption> items = localizedOptionRepository.findByOptionId(optionId);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No LocalizedOption for option-id %d is found", optionId);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(localizedOptionMapper::toResponse)
                 .collect(Collectors.toList());
     }
@@ -107,6 +119,10 @@ public class LocalizedOptionService implements ILocalizedOptionService {
 			throw new LanguageErrorException("Language ID not found");
 		}
         List<LocalizedOption> lista = localizedOptionRepository.findByLanguageId(languageId);
+        if(lista.isEmpty()) {
+        	String msg = String.format("No LocalizedOption for language-id %d is found", languageId);
+        	throw new NoDataFoundException(msg);
+        }
         return lista.stream().map(localizedOptionMapper::toResponse)
                 .collect(Collectors.toList());
     }
@@ -121,7 +137,12 @@ public class LocalizedOptionService implements ILocalizedOptionService {
 	@Override
 	public List<LocalizedOptionResponse> findByOption_Label(String label) {
 		validateString(label);
-		return localizedOptionRepository.findByOption_Label(label).stream()
+		List<LocalizedOption> items = localizedOptionRepository.findByOption_Label(label);
+		if(items.isEmpty()) {
+			String msg = String.format("No LocalizedOption for option label %s is found", label);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(LocalizedOptionResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -129,7 +150,12 @@ public class LocalizedOptionService implements ILocalizedOptionService {
 	@Override
 	public List<LocalizedOptionResponse> findByOption_Value(String value) {
 		validateString(value);
-		return localizedOptionRepository.findByOption_Value(value).stream()
+		List<LocalizedOption> items = localizedOptionRepository.findByOption_Value(value);
+		if(items.isEmpty()) {
+			String msg = String.format("No LocalizedOption for option value %s is found", value);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(LocalizedOptionResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -137,17 +163,25 @@ public class LocalizedOptionService implements ILocalizedOptionService {
 	@Override
 	public List<LocalizedOptionResponse> findByOption_Category(OptionCategory category) {
 		validateOptionCategory(category);
-		return localizedOptionRepository.findByOption_Category(category).stream()
+		List<LocalizedOption> items = localizedOptionRepository.findByOption_Category(category);
+		if(items.isEmpty()) {
+			String msg = String.format("No LocalizedOption for option category %s is found", category);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(LocalizedOptionResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<LocalizedOptionResponse> findByLanguage_Id(Long languageId) {
-		if(!localizedOptionRepository.existsByLanguage_Id(languageId)) {
-			throw new LanguageErrorException("Language ID not found");
+		fetchLanguage(languageId);
+		List<LocalizedOption> items = localizedOptionRepository.findByLanguage_Id(languageId);
+		if(items.isEmpty()) {
+			String msg = String.format("No LocalizedOption for language-id %d is found", languageId);
+			throw new NoDataFoundException(msg);
 		}
-		return localizedOptionRepository.findByLanguage_Id(languageId).stream()
+		return items.stream()
 				.map(LocalizedOptionResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -155,7 +189,12 @@ public class LocalizedOptionService implements ILocalizedOptionService {
 	@Override
 	public List<LocalizedOptionResponse> findByLanguage_LanguageCodeType(LanguageCodeType languageCodeType) {
 		validateLanguageCodeType(languageCodeType);
-		return localizedOptionRepository.findByLanguage_LanguageCodeType(languageCodeType).stream()
+		List<LocalizedOption> items = localizedOptionRepository.findByLanguage_LanguageCodeType(languageCodeType);
+		if(items.isEmpty()) {
+			String msg = String.format("No LocalizedOption for language-code-type %s is found", languageCodeType);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(LocalizedOptionResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -163,7 +202,12 @@ public class LocalizedOptionService implements ILocalizedOptionService {
 	@Override
 	public List<LocalizedOptionResponse> findByLanguage_LanguageNameType(LanguageNameType languageNameType) {
 		validateLanguageNameType(languageNameType);
-		return localizedOptionRepository.findByLanguage_LanguageNameType(languageNameType).stream()
+		List<LocalizedOption> items = localizedOptionRepository.findByLanguage_LanguageNameType(languageNameType);
+		if(items.isEmpty()) {
+			String msg = String.format("No LocalizedOption for language-name-type %s is found", languageNameType);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(LocalizedOptionResponse::new)
 				.collect(Collectors.toList());
 	}

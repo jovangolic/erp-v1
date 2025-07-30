@@ -12,10 +12,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.exception.JournalEntryErrorException;
 import com.jovan.erp_v1.exception.NoDataFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.JournalEntryMapper;
+import com.jovan.erp_v1.mapper.JournalItemMapper;
+import com.jovan.erp_v1.model.Account;
 import com.jovan.erp_v1.model.JournalEntry;
+import com.jovan.erp_v1.model.JournalItem;
+import com.jovan.erp_v1.repository.AccountRepository;
 import com.jovan.erp_v1.repository.JournalEntryRepository;
 import com.jovan.erp_v1.request.JournalEntryRequest;
+import com.jovan.erp_v1.request.JournalItemRequest;
 import com.jovan.erp_v1.response.JournalEntryResponse;
 import com.jovan.erp_v1.util.DateValidator;
 
@@ -27,6 +33,8 @@ public class JournalEntryService implements IJournalEntryService {
 
     private final JournalEntryRepository journalEntryRepository;
     private final JournalEntryMapper journalEntryMapper;
+    private final AccountRepository accountRepository;
+    private final JournalItemMapper journalItemMapper;
 
     @Transactional
     @Override
@@ -37,6 +45,8 @@ public class JournalEntryService implements IJournalEntryService {
     	    throw new IllegalArgumentException("Lista stavki ne sme biti prazna.");
     	}
         JournalEntry entry = journalEntryMapper.toEntity(request);
+        List<JournalItem> items = mapRequestToItems(request.itemRequests(), entry);
+        entry.setItems(items);
         JournalEntry saved = journalEntryRepository.save(entry);
         return journalEntryMapper.toResponse(saved);
     }
@@ -55,6 +65,9 @@ public class JournalEntryService implements IJournalEntryService {
     	    throw new IllegalArgumentException("Lista stavki ne sme biti prazna prilikom ažuriranja unosa.");
     	}
         journalEntryMapper.toUpdateEntity(j, request);
+        //j.getItems().clear(); ako se budi ovaj deo koda brisao iz mappera, onda se mora u servisnoj metodi raditi ovo brisanje
+        List<JournalItem> items = mapRequestToItems(request.itemRequests(), j);
+        j.setItems(items);
         return journalEntryMapper.toResponse(journalEntryRepository.save(j));
     }
 
@@ -205,6 +218,16 @@ public class JournalEntryService implements IJournalEntryService {
     	if(num == null || num < 0) {
     		throw new IllegalArgumentException("Number must be positive");
     	}
+    }
+    
+    private List<JournalItem> mapRequestToItems(List<JournalItemRequest> itemRequests, JournalEntry entry) {
+        return itemRequests.stream()
+            .map(itemReq -> {
+                Account account = accountRepository.findById(itemReq.accountId())
+                    .orElseThrow(() -> new ValidationException("Account with ID " + itemReq.accountId() + " not found"));
+                return journalItemMapper.toEntity(itemReq, account, entry);
+            })
+            .collect(Collectors.toList());
     }
 
 }

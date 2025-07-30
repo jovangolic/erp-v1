@@ -13,14 +13,9 @@ import jakarta.validation.constraints.Size;
 
 public record LedgerEntryRequest(
         Long id,
-
         @NotNull @PastOrPresent LocalDateTime entryDate,
-
         @NotNull @Positive BigDecimal amount,
-
         @NotBlank @Size(max = 255) String description,
-
         @NotNull Long accountId,
-
         @NotNull LedgerType type) {
 }

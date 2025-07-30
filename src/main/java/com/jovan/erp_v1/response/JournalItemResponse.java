@@ -17,11 +17,13 @@ public class JournalItemResponse {
     private AccountResponse response;
     private BigDecimal debit;
     private BigDecimal credit;
+    private JournalForEntryItemResponse journalForEntryItemResponse;
 
     public JournalItemResponse(JournalItem item) {
         this.id = item.getId();
         this.response = new AccountResponse(item.getAccount());
         this.debit = item.getDebit();
         this.credit = item.getCredit();
+        this.journalForEntryItemResponse = item.getJournalEntry() != null ? new JournalForEntryItemResponse(item.getJournalEntry()) : null;
     }
 }

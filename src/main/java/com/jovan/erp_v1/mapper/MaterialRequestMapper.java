@@ -5,44 +5,49 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
-import com.jovan.erp_v1.exception.MaterialNotFoundException;
-import com.jovan.erp_v1.exception.WorkCenterErrorException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.model.Material;
 import com.jovan.erp_v1.model.MaterialRequest;
 import com.jovan.erp_v1.model.WorkCenter;
-import com.jovan.erp_v1.repository.MaterialRepository;
-import com.jovan.erp_v1.repository.WorkCenterRepository;
 import com.jovan.erp_v1.request.MaterialRequestDTO;
 import com.jovan.erp_v1.response.MaterialRequestResponse;
 import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class MaterialRequestMapper extends AbstractMapper<MaterialRequestDTO> {
 
-    private final MaterialRepository materialRepository;
-    private final WorkCenterRepository workCenterRepository;
-
-    public MaterialRequest toEntity(MaterialRequestDTO dto) {
-        Objects.requireNonNull(dto, "MaterialRequestDTO must not be null");
+    public MaterialRequest toEntity(MaterialRequestDTO dto, WorkCenter wc, Material material) {
+        Objects.requireNonNull(dto, "WorkCenter must not be null");
+        Objects.requireNonNull(wc, "MaterialRequestDTO must not be null");
+        Objects.requireNonNull(material, "Material must not be null");
         validateIdForCreate(dto, MaterialRequestDTO::id);
-        return buildMaterialRequestFromRequest(new MaterialRequest(), dto);
+        MaterialRequest mr = new MaterialRequest();
+        mr.setId(dto.id());
+        mr.setMaterial(material);
+        mr.setRequestingWorkCenter(wc);
+        mr.setQuantity(dto.quantity());
+        mr.setNeededBy(dto.neededBy());
+        mr.setStatus(dto.status());
+        return mr;
     }
 
-    public MaterialRequest toUpdateEntity(MaterialRequest req, MaterialRequestDTO dto) {
+    public MaterialRequest toUpdateEntity(MaterialRequest req, MaterialRequestDTO dto, WorkCenter wc, Material material) {
         Objects.requireNonNull(dto, "MaterialRequestdDTO must not be null");
         Objects.requireNonNull(req, "MaterialRequestObject must not be null");
+        Objects.requireNonNull(wc, "MaterialRequestDTO must not be null");
+        Objects.requireNonNull(material, "Material must not be null");
         validateIdForUpdate(dto, MaterialRequestDTO::id);
-        return buildMaterialRequestFromRequest(req, dto);
+        return buildMaterialRequestFromRequest(req, dto,wc,material);
     }
 
-    private MaterialRequest buildMaterialRequestFromRequest(MaterialRequest req, MaterialRequestDTO dto) {
-        req.setMaterial(fetchMaterial(dto.materialId()));
-        req.setRequestingWorkCenter(fetchWorkCenter(dto.requestingWorkCenterId()));
+    private MaterialRequest buildMaterialRequestFromRequest(MaterialRequest req, MaterialRequestDTO dto, WorkCenter wc, Material material) {
+        req.setMaterial(material);
+        req.setRequestingWorkCenter(wc);
         req.setQuantity(dto.quantity());
-        req.setRequestDate(dto.requestDate());
+        if (req.getNeededBy().isBefore(req.getRequestDate())) {
+            throw new ValidationException("Datum potrebnosti ne može biti pre datuma zahteva.");
+        }
         req.setNeededBy(dto.neededBy());
         req.setStatus(dto.status());
         return req;
@@ -58,21 +63,5 @@ public class MaterialRequestMapper extends AbstractMapper<MaterialRequestDTO> {
             return Collections.emptyList();
         }
         return req.stream().map(this::toResponse).collect(Collectors.toList());
-    }
-
-    private Material fetchMaterial(Long materialId) {
-        if (materialId == null) {
-            throw new MaterialNotFoundException("Material id must not be null");
-        }
-        return materialRepository.findById(materialId)
-                .orElseThrow(() -> new MaterialNotFoundException("Material not found with id: " + materialId));
-    }
-
-    private WorkCenter fetchWorkCenter(Long workCenterId) {
-        if (workCenterId == null) {
-            throw new MaterialNotFoundException("WorkCenter id must not be null");
-        }
-        return workCenterRepository.findById(workCenterId)
-                .orElseThrow(() -> new WorkCenterErrorException("WorkCenter not found with id: " + workCenterId));
     }
 }

@@ -14,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -42,8 +43,17 @@ public class MaterialMovement {
     private BigDecimal quantity;
 
     @ManyToOne
+    @JoinColumn(name="from_storage_id")
     private Storage fromStorage;
 
     @ManyToOne
+    @JoinColumn(name="to_storage_id")
     private Storage toStorage;
+    
+    @PrePersist
+    public void prePersist() {
+        if (this.movementDate == null) {
+            this.movementDate = LocalDate.now();
+        }
+    }
 }

@@ -655,11 +655,6 @@ public class WorkCenterService implements IWorkCenterService {
 		}
 	}
 
-    private void validateWorkCenter(Long workCenterId) {
-        if (workCenterId == null) {
-            throw new IllegalArgumentException("ID za workCenter ne sme biti null");
-        }
-    }
 
     private void validateStorageId(Long storageId) {
         if (storageId == null) {

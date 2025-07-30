@@ -12,14 +12,14 @@ import lombok.NoArgsConstructor;
 public class LocalizedOptionResponse {
 
     private Long id;
-    private Long optionId;
-    private Long languageId;
+    private OptionResponse optionResponse;
+    private LanguageResponse languageResponse;
     private String localizedLabel;
 
     public LocalizedOptionResponse(LocalizedOption opt) {
         this.id = opt.getId();
-        this.optionId = opt.getOption().getId();
-        this.languageId = opt.getLanguage().getId();
+        this.optionResponse = opt.getOption() != null ? new OptionResponse(opt.getOption()) : null;
+        this.languageResponse = opt.getLanguage() != null ? new LanguageResponse(opt.getLanguage()) : null;
         this.localizedLabel = opt.getLocalizedLabel();
     }
 }

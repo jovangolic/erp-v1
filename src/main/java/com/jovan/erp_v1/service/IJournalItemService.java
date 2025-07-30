@@ -11,39 +11,22 @@ import com.jovan.erp_v1.response.JournalItemResponse;
 public interface IJournalItemService {
 
     JournalItemResponse create(JournalItemRequest request);
-
     JournalItemResponse update(Long id, JournalItemRequest request);
-
     void delete(Long id);
-
     JournalItemResponse findOne(Long id);
-
     List<JournalItemResponse> findAll();
-
     List<JournalItemResponse> findByAccount_Id(Long id);
-
     List<JournalItemResponse> findByAccount_AccountNumber(String accountNumber);
-
     List<JournalItemResponse> findByAccount_AccountName(String accountName);
-
     List<JournalItemResponse> findByAccount_Type(AccountType type);
-
     List<JournalItemResponse> findByDebitGreaterThan(BigDecimal amount);
-
     List<JournalItemResponse> findByDebitLessThan(BigDecimal amount);
-
     List<JournalItemResponse> findByCreditGreaterThan(BigDecimal amount);
-
     List<JournalItemResponse> findByCreditLessThan(BigDecimal amount);
-
     List<JournalItemResponse> findByDebit(BigDecimal debit);
-
     List<JournalItemResponse> findByCredit(BigDecimal credit);
-
     List<JournalItemResponse> findByJournalEntry_Id(Long journalEntryId);
-
     List<JournalItemResponse> search(JournalItemSearchRequest request);
-  
     List<JournalItemResponse> findByJournalEntry_EntryDate(LocalDateTime entryDate);
     List<JournalItemResponse> findByJournalEntry_EntryDateBetween(LocalDateTime entryDateStart,LocalDateTime entryDateEnd);
     List<JournalItemResponse> findByJournalEntry_Description(String description);

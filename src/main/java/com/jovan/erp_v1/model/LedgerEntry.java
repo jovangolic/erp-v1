@@ -14,6 +14,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -44,4 +46,19 @@ public class LedgerEntry {
     @Column
     @Enumerated(EnumType.STRING)
     private LedgerType type;
+    
+    @Column
+    private LocalDateTime modifiedAt;
+    
+    @PrePersist
+    public void prePersist() {
+        if (this.entryDate == null) {
+            this.entryDate = LocalDateTime.now();
+        }
+    }
+    
+    @PreUpdate
+    public void preUpdate() {
+        this.modifiedAt = LocalDateTime.now();
+    }
 }

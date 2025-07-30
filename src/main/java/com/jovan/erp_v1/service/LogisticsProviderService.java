@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.exception.LogisticsProviderErrorException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.model.LogisticsProvider;
 import com.jovan.erp_v1.repository.LogisticsProviderRepository;
 import com.jovan.erp_v1.request.LogisticsProviderRequest;
@@ -66,7 +67,11 @@ public class LogisticsProviderService implements ILogisticsProviderService {
 
     @Override
     public List<LogisticsProviderResponse> findAll() {
-        return logisticsProviderRepository.findAll().stream()
+    	List<LogisticsProvider> items = logisticsProviderRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("LogisticsProvider list is empty");
+    	}
+        return items.stream()
                 .map(LogisticsProviderResponse::new)
                 .collect(Collectors.toList());
     }
@@ -74,7 +79,12 @@ public class LogisticsProviderService implements ILogisticsProviderService {
     @Override
     public List<LogisticsProviderResponse> findByName(String name) {
     	validate(name);
-        return logisticsProviderRepository.findByName(name).stream()
+    	List<LogisticsProvider> items = logisticsProviderRepository.findByName(name);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No LogisticsProvider name %s is found", name);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(LogisticsProviderResponse::new)
                 .collect(Collectors.toList());
     }
@@ -82,6 +92,11 @@ public class LogisticsProviderService implements ILogisticsProviderService {
     @Override
     public List<LogisticsProviderResponse> findByNameContainingIgnoreCase(String fragment) {
     	validate(fragment);
+    	List<LogisticsProvider> items = logisticsProviderRepository.findByNameContainingIgnoreCase(fragment);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No LogisticsProvider for fragment %s is found", fragment);
+    		throw new NoDataFoundException(msg);
+    	}
         return logisticsProviderRepository.findByNameContainingIgnoreCase(fragment).stream()
                 .map(LogisticsProviderResponse::new)
                 .collect(Collectors.toList());
@@ -90,6 +105,11 @@ public class LogisticsProviderService implements ILogisticsProviderService {
     @Override
     public List<LogisticsProviderResponse> searchByNameOrWebsite(String query) {
     	validate(query);
+    	List<LogisticsProvider> items = logisticsProviderRepository.searchByNameOrWebsite(query);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No LogisticsProvider query %s is found", query);
+    		throw new NoDataFoundException(msg);
+    	}
         return logisticsProviderRepository.searchByNameOrWebsite(query).stream()
                 .map(LogisticsProviderResponse::new)
                 .collect(Collectors.toList());

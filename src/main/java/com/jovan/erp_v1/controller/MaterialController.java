@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.UnitOfMeasure;
 import com.jovan.erp_v1.request.MaterialRequest;
@@ -167,5 +168,69 @@ public class MaterialController {
     public ResponseEntity<List<MaterialResponse>> findByCurrentStockLessThan(@RequestParam("currentStock") BigDecimal currentStock){
     	List<MaterialResponse> responses = materialService.findByCurrentStockLessThan(currentStock);
     	return ResponseEntity.ok(responses);	
+    }
+    
+    //nove metode
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
+    @GetMapping("/{id}/available-capacity")
+    public ResponseEntity<BigDecimal> getAvailableCapacity(@PathVariable Long id) {
+        BigDecimal capacity = materialService.countAvailableCapacity(id);
+        return ResponseEntity.ok(capacity);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
+    @PostMapping("/{id}/allocate")
+    public ResponseEntity<Void> allocateCapacity(@PathVariable Long id, @RequestBody BigDecimal amount) {
+    	materialService.allocateCapacity(id, amount);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
+    @PostMapping("/{id}/release")
+    public ResponseEntity<Void> releaseCapacity(@PathVariable Long id, @RequestBody BigDecimal amount) {
+    	materialService.releaseCapacity(id, amount);
+        return ResponseEntity.ok().build();
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
+    @GetMapping("/reorder-level-greater-thna")
+    public ResponseEntity<List<MaterialResponse>> findByReorderLevelGreaterThan(@RequestParam("reorderLevel") BigDecimal reorderLevel){
+    	List<MaterialResponse> responses = materialService.findByReorderLevelGreaterThan(reorderLevel);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
+    @GetMapping("/reorder-level-less-thna")
+    public ResponseEntity<List<MaterialResponse>> findByReorderLevelLessThan(@RequestParam("reorderLevel") BigDecimal reorderLevel){
+    	List<MaterialResponse> responses = materialService.findByReorderLevelLessThan(reorderLevel);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
+    @GetMapping("/search/storage-location")
+    public ResponseEntity<List<MaterialResponse>> findByStorage_LocationContainingIgnoreCase(@RequestParam("storageLocation") String storageLocation){
+    	List<MaterialResponse> responses = materialService.findByStorage_LocationContainingIgnoreCase(storageLocation);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
+    @GetMapping("/search/storage-capacity-greater-than")
+    public ResponseEntity<List<MaterialResponse>> findByStorage_CapacityGreaterThan(@RequestParam("capacity") BigDecimal capacity){
+    	List<MaterialResponse> responses = materialService.findByStorage_CapacityGreaterThan(capacity);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
+    @GetMapping("/search/storage-capacity-less-than")
+    public ResponseEntity<List<MaterialResponse>> findByStorage_CapacityLessThan(@RequestParam("capacity") BigDecimal capacity){
+    	List<MaterialResponse> responses = materialService.findByStorage_CapacityLessThan(capacity);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','STORAGE_FOREMAN','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
+    @GetMapping("/search/storage-status")
+    public ResponseEntity<List<MaterialResponse>> findByStorage_Status(@RequestParam("status") StorageStatus status){
+    	List<MaterialResponse> responses = materialService.findByStorage_Status(status);
+    	return ResponseEntity.ok(responses);
     }
 }

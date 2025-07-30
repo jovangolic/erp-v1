@@ -5,45 +5,47 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
 
-import com.jovan.erp_v1.exception.AccountNotFoundErrorException;
 import com.jovan.erp_v1.model.Account;
 import com.jovan.erp_v1.model.LedgerEntry;
-import com.jovan.erp_v1.repository.AccountRepository;
 import com.jovan.erp_v1.request.LedgerEntryRequest;
 import com.jovan.erp_v1.response.LedgerEntryResponse;
 import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class LedgerEntryMapper extends AbstractMapper<LedgerEntryRequest> {
 
-    private final AccountRepository accountRepository;
-
-    public LedgerEntry toEntity(LedgerEntryRequest request) {
+    public LedgerEntry toEntity(LedgerEntryRequest request, Account account) {
         Objects.requireNonNull(request,"LedgerEntryRequest must not be null");
+        Objects.requireNonNull(account,"Account must not be null");
         validateIdForCreate(request, LedgerEntryRequest::id);
-        return buildLedgerEntryFromRequest(new LedgerEntry(), request);
+        LedgerEntry l = new LedgerEntry();
+        l.setId(request.id());
+        l.setAmount(request.amount());
+        l.setDescription(request.description());
+        l.setAccount(account);
+        l.setType(request.type());
+        return l;
     }
 
-    public LedgerEntry toUpdateEntity(LedgerEntry entry, LedgerEntryRequest request) {
+    public LedgerEntry toUpdateEntity(LedgerEntry entry, LedgerEntryRequest request, Account acc) {
     	Objects.requireNonNull(request,"LedgerEntryRequest must not be null");
     	Objects.requireNonNull(entry,"LedgerEntry must not be null");
     	validateIdForUpdate(request, LedgerEntryRequest::id);
-    	return buildLedgerEntryFromRequest(entry, request);
+    	return buildLedgerEntryFromRequest(entry, request, acc);
     }
     
-    private LedgerEntry buildLedgerEntryFromRequest(LedgerEntry entry, LedgerEntryRequest request) {
+    private LedgerEntry buildLedgerEntryFromRequest(LedgerEntry entry, LedgerEntryRequest request, Account acc) {
     	if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Amount must be positive and not null");
         }
-    	entry.setEntryDate(request.entryDate());
+    	if (!request.entryDate().equals(entry.getEntryDate())) {
+    	    throw new UnsupportedOperationException("entryDate cannot be changed once set");
+    	}
     	entry.setDescription(request.description());
-        Account acc = getAccountOrThrow(request.accountId());
+        entry.setAccount(acc);
         entry.setAccount(acc);
         entry.setType(request.type());
         return entry;
@@ -61,11 +63,4 @@ public class LedgerEntryMapper extends AbstractMapper<LedgerEntryRequest> {
         return entries.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    private Account getAccountOrThrow(Long id) {
-    	if(id == null) {
-    		throw new AccountNotFoundErrorException("Account ID must not be null");
-    	}
-        return accountRepository.findById(id)
-                .orElseThrow(() -> new AccountNotFoundErrorException("Account not found with id: " + id));
-    }
 }

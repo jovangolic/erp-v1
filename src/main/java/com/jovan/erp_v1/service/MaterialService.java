@@ -3,23 +3,25 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.UnitOfMeasure;
 import com.jovan.erp_v1.exception.DuplicateCodeException;
 import com.jovan.erp_v1.exception.MaterialNotFoundException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ResourceNotFoundException;
 import com.jovan.erp_v1.exception.StorageNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.MaterialMapper;
 import com.jovan.erp_v1.model.Material;
+import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.repository.MaterialRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
-import com.jovan.erp_v1.repository.specification.MaterialSpecification;
 import com.jovan.erp_v1.request.MaterialRequest;
 import com.jovan.erp_v1.response.MaterialResponse;
 
@@ -84,7 +86,11 @@ public class MaterialService implements IMaterialService {
 
     @Override
     public List<MaterialResponse> findAll() {
-        return materialRepository.findAll().stream()
+    	List<Material> items = materialRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("Material list is empty");
+    	}
+        return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
     }
@@ -92,7 +98,6 @@ public class MaterialService implements IMaterialService {
     @Override
     public List<MaterialResponse> searchMaterials(String name, String code, UnitOfMeasure unit, BigDecimal currentStock,
             Long storageId, BigDecimal reorderLevel) {
-        // Pronađi materijale po uslovima
         List<Material> materials = materialRepository.findAll((root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (name != null && !name.isEmpty()) {
@@ -115,7 +120,6 @@ public class MaterialService implements IMaterialService {
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         });
-        // Mapa u response DTO
         return materials.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
@@ -124,7 +128,12 @@ public class MaterialService implements IMaterialService {
     @Override
     public List<MaterialResponse> findByStorage_Id(Long storageId) {
     	validateStorageId(storageId);
-        return materialRepository.findByStorage_Id(storageId).stream()
+    	List<Material> items = materialRepository.findByStorage_Id(storageId);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Material for storage-id %d is found", storageId);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
     }
@@ -132,7 +141,12 @@ public class MaterialService implements IMaterialService {
     @Override
     public List<MaterialResponse> findByCode(String code) {
     	validateCodeExists(code);
-        return materialRepository.findByCode(code).stream()
+    	List<Material> items = materialRepository.findByCode(code);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Material by code %s is found", code);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
     }
@@ -140,7 +154,12 @@ public class MaterialService implements IMaterialService {
     @Override
     public List<MaterialResponse> findByNameContainingIgnoreCase(String name) {
     	validateString(name);
-        return materialRepository.findByNameContainingIgnoreCase(name).stream()
+    	List<Material> items = materialRepository.findByNameContainingIgnoreCase(name);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Material by name %s is found", name);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
     }
@@ -149,7 +168,12 @@ public class MaterialService implements IMaterialService {
     public List<MaterialResponse> search(String name, String code) {
     	validateString(name);
     	validateCodeExists(code);
-        return materialRepository.search(name, code).stream()
+    	List<Material> items = materialRepository.search(name, code);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Material for name %s and code %s is found", name,code);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
     }
@@ -157,7 +181,12 @@ public class MaterialService implements IMaterialService {
     @Override
     public List<MaterialResponse> findByUnit(UnitOfMeasure unit) {
     	validateUnitOfMeasure(unit);
-        return materialRepository.findByUnit(unit).stream()
+    	List<Material> items = materialRepository.findByUnit(unit);
+    	if(items.isEmpty()) {
+			String msg = String.format("No Material for unit of measure %s is found", unit);
+			throw new NoDataFoundException(msg);
+		}
+        return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
     }
@@ -165,7 +194,12 @@ public class MaterialService implements IMaterialService {
     @Override
     public List<MaterialResponse> findByStorage_Name(String storageName) {
     	validateString(storageName);
-        return materialRepository.findByStorage_Name(storageName).stream()
+    	List<Material> items = materialRepository.findByStorage_Name(storageName);
+    	if(items.isEmpty()) {
+			String msg = String.format("No Material for storage name %s is found", storageName);
+			throw new NoDataFoundException(msg);
+		}
+        return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
     }
@@ -173,7 +207,12 @@ public class MaterialService implements IMaterialService {
     @Override
     public List<MaterialResponse> findByStorage_Capacity(BigDecimal capacity) {
     	validateBigDecimal(capacity);
-        return materialRepository.findByStorage_Capacity(capacity).stream()
+    	List<Material> items = materialRepository.findByStorage_Capacity(capacity);
+    	if(items.isEmpty()) {
+			String msg = String.format("No Material for storage capacity %s is found", capacity);
+			throw new NoDataFoundException(msg);
+		}
+        return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
     }
@@ -181,7 +220,12 @@ public class MaterialService implements IMaterialService {
     @Override
     public List<MaterialResponse> findByStorage_Type(StorageType type) {
     	validateStorageType(type);
-        return materialRepository.findByStorage_Type(type).stream()
+    	List<Material> items = materialRepository.findByStorage_Type(type);
+    	if(items.isEmpty()) {
+			String msg = String.format("No Material for storage-type %s is found", type);
+			throw new NoDataFoundException(msg);
+		}
+        return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
     }
@@ -189,7 +233,12 @@ public class MaterialService implements IMaterialService {
     @Override
     public List<MaterialResponse> findByCurrentStock(BigDecimal currentStock) {
     	validateBigDecimal(currentStock);
-        return materialRepository.findByCurrentStock(currentStock).stream()
+    	List<Material> items = materialRepository.findByCurrentStock(currentStock);
+    	if(items.isEmpty()) {
+			String msg = String.format("No Material for current-stoct %s is found", currentStock);
+			throw new NoDataFoundException(msg);
+		}
+        return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
     }
@@ -197,7 +246,12 @@ public class MaterialService implements IMaterialService {
     @Override
     public List<MaterialResponse> findByReorderLevel(BigDecimal reorderLevel) {
     	validateBigDecimal(reorderLevel);
-        return materialRepository.findByReorderLevel(reorderLevel).stream()
+    	List<Material> items = materialRepository.findByReorderLevel(reorderLevel);
+    	if(items.isEmpty()) {
+			String msg = String.format("No Material for reorder-level than %s is found", reorderLevel);
+			throw new NoDataFoundException(msg);
+		}
+        return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
     }
@@ -205,17 +259,137 @@ public class MaterialService implements IMaterialService {
     @Override
 	public List<MaterialResponse> findByCurrentStockGreaterThan(BigDecimal currentStock) {
 		validateBigDecimal(currentStock);
-		return materialRepository.findByCurrentStockGreaterThan(currentStock).stream()
+		List<Material> items = materialRepository.findByCurrentStockGreaterThan(currentStock);
+		if(items.isEmpty()) {
+			String msg = String.format("No Material for current-stoct greater than %s is found", currentStock);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
 	}
 
 	@Override
 	public List<MaterialResponse> findByCurrentStockLessThan(BigDecimal currentStock) {
-		validateBigDecimal(currentStock);
-		return materialRepository.findByCurrentStockLessThan(currentStock).stream()
+		validateBigDecimalNonNegative(currentStock);
+		List<Material> items = materialRepository.findByCurrentStockLessThan(currentStock);
+		if(items.isEmpty()) {
+			String msg = String.format("No Material for current-stoct less than %s is found", currentStock);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
                 .map(MaterialResponse::new)
                 .collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<MaterialResponse> findByReorderLevelGreaterThan(BigDecimal reorderLevel) {
+		validateBigDecimal(reorderLevel);
+		List<Material> items = materialRepository.findByReorderLevelGreaterThan(reorderLevel);
+		if(items.isEmpty()) {
+			String msg = String.format("No Material for reorder-level greater than %s is found", reorderLevel);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(materialMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<MaterialResponse> findByReorderLevelLessThan(BigDecimal reorderLevel) {
+		validateBigDecimalNonNegative(reorderLevel);
+		List<Material> items = materialRepository.findByReorderLevelLessThan(reorderLevel);
+		if(items.isEmpty()) {
+			String msg = String.format("No Material for reorder-level less than %s is found", reorderLevel);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(materialMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<MaterialResponse> findByStorage_LocationContainingIgnoreCase(String storageLocation) {
+		validateString(storageLocation);
+		List<Material> items = materialRepository.findByStorage_LocationContainingIgnoreCase(storageLocation);
+		if(items.isEmpty()) {
+			String msg = String.format("No Material for storage location %s is found", storageLocation);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(materialMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<MaterialResponse> findByStorage_CapacityGreaterThan(BigDecimal capacity) {
+		validateBigDecimal(capacity);
+		List<Material> items = materialRepository.findByStorage_CapacityGreaterThan(capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No Material for storage capacity greater than %s is found", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(materialMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<MaterialResponse> findByStorage_CapacityLessThan(BigDecimal capacity) {
+		validateBigDecimalNonNegative(capacity);
+		List<Material> items = materialRepository.findByStorage_CapacityLessThan(capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No Material for storage capacity less than %s is found", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(materialMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<MaterialResponse> findByStorage_Status(StorageStatus status) {
+		validateStorageStatus(status);
+		List<Material> items = materialRepository.findByStorage_Status(status);
+		if(items.isEmpty()) {
+			String msg = String.format("No Material for storage-status %s is found", status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(materialMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	@Override
+	public BigDecimal countAvailableCapacity(Long storageId) {
+        Storage storage = storageRepository.findById(storageId)
+                .orElseThrow(() -> new ValidationException("Storage not found"));
+        return storage.countAvailableCapacity();
+    }
+
+	@Override
+    public boolean hasCapacityFor(Long storageId, BigDecimal amount) {
+        Storage storage = storageRepository.findById(storageId)
+                .orElseThrow(() -> new ValidationException("Storage not found"));
+        return storage.hasCapacityFor(amount);
+    }
+
+	@Override
+    public void allocateCapacity(Long storageId, BigDecimal amount) {
+        Storage storage = storageRepository.findById(storageId)
+                .orElseThrow(() -> new ValidationException("Storage not found"));
+        storage.allocateCapacity(amount);
+        storageRepository.save(storage); 
+    }
+
+	@Override
+    public void releaseCapacity(Long storageId, BigDecimal amount) {
+        Storage storage = storageRepository.findById(storageId)
+                .orElseThrow(() -> new ValidationException("Storage not found"));
+        storage.releaseCapacity(amount);
+        storageRepository.save(storage);
+    }
+	
+	private void validateStorageStatus(StorageStatus status) {
+		Optional.ofNullable(status)
+			.orElseThrow(() -> new ValidationException("StorageStatus status must not be null"));
+	}
+	
+	private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
 	}
     
     private void validateCodeExists(String code) {

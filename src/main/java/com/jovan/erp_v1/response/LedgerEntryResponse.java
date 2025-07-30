@@ -21,6 +21,7 @@ public class LedgerEntryResponse {
     private String description;
     private AccountResponse response;
     private LedgerType type;
+    private LocalDateTime modifiedAt;
 
     public LedgerEntryResponse(LedgerEntry entry) {
         this.id = entry.getId();
@@ -29,5 +30,6 @@ public class LedgerEntryResponse {
         this.description = entry.getDescription();
         this.response = new AccountResponse(entry.getAccount());
         this.type = entry.getType();
+        this.modifiedAt = entry.getModifiedAt();
     }
 }

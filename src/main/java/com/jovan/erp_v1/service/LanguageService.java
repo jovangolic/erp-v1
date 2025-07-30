@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jovan.erp_v1.enumeration.LanguageCodeType;
 import com.jovan.erp_v1.enumeration.LanguageNameType;
 import com.jovan.erp_v1.exception.LanguageErrorException;
-import com.jovan.erp_v1.exception.ResourceNotFoundException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.mapper.LanguageMapper;
 import com.jovan.erp_v1.model.Language;
 import com.jovan.erp_v1.repository.LanguageRepository;
@@ -37,7 +37,11 @@ public class LanguageService implements ILanguageService {
 
     @Override
     public List<LanguageResponse> getAll() {
-        return languageRepository.findAll().stream()
+    	List<Language> items = languageRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("Language list is empty");
+    	}
+        return items.stream()
                 .map(languageMapper::toResponse)
                 .collect(Collectors.toList());
     }

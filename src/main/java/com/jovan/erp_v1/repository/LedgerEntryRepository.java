@@ -18,37 +18,23 @@ import java.time.LocalDateTime;
 public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, Long> {
 
     List<LedgerEntry> findByType(LedgerType type);
-
     List<LedgerEntry> findByAmountBetween(BigDecimal min, BigDecimal max);
-
     List<LedgerEntry> findByDescriptionContainingIgnoreCase(String keyword);
-
     @Query("SELECT l FROM LedgerEntry l WHERE l.entryDate BETWEEN :start AND :end")
     List<LedgerEntry> findByEntryDateBetween(@Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end);
-
     List<LedgerEntry> findByAccount_Id(Long id);
-
     List<LedgerEntry> findByAccount_AccountNumber(String accountNumber);
     boolean existsByAccount_AccountNumber(String accountNumber);
     boolean existsByAccount_AccountName(String accountName);
-
     List<LedgerEntry> findByAccount_AccountName(String accountName);
-
     List<LedgerEntry> findByAccount_AccountNameContainingIgnoreCase(String name);
-
     List<LedgerEntry> findByAccount_Type(AccountType type);
-
     List<LedgerEntry> findByAccount_Balance(BigDecimal balance);
-
     @Query("SELECT l FROM LedgerEntry l WHERE DATE(l.entryDate) = :date")
     List<LedgerEntry> findByEntryDateEquals(@Param("date") LocalDate date);
-
     List<LedgerEntry> findByEntryDateBefore(LocalDateTime date);
-
     List<LedgerEntry> findByEntryDateAfter(LocalDateTime date);
-
     List<LedgerEntry> findByEntryDateAfterAndType(LocalDateTime date, LedgerType type);
-
     List<LedgerEntry> findByEntryDateBetweenAndAccount_Id(LocalDateTime start, LocalDateTime end, Long accountId);
 }

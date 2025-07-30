@@ -14,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -48,4 +49,11 @@ public class MaterialRequest {
     @Enumerated(EnumType.STRING)
     @Column
     private MaterialRequestStatus status;
+    
+    @PrePersist
+    public void prePersist() {
+        if (this.requestDate == null) {
+            this.requestDate = LocalDate.now();
+        }
+    }
 }

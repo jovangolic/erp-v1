@@ -6,34 +6,40 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
-
-import com.jovan.erp_v1.exception.AccountNotFoundErrorException;
 import com.jovan.erp_v1.model.Account;
+import com.jovan.erp_v1.model.JournalEntry;
 import com.jovan.erp_v1.model.JournalItem;
-import com.jovan.erp_v1.repository.AccountRepository;
 import com.jovan.erp_v1.request.JournalItemRequest;
 import com.jovan.erp_v1.response.JournalItemResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
-public class JournalItemMapper {
+public class JournalItemMapper extends AbstractMapper<JournalItemRequest> {
 
-    private final AccountRepository accountRepository;
-
-    public JournalItem toEntity(JournalItemRequest request) {
+    public JournalItem toEntity(JournalItemRequest request, Account account, JournalEntry entry) {
+    	Objects.requireNonNull(request,"JournalItemRequest must not be null");
+    	Objects.requireNonNull(account,"Account must not be null");
+    	Objects.requireNonNull(entry,"JournalEntry must not be null");
+    	validateIdForCreate(request, JournalItemRequest::id);
         JournalItem item = new JournalItem();
-        item.setAccount(fetchAccount(request.accountId()));
+        item.setAccount(account);
         item.setCredit(request.credit());
         item.setDebit(request.debit());
+        item.setJournalEntry(entry);
         return item;
     }
 
-    public void toUpdateEntity(JournalItem item, JournalItemRequest request) {
-        item.setAccount(fetchAccount(request.accountId()));
+    public JournalItem toUpdateEntity(JournalItem item, JournalItemRequest request, Account account, JournalEntry entry) {
+    	Objects.requireNonNull(item,"JournalItem must not be null");
+    	Objects.requireNonNull(request,"JournalItemRequest must not be null");
+    	Objects.requireNonNull(account,"Account must not be null");
+    	Objects.requireNonNull(entry,"JournalEntry must not be null");
+        item.setAccount(account);
         item.setCredit(request.credit());
         item.setDebit(request.debit());
+        item.setJournalEntry(entry);
+        return item;
     }
 
     public JournalItemResponse toResponse(JournalItem items) {
@@ -48,11 +54,4 @@ public class JournalItemMapper {
         return items.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    private Account fetchAccount(Long id) {
-    	if(id == null) {
-    		throw new AccountNotFoundErrorException("Account ID must not be null");
-    	}
-        return accountRepository.findById(id)
-                .orElseThrow(() -> new AccountNotFoundErrorException("Account not found"));
-    }
 }

@@ -13,10 +13,8 @@ public class LocalizedOptionRequest {
 	
     @NotNull
     private Long optionId;
-
     @NotNull
     private Long languageId;
-
     @NotBlank
     private String localizedLabel;
 }

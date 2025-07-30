@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.MovementType;
+import com.jovan.erp_v1.enumeration.StorageStatus;
+import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.request.MaterialMovementRequest;
 import com.jovan.erp_v1.response.MaterialMovementResponse;
 import com.jovan.erp_v1.service.IMaterialMovementService;
@@ -194,6 +196,105 @@ public class MaterialMovementController {
             @RequestParam("movementDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate movementDate) {
         List<MaterialMovementResponse> responses = materialMovementService.findByMovementDateAfterOrEqual(movementDate);
         return ResponseEntity.ok(responses);
+    }
+    
+    //nove metode
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @GetMapping("/from-storage/{fromStorageId}/available-capacity")
+    public ResponseEntity<BigDecimal> getAvailableCapacityFromStorage(@PathVariable Long fromStorageId) {
+        BigDecimal capacity = materialMovementService.countAvailableCapacityFromStorage(fromStorageId);
+        return ResponseEntity.ok(capacity);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @PostMapping("/from-storage/{fromStorageId}/allocate")
+    public ResponseEntity<Void> allocateCapacityFromStorage(@PathVariable Long fromStorageId, @RequestBody BigDecimal amount) {
+    	materialMovementService.allocateCapacityFromStorage(fromStorageId, amount);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @PostMapping("/from-storage/{fromStorageId}/release")
+    public ResponseEntity<Void> releaseCapacityFromStorage(@PathVariable Long fromStorageId, @RequestBody BigDecimal amount) {
+    	materialMovementService.releaseCapacityFromStorage(fromStorageId, amount);
+        return ResponseEntity.ok().build();
+    }
+    
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @GetMapping("/to-storage/{toStorageId}/available-capacity")
+    public ResponseEntity<BigDecimal> getAvailableCapacityToStorage(@PathVariable Long toStorageId) {
+        BigDecimal capacity = materialMovementService.countAvailableCapacityToStorage(toStorageId);
+        return ResponseEntity.ok(capacity);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @PostMapping("/to-storage/{toStorageId}/allocate")
+    public ResponseEntity<Void> allocateCapacityToStorage(@PathVariable Long toStorageId, @RequestBody BigDecimal amount) {
+    	materialMovementService.allocateCapacityToStorage(toStorageId, amount);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @PostMapping("/to-storage/{toStorageId}/release")
+    public ResponseEntity<Void> releaseCapacityToStorage(@PathVariable Long toStorageId, @RequestBody BigDecimal amount) {
+    	materialMovementService.releaseCapacityToStorage(toStorageId, amount);
+        return ResponseEntity.ok().build();
+    }
+    
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @GetMapping("/search/from-storage-capacity-greater-than")
+    public ResponseEntity<List<MaterialMovementResponse>> findByFromStorage_CapacityGreaterThan(@RequestParam("capacity") BigDecimal capacity){
+    	List<MaterialMovementResponse> responses = materialMovementService.findByFromStorage_CapacityGreaterThan(capacity);
+        return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @GetMapping("/search/to-storage-capacity-greater-than")
+    public ResponseEntity<List<MaterialMovementResponse>> findByToStorage_CapacityGreaterThan(@RequestParam("capacity") BigDecimal capacity){
+    	List<MaterialMovementResponse> responses = materialMovementService.findByToStorage_CapacityGreaterThan(capacity);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @GetMapping("/search/from-storage-capacity-less-than")
+    public ResponseEntity<List<MaterialMovementResponse>> findByFromStorage_CapacityLessThan(@RequestParam("capacity") BigDecimal capacity){
+    	List<MaterialMovementResponse> responses = materialMovementService.findByFromStorage_CapacityLessThan(capacity);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @GetMapping("/search/to-storage-capacity-less-than")
+    public ResponseEntity<List<MaterialMovementResponse>> findByToStorage_CapacityLessThan(@RequestParam("capacity") BigDecimal capacity){
+    	List<MaterialMovementResponse> responses = materialMovementService.findByToStorage_CapacityLessThan(capacity);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @GetMapping("/search/from-storage-type")
+    public ResponseEntity<List<MaterialMovementResponse>> findByFromStorage_Type(@RequestParam("type") StorageType type){
+    	List<MaterialMovementResponse> responses = materialMovementService.findByFromStorage_Type(type);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @GetMapping("/search/to-storage-type")
+    public ResponseEntity<List<MaterialMovementResponse>> findByToStorage_Type(@RequestParam("type") StorageType type){
+    	List<MaterialMovementResponse> responses = materialMovementService.findByToStorage_Type(type);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @GetMapping("/search/from-storage-status")
+    public ResponseEntity<List<MaterialMovementResponse>> findByFromStorage_Status(@RequestParam("status") StorageStatus status){
+    	List<MaterialMovementResponse> responses = materialMovementService.findByFromStorage_Status(status);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERADMIN', 'ROLE_STORAGE_FOREMAN', 'ROLE_STORAGE_EMPLOYEE', 'ROLE_QUALITY_CONTROL')")
+    @GetMapping("/search/to-storage-status")
+    public ResponseEntity<List<MaterialMovementResponse>> findByToStorage_Status(@RequestParam("status") StorageStatus status){
+    	List<MaterialMovementResponse> responses = materialMovementService.findByToStorage_Status(status);
+    	return ResponseEntity.ok(responses);
     }
 
 }
