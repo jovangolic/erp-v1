@@ -96,4 +96,54 @@ public class OutboundDeliveryController {
         outboundDeliveryService.deleteAllByIds(ids);
         return ResponseEntity.noContent().build();
     }
+    
+    //nove metode
+    
+    @GetMapping("/search/buyer-company-name")
+    public ResponseEntity<List<OutboundDeliveryResponse>> findByBuyer_CompanyName(@RequestParam("companyName") String companyName){
+    	List<OutboundDeliveryResponse> responses = outboundDeliveryService.findByBuyer_CompanyName(companyName);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/buyer-address")
+    public ResponseEntity<List<OutboundDeliveryResponse>> findByBuyer_Address(@RequestParam("address") String address){
+    	List<OutboundDeliveryResponse> responses = outboundDeliveryService.findByBuyer_Address(address);
+    	 return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/buyer-contact-person")
+    public ResponseEntity<List<OutboundDeliveryResponse>> findByBuyer_ContactPerson(@RequestParam("contactPerson") String contactPerson){
+    	List<OutboundDeliveryResponse> responses = outboundDeliveryService.findByBuyer_ContactPerson(contactPerson);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/buyer-email")
+    public ResponseEntity<List<OutboundDeliveryResponse>> findByBuyer_EmailLikeIgnoreCase(@RequestParam("email") String email){
+    	List<OutboundDeliveryResponse> responses = outboundDeliveryService.findByBuyer_EmailLikeIgnoreCase(email);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/search/buyer-phone-number")
+    public ResponseEntity<List<OutboundDeliveryResponse>> findByBuyer_PhoneNumberLikeIgnoreCase(@RequestParam("phoneNumber") String phoneNumber){
+    	List<OutboundDeliveryResponse> responses = outboundDeliveryService.findByBuyer_PhoneNumberLikeIgnoreCase(phoneNumber);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/delivery-date")
+    public ResponseEntity<List<OutboundDeliveryResponse>> findByDeliveryDate(@RequestParam("deliveryDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deliveryDate){
+    	List<OutboundDeliveryResponse> responses = outboundDeliveryService.findByDeliveryDate(deliveryDate);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/delivery-date-after")
+    public ResponseEntity<List<OutboundDeliveryResponse>> findByDeliveryDateAfter(@RequestParam("deliveryDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deliveryDate){
+    	List<OutboundDeliveryResponse> responses = outboundDeliveryService.findByDeliveryDateAfter(deliveryDate);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/delivery-date-before")
+    public ResponseEntity<List<OutboundDeliveryResponse>> findByDeliveryDateBefore(@RequestParam("deliveryDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deliveryDate){
+    	List<OutboundDeliveryResponse> responses = outboundDeliveryService.findByDeliveryDateBefore(deliveryDate);
+    	return ResponseEntity.ok(responses);
+    }
 }

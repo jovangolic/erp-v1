@@ -43,7 +43,8 @@ public class MaterialService implements IMaterialService {
             throw new DuplicateCodeException("Material with code '" + request.code() + "' already exists.");
         }
         validateMaterialRequest(request);
-        Material m = materialMapper.toEntity(request);
+        Storage storage = validateStorageId(request.storageId());
+        Material m = materialMapper.toEntity(request,storage);
         Material saved = materialRepository.save(m);
         return materialMapper.toResponse(saved);
     }
@@ -63,7 +64,11 @@ public class MaterialService implements IMaterialService {
             throw new DuplicateCodeException("Material with code '" + request.code() + "' already exists.");
         }
         validateMaterialRequest(request);
-        materialMapper.toUpdateEntity(existing, request);
+        Storage st = existing.getStorage();
+        if(request.storageId() != null && (st.getId() == null || !request.storageId().equals(st.getId()))) {
+        	st = validateStorageId(request.storageId());
+        }
+        materialMapper.toUpdateEntity(existing, request,st);
         Material updated = materialRepository.save(existing);
         return new MaterialResponse(updated);
     }
@@ -425,20 +430,17 @@ public class MaterialService implements IMaterialService {
     	}
     }
     
-    private void validateStorageId(Long storageId) {
+    private Storage validateStorageId(Long storageId) {
     	if(storageId == null) {
     		throw new StorageNotFoundException("Storage ID must not be null nor empty");
     	}
-    	if(!storageRepository.existsById(storageId)) {
-    		throw new StorageNotFoundException("Storage with storageId "+storageId+" not found");
-    	}
+    	return storageRepository.findById(storageId).orElseThrow(() -> new ValidationException("Storage not found with id "+storageId));
     }
     
     private void validateMaterialRequest(MaterialRequest request) {
         validateString(request.name());
         validateUnitOfMeasure(request.unit());
         validateBigDecimal(request.currentStock());
-        validateStorageId(request.storageId());
         validateBigDecimal(request.reorderLevel());
     }
 

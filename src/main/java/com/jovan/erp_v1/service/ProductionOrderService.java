@@ -2,6 +2,8 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,15 +12,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.ProductionOrderStatus;
+import com.jovan.erp_v1.enumeration.StorageType;
+import com.jovan.erp_v1.enumeration.SupplierType;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ProductNotFoundException;
 import com.jovan.erp_v1.exception.ProductionOrderErrorException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.exception.WorkCenterErrorException;
 import com.jovan.erp_v1.mapper.ProductionOrderMapper;
 import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.model.ProductionOrder;
+import com.jovan.erp_v1.model.Shelf;
+import com.jovan.erp_v1.model.Storage;
+import com.jovan.erp_v1.model.Supply;
 import com.jovan.erp_v1.model.WorkCenter;
 import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.ProductionOrderRepository;
+import com.jovan.erp_v1.repository.ShelfRepository;
+import com.jovan.erp_v1.repository.StorageRepository;
+import com.jovan.erp_v1.repository.SupplyRepository;
 import com.jovan.erp_v1.repository.WorkCenterRepository;
 import com.jovan.erp_v1.request.ProductionOrderRequest;
 import com.jovan.erp_v1.response.ProductionOrderResponse;
@@ -35,12 +48,17 @@ public class ProductionOrderService implements IProductionOrderService {
     private final ProductionOrderMapper productionOrderMapper;
     private final WorkCenterRepository workCenterRepository;
     private final ProductRepository productRepository;
+    private final ShelfRepository shelfRepository;
+    private final StorageRepository storageRepository;
+    private final SupplyRepository supplyRepository;
 
     @Transactional
     @Override
     public ProductionOrderResponse create(ProductionOrderRequest request) {
         validateProductionOrderRequest(request);
-        ProductionOrder order = productionOrderMapper.toEntity(request);
+        Product product = fetchProduct(request.productId());
+        WorkCenter wc = fetchWorkCenter(request.workCenterId());
+        ProductionOrder order = productionOrderMapper.toEntity(request,product,wc);
         ProductionOrder saved = productionOrderRepository.save(order);
         return productionOrderMapper.toResponse(saved);
     }
@@ -51,10 +69,18 @@ public class ProductionOrderService implements IProductionOrderService {
     	if (!request.id().equals(id)) {
 			throw new IllegalArgumentException("ID in path and body do not match");
 		}
-        validateProductionOrderRequest(request);
         ProductionOrder o = productionOrderRepository.findById(id)
                 .orElseThrow(() -> new ProductionOrderErrorException("ProductionOrder not found with id " + id));
-        productionOrderMapper.toUpdateEntity(o, request);
+        validateProductionOrderRequest(request);
+        Product product = o.getProduct();
+        if(request.productId() != null && (product.getId() == null || !request.productId().equals(product.getId()))) {
+        	product = fetchProduct(request.productId());
+        }
+        WorkCenter wc = o.getWorkCenter();
+        if(request.workCenterId() != null && (wc.getId() == null || !request.workCenterId().equals(wc.getId()))) {
+        	wc = fetchWorkCenter(request.workCenterId());
+        }
+        productionOrderMapper.toUpdateEntity(o, request,product,wc);
         return productionOrderMapper.toResponse(productionOrderRepository.save(o));
     }
 
@@ -266,6 +292,232 @@ public class ProductionOrderService implements IProductionOrderService {
         return filteredOrders.stream().map(ProductionOrderResponse::new).collect(Collectors.toList());
     }
     
+    @Override
+	public BigDecimal countAvailableCapacity(Long storageId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean hasCapacityFor(Long storageId, BigDecimal amount) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void allocateCapacity(Long storageId, BigDecimal amount) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void releaseCapacity(Long storageId, BigDecimal amount) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public List<ProductionOrderResponse> findByProduct_CurrentQuantityGreaterThan(BigDecimal currentQuantity) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_CurrentQuantityLessThan(BigDecimal currentQuantity) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_UnitMeasure(UnitMeasure unitMeasure) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_SupplierType(SupplierType supplierType) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_StorageType(StorageType storageType) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_StorageId(Long storageId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_StorageNameContainingIgnoreCase(String storageId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_StorageLocationContainingIgnoreCase(String storageId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_StorageCapacity(BigDecimal capacity) {
+		validateBigDecimal(capacity);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_StorageCapacity(capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product bound to storage capacity %s is found", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_StorageCapacityGreaterThan(BigDecimal capacity) {
+		validateBigDecimal(capacity);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_StorageCapacityGreaterThan(capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product bound to storage capacity greater than %s is found", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_StorageCapacityLessThan(BigDecimal capacity) {
+		validateBigDecimalNonNegative(capacity);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_StorageCapacityLessThan(capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product bound to storage capacity less than %s is found", capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_SupplyId(Long supplyId) {
+		fetchSupplyId(supplyId);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_SupplyId(supplyId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product bound to supply-id %d is found", supplyId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_SupplyQuantity(BigDecimal quantity) {
+		validateBigDecimal(quantity);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_SupplyQuantity(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product boubd to supply quantity %s is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_SupplyQuantityGreaterThan(BigDecimal quantity) {
+		validateBigDecimal(quantity);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_SupplyQuantityGreaterThan(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product boubd to supply quantity greater than %s is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_SupplyQuantityLessThan(BigDecimal quantity) {
+		validateBigDecimalNonNegative(quantity);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_SupplyQuantityLessThan(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product boubd to supply quantity less than %s is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_SupplyUpdates(LocalDateTime updates) {
+		DateValidator.validateNotNull(updates, "Date updates");
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_SupplyUpdates(updates);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No ProductionOrder for product bound to supply date %s is found", updates.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_SupplyUpdatesBetween(LocalDateTime updatesStart,
+			LocalDateTime updatesEnd) {
+		DateValidator.validateRange(updatesStart, updatesEnd);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_SupplyUpdatesBetween(updatesStart, updatesEnd);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No ProductionOrder for product bound to supply date between %s and %s is found", 
+					updatesStart.format(formatter), updatesEnd.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_ShelfId(Long shelfId) {
+		fetchShelfId(shelfId);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_ShelfId(shelfId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product with shelf-id %d is found", shelfId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_ShelfRowCount(Integer rowCount) {
+		validateInteger(rowCount);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_ShelfRowCount(rowCount);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product with shelf row %d is found", rowCount);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_ShelfCols(Integer cols) {
+		validateInteger(cols);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_ShelfCols(cols);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product shelf cols %d is found", cols);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductionOrderResponse> findByProduct_ShelfIsNull() {
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_ShelfIsNull();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No ProductionOrder for product where shelf doesn't exist, is found");
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
+    
     private void validateInteger(Integer num) {
     	if(num == null || num < 0) {
     		throw new IllegalArgumentException("Number must be positive");
@@ -298,6 +550,27 @@ public class ProductionOrderService implements IProductionOrderService {
     	return productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found with id "+productId));
     }
     
+    private Storage fetchStorageId(Long storageId) {
+    	if(storageId == null) {
+    		throw new ValidationException("Storage ID must not be null");
+    	}
+    	return storageRepository.findById(storageId).orElseThrow(() -> new ValidationException("Storage not found with id "+storageId));
+    }
+    
+    private Shelf fetchShelfId(Long shelfId) {
+    	if(shelfId == null) {
+    		throw new ValidationException("Shelf ID must not be null");
+    	}
+    	return shelfRepository.findById(shelfId).orElseThrow(() -> new ValidationException("Shelf not found with id "+shelfId));
+    }
+    
+    private Supply fetchSupplyId(Long supplyId) {
+    	if(supplyId == null) {
+    		throw new ValidationException("Supply ID must not be null");
+    	}
+    	return supplyRepository.findById(supplyId).orElseThrow(() -> new ValidationException("Supply not found with id "+supplyId));
+    }
+    
     private void validateOrderNumberExists(String orderNumber) {
     	if(orderNumber == null) {
     		throw new IllegalArgumentException("OrderNumber must not be null");
@@ -315,12 +588,10 @@ public class ProductionOrderService implements IProductionOrderService {
     
     private void validateProductionOrderRequest(ProductionOrderRequest request) {
     	validateOrderNumberExists(request.orderNumber());
-    	fetchProduct(request.productId());
     	validateInteger(request.quantityPlanned());
     	validateInteger(request.quantityProduced());
     	DateValidator.validateRange(request.startDate(), request.endDate());
     	validateProductionOrderStatus(request.status());
-    	fetchWorkCenter(request.workCenterId());
     }
 
 }

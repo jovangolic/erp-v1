@@ -4,53 +4,47 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
-import com.jovan.erp_v1.exception.BuyerNotFoundException;
-import com.jovan.erp_v1.exception.SalesNotFoundException;
 import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.Payment;
 import com.jovan.erp_v1.model.Sales;
-import com.jovan.erp_v1.repository.BuyerRepository;
-import com.jovan.erp_v1.repository.SalesRepository;
 import com.jovan.erp_v1.request.PaymentRequest;
 import com.jovan.erp_v1.response.PaymentResponse;
 import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class PaymentMapper extends AbstractMapper<PaymentRequest> {
 
-	private final BuyerRepository buyerRepository;
-	private final SalesRepository salesRepository;
-	
-	
-	public Payment toEntity(PaymentRequest request) {
+	public Payment toEntity(PaymentRequest request,Buyer buyer, Sales relatedSales) {
 		Objects.requireNonNull(request,"PaymentRequest must not be null");
+		Objects.requireNonNull(buyer,"Buyer must not be null");
+		Objects.requireNonNull(relatedSales,"Sales must not be null");
 		validateIdForCreate(request, PaymentRequest::id);
-		return buildPaymentFromRequest(new Payment(), request);
+		Payment p = new Payment();
+		p.setId(request.id());
+		p.setAmount(request.amount());
+		p.setStatus(request.status());
+		p.setReferenceNumber(request.referenceNumber());
+		p.setBuyer(buyer);
+		p.setRelatedSales(relatedSales);
+		return p;
 	}
 	
-	public Payment toUpdateEntity(Payment payment, PaymentRequest request) {
+	public Payment toUpdateEntity(Payment payment, PaymentRequest request, Buyer buyer, Sales relatedSales) {
 		Objects.requireNonNull(request,"PaymentRequest must not be null");
 		Objects.requireNonNull(payment,"Payment must not be null");
 		validateIdForUpdate(request, PaymentRequest::id);
-		return buildPaymentFromRequest(payment, request);
+		return buildPaymentFromRequest(payment, request,buyer,relatedSales);
 	}
 	
-	private Payment buildPaymentFromRequest(Payment payment, PaymentRequest request) {
+	private Payment buildPaymentFromRequest(Payment payment, PaymentRequest request, Buyer buyer, Sales relatedSales) {
 		payment.setAmount(request.amount());
-		payment.setPaymentDate(request.paymentDate());
 		payment.setMethod(request.method());
 		payment.setStatus(request.status());
 		payment.setReferenceNumber(request.referenceNumber());
-		Buyer buyer = fetchBuyer(request.buyerId());
-		Sales sales = fetchSales(request.relatedSalesId());
 		payment.setBuyer(buyer);
-		payment.setRelatedSales(sales);
+		payment.setRelatedSales(relatedSales);
 		return payment;
 	}
 	
@@ -67,19 +61,4 @@ public class PaymentMapper extends AbstractMapper<PaymentRequest> {
 				.map(this::toResponse)
 				.collect(Collectors.toList());
 	}
-	
-	private Buyer fetchBuyer(Long buyerId) {
-    	if(buyerId == null) {
-    		throw new BuyerNotFoundException("Buyer ID must not be null");
-    	}
-    	return buyerRepository.findById(buyerId).orElseThrow(() -> new BuyerNotFoundException("Buyer not found with ID: "+buyerId));
-    }
-	
-	private Sales fetchSales(Long salesId) {
-    	if(salesId == null) {
-    		throw new SalesNotFoundException("Sales ID must not be null");
-    	}
-    	return salesRepository.findById(salesId).orElseThrow(() -> new BuyerNotFoundException("Sales not found with ID: "+salesId));
-    }
-	
 }

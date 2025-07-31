@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PermissionRequest {
 
+	private Long id;
     @NotBlank
     private PermissionType permissionType; // npr. "CREATE_ORDER"
 }

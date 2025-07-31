@@ -31,4 +31,7 @@ public interface OutboundDeliveryRepository extends JpaRepository<OutboundDelive
     List<OutboundDelivery> findByBuyer_ContactPerson(String contactPerson);
     List<OutboundDelivery> findByBuyer_EmailLikeIgnoreCase(String email);
     List<OutboundDelivery> findByBuyer_PhoneNumberLikeIgnoreCase(String phoneNumber);
+    List<OutboundDelivery> findByDeliveryDate(LocalDate deliveryDate);
+    List<OutboundDelivery> findByDeliveryDateAfter(LocalDate deliveryDate);
+    List<OutboundDelivery> findByDeliveryDateBefore(LocalDate deliveryDate);
 }

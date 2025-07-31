@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.PermissionType;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.PermissionErrorException;
 import com.jovan.erp_v1.mapper.PermissionMapper;
 import com.jovan.erp_v1.model.Permission;
@@ -33,6 +34,10 @@ public class PermissionService implements IPermissionService {
 
     @Override
     public List<PermissionResponse> getAll() {
+    	List<Permission> items = permissionRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("Permission list is empty");
+    	}
         return permissionRepository.findAll().stream()
                 .map(permissionMapper::toResponse)
                 .collect(Collectors.toList());
@@ -61,7 +66,6 @@ public class PermissionService implements IPermissionService {
         validatePermisionType(request.getPermissionType());
         permission.setPermissionType(request.getPermissionType());
         Permission updated = permissionRepository.save(permission);
-
         return permissionMapper.toResponse(updated);
     }
 

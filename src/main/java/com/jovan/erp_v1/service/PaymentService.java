@@ -2,7 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
 import com.jovan.erp_v1.exception.BuyerNotFoundException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.PaymentNotFoundException;
 import com.jovan.erp_v1.exception.SalesNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.PaymentMapper;
 import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.Payment;
@@ -46,7 +48,9 @@ public class PaymentService implements IPaymentService {
 	public PaymentResponse createPayment(PaymentRequest request) {
 		logger.info("Creating payment for buyerId={}, relatedSalesId={}", request.buyerId(), request.relatedSalesId());
 		validatePaymentRequest(request);
-		Payment payment = paymentMapper.toEntity(request);
+		Buyer buyer = fetchBuyer(request.buyerId());
+		Sales sales = fetchSales(request.relatedSalesId());
+		Payment payment = paymentMapper.toEntity(request,buyer,sales);
 		Payment savedPayment = paymentRepository.save(payment);
 		logger.info("Payment successfully created with ID={}", savedPayment.getId());
 		return paymentMapper.toResponse(savedPayment);
@@ -61,6 +65,10 @@ public class PaymentService implements IPaymentService {
 
 	@Override
 	public List<PaymentResponse> getAllPayments() {
+		List<Payment> items = paymentRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Payment list is empty");
+		}
 		return paymentRepository.findAll().stream()
 				.map(paymentMapper::toResponse)
 				.collect(Collectors.toList());
@@ -68,9 +76,13 @@ public class PaymentService implements IPaymentService {
 
 	@Override
 	public List<PaymentResponse> getPaymentsByBuyer(Long buyerId) {
-		Buyer buyer = buyerRepository.findById(buyerId)
-				.orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: " + buyerId));
-		return paymentRepository.findByBuyerId(buyer.getId()).stream()
+		fetchBuyer(buyerId);
+		List<Payment> items = paymentRepository.findByBuyerId(buyerId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for buyer-id %d is found", buyerId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(paymentMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -78,7 +90,12 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> getPaymentsByStatus(PaymentStatus status) {
 		validatePaymentStatus(status);
-		return paymentRepository.findByStatus(status).stream()
+		List<Payment> items = paymentRepository.findByStatus(status);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for status %s is found", status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(paymentMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -86,7 +103,12 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> getPaymentsByMethod(PaymentMethod method) {
 		validatePaymentMethod(method);
-		return paymentRepository.findByMethod(method).stream()
+		List<Payment> items = paymentRepository.findByMethod(method);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for method %s is found", method);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(paymentMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -113,6 +135,15 @@ public class PaymentService implements IPaymentService {
 	            return new PaymentNotFoundException("Payment not found with id: " + id);
 	        });
 		validatePaymentRequest(request);
+		Buyer buyer = payment.getBuyer();
+		if(request.buyerId() != null && (buyer.getId() == null || !request.buyerId().equals(buyer.getId()))){
+			buyer = fetchBuyer(request.buyerId());
+		}
+		Sales sales = payment.getRelatedSales();
+		if(request.relatedSalesId() != null && (sales.getId() == null || !request.relatedSalesId().equals(sales.getId()))) {
+			sales = fetchSales(request.relatedSalesId());
+		}
+		paymentMapper.toUpdateEntity(payment, request, buyer, sales);
 		Payment updated = paymentRepository.save(payment);
 	    logger.info("Payment with ID={} successfully updated", updated.getId());
 	    return paymentMapper.toResponse(updated);
@@ -122,7 +153,12 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByAmount(BigDecimal amount) {
 		validateBigDecimal(amount);
-		return paymentRepository.findByAmount(amount).stream()
+		List<Payment> items = paymentRepository.findByAmount(amount);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for amount  %s is found", amount);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -130,15 +166,25 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByAmountGreaterThan(BigDecimal amount) {
 		validateBigDecimal(amount);
-		return paymentRepository.findByAmountGreaterThan(amount).stream()
+		List<Payment> items = paymentRepository.findByAmountGreaterThan(amount);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for amount greater than %s is found", amount);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<PaymentResponse> findByAmountLessThan(BigDecimal amount) {
-		validateBigDecimal(amount);
-		return paymentRepository.findByAmountLessThan(amount).stream()
+		validateBigDecimalNonNegative(amount);
+		List<Payment> items = paymentRepository.findByAmountLessThan(amount);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for amount less than %s is found", amount);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -146,7 +192,13 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByPaymentDate(LocalDateTime paymentDate) {
 		DateValidator.validatePastOrPresent(paymentDate, "Payment date");
-		return paymentRepository.findByPaymentDate(paymentDate).stream()
+		List<Payment> items = paymentRepository.findByPaymentDate(paymentDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Payment for payment-date %s is found", paymentDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -154,7 +206,12 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByBuyer_CompanyNameContainingIgnoreCase(String buyerCompanyName) {
 		validateString(buyerCompanyName);
-		return paymentRepository.findByBuyer_CompanyNameContainingIgnoreCase(buyerCompanyName).stream()
+		List<Payment> items = paymentRepository.findByBuyer_CompanyNameContainingIgnoreCase(buyerCompanyName);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for buyer's company-name %s is found", buyerCompanyName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -162,7 +219,12 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByBuyer_PibContainingIgnoreCase(String pib) {
 		validatePibIsUnique(pib);
-		return paymentRepository.findByBuyer_PibContainingIgnoreCase(pib).stream()
+		List<Payment> items = paymentRepository.findByBuyer_PibContainingIgnoreCase(pib);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for buyer's pib %s is found", pib);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -170,7 +232,12 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByBuyer_AddressContainingIgnoreCase(String buyerAddress) {
 		validateString(buyerAddress);
-		return paymentRepository.findByBuyer_AddressContainingIgnoreCase(buyerAddress).stream()
+		List<Payment> items = paymentRepository.findByBuyer_AddressContainingIgnoreCase(buyerAddress);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for buyer's address %s is found", buyerAddress);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -178,7 +245,12 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByBuyer_EmailContainingIgnoreCase(String buyerEmail) {
 		validateString(buyerEmail);
-		return paymentRepository.findByBuyer_EmailContainingIgnoreCase(buyerEmail).stream()
+		List<Payment> items = paymentRepository.findByBuyer_EmailContainingIgnoreCase(buyerEmail);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for buyer's email %s is found", buyerEmail);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -186,7 +258,12 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByBuyer_PhoneNumber(String buyerPhoneNumber) {
 		validateString(buyerPhoneNumber);
-		return paymentRepository.findByBuyer_PhoneNumber(buyerPhoneNumber).stream()
+		List<Payment> items = paymentRepository.findByBuyer_PhoneNumber(buyerPhoneNumber);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for buyer's phone-number %s is found", buyerPhoneNumber);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -194,7 +271,12 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByRelatedSales_Id(Long relatedSalesId) {
 		fetchSales(relatedSalesId);
-		return paymentRepository.findByRelatedSales_Id(relatedSalesId).stream()
+		List<Payment> items = paymentRepository.findByRelatedSales_Id(relatedSalesId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for sales-id %d is found", relatedSalesId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -202,7 +284,13 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByRelatedSales_CreatedAt(LocalDateTime createdAt) {
 		DateValidator.validateNotInFuture(createdAt, "Date and Time");
-		return paymentRepository.findByRelatedSales_CreatedAt(createdAt).stream()
+		List<Payment> items = paymentRepository.findByRelatedSales_CreatedAt(createdAt);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Payment for sales' createdAt %s is found", createdAt.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -210,15 +298,25 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByRelatedSales_TotalPriceGreaterThan(BigDecimal totalPrice) {
 		validateBigDecimal(totalPrice);
-		return paymentRepository.findByRelatedSales_TotalPriceGreaterThan(totalPrice).stream()
+		List<Payment> items = paymentRepository.findByRelatedSales_TotalPriceGreaterThan(totalPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for sales total price greater than %s is found", totalPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<PaymentResponse> findByRelatedSales_TotalPriceLessThan(BigDecimal totalPrice) {
-		validateBigDecimal(totalPrice);
-		return paymentRepository.findByRelatedSales_TotalPriceLessThan(totalPrice).stream()
+		validateBigDecimalNonNegative(totalPrice);
+		List<Payment> items = paymentRepository.findByRelatedSales_TotalPriceLessThan(totalPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for sales total price less than %s is found", totalPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -226,7 +324,12 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByRelatedSales_TotalPrice(BigDecimal totalPrice) {
 		validateBigDecimal(totalPrice);
-		return paymentRepository.findByRelatedSales_TotalPrice(totalPrice).stream()
+		List<Payment> items = paymentRepository.findByRelatedSales_TotalPrice(totalPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for sales total price %s is found", totalPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -234,7 +337,12 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByRelatedSales_SalesDescriptionContainingIgnoreCase(String salesDescription) {
 		validateString(salesDescription);
-		return paymentRepository.findByRelatedSales_SalesDescriptionContainingIgnoreCase(salesDescription).stream()
+		List<Payment> items = paymentRepository.findByRelatedSales_SalesDescriptionContainingIgnoreCase(salesDescription);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for sales description %s is found", salesDescription);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -242,6 +350,11 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByRelatedSales_Buyer_Id(Long buyerId) {
 		fetchBuyer(buyerId);
+		List<Payment> items = paymentRepository.findByRelatedSales_Buyer_Id(buyerId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for sales bound to buyer-id %d is found", buyerId);
+			throw new NoDataFoundException(msg);
+		}
 		return paymentRepository.findByRelatedSales_Buyer_Id(buyerId).stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
@@ -250,7 +363,13 @@ public class PaymentService implements IPaymentService {
 	@Override
 	public List<PaymentResponse> findByBuyer_IdAndStatus(Long buyerId, PaymentStatus status) {
 		validatePaymentStatus(status);
-		return paymentRepository.findByBuyer_IdAndStatus(buyerId, status).stream()
+		List<Payment> items = paymentRepository.findByBuyer_IdAndStatus(buyerId, status);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for buyer-id %d and payment-status %s is found", 
+					buyerId, status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -260,7 +379,14 @@ public class PaymentService implements IPaymentService {
 			PaymentMethod method) {
 		DateValidator.validateRange(start, end);
 		validatePaymentMethod(method);
-		return paymentRepository.findByPaymentDateBetweenAndMethod(start, end, method).stream()
+		List<Payment> items = paymentRepository.findByPaymentDateBetweenAndMethod(start, end, method);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Payment for date between %s and %s , and method %s is found", 
+					start.format(formatter),end.format(formatter), method);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -270,7 +396,12 @@ public class PaymentService implements IPaymentService {
 			Long buyerId) {
 		fetchBuyer(buyerId);
 		validateString(description);
-		return paymentRepository.findByRelatedSales_SalesDescriptionContainingIgnoreCaseAndBuyer_Id(description, buyerId).stream()
+		List<Payment> items = paymentRepository.findByRelatedSales_SalesDescriptionContainingIgnoreCaseAndBuyer_Id(description, buyerId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Payment for sales description %s and buyer-id %d is found", description,buyerId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(PaymentResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -351,8 +482,6 @@ public class PaymentService implements IPaymentService {
 	}
 	
 	private void validatePaymentRequest(PaymentRequest request) {
-		fetchBuyer(request.buyerId());
-		fetchSales(request.relatedSalesId());
 		validateBigDecimal(request.amount());
 		DateValidator.validateNotInFuture(request.paymentDate(), "Payment date");
 		validatePaymentMethod(request.method());
@@ -361,4 +490,12 @@ public class PaymentService implements IPaymentService {
 		
 	}
 
+	private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
 }

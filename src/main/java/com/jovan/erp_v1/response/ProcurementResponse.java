@@ -25,7 +25,7 @@ public class ProcurementResponse {
         this.id = procurement.getId();
         this.date = procurement.getDate();
         this.totalCost = procurement.getTotalCost();
-        // Ako se stavke prodaje i nabavke povezuju, dodaj ih ovde
+        // Ako se stavke prodaje i nabavke povezuju, dodaju se ovde
         this.itemSales = procurement.getItemSales().stream()
                                     .map(ItemSalesResponse::new)
                                     .collect(Collectors.toList());

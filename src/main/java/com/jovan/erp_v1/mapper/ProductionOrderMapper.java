@@ -3,48 +3,49 @@ package com.jovan.erp_v1.mapper;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
-import com.jovan.erp_v1.exception.NoSuchProductException;
-import com.jovan.erp_v1.exception.WorkCenterErrorException;
 import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.model.ProductionOrder;
 import com.jovan.erp_v1.model.WorkCenter;
-import com.jovan.erp_v1.repository.ProductRepository;
-import com.jovan.erp_v1.repository.WorkCenterRepository;
 import com.jovan.erp_v1.request.ProductionOrderRequest;
 import com.jovan.erp_v1.response.ProductionOrderResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
-public class ProductionOrderMapper {
+public class ProductionOrderMapper extends AbstractMapper<ProductionOrderRequest> {
 
-    private final ProductRepository productRepository;
-    private final WorkCenterRepository workCenterRepository;
-
-    public ProductionOrder toEntity(ProductionOrderRequest request) {
+    public ProductionOrder toEntity(ProductionOrderRequest request,Product product, WorkCenter wc) {
         Objects.requireNonNull(request, "ProductionOrder cannot be null");
-        return buildProductionOrderFromRequest(new ProductionOrder(), request);
+        Objects.requireNonNull(product, "Product cannot be null");
+        Objects.requireNonNull(wc, "WorkCenter cannot be null");
+        validateIdForCreate(request, ProductionOrderRequest::id);
+        ProductionOrder po = new ProductionOrder();
+        po.setId(request.id());
+        po.setOrderNumber(request.orderNumber());
+        po.setProduct(product);
+        po.setQuantityPlanned(request.quantityPlanned());
+        po.setQuantityProduced(request.quantityProduced());
+        po.setEndDate(request.endDate());
+        po.setStatus(request.status());
+        po.setWorkCenter(wc);
+        return po;
     }
 
-    public void toUpdateEntity(ProductionOrder order, ProductionOrderRequest request) {
+    public void toUpdateEntity(ProductionOrder order, ProductionOrderRequest request, Product product, WorkCenter wc) {
         Objects.requireNonNull(order, "ProductionOrder cannot be null");
         Objects.requireNonNull(request, "ProductionOrderRequest cannot be null");
-        buildProductionOrderFromRequest(order, request);
+        buildProductionOrderFromRequest(order, request,product, wc);
     }
 
-    private ProductionOrder buildProductionOrderFromRequest(ProductionOrder p, ProductionOrderRequest request) {
+    private ProductionOrder buildProductionOrderFromRequest(ProductionOrder p, ProductionOrderRequest request, Product product, WorkCenter wc) {
         p.setOrderNumber(request.orderNumber());
-        p.setProduct(fetchProduct(request.productId()));
+        p.setProduct(product);
         p.setQuantityPlanned(request.quantityPlanned());
         p.setQuantityProduced(request.quantityProduced());
-        p.setStartDate(request.startDate());
         p.setEndDate(request.endDate());
         p.setStatus(request.status());
-        p.setWorkCenter(fetchWorkCenter(request.workCenterId()));
+        p.setWorkCenter(wc);
         return p;
     }
 
@@ -54,21 +55,5 @@ public class ProductionOrderMapper {
 
     public List<ProductionOrderResponse> toResponseList(List<ProductionOrder> o) {
         return o.stream().map(this::toResponse).collect(Collectors.toList());
-    }
-
-    private Product fetchProduct(Long productId) {
-        if (productId == null) {
-            throw new NoSuchProductException("Product ID can not be null: ");
-        }
-        return productRepository.findById(productId)
-                .orElseThrow(() -> new NoSuchProductException("Product is not found with id: " + productId));
-    }
-
-    private WorkCenter fetchWorkCenter(Long workCenterId) {
-        if (workCenterId == null) {
-            throw new WorkCenterErrorException("WorkCenter can't be null");
-        }
-        return workCenterRepository.findById(workCenterId)
-                .orElseThrow(() -> new WorkCenterErrorException("WorkCenter not found with id " + workCenterId));
     }
 }

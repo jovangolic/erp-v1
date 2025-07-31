@@ -18,13 +18,9 @@ import com.jovan.erp_v1.model.Payment;
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
 	 List<Payment> findByBuyerId(Long buyerId);
-
 	 List<Payment> findByStatus(PaymentStatus status);
-
 	 List<Payment> findByPaymentDateBetween(LocalDateTime start, LocalDateTime end);
-
 	 Optional<Payment> findByReferenceNumber(String referenceNumber);
-	 
 	 List<Payment> findByMethod(PaymentMethod method);
 	 //nove metoda
 	 List<Payment> findByAmount(BigDecimal amount);

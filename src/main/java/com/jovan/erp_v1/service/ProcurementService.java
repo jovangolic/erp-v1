@@ -2,12 +2,15 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ProcurementNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.ProcurementMapper;
 import com.jovan.erp_v1.model.ItemSales;
 import com.jovan.erp_v1.model.Procurement;
@@ -78,7 +81,11 @@ public class ProcurementService implements IProcurementService {
 
 	@Override
 	public List<ProcurementResponse> getAllProcurement() {
-		return procurementRepository.findAll().stream()
+		List<Procurement> items = procurementRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Procurement list is empty");
+		}
+		return items.stream()
 				.map(procurementMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -86,7 +93,27 @@ public class ProcurementService implements IProcurementService {
 	@Override
 	public List<ProcurementResponse> getByTotalCost(BigDecimal totalCost) {
 		validateBigDecimal(totalCost);
-		return procurementRepository.findByTotalCost(totalCost).stream()
+		List<Procurement> items = procurementRepository.findByTotalCost(totalCost);
+		if(items.isEmpty()) {
+			String msg = String.format("No Procurement for total cost %s is found", totalCost);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(procurementMapper::toResponse)
+				.collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<ProcurementResponse> findByDate(LocalDateTime date) {
+		DateValidator.validateNotInPast(date, "Date-time");
+		List<Procurement> items = procurementRepository.findByDate(date);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Procurement for date %s is found", 
+					date.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(procurementMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -94,16 +121,27 @@ public class ProcurementService implements IProcurementService {
 	@Override
 	public List<ProcurementResponse> getByDateBetween(LocalDateTime start, LocalDateTime end) {
 		DateValidator.validateRange(start, end);
-		return procurementRepository.findByDateBetween(start, end).stream()
+		List<Procurement> items = procurementRepository.findByDateBetween(start, end);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Procurement for date between %s and %s is found", 
+					start.format(formatter), end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(procurementMapper::toResponse)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ProcurementResponse> getByTotalCostBetween(BigDecimal min, BigDecimal max) {
-		validateBigDecimal(max);
-		validateBigDecimal(min);
-		return procurementRepository.findByTotalCostBetween(min, max).stream()
+		validateMinAndMax(min, max);
+		List<Procurement> items = procurementRepository.findByTotalCostBetween(min, max);
+		if(items.isEmpty()) {
+			String msg = String.format("No Procurement for total cost between %s and %s is found", min,max);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(procurementMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -133,15 +171,25 @@ public class ProcurementService implements IProcurementService {
 	@Override
 	public List<ProcurementResponse> getByTotalCostGreaterThan(BigDecimal totalCost) {
 		validateBigDecimal(totalCost);
-		return procurementRepository.findByTotalCostGreaterThan(totalCost).stream()
+		List<Procurement> items = procurementRepository.findByTotalCostGreaterThan(totalCost);
+		if(items.isEmpty()) {
+			String msg = String.format("No Procurement for total cost greater than %s is found", totalCost);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ProcurementResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ProcurementResponse> getByTotalCostLessThan(BigDecimal totalCost) {
-		validateBigDecimal(totalCost);
-		return procurementRepository.findByTotalCostLessThan(totalCost).stream()
+		validateBigDecimalNonNegative(totalCost);
+		List<Procurement> items = procurementRepository.findByTotalCostLessThan(totalCost);
+		if(items.isEmpty()) {
+			String msg = String.format("No Procurement for total cost less than %s is found", totalCost);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ProcurementResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -151,5 +199,28 @@ public class ProcurementService implements IProcurementService {
 			throw new IllegalArgumentException("Number must be positive");
 		}
 	}
+
+	private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
+	
+	private void validateMinAndMax(BigDecimal min, BigDecimal max) {
+        if (min == null || max == null) {
+            throw new IllegalArgumentException("Min i Max ne smeju biti null");
+        }
+
+        if (min.compareTo(BigDecimal.ZERO) < 0 || max.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Min mora biti >= 0, a Max mora biti > 0");
+        }
+
+        if (min.compareTo(max) > 0) {
+            throw new IllegalArgumentException("Min ne može biti veći od Max");
+        }
+    }
 
 }

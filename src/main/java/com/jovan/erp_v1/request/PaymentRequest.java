@@ -16,23 +16,17 @@ public record PaymentRequest(
 		@NotNull(message = "Iznos uplate je obavezan")
 	    @DecimalMin(value = "0.0", inclusive = false, message = "Iznos mora biti pozitivan")
 	    BigDecimal amount,
-
 	    @NotNull(message = "Datum uplate je obavezan")
 	    LocalDateTime paymentDate,
-
 	    @NotNull(message = "Način plaćanja je obavezan")
 	    PaymentMethod method,
-
 	    @NotNull(message = "Status uplate je obavezan")
 	    PaymentStatus status,
-
 	    @NotBlank(message = "Referentni broj je obavezan")
 	    @Size(max = 100, message = "Referentni broj može imati najviše 100 karaktera")
 	    String referenceNumber,
-
 	    @NotNull(message = "ID kupca je obavezan")
 	    Long buyerId,
-
 	    @NotNull(message = "ID povezane prodaje je obavezan")
 	    Long relatedSalesId
 		) {

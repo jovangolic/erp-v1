@@ -5,12 +5,15 @@ import org.springframework.stereotype.Component;
 import com.jovan.erp_v1.model.Permission;
 import com.jovan.erp_v1.request.PermissionRequest;
 import com.jovan.erp_v1.response.PermissionResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
 @Component
-public class PermissionMapper {
+public class PermissionMapper extends AbstractMapper<PermissionRequest> {
 
     public Permission toEntity(PermissionRequest request) {
+    	Objects.requireNonNull(request,"PermissionRequest must not be null");
         Permission entity = new Permission();
+        entity.setId(request.getId());
         entity.setPermissionType(request.getPermissionType());
         return entity;
     }

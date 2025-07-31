@@ -19,7 +19,7 @@ public class CorsConfigProduction {
 
         config.setAllowCredentials(true);
 
-        // Zameni sa stvarnim domenom frontend aplikacije
+        
         config.setAllowedOrigins(List.of(
             "https://erpfrontend.example.com",  // domen za production
             "http://localhost:5173"             // lokalni dev frontend (ostavi ako testiraš lokalno)

@@ -195,6 +195,97 @@ public class OutboundDeliveryService implements IOutboundDeliveryService {
         outboundDeliveryRepository.deleteAllById(ids);
     }
     
+    @Override
+	public List<OutboundDeliveryResponse> findByBuyer_CompanyName(String companyName) {
+		validateString(companyName);
+    	List<OutboundDelivery> items = outboundDeliveryRepository.findByBuyer_CompanyName(companyName);
+    	if(items.isEmpty()) {
+			String msg = String.format("No OutboundDelivery for buyer's company-name %s is found", companyName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(outboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<OutboundDeliveryResponse> findByBuyer_Address(String address) {
+		validateString(address);
+		List<OutboundDelivery> items = outboundDeliveryRepository.findByBuyer_Address(address);
+		if(items.isEmpty()) {
+			String msg = String.format("No OutboundDelivery for buyer address %s is found", address);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(outboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<OutboundDeliveryResponse> findByBuyer_ContactPerson(String contactPerson) {
+		validateString(contactPerson);
+		List<OutboundDelivery> items = outboundDeliveryRepository.findByBuyer_ContactPerson(contactPerson);
+		if(items.isEmpty()) {
+			String msg = String.format("No OutboundDelivery for buyer contact-person %s is found", contactPerson);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(outboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<OutboundDeliveryResponse> findByBuyer_EmailLikeIgnoreCase(String email) {
+		validateString(email);
+		List<OutboundDelivery> items = outboundDeliveryRepository.findByBuyer_EmailLikeIgnoreCase(email);
+		if(items.isEmpty()) {
+			String msg = String.format("No OutboundDelivery for buyer email %s is found", email);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(outboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<OutboundDeliveryResponse> findByBuyer_PhoneNumberLikeIgnoreCase(String phoneNumber) {
+		validateString(phoneNumber);
+		List<OutboundDelivery> items = outboundDeliveryRepository.findByBuyer_PhoneNumberLikeIgnoreCase(phoneNumber);
+		if(items.isEmpty()) {
+			String msg = String.format("No OutboundDelivery for buyer phone-number %s is found", phoneNumber);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(outboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<OutboundDeliveryResponse> findByDeliveryDate(LocalDate deliveryDate) {
+		DateValidator.validateNotNull(deliveryDate, "Delivery-date");
+		List<OutboundDelivery> items = outboundDeliveryRepository.findByDeliveryDate(deliveryDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No OutboundDelivery for delivery date %s is found", deliveryDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(outboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<OutboundDeliveryResponse> findByDeliveryDateAfter(LocalDate deliveryDate) {
+		DateValidator.validateNotInPast(deliveryDate, "Delivery date after");
+		List<OutboundDelivery> items = outboundDeliveryRepository.findByDeliveryDateAfter(deliveryDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No OutboundDelivery for delivery date after %s is found", deliveryDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(outboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<OutboundDeliveryResponse> findByDeliveryDateBefore(LocalDate deliveryDate) {
+		DateValidator.validateNotInFuture(deliveryDate, "Delivery date before");
+		List<OutboundDelivery> items = outboundDeliveryRepository.findByDeliveryDateBefore(deliveryDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+			String msg = String.format("No OutboundDelivery for delivery date before %s is found", deliveryDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(outboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+    
     private List<DeliveryItem> mapOutboundDeliveryItems(List<DeliveryItemOutboundRequest> itemRequests, OutboundDelivery delivery) {
     	if (itemRequests == null || itemRequests.isEmpty()) {
     	    return Collections.emptyList();
@@ -246,6 +337,12 @@ public class OutboundDeliveryService implements IOutboundDeliveryService {
     		if(dv.quantity() == null || dv.quantity().compareTo(BigDecimal.ZERO) <= 0) {
     			throw new IllegalArgumentException("Quantity must be positive");
     		}
+    	}
+    }
+    
+    private void validateString(String str) {
+    	if(str == null || str.trim().isEmpty()) {
+    		throw new ValidationException("String must not be null nor empty");
     	}
     }
 
