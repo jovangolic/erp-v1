@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.OptionCategory;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.OptionErrorException;
 import com.jovan.erp_v1.mapper.OptionMapper;
 import com.jovan.erp_v1.model.Option;
@@ -56,7 +57,11 @@ public class OptionService implements IOptionService {
 
     @Override
     public List<OptionResponse> getAll() {
-        return optionRepository.findAll().stream()
+    	List<Option> items = optionRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("Option list is empty");
+    	}
+        return items.stream()
                 .map(optionMapper::toResponse)
                 .toList();
     }
@@ -64,7 +69,12 @@ public class OptionService implements IOptionService {
     @Override
     public List<OptionResponse> getByCategory(OptionCategory category) {
     	validateOptionCategory(category);
-        return optionRepository.findByCategory(category).stream()
+    	List<Option> items = optionRepository.findByCategory(category);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Option for category %s is found", category);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(optionMapper::toResponse)
                 .toList();
     }
@@ -79,7 +89,12 @@ public class OptionService implements IOptionService {
 	@Override
 	public List<OptionResponse> findByCategoryAndActiveTrue(OptionCategory category) {
 		validateOptionCategory(category);
-		return optionRepository.findByCategoryAndActiveTrue(category).stream()
+		List<Option> items = optionRepository.findByCategoryAndActiveTrue(category);
+		if(items.isEmpty()) {
+			String msg = String.format("No Option for option-category %s is found", category);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(optionMapper::toResponse)
 				.collect(Collectors.toList());
 	}

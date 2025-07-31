@@ -2,6 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
 import com.jovan.erp_v1.exception.BuyerNotFoundException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.OutboundDeliveryErrorException;
 import com.jovan.erp_v1.exception.ProductNotFoundException;
 import com.jovan.erp_v1.exception.ValidationException;
@@ -22,13 +24,11 @@ import com.jovan.erp_v1.mapper.DeliveryItemMapper;
 import com.jovan.erp_v1.mapper.OutboundDeliveryMapper;
 import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.DeliveryItem;
-import com.jovan.erp_v1.model.InboundDelivery;
 import com.jovan.erp_v1.model.OutboundDelivery;
 import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.repository.BuyerRepository;
 import com.jovan.erp_v1.repository.OutboundDeliveryRepository;
 import com.jovan.erp_v1.repository.ProductRepository;
-import com.jovan.erp_v1.request.DeliveryItemInboundRequest;
 import com.jovan.erp_v1.request.DeliveryItemOutboundRequest;
 import com.jovan.erp_v1.request.OutboundDeliveryRequest;
 import com.jovan.erp_v1.response.OutboundDeliveryResponse;
@@ -107,7 +107,11 @@ public class OutboundDeliveryService implements IOutboundDeliveryService {
 
     @Override
     public List<OutboundDeliveryResponse> findAll() {
-        return outboundDeliveryRepository.findAll().stream()
+    	List<OutboundDelivery> items = outboundDeliveryRepository.findAll();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("OutboundDelivery list is empty");
+    	}
+        return items.stream()
                 .map(outboundDeliveryMapper::toResponse)
                 .collect(Collectors.toList());
     }
@@ -115,15 +119,25 @@ public class OutboundDeliveryService implements IOutboundDeliveryService {
     @Override
     public List<OutboundDeliveryResponse> findByStatus(DeliveryStatus status) {
     	validateDeliveryStatus(status);
-        return outboundDeliveryRepository.findByStatus(status).stream()
+    	List<OutboundDelivery> items = outboundDeliveryRepository.findByStatus(status);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No OutboundDelivery for status %s is found", status);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(outboundDeliveryMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<OutboundDeliveryResponse> findByBuyerId(Long buyerId) {
-    	Buyer buyer = fetchBuyer(buyerId);
-        return outboundDeliveryRepository.findByBuyerId(buyer.getId()).stream()
+    	fetchBuyer(buyerId);
+    	List<OutboundDelivery> items = outboundDeliveryRepository.findByBuyerId(buyerId);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No OutboundDelivery for buyer-id %d is found", buyerId);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(outboundDeliveryMapper::toResponse)
                 .collect(Collectors.toList());
     }
@@ -131,7 +145,14 @@ public class OutboundDeliveryService implements IOutboundDeliveryService {
     @Override
     public List<OutboundDeliveryResponse> findByDeliveryDateBetween(LocalDate from, LocalDate to) {
     	DateValidator.validateRange(from, to);
-        return outboundDeliveryRepository.findByDeliveryDateBetween(from, to).stream()
+    	List<OutboundDelivery> items = outboundDeliveryRepository.findByDeliveryDateBetween(from, to);
+    	if(items.isEmpty()) {
+    		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    		String msg = String.format("No OutboundDelivery for delivery date between %s and %s is found", 
+    				from.format(formatter),to.format(formatter));
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
                 .map(outboundDeliveryMapper::toResponse)
                 .collect(Collectors.toList());
     }

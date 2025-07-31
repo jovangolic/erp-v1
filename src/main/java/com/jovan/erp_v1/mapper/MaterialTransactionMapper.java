@@ -4,56 +4,57 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
-import com.jovan.erp_v1.exception.MaterialNotFoundException;
-import com.jovan.erp_v1.exception.SupplierNotFoundException;
-import com.jovan.erp_v1.exception.UserNotFoundException;
 import com.jovan.erp_v1.model.Material;
 import com.jovan.erp_v1.model.MaterialTransaction;
 import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.model.Vendor;
-import com.jovan.erp_v1.repository.MaterialRepository;
-import com.jovan.erp_v1.repository.UserRepository;
-import com.jovan.erp_v1.repository.VendorRepository;
 import com.jovan.erp_v1.request.MaterialTransactionRequest;
 import com.jovan.erp_v1.response.MaterialTransactionResponse;
 import com.jovan.erp_v1.util.AbstractMapper;
-import lombok.RequiredArgsConstructor;
+
 
 @Component
-@RequiredArgsConstructor
 public class MaterialTransactionMapper extends AbstractMapper<MaterialTransactionRequest> {
 
-    private final MaterialRepository materialRepository;
-    private final UserRepository userRepository;
-    private final VendorRepository vendorRepository;
-
-    public MaterialTransaction toEntity(MaterialTransactionRequest request) {
+    public MaterialTransaction toEntity(MaterialTransactionRequest request, Material material,Vendor vendor,User createdByUser) {
         Objects.requireNonNull(request, "MaterialTransactionRequest must not be null");
+        Objects.requireNonNull(material, "Material must not be null");
+        Objects.requireNonNull(vendor, "Vendor must not be null");
+        Objects.requireNonNull(createdByUser, "User must not be null");
         validateIdForCreate(request, MaterialTransactionRequest::id);
-        return buildMaterialTransactionFromRequest(new MaterialTransaction(), request);
-    }
-
-    public MaterialTransaction toUpdateEntity(MaterialTransaction mt, MaterialTransactionRequest request) {
-        Objects.requireNonNull(request, "MaterialTransactionRequest must not be null");
-        Objects.requireNonNull(mt, "MaterialTransaction must not be null");
-        validateIdForUpdate(request, MaterialTransactionRequest::id);
-        return buildMaterialTransactionFromRequest(mt, request);
-    }
-
-    private MaterialTransaction buildMaterialTransactionFromRequest(MaterialTransaction mt,
-            MaterialTransactionRequest request) {
-        mt.setMaterial(fetchMaterial(request.materialId()));
+        MaterialTransaction mt = new MaterialTransaction();
+        mt.setMaterial(material);
         mt.setQuantity(request.quantity());
         mt.setType(request.type());
-        mt.setTransactionDate(request.transactionDate());
-        mt.setVendor(fetchVendor(request.vendorId()));
+        mt.setVendor(vendor);
         mt.setDocumentReference(request.documentReference());
         mt.setNotes(request.notes());
         mt.setStatus(request.status());
-        mt.setCreatedByUser(fetchUser(request.createdByUserId()));
+        mt.setCreatedByUser(createdByUser);
+        return mt;
+    }
+
+    public MaterialTransaction toUpdateEntity(MaterialTransaction mt, MaterialTransactionRequest request, Material material,Vendor vendor,User createdByUser) {
+        Objects.requireNonNull(request, "MaterialTransactionRequest must not be null");
+        Objects.requireNonNull(mt, "MaterialTransaction must not be null");
+        Objects.requireNonNull(material, "Material must not be null");
+        Objects.requireNonNull(vendor, "Vendor must not be null");
+        Objects.requireNonNull(createdByUser, "User must not be null");
+        validateIdForUpdate(request, MaterialTransactionRequest::id);
+        return buildMaterialTransactionFromRequest(mt, request,material,vendor,createdByUser);
+    }
+
+    private MaterialTransaction buildMaterialTransactionFromRequest(MaterialTransaction mt,
+            MaterialTransactionRequest request, Material material,Vendor vendor,User createdByUser) {
+        mt.setMaterial(material);
+        mt.setQuantity(request.quantity());
+        mt.setType(request.type());
+        mt.setVendor(vendor);
+        mt.setDocumentReference(request.documentReference());
+        mt.setNotes(request.notes());
+        mt.setStatus(request.status());
+        mt.setCreatedByUser(createdByUser);
         return mt;
     }
 
@@ -67,29 +68,5 @@ public class MaterialTransactionMapper extends AbstractMapper<MaterialTransactio
             return Collections.emptyList();
         }
         return mt.stream().map(this::toResponse).collect(Collectors.toList());
-    }
-
-    private Material fetchMaterial(Long materialId) {
-        if (materialId == null) {
-            throw new MaterialNotFoundException("Material id must not be null");
-        }
-        return materialRepository.findById(materialId)
-                .orElseThrow(() -> new MaterialNotFoundException("Material not found with id: " + materialId));
-    }
-
-    private User fetchUser(Long userId) {
-        if (userId == null) {
-            throw new UserNotFoundException("User id must not be null");
-        }
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("user not found with id: " + userId));
-    }
-
-    private Vendor fetchVendor(Long vendorId) {
-        if (vendorId == null) {
-            throw new SupplierNotFoundException("Vendor id must not be null");
-        }
-        return vendorRepository.findById(vendorId)
-                .orElseThrow(() -> new SupplierNotFoundException("Vendor not found with id: " + vendorId));
     }
 }

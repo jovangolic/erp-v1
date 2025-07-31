@@ -12,9 +12,7 @@ import com.jovan.erp_v1.enumeration.OptionCategory;
 public interface OptionRepository extends JpaRepository<Option, Long> {
 
     List<Option> findByCategory(OptionCategory category);
-
     Option findByLabel(String label);
-
     Option findByValue(String value);
     //dodate metode
     List<Option> findByCategoryAndActiveTrue(OptionCategory category);

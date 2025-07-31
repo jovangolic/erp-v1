@@ -16,16 +16,19 @@ public interface OutboundDeliveryRepository extends JpaRepository<OutboundDelive
 
     @EntityGraph(attributePaths = { "supply", "items", "items.product" })
     Optional<OutboundDelivery> findById(Long id);
-
     @EntityGraph(attributePaths = { "supply", "items", "items.product" })
     List<OutboundDelivery> findAll();
-
     @EntityGraph(attributePaths = { "supply", "items", "items.product" })
     List<OutboundDelivery> findByStatus(DeliveryStatus status);
-
     @EntityGraph(attributePaths = { "buyer", "items", "items.product" })
     List<OutboundDelivery> findByBuyerId(Long buyerId);
-
     @EntityGraph(attributePaths = { "supply", "items", "items.product" })
     List<OutboundDelivery> findByDeliveryDateBetween(LocalDate from, LocalDate to);
+    
+    //nove metode
+    List<OutboundDelivery> findByBuyer_CompanyName(String companyName);
+    List<OutboundDelivery> findByBuyer_Address(String address);
+    List<OutboundDelivery> findByBuyer_ContactPerson(String contactPerson);
+    List<OutboundDelivery> findByBuyer_EmailLikeIgnoreCase(String email);
+    List<OutboundDelivery> findByBuyer_PhoneNumberLikeIgnoreCase(String phoneNumber);
 }
