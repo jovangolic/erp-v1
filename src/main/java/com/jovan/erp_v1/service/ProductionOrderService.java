@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -294,74 +295,120 @@ public class ProductionOrderService implements IProductionOrderService {
     
     @Override
 	public BigDecimal countAvailableCapacity(Long storageId) {
-		// TODO Auto-generated method stub
-		return null;
+    	Storage storage = storageRepository.findById(storageId)
+                .orElseThrow(() -> new ValidationException("Storage not found"));
+        return storage.countAvailableCapacity();
 	}
 
 	@Override
 	public boolean hasCapacityFor(Long storageId, BigDecimal amount) {
-		// TODO Auto-generated method stub
-		return false;
+		Storage storage = storageRepository.findById(storageId)
+                .orElseThrow(() -> new ValidationException("Storage not found"));
+        return storage.hasCapacityFor(amount);
 	}
 
 	@Override
 	public void allocateCapacity(Long storageId, BigDecimal amount) {
-		// TODO Auto-generated method stub
-		
+		Storage storage = storageRepository.findById(storageId)
+                .orElseThrow(() -> new ValidationException("Storage not found"));
+        storage.allocateCapacity(amount);
+        storageRepository.save(storage); 
 	}
 
 	@Override
 	public void releaseCapacity(Long storageId, BigDecimal amount) {
-		// TODO Auto-generated method stub
-		
+		Storage storage = storageRepository.findById(storageId)
+                .orElseThrow(() -> new ValidationException("Storage not found"));
+        storage.releaseCapacity(amount);
+        storageRepository.save(storage);
 	}
 	
 	@Override
 	public List<ProductionOrderResponse> findByProduct_CurrentQuantityGreaterThan(BigDecimal currentQuantity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimal(currentQuantity);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_CurrentQuantityGreaterThan(currentQuantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product current-quantity greater than %s is found", currentQuantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ProductionOrderResponse> findByProduct_CurrentQuantityLessThan(BigDecimal currentQuantity) {
-		// TODO Auto-generated method stub
-		return null;
+		validateBigDecimalNonNegative(currentQuantity);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_CurrentQuantityLessThan(currentQuantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product current-quantity less than %s is found", currentQuantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ProductionOrderResponse> findByProduct_UnitMeasure(UnitMeasure unitMeasure) {
-		// TODO Auto-generated method stub
-		return null;
+		validateUnitMeasure(unitMeasure);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_UnitMeasure(unitMeasure);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product unit-measure %s is found", unitMeasure);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ProductionOrderResponse> findByProduct_SupplierType(SupplierType supplierType) {
-		// TODO Auto-generated method stub
-		return null;
+		validateSupplierType(supplierType);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_SupplierType(supplierType);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product supplier-type %s is found", supplierType);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ProductionOrderResponse> findByProduct_StorageType(StorageType storageType) {
-		// TODO Auto-generated method stub
-		return null;
+		validateStorageType(storageType);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_StorageType(storageType);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product storage-type %s is found", storageType);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ProductionOrderResponse> findByProduct_StorageId(Long storageId) {
-		// TODO Auto-generated method stub
-		return null;
+		fetchStorageId(storageId);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_StorageId(storageId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product storage-id %d is found", storageId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
-	public List<ProductionOrderResponse> findByProduct_StorageNameContainingIgnoreCase(String storageId) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<ProductionOrderResponse> findByProduct_StorageNameContainingIgnoreCase(String storageName) {
+		validateString(storageName);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_StorageNameContainingIgnoreCase(storageName);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product storage-name %s is found", storageName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
-	public List<ProductionOrderResponse> findByProduct_StorageLocationContainingIgnoreCase(String storageId) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<ProductionOrderResponse> findByProduct_StorageLocationContainingIgnoreCase(String storageLocation) {
+		validateString(storageLocation);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_StorageLocationContainingIgnoreCase(storageLocation);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product storage-location %s is found", storageLocation);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
@@ -594,4 +641,18 @@ public class ProductionOrderService implements IProductionOrderService {
     	validateProductionOrderStatus(request.status());
     }
 
+    private void validateStorageType(StorageType storageType) {
+    	Optional.ofNullable(storageType)
+    		.orElseThrow(() -> new ValidationException("StorageType storageType must not be null"));
+    }
+    
+    private void validateSupplierType(SupplierType supplierType) {
+    	Optional.ofNullable(supplierType)
+    		.orElseThrow(() -> new ValidationException("SupplierType supplierType must not be null"));
+    }
+    
+    private void validateUnitMeasure(UnitMeasure unitMeasure) {
+    	Optional.ofNullable(unitMeasure)
+    		.orElseThrow(() -> new ValidationException("UnitMeasure unitMeasure must not be null"));
+    }
 }

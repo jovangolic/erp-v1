@@ -52,9 +52,9 @@ public interface ProductionOrderRepository
     @Query("SELECT po FROM ProductionOrder po WHERE po.product.storage.id = :storageId")
     List<ProductionOrder> findByProduct_StorageId(@Param("storageId") Long storageId);
     @Query("SELECT po FROM ProductionOrder po WHERE LOWER(po.product.storage.name) LIKE LOWER(CONCAT('%', :storageName, '%'))")
-    List<ProductionOrder> findByProduct_StorageNameContainingIgnoreCase(@Param("storageName") String storageId);
+    List<ProductionOrder> findByProduct_StorageNameContainingIgnoreCase(@Param("storageName") String storageName);
     @Query("SELECT po FROM ProductionOrder po WHERE LOWER(po.product.storage.location) LIKE LOWER(CONCAT('%', :storageLocation, '%'))")
-    List<ProductionOrder> findByProduct_StorageLocationContainingIgnoreCase(@Param("storageLocation") String storageId);
+    List<ProductionOrder> findByProduct_StorageLocationContainingIgnoreCase(@Param("storageLocation") String storageLocation);
     @Query("SELECT po FROM ProductionOrder po WHERE po.product.storage.capacity = :capacity")
     List<ProductionOrder> findByProduct_StorageCapacity(@Param("capacity") BigDecimal capacity);
     @Query("SELECT po FROM ProductionOrder po WHERE po.product.storage.capacity >= :capacity")

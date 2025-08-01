@@ -8,23 +8,32 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ProductNotFoundException;
 import com.jovan.erp_v1.exception.StorageNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.ProductMapper;
 import com.jovan.erp_v1.model.BarCode;
 import com.jovan.erp_v1.model.Product;
+import com.jovan.erp_v1.model.Shelf;
 import com.jovan.erp_v1.model.Storage;
+import com.jovan.erp_v1.model.Supply;
 import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.BarCodeRepository;
 import com.jovan.erp_v1.repository.GoodsRepository;
 import com.jovan.erp_v1.repository.ProductRepository;
+import com.jovan.erp_v1.repository.ShelfRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
+import com.jovan.erp_v1.repository.SupplyRepository;
 import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.BarCodeRequest;
 import com.jovan.erp_v1.request.ProductRequest;
@@ -44,12 +53,36 @@ public class ProductService implements IProductService {
     private final UserRepository userRepository;
     private final BarCodeRepository barCodeRepository;
     private final GoodsRepository goodsRepository;
+    private final SupplyRepository supplyRepository;
+    private final ShelfRepository shelfRepository;
 
     @Transactional
     @Override
     public ProductResponse createProduct(ProductRequest request) {
+    	Storage storage = fetchStorage(request.storageId());
+    	Supply supply = fetchSupplyId(request.supplyId());
+    	Shelf shelf = null;
+    	if (isShelfRequired(request.goodsType())) {
+    	    if (request.shelfId() == null) throw new ValidationException("Shelf is required for this goods type.");
+    	    shelf = fetchShelfId(request.shelfId());
+    	} else if (request.shelfId() != null) {
+    	    throw new ValidationException("Shelf should not be set for this goods type.");
+    	}
     	validateProductRequest(request);
-        Product product = productMapper.toEntity(request);
+        Product product = productMapper.toEntity(request,storage,supply,shelf);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = userRepository.findByUsername(auth.getName())
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        List<BarCode> barCodes = request.barCodes().stream()
+        		.map(barCodeRequest -> {
+        	        BarCode barCode = new BarCode();
+        	        barCode.setCode(barCodeRequest.code());
+        	        barCode.setGoods(product);
+        	        barCode.setScannedBy(currentUser);
+        	        return barCode;
+        	    })
+        	    .toList();
+        product.setBarCodes(barCodes);
         Product saved = productRepository.save(product);
         return productMapper.toProductResponse(saved);
     }
@@ -63,15 +96,18 @@ public class ProductService implements IProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
         validateProductRequest(request);
-        product.setName(request.name());
-        product.setCurrentQuantity(request.currentQuantity());
-        product.setUnitMeasure(request.unitMeasure());
-        product.setSupplierType(request.supplierType());
-        product.setStorageType(request.storageType());
-        product.setGoodsType(request.goodsType());
-        Storage storage = storageRepository.findById(request.storageId())
-                .orElseThrow(() -> new StorageNotFoundException("Storage not found with id: " + request.storageId()));
-        product.setStorage(storage);
+        Storage storage = product.getStorage();
+        if(request.storageId() != null && (storage.getId() == null || !request.storageId().equals(storage.getId()))) {
+        	storage = fetchStorage(request.storageId());
+        }
+        Supply supply = product.getSupply();
+        if(request.supplyId() != null && (supply.getId() == null || !request.supplyId().equals(supply.getId()))) {
+        	supply = fetchSupplyId(request.supplyId());
+        }
+        Shelf shelf = product.getShelf();
+        if(request.shelfId() != null && (shelf.getId() == null || !request.shelfId().equals(shelf.getId()))) {
+        	shelf = fetchShelfId(request.shelfId());
+        }
         updateBarCodes(product, request.barCodes(), userRepository);
         Product updated = productRepository.save(product);
         return productMapper.toProductResponse(updated);
@@ -109,15 +145,24 @@ public class ProductService implements IProductService {
 
     @Override
     public List<ProductResponse> findByCurrentQuantityLessThan(BigDecimal quantity) {
-    	validateBigDecimal(quantity);
+    	validateBigDecimalNonNegative(quantity);
         List<Product> products = productRepository.findByCurrentQuantityLessThan(quantity);
+        if(products.isEmpty()) {
+        	String msg = String.format("No Product for quantity less than %s is found", quantity);
+        	throw new NoDataFoundException(msg);
+        }
         return productMapper.toProductResponseList(products);
     }
 
     @Override
     public List<ProductResponse> findByName(String name) {
     	validateString(name);
-        return productMapper.toProductResponseList(productRepository.findByName(name));
+    	List<Product> items = productRepository.findByName(name);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Product for given name %s is found", name);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream().map(productMapper::toProductResponse).collect(Collectors.toList());
     }
 
     @Override
@@ -160,7 +205,6 @@ public class ProductService implements IProductService {
                         .orElseThrow(() -> new IllegalArgumentException("Korisnik sa ID " + bcRequest.scannedById() + " nije pronađen."));
             }
             if (bcRequest.id() != null && existingBarCodesById.containsKey(bcRequest.id())) {
-                // Postojeći barCode - ažuriraj polja
                 BarCode existing = existingBarCodesById.get(bcRequest.id());
                 existing.setCode(bcRequest.code());
                 existing.setScannedAt(bcRequest.scannedAt());
@@ -261,7 +305,6 @@ public class ProductService implements IProductService {
 		validateSupplierType(request.supplierType());
 		validateStorageType(request.storageType());
 		validateGoodsType(request.goodsType());
-		fetchStorage(request.storageId());
 		validateBigDecimal(request.currentQuantity());
 		validateBarCodes(request.barCodes());
 	}
@@ -362,5 +405,35 @@ public class ProductService implements IProductService {
 		if (!userRepository.existsById(bc.scannedById())) {
 			throw new IllegalArgumentException("User with ID " + bc.scannedById() + " doesn't exist");
 		}
+	}
+	
+	private boolean isShelfRequired(GoodsType type) {
+	    return switch (type) {
+	        case FINISHED_PRODUCT, PALLETIZED_GOODS, SEMI_FINISHED_PRODUCT -> true;
+	        case BULK_GOODS, CONSTRUCTION_MATERIAL, RAW_MATERIAL, WRITE_OFS -> false;
+	    };
+	}
+	
+	private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
+	
+	private Supply fetchSupplyId(Long supplyId) {
+		if(supplyId == null) {
+			throw new ValidationException("Supply ID must not be null");
+		}
+		return supplyRepository.findById(supplyId).orElseThrow(() -> new ValidationException("Supply not found with id "+supplyId));
+	}
+	
+	private Shelf fetchShelfId(Long shelfId) {
+		if(shelfId == null) {
+			throw new ValidationException("Shelf ID must not be null");
+		}
+		return shelfRepository.findById(shelfId).orElseThrow(() -> new ValidationException("Shelf not found with id "+shelfId));
 	}
 }

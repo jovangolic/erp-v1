@@ -50,8 +50,8 @@ public interface IProductionOrderService {
     List<ProductionOrderResponse> findByProduct_SupplierType(SupplierType supplierType);
     List<ProductionOrderResponse> findByProduct_StorageType(StorageType storageType);
     List<ProductionOrderResponse> findByProduct_StorageId( Long storageId);
-    List<ProductionOrderResponse> findByProduct_StorageNameContainingIgnoreCase( String storageId);
-    List<ProductionOrderResponse> findByProduct_StorageLocationContainingIgnoreCase( String storageId);
+    List<ProductionOrderResponse> findByProduct_StorageNameContainingIgnoreCase( String storageName);
+    List<ProductionOrderResponse> findByProduct_StorageLocationContainingIgnoreCase( String storageLocation);
     List<ProductionOrderResponse> findByProduct_StorageCapacity( BigDecimal capacity);
     List<ProductionOrderResponse> findByProduct_StorageCapacityGreaterThan( BigDecimal capacity);
     List<ProductionOrderResponse> findByProduct_StorageCapacityLessThan( BigDecimal capacity);
