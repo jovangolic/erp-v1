@@ -35,7 +35,7 @@ public class RoleMapper {
                                 .map(p -> new PermissionResponse(p.getId(), p.getPermissionType()))
                                 .collect(Collectors.toSet());
                 List<UserResponse> userResponses = role.getUsers().stream()
-                                .map(UserResponse::new) // koristi postojeći konstruktor
+                                .map(UserResponse::new) // koristim postojeci konstruktor
                                 .collect(Collectors.toList());
                 return RoleResponse.builder()
                                 .id(role.getId())

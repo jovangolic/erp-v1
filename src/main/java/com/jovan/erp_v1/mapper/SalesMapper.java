@@ -13,13 +13,9 @@ import com.jovan.erp_v1.request.SalesRequest;
 import com.jovan.erp_v1.response.SalesResponse;
 import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class SalesMapper extends AbstractMapper<SalesRequest> {
-	
-	private final ItemSalesMapper itemSalesMapper;
 	
 	public Sales toEntity(SalesRequest request, Buyer buyer) {
 		Objects.requireNonNull(request, "SalesRequest must not be null");
@@ -28,9 +24,18 @@ public class SalesMapper extends AbstractMapper<SalesRequest> {
 		Sales sales = new Sales();
 		sales.setId(request.id());
 		sales.setBuyer(buyer);
-		
 		sales.setItemSales(new ArrayList<>());
-		sales.setCreatedAt(request.createdAt());
+		sales.setTotalPrice(request.totalPrice());
+		sales.setSalesDescription(request.salesDescription());
+		return sales;
+	}
+	
+	public Sales toEntityUpdate(Sales sales, SalesRequest request, Buyer buyer) {
+		Objects.requireNonNull(sales, "Sales must not be null");
+		Objects.requireNonNull(request, "SalesRequest must not be null");
+		Objects.requireNonNull(buyer, "Buyer must not be null");
+		sales.setBuyer(buyer);
+		sales.setItemSales(new ArrayList<>());
 		sales.setTotalPrice(request.totalPrice());
 		sales.setSalesDescription(request.salesDescription());
 		return sales;

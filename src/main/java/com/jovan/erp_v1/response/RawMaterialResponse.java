@@ -25,13 +25,8 @@ public class RawMaterialResponse {
     private SupplierType supplierType;
     private StorageType storageType;
     private GoodsType goodsType;
-
-    private Long storageId;
-    private String storageName; // opciono
-
-    private Long supplyId;
-    private BigDecimal currentQuantity;
-
+    private StorageBasicResponse storageBasicResponse;
+    private SupplyResponse supplyResponse;
     private Long productId;
     private String productName; // opciono
 
@@ -45,18 +40,8 @@ public class RawMaterialResponse {
         this.supplierType = rawMaterial.getSupplierType();
         this.storageType = rawMaterial.getStorageType();
         this.goodsType = rawMaterial.getGoodsType();
-
-        if (rawMaterial.getStorage() != null) {
-            this.storageId = rawMaterial.getStorage().getId();
-            this.storageName = rawMaterial.getStorage().getName();
-        }
-
-        if (rawMaterial.getSupply() != null) {
-            this.supplyId = rawMaterial.getSupply().getId();
-        }
-
-        this.currentQuantity = rawMaterial.getCurrentQuantity();
-
+        this.storageBasicResponse = rawMaterial.getStorage() != null ? new StorageBasicResponse(rawMaterial.getStorage()) : null;
+        this.supplyResponse = rawMaterial.getSupply() != null ? new SupplyResponse(rawMaterial.getSupply()) : null;
         if (rawMaterial.getProduct() != null) {
             this.productId = rawMaterial.getProduct().getId();
             this.productName = rawMaterial.getProduct().getName();

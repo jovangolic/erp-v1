@@ -1,65 +1,72 @@
 package com.jovan.erp_v1.mapper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
-import com.jovan.erp_v1.exception.StorageNotFoundException;
-import com.jovan.erp_v1.model.BarCode;
+import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.model.RawMaterial;
+import com.jovan.erp_v1.model.Shelf;
 import com.jovan.erp_v1.model.Storage;
-import com.jovan.erp_v1.model.User;
-import com.jovan.erp_v1.repository.StorageRepository;
-import com.jovan.erp_v1.repository.UserRepository;
-import com.jovan.erp_v1.request.BarCodeRequest;
+import com.jovan.erp_v1.model.Supply;
 import com.jovan.erp_v1.request.RawMaterialRequest;
 import com.jovan.erp_v1.response.GoodsResponse;
 import com.jovan.erp_v1.response.RawMaterialResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
+
 
 @Component
-@RequiredArgsConstructor
-public class RawMaterialMapper {
-
-	private final StorageRepository storageRepository;
-	private final UserRepository userRepository;
-
-	public RawMaterial toEntity(RawMaterialRequest request) {
+public class RawMaterialMapper extends AbstractMapper<RawMaterialRequest> {
+	public RawMaterial toEntity(RawMaterialRequest request,Product product,Storage storage, Supply supply, Shelf shelf) {
+		Objects.requireNonNull(request, "RawMaterialRequest must ot be null");
+		Objects.requireNonNull(product, "Product must ot be null");
+		Objects.requireNonNull(supply, "Supply must ot be null");
+		Objects.requireNonNull(shelf, "Shelf must ot be null");
+		validateIdForCreate(request, RawMaterialRequest::id);
 	    RawMaterial rawMaterial = new RawMaterial();
-	    if (request.barCodes() != null) {
-	        for (BarCodeRequest req : request.barCodes()) {
-	            User scannedBy = null;
-	            if (req.scannedById() != null) {
-	                scannedBy = userRepository.findById(req.scannedById())
-	                        .orElseThrow(() -> new IllegalArgumentException("Korisnik sa ID " + req.scannedById() + " nije pronađen."));
-	            }
-
-	            BarCode barCode = BarCode.builder()
-	                    .code(req.code())
-	                    .scannedAt(req.scannedAt())
-	                    .scannedBy(scannedBy)
-	                    .goods(rawMaterial) // ako koristim bidirekcionu vezu
-	                    .build();
-	            rawMaterial.addBarCode(barCode);
-	        }
-	    }
 	    rawMaterial.setId(request.id()); // za update
 	    rawMaterial.setName(request.name());
+	    rawMaterial.setBarCodes(new ArrayList<>());
 	    rawMaterial.setUnitMeasure(request.unitMeasure());
 	    rawMaterial.setSupplierType(request.supplierType());
 	    rawMaterial.setStorageType(request.storageType());
 	    rawMaterial.setGoodsType(request.goodsType());
-	    Storage storage = storageRepository.findById(request.storageId())
-	            .orElseThrow(() -> new StorageNotFoundException("Storage not found"));
 	    rawMaterial.setStorage(storage);
+	    rawMaterial.setProduct(product);
+	    rawMaterial.setSupply(supply);
+	    rawMaterial.setShelf(shelf);
 	    return rawMaterial;
 	}
+	
+	public RawMaterial toEntityUpdate(RawMaterial raw,RawMaterialRequest request,Product product,Storage storage, Supply supply, Shelf shelf) {
+		Objects.requireNonNull(raw, "RawMaterial must ot be null");
+		Objects.requireNonNull(request, "RawMaterialRequest must ot be null");
+		Objects.requireNonNull(product, "Product must ot be null");
+		Objects.requireNonNull(supply, "Supply must ot be null");
+		Objects.requireNonNull(shelf, "Shelf must ot be null");
+		validateIdForUpdate(request, RawMaterialRequest::id);
+		return buildRawMaterialForRequest(raw,request,product,storage,supply,shelf);
+	}
 
-    public RawMaterialResponse toResponse(RawMaterial rawMaterial) {
+    private RawMaterial buildRawMaterialForRequest(RawMaterial raw, RawMaterialRequest request, Product product,
+			Storage storage, Supply supply, Shelf shelf) {
+		raw.setName(request.name());
+		raw.setBarCodes(new ArrayList<>());
+		raw.setUnitMeasure(request.unitMeasure());
+		raw.setSupplierType(request.supplierType());
+		raw.setStorageType(request.storageType());
+		raw.setGoodsType(request.goodsType());
+		raw.setStorage(storage);
+		raw.setProduct(product);
+		raw.setSupply(supply);
+		raw.setShelf(shelf);
+		return raw;
+	}
+
+	public RawMaterialResponse toResponse(RawMaterial rawMaterial) {
     	Objects.requireNonNull(rawMaterial, "RawMaterial must not be null");
         return new RawMaterialResponse(rawMaterial);
     }

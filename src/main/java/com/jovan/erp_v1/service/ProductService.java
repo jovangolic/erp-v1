@@ -2,6 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -104,10 +105,14 @@ public class ProductService implements IProductService {
         if(request.supplyId() != null && (supply.getId() == null || !request.supplyId().equals(supply.getId()))) {
         	supply = fetchSupplyId(request.supplyId());
         }
-        Shelf shelf = product.getShelf();
-        if(request.shelfId() != null && (shelf.getId() == null || !request.shelfId().equals(shelf.getId()))) {
-        	shelf = fetchShelfId(request.shelfId());
-        }
+        Shelf shelf = null;
+    	if (isShelfRequired(request.goodsType())) {
+    	    if (request.shelfId() == null) throw new ValidationException("Shelf is required for this goods type.");
+    	    shelf = fetchShelfId(request.shelfId());
+    	} else if (request.shelfId() != null) {
+    	    throw new ValidationException("Shelf should not be set for this goods type.");
+    	}
+        productMapper.toEntityUpdate(product, request, storage, supply, shelf);
         updateBarCodes(product, request.barCodes(), userRepository);
         Product updated = productRepository.save(product);
         return productMapper.toProductResponse(updated);
@@ -178,19 +183,40 @@ public class ProductService implements IProductService {
     @Override
     public List<ProductResponse> findBySupplierType(SupplierType supplierType) {
     	validateSupplierType(supplierType);
-        return productMapper.toProductResponseList(productRepository.findBySupplierType(supplierType));
+    	List<Product> items = productRepository.findBySupplierType(supplierType);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Product for supplier-type %s is found", supplierType);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
+				.map(ProductResponse::new)
+				.collect(Collectors.toList());
     }
 
     @Override
     public List<ProductResponse> findByStorageType(StorageType storageType) {
     	validateStorageType(storageType);
-        return productMapper.toProductResponseList(productRepository.findByStorageType(storageType));
+    	List<Product> items = productRepository.findByStorageType(storageType);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Product for storage-type %s is found", storageType);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
+				.map(ProductResponse::new)
+				.collect(Collectors.toList());
     }
 
     @Override
     public List<ProductResponse> findByGoodsType(GoodsType goodsType) {
     	validateGoodsType(goodsType);
-        return productMapper.toProductResponseList(productRepository.findByGoodsType(goodsType));
+    	List<Product> items = productRepository.findByGoodsType(goodsType);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No Product for goods-type %s is found", goodsType);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
+				.map(ProductResponse::new)
+				.collect(Collectors.toList());
     }
 
     private void updateBarCodes(Product product, List<BarCodeRequest> barCodeRequests, UserRepository userRepository) {
@@ -229,7 +255,12 @@ public class ProductService implements IProductService {
 	@Override
 	public List<ProductResponse> findByUnitMeasure(UnitMeasure unitMeasure) {
 		validateUnitMeasure(unitMeasure);
-		return productRepository.findByUnitMeasure(unitMeasure).stream()
+		List<Product> items = productRepository.findByUnitMeasure(unitMeasure);
+		if(items.isEmpty()) {
+			String msg = String.format("No Product for unit measure %s is found", unitMeasure);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ProductResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -239,7 +270,13 @@ public class ProductService implements IProductService {
 		fetchStorage(storageId);
 		validateShelfRowCount(row);
 		validateShelfCols(col);
-		return productRepository.findByShelfRowColAndStorage(row, col, storageId).stream()
+		List<Product> items = productRepository.findByShelfRowColAndStorage(row, col, storageId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Product for shelf row %d, shelf col %d and storage-id %d is found", 
+					row,col,storageId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ProductResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -247,7 +284,12 @@ public class ProductService implements IProductService {
 	@Override
 	public List<ProductResponse> findByShelfRow(Integer row) {
 		validateShelfRowCount(row);
-		return productRepository.findByShelfRow(row).stream()
+		List<Product> items = productRepository.findByShelfRow(row);
+		if(items.isEmpty()) {
+			String msg = String.format("No Product for shelf row %d is found", row);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ProductResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -255,15 +297,25 @@ public class ProductService implements IProductService {
 	@Override
 	public List<ProductResponse> findByShelfColumn(Integer col) {
 		validateShelfCols(col);
-		return productRepository.findByShelfColumn(col).stream()
+		List<Product> items = productRepository.findByShelfColumn(col);
+		if(items.isEmpty()) {
+			String msg = String.format("No Product for shelg column %d is found", col);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ProductResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ProductResponse> findBySupplyMinQuantity(BigDecimal quantity) {
-		validateBigDecimal(quantity);
-		return productRepository.findBySupplyMinQuantity(quantity).stream()
+		validateBigDecimalNonNegative(quantity);
+		List<Product> items = productRepository.findBySupplyMinQuantity(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No Product for supply min-quantity %s is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ProductResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -271,7 +323,14 @@ public class ProductService implements IProductService {
 	@Override
 	public List<ProductResponse> findBySupplyUpdateRange(LocalDateTime from, LocalDateTime to) {
 		DateValidator.validateRange(from, to);
-		return productRepository.findBySupplyUpdateRange(from, to).stream()
+		List<Product> items = productRepository.findBySupplyUpdateRange(from, to);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Product for supply date between %s and %s is found", 
+					from.format(formatter), to.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ProductResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -279,7 +338,12 @@ public class ProductService implements IProductService {
 	@Override
 	public List<ProductResponse> findBySupplyStorageId(Long storageId) {
 		fetchStorage(storageId);
-		return productRepository.findBySupplyStorageId(storageId).stream()
+		List<Product> items = productRepository.findBySupplyStorageId(storageId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Product for supply storage-id %d is found", storageId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ProductResponse::new)
 				.collect(Collectors.toList());
 	}

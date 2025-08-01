@@ -1,23 +1,30 @@
 package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ProductNotFoundException;
 import com.jovan.erp_v1.exception.RawMaterialNotFoundException;
 import com.jovan.erp_v1.exception.ShelfNotFoundException;
 import com.jovan.erp_v1.exception.StorageNotFoundException;
 import com.jovan.erp_v1.exception.SupplyNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.RawMaterialMapper;
 import com.jovan.erp_v1.model.BarCode;
 import com.jovan.erp_v1.model.Product;
@@ -58,7 +65,11 @@ public class RawMaterialService implements IRawMaterialService {
 
 	@Override
 	public List<RawMaterialResponse> findAll() {
-		return rawMaterialMapper.toResponseList(rawMaterialRepository.findAll());
+		List<RawMaterial> items = rawMaterialRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("RawMaterial list is empty");
+		}
+		return items.stream().map(rawMaterialMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
@@ -72,7 +83,30 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public RawMaterialResponse save(RawMaterialRequest request) {
 		validateRawMaterialCreateRequest(request);
-		RawMaterial material = rawMaterialMapper.toEntity(request);
+		Product product = fetchProduct(request.productId());
+		Storage storage = fetchStorage(request.storageId());
+		Supply supply = fetchSupply(request.supplyId());
+		Shelf shelf = null;
+    	if (isShelfRequired(request.goodsType())) {
+    	    if (request.shelfId() == null) throw new ValidationException("Shelf is required for this goods type.");
+    	    shelf = fetchShelfId(request.shelfId());
+    	} else if (request.shelfId() != null) {
+    	    throw new ValidationException("Shelf should not be set for this goods type.");
+    	}
+		RawMaterial material = rawMaterialMapper.toEntity(request,product,storage,supply,shelf);
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = userRepository.findByUsername(auth.getName())
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        List<BarCode> barCodes = request.barCodes().stream()
+        		.map(barCodeRequest -> {
+        	        BarCode barCode = new BarCode();
+        	        barCode.setCode(barCodeRequest.code());
+        	        barCode.setGoods(product);
+        	        barCode.setScannedBy(currentUser);
+        	        return barCode;
+        	    })
+        	    .toList();
+         material.setBarCodes(barCodes);
 		return rawMaterialMapper.toResponse(rawMaterialRepository.save(material));
 	}
 
@@ -85,46 +119,63 @@ public class RawMaterialService implements IRawMaterialService {
 		RawMaterial existing = rawMaterialRepository.findById(id)
 				.orElseThrow(() -> new RawMaterialNotFoundException("RawMaterial not found with id: " + id));
 		validateRawMaterialUpdateRequest(request);
-		// Ažuriranje osnovnih podataka
-		existing.setName(request.name());
-		existing.setUnitMeasure(request.unitMeasure());
-		existing.setSupplierType(request.supplierType());
-		existing.setStorageType(request.storageType());
-		existing.setGoodsType(request.goodsType());
-		existing.setCurrentQuantity(request.currentQuantity());
-		// Ažuriranje skladišta
-		Storage storage = fetchStorage(request.storageId());
-		existing.setStorage(storage);
-		// Skladište
-		existing.setStorage(fetchStorage(request.storageId()));
-		// Supply
-		existing.setSupply(
-				request.supplyId() != null ? fetchSupply(request.supplyId()) : null);
-		// Proizvod
-		existing.setProduct(
-				request.productId() != null ? fetchProduct(request.productId()) : null);
-		// Ažuriranje bar kodova
-		existing.getBarCodes().clear(); // zbog `orphanRemoval = true`
-		List<BarCode> barCodes = request.barCodes().stream()
-				.map((Function<BarCodeRequest, BarCode>) barCodeReq -> {
-					User scannedBy = null;
-					if (barCodeReq.scannedById() != null) {
-						scannedBy = userRepository.findById(barCodeReq.scannedById())
-								.orElseThrow(() -> new IllegalArgumentException(
-										"Korisnik sa ID " + barCodeReq.scannedById() + " nije pronađen."));
-					}
-					return BarCode.builder()
-							.code(barCodeReq.code())
-							.scannedAt(barCodeReq.scannedAt() != null ? barCodeReq.scannedAt() : LocalDateTime.now())
-							.scannedBy(scannedBy)
-							.goods(existing)
-							.build();
-				})
-				.collect(Collectors.toList());// koristi collect da bude jasnije
-		existing.getBarCodes().addAll(barCodes);
+		Product product = fetchProduct(request.productId());
+		if(request.productId() != null && (product.getId() == null || !request.productId().equals(product.getId()))) {
+			product = fetchProduct(request.productId());
+		}
+		Storage storage = existing.getStorage();
+        if(request.storageId() != null && (storage.getId() == null || !request.storageId().equals(storage.getId()))) {
+        	storage = fetchStorage(request.storageId());
+        }
+        Supply supply = existing.getSupply();
+        if(request.supplyId() != null && (supply.getId() == null || !request.supplyId().equals(supply.getId()))) {
+        	supply = fetchSupply(request.supplyId());
+        }
+        Shelf shelf = null;
+    	if (isShelfRequired(request.goodsType())) {
+    	    if (request.shelfId() == null) throw new ValidationException("Shelf is required for this goods type.");
+    	    shelf = fetchShelfId(request.shelfId());
+    	} else if (request.shelfId() != null) {
+    	    throw new ValidationException("Shelf should not be set for this goods type.");
+    	}
+		rawMaterialMapper.toEntityUpdate(existing, request, product, storage, supply, shelf);
+		updateBarCodes(product, request.barCodes(), userRepository);
 		RawMaterial updated = rawMaterialRepository.save(existing);
 		return rawMaterialMapper.toResponse(updated);
 	}
+	
+	private void updateBarCodes(Product product, List<BarCodeRequest> barCodeRequests, UserRepository userRepository) {
+        Map<Long, BarCode> existingBarCodesById = product.getBarCodes().stream()
+                .filter(bc -> bc.getId() != null)
+                .collect(Collectors.toMap(BarCode::getId, Function.identity()));
+        List<BarCode> updatedBarCodes = new ArrayList<>();
+        for (BarCodeRequest bcRequest : barCodeRequests) {
+            User scannedBy = null;
+            if (bcRequest.scannedById() != null) {
+                scannedBy = userRepository.findById(bcRequest.scannedById())
+                        .orElseThrow(() -> new IllegalArgumentException("Korisnik sa ID " + bcRequest.scannedById() + " nije pronađen."));
+            }
+            if (bcRequest.id() != null && existingBarCodesById.containsKey(bcRequest.id())) {
+                BarCode existing = existingBarCodesById.get(bcRequest.id());
+                existing.setCode(bcRequest.code());
+                existing.setScannedAt(bcRequest.scannedAt());
+                existing.setScannedBy(scannedBy);
+                updatedBarCodes.add(existing);
+                existingBarCodesById.remove(bcRequest.id());
+            } else {
+                // Novi barCode
+                BarCode newBarCode = BarCode.builder()
+                        .code(bcRequest.code())
+                        .scannedAt(bcRequest.scannedAt())
+                        .scannedBy(scannedBy)
+                        .goods(product)
+                        .build();
+                updatedBarCodes.add(newBarCode);
+            }
+        }
+        product.getBarCodes().clear();
+        product.getBarCodes().addAll(updatedBarCodes);
+    }
 
 	@Transactional
 	@Override
@@ -138,8 +189,14 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public List<RawMaterialResponse> findByName(String name) {
 		validateString(name);
-		return rawMaterialMapper.toResponseList(
-				rawMaterialRepository.findByNameContainingIgnoreCase(name));
+		List<RawMaterial> items = rawMaterialRepository.findByName(name);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial name %s is found", name);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
+				.map(RawMaterialResponse::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -155,15 +212,25 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public List<RawMaterialResponse> findByCurrentQuantity(BigDecimal currentQuantity) {
 		validateBigDecimal(currentQuantity);
-		return rawMaterialRepository.findByCurrentQuantity(currentQuantity).stream()
+		List<RawMaterial> items = rawMaterialRepository.findByCurrentQuantity(currentQuantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for current-quantity %s is found", currentQuantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<RawMaterialResponse> findByCurrentQuantityLessThan(BigDecimal currentQuantity) {
-		validateBigDecimal(currentQuantity);
-		return rawMaterialRepository.findByCurrentQuantityLessThan(currentQuantity).stream()
+		validateBigDecimalNonNegative(currentQuantity);
+		List<RawMaterial> items = rawMaterialRepository.findByCurrentQuantityLessThan(currentQuantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for current-qunatity less than %s is found", currentQuantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -171,7 +238,12 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public List<RawMaterialResponse> findByCurrentQuantityGreaterThan(BigDecimal currentQuantity) {
 		validateBigDecimal(currentQuantity);
-		return rawMaterialRepository.findByCurrentQuantityGreaterThan(currentQuantity).stream()
+		List<RawMaterial> items = rawMaterialRepository.findByCurrentQuantityGreaterThan(currentQuantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for current-quantity greater than %s is found", currentQuantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -179,7 +251,12 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public List<RawMaterialResponse> findByProduct_CurrentQuantity(BigDecimal currentQuantity) {
 		validateBigDecimal(currentQuantity);
-		return rawMaterialRepository.findByProduct_CurrentQuantity(currentQuantity).stream()
+		List<RawMaterial> items = rawMaterialRepository.findByProduct_CurrentQuantity(currentQuantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for product current-quantity %s is found", currentQuantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -187,15 +264,25 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public List<RawMaterialResponse> findByProduct_CurrentQuantityGreaterThan(BigDecimal currentQuantity) {
 		validateBigDecimal(currentQuantity);
-		return rawMaterialRepository.findByProduct_CurrentQuantityGreaterThan(currentQuantity).stream()
+		List<RawMaterial> items = rawMaterialRepository.findByProduct_CurrentQuantityGreaterThan(currentQuantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for product current-quantity greater than %s is found", currentQuantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<RawMaterialResponse> findByProduct_CurrentQuantityLessThan(BigDecimal currentQuantity) {
-		validateBigDecimal(currentQuantity);
-		return rawMaterialRepository.findByProduct_CurrentQuantityLessThan(currentQuantity).stream()
+		validateBigDecimalNonNegative(currentQuantity);
+		List<RawMaterial> items = rawMaterialRepository.findByProduct_CurrentQuantityLessThan(currentQuantity);
+		if(items.isEmpty()) {
+			String msg =  String.format("No RawMaterial for product current-quantity less than %s is found", currentQuantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -203,7 +290,12 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public List<RawMaterialResponse> findByShelf_Id(Long shelfId) {
 		fetchShelfId(shelfId);
-		return rawMaterialRepository.findByShelf_Id(shelfId).stream()
+		List<RawMaterial> items = rawMaterialRepository.findByShelf_Id(shelfId);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for shelf-id %d is found", shelfId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -224,7 +316,12 @@ public class RawMaterialService implements IRawMaterialService {
 	public List<RawMaterialResponse> findByShelfAndQuantityGreaterThan(Long shelfId, BigDecimal quantity) {
 		fetchShelfId(shelfId);
 		validateBigDecimal(quantity);
-		return rawMaterialRepository.findByShelfAndQuantityGreaterThan(shelfId, quantity).stream()
+		List<RawMaterial> items = rawMaterialRepository.findByShelfAndQuantityGreaterThan(shelfId, quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for shelf-id %d and quantity greater than %s is found", shelfId,quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -232,8 +329,13 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public List<RawMaterialResponse> findByShelfAndQuantityLessThan(Long shelfId, BigDecimal quantity) {
 		fetchShelfId(shelfId);
-		validateBigDecimal(quantity);
-		return rawMaterialRepository.findByShelfAndQuantityLessThan(shelfId, quantity).stream()
+		validateBigDecimalNonNegative(quantity);
+		List<RawMaterial> items = rawMaterialRepository.findByShelfAndQuantityLessThan(shelfId, quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for shelf-id %d and quantity less than %s is found", shelfId,quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -242,7 +344,12 @@ public class RawMaterialService implements IRawMaterialService {
 	public List<RawMaterialResponse> findByShelfAndExactQuantity(Long shelfId, BigDecimal quantity) {
 		fetchShelfId(shelfId);
 		validateBigDecimal(quantity);
-		return rawMaterialRepository.findByShelfAndExactQuantity(shelfId, quantity).stream()
+		List<RawMaterial> items = rawMaterialRepository.findByShelfAndExactQuantity(shelfId, quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for shelf-id %d and exact-quantity %s is found", shelfId,quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -251,7 +358,12 @@ public class RawMaterialService implements IRawMaterialService {
 	public List<RawMaterialResponse> findByShelf_IdAndCurrentQuantityGreaterThan(Long shelfId, BigDecimal quantity) {
 		fetchShelfId(shelfId);
 		validateBigDecimal(quantity);
-		return rawMaterialRepository.findByShelf_IdAndCurrentQuantityGreaterThan(shelfId, quantity).stream()
+		List<RawMaterial> items = rawMaterialRepository.findByShelf_IdAndCurrentQuantityGreaterThan(shelfId, quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for shelf-id %d and quantity greater than %s is found", shelfId,quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -259,8 +371,14 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public List<RawMaterialResponse> findByShelf_IdAndCurrentQuantityLessThan(Long shelfId, BigDecimal quantity) {
 		fetchShelfId(shelfId);
-		validateBigDecimal(quantity);
-		return rawMaterialRepository.findByShelf_IdAndCurrentQuantityLessThan(shelfId, quantity).stream()
+		validateBigDecimalNonNegative(quantity);
+		List<RawMaterial> items = rawMaterialRepository.findByShelf_IdAndCurrentQuantityLessThan(shelfId, quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for shelf-id %d and quantity less than %s is found",
+					shelfId,quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -268,7 +386,12 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public List<RawMaterialResponse> findBySupplierType(SupplierType supplierType) {
 		validateSupplierType(supplierType);
-		return rawMaterialRepository.findBysupplierType(supplierType).stream()
+		List<RawMaterial> items = rawMaterialRepository.findBysupplierType(supplierType);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for supplier-type %s is found", supplierType);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -276,7 +399,12 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public List<RawMaterialResponse> findByStorageType(StorageType storageType) {
 		validateStorageType(storageType);
-		return rawMaterialRepository.findByStorageType(storageType).stream()
+		List<RawMaterial> items = rawMaterialRepository.findByStorageType(storageType);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for storage-type %s is found", storageType);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -284,7 +412,12 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public List<RawMaterialResponse> findByGoodsType(GoodsType goodsType) {
 		validateGoodsType(goodsType);
-		return rawMaterialRepository.findByGoodsType(goodsType).stream()
+		List<RawMaterial> items = rawMaterialRepository.findByGoodsType(goodsType);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for goods-type %s is found", goodsType);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -292,7 +425,12 @@ public class RawMaterialService implements IRawMaterialService {
 	@Override
 	public List<RawMaterialResponse> findByUnitMeasure(UnitMeasure unitMeasure) {
 		validateUnitMeasure(unitMeasure);
-		return rawMaterialRepository.findByUnitMeasure(unitMeasure).stream()
+		List<RawMaterial> items = rawMaterialRepository.findByUnitMeasure(unitMeasure);
+		if(items.isEmpty()) {
+			String msg = String.format("No RawMaterial for unit-measure %s is found", unitMeasure);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(RawMaterialResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -308,15 +446,6 @@ public class RawMaterialService implements IRawMaterialService {
 		validateGoodsType(request.goodsType());
 		validateBigDecimal(request.currentQuantity());
 		validateBarCodes(request.barCodes());
-		if (request.storageId() == null) {
-			throw new StorageNotFoundException("Storage ID must not be null");
-		}
-		if (request.productId() == null) {
-			throw new ProductNotFoundException("Product ID must not be null");
-		}
-		if (request.supplyId() == null) {
-			throw new SupplyNotFoundException("Supply ID must not be null");
-		}
 	}
 
 	private void validateRawMaterialUpdateRequest(RawMaterialRequest request) {
@@ -330,32 +459,23 @@ public class RawMaterialService implements IRawMaterialService {
 		validateGoodsType(request.goodsType());
 		validateBigDecimal(request.currentQuantity());
 		validateBarCodes(request.barCodes());
-		if (request.storageId() == null) {
-			throw new StorageNotFoundException("Storage ID must not be null");
-		}
-		if (request.productId() == null) {
-			throw new ProductNotFoundException("Product ID must not be null");
-		}
-		if (request.supplyId() == null) {
-			throw new SupplyNotFoundException("Supply ID must not be null");
-		}
 	}
 
 	private void validateShelfRowCount(Integer rowCount) {
 		if (rowCount == null || rowCount < 0) {
-			throw new IllegalArgumentException("Row-count must not be null or negative");
+			throw new ValidationException("Row-count must not be null or negative");
 		}
 		if (!rawMaterialRepository.existsByShelf_RowCount(rowCount)) {
-			throw new IllegalArgumentException("Row-count doesn't exists");
+			throw new ValidationException("Row-count doesn't exists");
 		}
 	}
 
 	private void validateShelfCols(Integer cols) {
 		if (cols == null || cols < 0) {
-			throw new IllegalArgumentException("Cols must not be null or negative");
+			throw new ValidationException("Cols must not be null or negative");
 		}
 		if (!rawMaterialRepository.existsByShelf_Cols(cols)) {
-			throw new IllegalArgumentException("Cols doesn't exists");
+			throw new ValidationException("Cols doesn't exists");
 		}
 	}
 
@@ -369,31 +489,31 @@ public class RawMaterialService implements IRawMaterialService {
 
 	private void validateUnitMeasure(UnitMeasure unitMeasure) {
 		if (unitMeasure == null) {
-			throw new IllegalArgumentException("UnitMeasure unitMeasure must not be null");
+			throw new ValidationException("UnitMeasure unitMeasure must not be null");
 		}
 	}
 
 	private void validateSupplierType(SupplierType supplierType) {
 		if (supplierType == null) {
-			throw new IllegalArgumentException("SupplierType supplierType must not be null");
+			throw new ValidationException("SupplierType supplierType must not be null");
 		}
 	}
 
 	private void validateStorageType(StorageType storageType) {
 		if (storageType == null) {
-			throw new IllegalArgumentException("StorageType storageType must not be null");
+			throw new ValidationException("StorageType storageType must not be null");
 		}
 	}
 
 	private void validateGoodsType(GoodsType goodsType) {
 		if (goodsType == null) {
-			throw new IllegalArgumentException("GoodsType goodsType must not be null");
+			throw new ValidationException("GoodsType goodsType must not be null");
 		}
 	}
 
 	private void validateString(String str) {
 		if (str == null || str.trim().isEmpty()) {
-			throw new IllegalArgumentException("String must not be null nor empty");
+			throw new ValidationException("String must not be null nor empty");
 		}
 	}
 
@@ -423,38 +543,56 @@ public class RawMaterialService implements IRawMaterialService {
 
 	private void validateBigDecimal(BigDecimal currentQuantity) {
 		if (currentQuantity == null || currentQuantity.compareTo(BigDecimal.ZERO) <= 0) {
-			throw new IllegalArgumentException("Current Quantity must not be null nor negative");
+			throw new ValidationException("Current Quantity must not be null nor negative");
+		}
+	}
+	
+	private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
 		}
 	}
 
 	private void validateBarCodes(List<BarCodeRequest> barCodes) {
 		if (barCodes == null || barCodes.isEmpty()) {
-			throw new IllegalArgumentException("BarCodes must not be null nor empty");
+			throw new ValidationException("BarCodes must not be null nor empty");
 		}
 		for (BarCodeRequest bc : barCodes) {
+			if(bc.id() == null) {
+				throw new ValidationException("BarCodeRequest must not be null");
+			}
 			validateBarCode(bc);
 		}
 	}
 
 	private void validateBarCode(BarCodeRequest bc) {
 		if (bc.code() == null || bc.code().isBlank()) {
-			throw new IllegalArgumentException("Code must not be null or blank");
+			throw new ValidationException("Code must not be null or blank");
 		}
 		if (barCodeRepository.existsByCode(bc.code())) {
-			throw new IllegalArgumentException("Bar-code with code '" + bc.code() + "' already exists");
+			throw new ValidationException("Bar-code with code '" + bc.code() + "' already exists");
 		}
 		if (bc.goodsId() == null) {
-			throw new IllegalArgumentException("Goods Id must not be null");
+			throw new ValidationException("Goods Id must not be null");
 		}
 		if (!goodsRepository.existsById(bc.goodsId())) {
-			throw new IllegalArgumentException("Goods with ID " + bc.goodsId() + " doesn't exist");
+			throw new ValidationException("Goods with ID " + bc.goodsId() + " doesn't exist");
 		}
 		if (bc.scannedById() == null) {
-			throw new IllegalArgumentException("BarCode must have a scanner (user ID)");
+			throw new ValidationException("BarCode must have a scanner (user ID)");
 		}
 		if (!userRepository.existsById(bc.scannedById())) {
-			throw new IllegalArgumentException("User with ID " + bc.scannedById() + " doesn't exist");
+			throw new ValidationException("User with ID " + bc.scannedById() + " doesn't exist");
 		}
 	}
-
+	
+	private boolean isShelfRequired(GoodsType type) {
+	    return switch (type) {
+	        case FINISHED_PRODUCT, PALLETIZED_GOODS, SEMI_FINISHED_PRODUCT -> true;
+	        case BULK_GOODS, CONSTRUCTION_MATERIAL, RAW_MATERIAL, WRITE_OFS -> false;
+	    };
+	}
 }

@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class SalesResponse {
 
 	private Long id;
-    private String buyerCompanyName;
+    private BuyerResponse buyerResponse;
     private LocalDateTime createdAt;
     private BigDecimal totalPrice;
     private List<ItemSalesResponse> itemSales;
@@ -22,7 +22,7 @@ public class SalesResponse {
 
     public SalesResponse(Sales sales, List<ItemSalesResponse> itemSalesResponses) {
         this.id = sales.getId();
-        this.buyerCompanyName = sales.getBuyer().getCompanyName();
+        this.buyerResponse = sales.getBuyer() != null ? new BuyerResponse(sales.getBuyer()) : null;
         this.createdAt = sales.getCreatedAt();
         this.totalPrice = sales.getTotalPrice();
         this.itemSales = itemSalesResponses;
@@ -30,7 +30,7 @@ public class SalesResponse {
     }
     public SalesResponse(Sales sales) {
         this.id = sales.getId();
-        this.buyerCompanyName = sales.getBuyer().getCompanyName();
+        this.buyerResponse = sales.getBuyer() != null ? new BuyerResponse(sales.getBuyer()) : null;
         this.createdAt = sales.getCreatedAt();
         this.totalPrice = sales.getTotalPrice();
         this.salesDescription = sales.getSalesDescription();

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.enumeration.ReportType;
 import com.jovan.erp_v1.exception.ReportErrorException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.ReportMapper;
 import com.jovan.erp_v1.model.Report;
 import com.jovan.erp_v1.repository.ReportRepository;
@@ -21,6 +22,7 @@ import com.jovan.erp_v1.request.ReportRequest;
 import com.jovan.erp_v1.response.ReportResponse;
 import com.jovan.erp_v1.util.DateValidator;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -30,25 +32,35 @@ public class ReportService implements IReportService {
     private final ReportRepository reportRepository;
     private final ReportMapper reportMapper;
 
+    @Transactional
     @Override
     public ReportResponse generateReport(ReportRequest request) {
-        // Simulacija generisanja izveštaja
-        String filePath = "reports/" + UUID.randomUUID() + ".pdf"; // generiši .pdf fajl
-
-        Report report = new Report();
-        report.setType(request.type());
-        report.setGeneratedAt(LocalDateTime.now());
-        report.setFilePath(filePath);
-
+        // Simulacija generisanja izvestaja
+        String filePath = "reports/" + UUID.randomUUID() + ".pdf"; // generise .pdf fajl
+        validateReportType(request.type());
+        Report report = reportMapper.toEntity(request,filePath);
         reportRepository.save(report);
         return reportMapper.toResponse(report);
+    }
+    
+    @Transactional
+    public ReportResponse updateReport(Long id, ReportRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new ValidationException("ID in path and body do not match");
+		}
+        Report report = reportRepository.findById(id)
+            .orElseThrow(() -> new ValidationException("Report not found"));
+        String existingFilePath = report.getFilePath();
+        validateReportType(request.type());
+        reportMapper.toEntityUpdate(report, request,existingFilePath);
+        Report updated = reportRepository.save(report);
+        return new ReportResponse(updated);
     }
 
     @Override
     public Resource downloadReport(Long reportId) {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new RuntimeException("Report not found"));
-
         try {
             Path path = Paths.get(report.getFilePath());
             return new UrlResource(path.toUri());
@@ -90,4 +102,5 @@ public class ReportService implements IReportService {
     		throw new IllegalArgumentException("ReportType type must not be null");
     	}
     }
+    
 }

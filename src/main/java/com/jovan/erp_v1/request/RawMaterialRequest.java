@@ -13,7 +13,6 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Size;
 
 public record RawMaterialRequest(
 		Long id,
@@ -31,6 +30,8 @@ public record RawMaterialRequest(
 		@NotNull(message = "ID skladišta je obavezan") Long storageId,
 
 		Long supplyId,
+		
+		Long shelfId,
 
 		@NotNull(message = "Trenutna količina je obavezna")
 		@PositiveOrZero(message = "Količina mora biti 0 ili veća")

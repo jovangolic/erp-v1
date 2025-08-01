@@ -44,7 +44,7 @@ public class RoleService implements IRoleService {
                     .collect(Collectors.toSet());
         }
         Role role = roleMapper.toEntity(request, permissions);
-        role.setName(roleName); // Setujemo finalni naziv s "ROLE_" prefiksom
+        role.setName(roleName); 
         Role savedRole = roleRepository.save(role);
         return roleMapper.toResponse(savedRole);
     }
@@ -54,7 +54,6 @@ public class RoleService implements IRoleService {
     public RoleResponse updateRole(Long roleId, RoleRequest updatedRequest) {
         Role existingRole = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
-        // mapiranje ID-jeva u entitete
         Set<Permission> permissions = new HashSet<>();
         if (updatedRequest.getPermissionIds() != null) {
             permissions = updatedRequest.getPermissionIds().stream()
@@ -63,12 +62,8 @@ public class RoleService implements IRoleService {
                     .collect(Collectors.toSet());
         }
 
-        // ažuriraj osnovna polja
         roleMapper.updateRole(updatedRequest, existingRole);
-
-        // postavi permissions
         existingRole.setPermissions(permissions);
-
         Role updated = roleRepository.save(existingRole);
         return roleMapper.toResponse(updated);
     }
@@ -78,8 +73,7 @@ public class RoleService implements IRoleService {
     public void deleteRole(Long roleId) {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
-
-        role.removeAllUsersFromRole(); // očisti relaciju pre brisanja
+        role.removeAllUsersFromRole();
         roleRepository.delete(role);
     }
 
@@ -105,7 +99,7 @@ public class RoleService implements IRoleService {
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         role.assignRoleToUser(user);
-        roleRepository.save(role); // opcionalno jer @Transactional može odraditi flush automatski
+        roleRepository.save(role); 
     }
 
 }

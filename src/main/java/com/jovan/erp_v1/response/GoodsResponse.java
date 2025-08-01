@@ -7,7 +7,6 @@ import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
-import com.jovan.erp_v1.model.BarCode;
 import com.jovan.erp_v1.model.Goods;
 
 import lombok.Data;

@@ -9,22 +9,13 @@ import java.util.List;
 public interface IRouteService {
 
     RouteResponse create(RouteRequest request);
-
     RouteResponse update(Long id, RouteRequest request);
-
     void delete(Long id);
-
     RouteResponse findOneById(Long id);
-
     List<RouteResponse> findAll();
-
     List<RouteResponse> findByOrigin(String origin);
-
     List<RouteResponse> findByDestination(String destination);
-
     List<RouteResponse> findByOriginAndDestination(String origin, String destination);
-
     List<RouteResponse> findByDistanceKmGreaterThan(BigDecimal distance);
-
     List<RouteResponse> findByDistanceKmLessThan(BigDecimal distance);
 }

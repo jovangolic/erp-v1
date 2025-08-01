@@ -4,11 +4,13 @@ import java.time.LocalDateTime;
 
 import com.jovan.erp_v1.enumeration.ReportType;
 
+import jakarta.validation.constraints.NotNull;
+
 public record ReportRequest(
 
         Long id,
-        ReportType type,
-        LocalDateTime generatedAt,
-        String filePath) {
+        @NotNull ReportType type,
+        LocalDateTime generatedAt
+        ) {
 
 }

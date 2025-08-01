@@ -94,13 +94,6 @@ public class SalesService implements ISalesService {
 				.collect(Collectors.toList());
 	}
 
-	/*@Override
-	public List<SalesResponse> getByBuyer(Buyer buyer) {
-		return salesRepository.findByBuyer(buyer).stream()
-				.map(salesMapper::toResponse)
-				.collect(Collectors.toList());
-	}*/
-
 	@Override
 	public List<SalesResponse> getByTotalPrice(BigDecimal totalPrice) {
 		validateBigDecimal(totalPrice);

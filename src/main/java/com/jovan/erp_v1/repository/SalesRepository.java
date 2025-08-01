@@ -20,19 +20,12 @@ import jakarta.persistence.MapKeyColumn;
 public interface SalesRepository extends JpaRepository<Sales, Long>, JpaSpecificationExecutor<Sales> {
 
 	List<Sales> findByCreatedAt(LocalDateTime date);
-
 	List<Sales> findByTotalPrice(BigDecimal totalPrice);
-
-	//List<Sales> findByBuyer(Buyer buyer);
-
 	Sales findSalesById(Long id);
-
 	List<Sales> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
-
 	@Query("SELECT s.createdAt.toLocalDate() AS date, SUM(s.totalPrice) FROM Sales s WHERE s.createdAt >= :fromDate GROUP BY s.createdAt.toLocalDate()")
 	@MapKeyColumn(name = "date")
 	List<DailySalesDTO> getDailySalesLast7Days(@Param("fromDate") LocalDate fromDate);
-
 	@Query("SELECT SUM(s.totalPrice) FROM Sales s")
 	BigDecimal sumAllSalesRevenue();
 	
