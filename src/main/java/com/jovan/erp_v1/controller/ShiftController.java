@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,9 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jovan.erp_v1.exception.NoSuchShiftErrorException;
-import com.jovan.erp_v1.mapper.ShiftMapper;
-import com.jovan.erp_v1.model.Shift;
 import com.jovan.erp_v1.request.ShiftRequest;
 import com.jovan.erp_v1.response.ShiftResponse;
 import com.jovan.erp_v1.service.IShiftService;
@@ -37,21 +34,18 @@ import lombok.RequiredArgsConstructor;
 @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','STORAGE_FOREMAN')")
 public class ShiftController {
 
-	
 	private final IShiftService iShiftService;
-	private final ShiftMapper shiftMapper;
-	
-	
+
 	@PostMapping("/new/create-shift")
 	public ResponseEntity<ShiftResponse> createShift(@Valid @RequestBody ShiftRequest request){
-		Shift shift = iShiftService.save(request);
-		return ResponseEntity.ok(shiftMapper.toResponse(shift));
+		ShiftResponse shift = iShiftService.save(request);
+		return ResponseEntity.ok(shift);
 	}
 	
 	@PutMapping("/update/{id}")
 	public ResponseEntity<ShiftResponse> updateShift(@PathVariable Long id, @Valid @RequestBody ShiftRequest request){
-		Shift updated = iShiftService.update(id, request);
-		return ResponseEntity.ok(shiftMapper.toResponse(updated));
+		ShiftResponse updated = iShiftService.update(id, request);
+		return ResponseEntity.ok(updated);
 	}
 	
 	

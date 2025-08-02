@@ -49,7 +49,7 @@ public class Shelf {
 				shelf.setRowCount(i);
 				shelf.setCols(j);
 				shelf.setStorage(storage);
-				storage.addShelf(shelf); // koristi helper metodu
+				storage.addShelf(shelf); 
 			}
 		}
 	}

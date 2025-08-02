@@ -13,7 +13,7 @@ public record ShiftRequest(
 	    LocalDateTime endTime,
 
 	    @NotNull(message = "ID supervizora smene je obavezan")
-	    Long shiftSupervisorId
-	    //List<ConfirmationDocumentRequest> documents  -> ako bude potrebno, samo odkomentarisi
+	    Long shiftSupervisorId,
+	    List<ConfirmationDocumentRequest> documents  //-> ako bude potrebno, samo odkomentarisi
 		) {
 }

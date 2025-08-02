@@ -20,14 +20,14 @@ public class ShelfResponse {
 	private Long id;
 	private Integer rowCount;
 	private Integer cols;
-	private Long storageId;
+	private StorageBasicResponse storageBasicResponse;
 	private List<Long> goods;
 	
 	public ShelfResponse(Shelf shelf) {
         this.id = shelf.getId();
         this.rowCount = shelf.getRowCount();
         this.cols = shelf.getCols();
-        this.storageId = shelf.getStorage() != null ? shelf.getStorage().getId() : null;
+        this.storageBasicResponse = shelf.getStorage() != null ? new StorageBasicResponse(shelf.getStorage()) : null;
         this.goods = shelf.getGoods() != null
             ? shelf.getGoods().stream().map(Goods::getId).collect(Collectors.toList())
             : new ArrayList<>();

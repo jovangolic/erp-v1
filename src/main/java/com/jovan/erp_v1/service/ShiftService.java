@@ -2,20 +2,21 @@ package com.jovan.erp_v1.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
-
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.NoSuchShiftErrorException;
-import com.jovan.erp_v1.exception.SupervisorNotFoundException;
 import com.jovan.erp_v1.exception.UserNotFoundException;
+import com.jovan.erp_v1.mapper.ConfirmationDocumentMapper;
 import com.jovan.erp_v1.mapper.ShiftMapper;
+import com.jovan.erp_v1.model.ConfirmationDocument;
 import com.jovan.erp_v1.model.Shift;
 import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.ShiftRepository;
 import com.jovan.erp_v1.repository.UserRepository;
+import com.jovan.erp_v1.request.ConfirmationDocumentRequest;
 import com.jovan.erp_v1.request.ShiftRequest;
 import com.jovan.erp_v1.response.ShiftResponse;
 import com.jovan.erp_v1.util.DateValidator;
@@ -30,10 +31,11 @@ public class ShiftService implements IShiftService {
 	private final ShiftRepository shiftRepository;
 	private final ShiftMapper shiftMapper;
 	private final UserRepository userRepository;
+	private final ConfirmationDocumentMapper docMapper;
 
 	@Transactional
 	@Override
-	public Shift save(ShiftRequest request) {
+	public ShiftResponse save(ShiftRequest request) {
 		DateValidator.validateNotNull(request.startTime(), "Start time");
 	    DateValidator.validateNotNull(request.endTime(), "End time");
 	    DateValidator.validateRange(request.startTime(), request.endTime());
@@ -41,14 +43,20 @@ public class ShiftService implements IShiftService {
 	    DateValidator.validatePastOrPresent(request.endTime(), "End time");
 	    //DateValidator.validateNotInFuture(request.startTime(), "Start time");
 		User supervisor = validateShiftSupervisorId(request.shiftSupervisorId());
-		Shift shift = shiftMapper.toEntity(request);
-		shift.setShiftSupervisor(supervisor);
-		return shiftRepository.save(shift);
+		Shift shift = shiftMapper.toEntity(request,supervisor);
+		if (request.documents() != null) {
+		    for (ConfirmationDocumentRequest docReq : request.documents()) {
+		        ConfirmationDocument doc = docMapper.toEntity(docReq, supervisor, shift);
+		        shift.getDocuments().add(doc);
+		    }
+		}
+		Shift saved = shiftRepository.save(shift);
+		return new ShiftResponse(saved);
 	}
 
 	@Transactional
 	@Override
-	public Shift update(Long id, ShiftRequest request) {
+	public ShiftResponse update(Long id, ShiftRequest request) {
 		if (!request.id().equals(id)) {
 			throw new IllegalArgumentException("ID in path and body do not match");
 		}
@@ -59,11 +67,19 @@ public class ShiftService implements IShiftService {
 	    DateValidator.validateRange(request.startTime(), request.endTime());
 	    DateValidator.validatePastOrPresent(request.startTime(), "Start time");
 	    DateValidator.validatePastOrPresent(request.endTime(), "End time");
-		User supervisor = validateShiftSupervisorId(request.shiftSupervisorId());
-		shift.setStartTime(request.startTime());
-		shift.setEndTime(request.endTime());
-		shift.setShiftSupervisor(supervisor);
-		return shiftRepository.save(shift);
+		User supervisor = shift.getShiftSupervisor();
+		if(request.shiftSupervisorId() != null && (supervisor.getId() == null || !request.shiftSupervisorId().equals(supervisor.getId()))) {
+			supervisor = validateShiftSupervisorId(request.shiftSupervisorId());
+		}
+		shiftMapper.toUpdateEntity(shift, request, supervisor);
+		if (request.documents() != null) {
+		    for (ConfirmationDocumentRequest docReq : request.documents()) {
+		        ConfirmationDocument doc = docMapper.toEntity(docReq, supervisor, shift);
+		        shift.getDocuments().add(doc);
+		    }
+		}
+		Shift update = shiftRepository.save(shift);
+		return new ShiftResponse(update);
 	}
 
 	@Override
@@ -151,17 +167,22 @@ public class ShiftService implements IShiftService {
 
 	@Override
 	public List<ShiftResponse> findActiveShifts() {
-		return shiftRepository.findActiveShifts().stream()
+		List<Shift> items = shiftRepository.findActiveShifts();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No active shifts are found");
+		}
+		return items.stream()
 				.map(ShiftResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ShiftResponse> findByEndTimeIsNull() {
-		if(!shiftRepository.existsByEndTimeIsNull()) {
-			throw new IllegalArgumentException("There is no active shifts");
+		List<Shift> items = shiftRepository.findByEndTimeIsNull();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Shifts for end time is null, found");
 		}
-		return shiftRepository.findByEndTimeIsNull().stream()
+		return items.stream()
 				.map(ShiftResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -171,7 +192,14 @@ public class ShiftService implements IShiftService {
 			LocalDateTime end) {
 		validateShiftSupervisorId(supervisorId);
 		DateValidator.validateRange(start, end);
-		return shiftRepository.findByShiftSupervisorIdAndStartTimeBetween(supervisorId, start, end).stream()
+		List<Shift> items = shiftRepository.findByShiftSupervisorIdAndStartTimeBetween(supervisorId, start, end);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Shift for supervisor-id %d and start time between %s and %s is found",
+					supervisorId,start.format(formatter),end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ShiftResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -179,10 +207,12 @@ public class ShiftService implements IShiftService {
 	@Override
 	public List<ShiftResponse> findByShiftSupervisorIdAndEndTimeIsNull(Long supervisorId) {
 		validateShiftSupervisorId(supervisorId);
-		if (!shiftRepository.existsByShiftSupervisorIdAndEndTimeIsNull(supervisorId)) {
-			throw new IllegalArgumentException("Currently, there is not any active shift for this foreman");
+		List<Shift> items = shiftRepository.findByShiftSupervisorIdAndEndTimeIsNull(supervisorId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Shift for supervisor-id %d, and end time equal null is found", supervisorId);
+			throw new NoDataFoundException(msg);
 		}
-		return shiftRepository.findByShiftSupervisorIdAndEndTimeIsNull(supervisorId).stream()
+		return items.stream()
 				.map(shiftMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -204,7 +234,12 @@ public class ShiftService implements IShiftService {
 	@Override
 	public List<ShiftResponse> findCurrentShiftBySupervisor(Long supervisorId) {
 		validateShiftSupervisorId(supervisorId);
-		return shiftRepository.findCurrentShiftBySupervisor(supervisorId).stream()
+		List<Shift> items = shiftRepository.findCurrentShiftBySupervisor(supervisorId);
+		if(items.isEmpty()) {
+			String msg = String.format("No current-shifts for supervisor-id %d is found", supervisorId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ShiftResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -212,7 +247,12 @@ public class ShiftService implements IShiftService {
 	@Override
 	public List<ShiftResponse> findShiftsLongerThan(Integer hours) {
 		validateInteger(hours);
-		return shiftRepository.findShiftsLongerThan(hours).stream()
+		List<Shift> items = shiftRepository.findShiftsLongerThan(hours);
+		if(items.isEmpty()) {
+			String msg = String.format("No shifts longer than %d is found", hours);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ShiftResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -220,14 +260,25 @@ public class ShiftService implements IShiftService {
 	@Override
 	public List<ShiftResponse> findShiftsOverlappingPeriod(LocalDateTime start, LocalDateTime end) {
 		DateValidator.validateRange(start, end);
-		return shiftRepository.findShiftsOverlappingPeriod(start, end).stream()
+		List<Shift> items = shiftRepository.findShiftsOverlappingPeriod(start, end);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No overlapping shifts for given period between %s and %s is found", 
+					start.format(formatter),end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ShiftResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ShiftResponse> findNightShifts() {
-		return shiftRepository.findNightShifts().stream()
+		List<Shift> items = shiftRepository.findNightShifts();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No night shifts are found");
+		}
+		return items.stream()
 				.map(shiftMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -236,12 +287,21 @@ public class ShiftService implements IShiftService {
 	public List<ShiftResponse> findFutureShifts(LocalDateTime now) {
 		DateValidator.validateNotNull(now, "Time now");
 		List<Shift> shifts = shiftRepository.findByStartTimeAfter(now);
+		if(shifts.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No future shifts for future date %s is found", now.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
 		return shifts.stream().map(shiftMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ShiftResponse> findAllFutureShifts() {
-		return shiftRepository.findAllFutureShifts()
+		List<Shift> items = shiftRepository.findAllFutureShifts();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No future shifts found");
+		}
+		return items
 	            .stream()
 	            .map(shiftMapper::toResponse)
 	            .collect(Collectors.toList());
@@ -250,7 +310,12 @@ public class ShiftService implements IShiftService {
 	@Override
 	public List<ShiftResponse> findByShiftSupervisor_EmailLikeIgnoreCase(String email) {
 		validateString(email);
-		return shiftRepository.findByShiftSupervisor_EmailLikeIgnoreCase(email).stream()
+		List<Shift> items = shiftRepository.findByShiftSupervisor_EmailLikeIgnoreCase(email);
+		if(items.isEmpty()) {
+			String msg = String.format("No Shift for supervisor's email %s is found", email);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ShiftResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -258,7 +323,12 @@ public class ShiftService implements IShiftService {
 	@Override
 	public List<ShiftResponse> findByShiftSupervisorPhoneNumberLikeIgnoreCase(String phoneNumber) {
 		validateString(phoneNumber);
-		return shiftRepository.findByShiftSupervisorPhoneNumberLikeIgnoreCase(phoneNumber).stream()
+		List<Shift> items = shiftRepository.findByShiftSupervisorPhoneNumberLikeIgnoreCase(phoneNumber);
+		if(items.isEmpty()) {
+			String msg = String.format("No Shift for supervisor's phone-number %s is found", phoneNumber);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ShiftResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -268,7 +338,13 @@ public class ShiftService implements IShiftService {
 			String lastName) {
 		validateString(firstName);
 		validateString(lastName);
-		return shiftRepository.findByShiftSupervisor_FirstNameLikeIgnoreCaseAndLastNameLikeIgnoreCase(firstName, lastName).stream()
+		List<Shift> items = shiftRepository.findByShiftSupervisor_FirstNameLikeIgnoreCaseAndLastNameLikeIgnoreCase(firstName, lastName);
+		if(items.isEmpty()) {
+			String msg = String.format("No Shift for supervisor first-name %s and last-name %s is found",
+					firstName,lastName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ShiftResponse::new)
 				.collect(Collectors.toList());
 	}

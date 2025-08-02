@@ -77,6 +77,18 @@ public class ShiftPlanningController {
         List<ShiftPlanningResponse> response = shiftPlanningService.findByWorkCenter_Capacity(capacity);
         return ResponseEntity.ok(response);
     }
+    
+    @GetMapping("/workCenter-capacity-greater-than")
+    public ResponseEntity<List<ShiftPlanningResponse>> findByWorkCenter_CapacityGreaterThan(@RequestParam("capacity") BigDecimal capacity){
+    	List<ShiftPlanningResponse> response = shiftPlanningService.findByWorkCenter_CapacityGreaterThan(capacity);
+    	return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/workCenter-capacity-less-than")
+    public ResponseEntity<List<ShiftPlanningResponse>> findByWorkCenter_CapacityLessThan(@RequestParam("capacity") BigDecimal capacity){
+    	List<ShiftPlanningResponse> response = shiftPlanningService.findByWorkCenter_CapacityLessThan(capacity);
+    	return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/workCenter-location")
     public ResponseEntity<List<ShiftPlanningResponse>> findByWorkCenter_LocationContainingIgnoreCase(

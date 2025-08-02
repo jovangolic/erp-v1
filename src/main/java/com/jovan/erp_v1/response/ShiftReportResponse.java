@@ -16,12 +16,14 @@ public class ShiftReportResponse {
 	private Long id;
     private String description;
     private LocalDateTime createdAt;
+    private UserResponse userResponse;
     private ShiftResponse shiftResponse;
     private String filePath;
     
 	public ShiftReportResponse(ShiftReport r) {
 		this.id = r.getId();		this.description = r.getDescription();
 		this.createdAt = r.getCreatedAt();
+		this.userResponse = r.getCreatedBy() != null ? new UserResponse(r.getCreatedBy()) : null;
 		this.shiftResponse = r.getRelatedShift() != null ? new ShiftResponse(r.getRelatedShift()) : null;
 		this.filePath = r.getFilePath();
 	}

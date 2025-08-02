@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,39 +36,45 @@ public class ShiftReportService implements IShiftReportService {
 
 	@Transactional
 	@Override
-	public ShiftReport save(ShiftReportRequest request) {
+	public ShiftReportResponse save(ShiftReportRequest request) {
 		User creator = fetchUserId(request.createdById());
 		Shift shift = fetchShiftId(request.relatedShiftId());
 		validateString(request.description());
 		validateString(request.filePath());
-		ShiftReport report = shiftReportMapper.toEntity(request);
-		report.setCreatedBy(creator);
-		report.setRelatedShift(shift);
-		report.setCreatedAt(LocalDateTime.now());
-		return shiftReportRepository.save(report);
+		ShiftReport report = shiftReportMapper.toEntity(request,creator,shift);
+		ShiftReport saved = shiftReportRepository.save(report);
+		return new ShiftReportResponse(saved);
 	}
 
 	@Transactional
 	@Override
-	public ShiftReport update(Long id, ShiftReportRequest request) {
+	public ShiftReportResponse update(Long id, ShiftReportRequest request) {
 		if (!request.id().equals(id)) {
 			throw new IllegalArgumentException("ID in path and body do not match");
 		}
 		ShiftReport report = shiftReportRepository.findById(id)
 				.orElseThrow(() -> new NoSuchShiftReportFoundException("Report not found with id: " + id));
-		Shift shift = fetchShiftId(request.relatedShiftId());
-		User creator = fetchUserId(request.createdById());
+		User creator = report.getCreatedBy();
+		if(request.createdById() != null && (creator.getId() == null || !request.createdById().equals(creator.getId()))) {
+			creator = fetchUserId(request.createdById());
+		}
+		Shift shift = report.getRelatedShift();
+		if(request.relatedShiftId() != null && (shift.getId() == null || !request.relatedShiftId().equals(shift.getId()))) {
+			shift = fetchShiftId(request.relatedShiftId());
+		}
 		validateString(request.description());
 		validateString(request.filePath());
-		report.setCreatedBy(creator);
-		report.setRelatedShift(shift);
-		report.setDescription(request.description());
-		report.setFilePath(request.filePath());
-		return shiftReportRepository.save(report);
+		shiftReportMapper.toUpdateEntity(report, request, creator, shift);
+		ShiftReport saved = shiftReportRepository.save(report);
+		return new ShiftReportResponse(saved);
 	}
 
 	@Override
 	public List<ShiftReportResponse> getAll() {
+		List<ShiftReport> items = shiftReportRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("ShiftReport list is empty");
+		}
 		return shiftReportRepository.findAll().stream()
 				.map(ShiftReportResponse::new)
 				.collect(Collectors.toList());
@@ -82,7 +89,13 @@ public class ShiftReportService implements IShiftReportService {
 
 	@Override
 	public List<ShiftReportResponse> getByShiftId(Long shiftId) {
-		return shiftReportRepository.findByRelatedShiftId(shiftId).stream()
+		fetchShiftId(shiftId);
+		List<ShiftReport> items = shiftReportRepository.findByRelatedShiftId(shiftId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ShiftReport for shift-id %d, found", shiftId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ShiftReportResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -98,11 +111,13 @@ public class ShiftReportService implements IShiftReportService {
 
 	@Override
 	public List<ShiftReportResponse> findByDescription(String description) {
-		if(!shiftReportRepository.existsByDescription(description)) {
-			throw new IllegalArgumentException("Description doesn't exist");
-		}
 		validateString(description);
-		return shiftReportRepository.findByDescription(description).stream()
+		List<ShiftReport> items = shiftReportRepository.findByDescription(description);
+		if(items.isEmpty()) {
+			String msg = String.format("No ShiftReport for description %s, found", description);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(shiftReportMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -110,7 +125,14 @@ public class ShiftReportService implements IShiftReportService {
 	@Override
 	public List<ShiftReportResponse> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end) {
 		DateValidator.validateRange(start, end);
-		return shiftReportRepository.findByCreatedAtBetween(start, end).stream()
+		List<ShiftReport> items = shiftReportRepository.findByCreatedAtBetween(start, end);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No ShiftReport for createdAt between %s and %s, found", 
+					start.format(formatter),end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(shiftReportMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -118,7 +140,13 @@ public class ShiftReportService implements IShiftReportService {
 	@Override
 	public List<ShiftReportResponse> findByCreatedAtAfterOrEqual(LocalDateTime date) {
 		DateValidator.validateNotNull(date, "Date");
-		return shiftReportRepository.findByCreatedAtAfterOrEqual(date).stream()
+		List<ShiftReport> items = shiftReportRepository.findByCreatedAtAfterOrEqual(date);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No ShiftReport for createdAt after or equal %s, found", date.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(shiftReportMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -126,7 +154,12 @@ public class ShiftReportService implements IShiftReportService {
 	@Override
 	public List<ShiftReportResponse> findByCreatedBy_EmailLikeIgnoreCase(String email) {
 		validateString(email);
-		return shiftReportRepository.findByCreatedBy_EmailLikeIgnoreCase(email).stream()
+		List<ShiftReport> items = shiftReportRepository.findByCreatedBy_EmailLikeIgnoreCase(email);
+		if(items.isEmpty()) {
+			String msg = String.format("No ShiftReport for createdBy's email %s ,found", email);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(shiftReportMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -134,7 +167,12 @@ public class ShiftReportService implements IShiftReportService {
 	@Override
 	public List<ShiftReportResponse> findByCreatedBy_PhoneNumberLikeIgnoreCase(String phoneNumber) {
 		validateString(phoneNumber);
-		return shiftReportRepository.findByCreatedBy_PhoneNumberLikeIgnoreCase(phoneNumber).stream()
+		List<ShiftReport> items = shiftReportRepository.findByCreatedBy_PhoneNumberLikeIgnoreCase(phoneNumber);
+		if(items.isEmpty()) {
+			String msg = String.format("No ShiftReport for createdBy's phone-number %s, found", phoneNumber);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(shiftReportMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -144,7 +182,13 @@ public class ShiftReportService implements IShiftReportService {
 			String lastName) {
 		validateString(firstName);
 		validateString(lastName);
-		return shiftReportRepository.findByCreatedBy_FirstNameLikeIgnoreCaseAndLastNameLikeIgnoreCase(firstName, lastName).stream()
+		List<ShiftReport> items = shiftReportRepository.findByCreatedBy_FirstNameLikeIgnoreCaseAndLastNameLikeIgnoreCase(firstName, lastName);
+		if(items.isEmpty()) {
+			String msg = String.format("No ShiftReport for createdBy first-name %s and last-name %s, found",
+					firstName,lastName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(shiftReportMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -201,20 +245,22 @@ public class ShiftReportService implements IShiftReportService {
 
 	@Override
 	public List<ShiftReportResponse> findRelatedShift_ActiveShifts() {
-		if(!shiftReportRepository.existsByRelatedShift_EndTimeIsNull()) {
-			throw new IllegalArgumentException("Active shifts for related-shift cannot be found");
+		List<ShiftReport> items = shiftReportRepository.findRelatedShift_ActiveShifts();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No ShiftReport for active shifts are found");
 		}
-		return shiftReportRepository.findRelatedShift_ActiveShifts().stream()
+		return items.stream()
 				.map(ShiftReportResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ShiftReportResponse> findByRelatedShift_EndTimeIsNull() {
-		if(!shiftReportRepository.existsByRelatedShift_EndTimeIsNull()) {
-			throw new IllegalArgumentException("End time for related-shift must not be null");
+		List<ShiftReport> items = shiftReportRepository.findByRelatedShift_EndTimeIsNull();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No ShiftReport for related-shift's end time is null, found");
 		}
-		return shiftReportRepository.findByRelatedShift_EndTimeIsNull().stream()
+		return items.stream()
 				.map(ShiftReportResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -224,7 +270,14 @@ public class ShiftReportService implements IShiftReportService {
 			LocalDateTime start, LocalDateTime end) {
 		fetchUserId(supervisorId);
 		DateValidator.validateRange(start, end);
-		return shiftReportRepository.findByRelatedShift_ShiftSupervisorIdAndStartTimeBetween(supervisorId, start, end).stream()
+		List<ShiftReport> items = shiftReportRepository.findByRelatedShift_ShiftSupervisorIdAndStartTimeBetween(supervisorId, start, end);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No ShiftReport for related-shift bound to supervisor-id %d and start time between %s and %s is found", 
+					supervisorId,start.format(formatter),end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ShiftReportResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -232,7 +285,12 @@ public class ShiftReportService implements IShiftReportService {
 	@Override
 	public List<ShiftReportResponse> findByRelatedShift_ShiftSupervisorIdAndEndTimeIsNull(Long supervisorId) {
 		fetchUserId(supervisorId);
-		return shiftReportRepository.findByRelatedShift_ShiftSupervisorIdAndEndTimeIsNull(supervisorId).stream()
+		List<ShiftReport> items = shiftReportRepository.findByRelatedShift_ShiftSupervisorIdAndEndTimeIsNull(supervisorId);
+		if(items.isEmpty()) {
+			String msg = String.format("No ShiftReport for related-shift's supervisor-id %d is found", supervisorId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(ShiftReportResponse::new)
 				.collect(Collectors.toList());
 	}
