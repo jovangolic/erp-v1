@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,9 +14,11 @@ import org.springframework.stereotype.Service;
 import com.jovan.erp_v1.exception.BuyerNotFoundException;
 import com.jovan.erp_v1.exception.GoodsNotFoundException;
 import com.jovan.erp_v1.exception.ItemSalesNotFoundException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ProcurementNotFoundException;
 import com.jovan.erp_v1.exception.SalesNotFoundException;
 import com.jovan.erp_v1.exception.SalesOrderNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.SalesMapper;
 import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.Goods;
@@ -23,7 +26,6 @@ import com.jovan.erp_v1.model.ItemSales;
 import com.jovan.erp_v1.model.Sales;
 import com.jovan.erp_v1.repository.BuyerRepository;
 import com.jovan.erp_v1.repository.GoodsRepository;
-import com.jovan.erp_v1.repository.ItemSalesRepository;
 import com.jovan.erp_v1.repository.SalesRepository;
 import com.jovan.erp_v1.repository.specification.SalesSpecifications;
 import com.jovan.erp_v1.request.ItemSalesRequest;
@@ -41,20 +43,15 @@ public class SalesService implements ISalesService {
 	private final SalesRepository salesRepository;
 	private final SalesMapper salesMapper;
 	private final BuyerRepository buyerRepository;
-	private final ItemSalesRepository itemSalesRepository;
 	private final GoodsRepository goodsRepository;
 
 	@Transactional
 	@Override
 	public SalesResponse createSales(SalesRequest request) {
-		Sales sales = new Sales();
 		Buyer buyer = fetchBuyerId(request.buyerId());
 		validateUpdateAndCreateMethod(request);
-		sales.setBuyer(buyer);
+		Sales sales = salesMapper.toEntity(request, buyer);
 		updateAndCreateSales(sales, request);
-		sales.setCreatedAt(request.createdAt());
-		sales.setTotalPrice(request.totalPrice());
-		sales.setSalesDescription(request.salesDescription());
 		return salesMapper.toResponse(sales);
 	}
 
@@ -66,14 +63,15 @@ public class SalesService implements ISalesService {
 		}
 		Sales sales = salesRepository.findById(id)
 				.orElseThrow(() -> new SalesNotFoundException("Sales not found with id: " + id));
-		Buyer buyer = fetchBuyerId(request.buyerId());
+		Buyer buyer = sales.getBuyer();
+		if(request.buyerId() != null && (buyer.getId() == null || !request.buyerId().equals(buyer.getId()))) {
+			buyer = fetchBuyerId(request.buyerId());
+		}
 		validateUpdateAndCreateMethod(request);
-		sales.setBuyer(buyer);
+		salesMapper.toEntityUpdate(sales, request, buyer);
 		updateAndCreateSales(sales, request);
-		sales.setCreatedAt(request.createdAt());
-		sales.setTotalPrice(request.totalPrice());
-		sales.setSalesDescription(request.salesDescription());
-		return salesMapper.toResponse(sales);
+		Sales saved = salesRepository.save(sales);
+		return salesMapper.toResponse(saved);
 	}
 
 	@Transactional
@@ -89,7 +87,14 @@ public class SalesService implements ISalesService {
 	@Override
 	public List<SalesResponse> getByCreatedAtBetween(LocalDateTime start, LocalDateTime end) {
 		DateValidator.validateRange(start, end);
-		return salesRepository.findByCreatedAtBetween(start, end).stream()
+		List<Sales> items = salesRepository.findByCreatedAtBetween(start, end);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Sales for createdSt between %s and %s is found",
+					start.format(formatter), end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(salesMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -97,7 +102,12 @@ public class SalesService implements ISalesService {
 	@Override
 	public List<SalesResponse> getByTotalPrice(BigDecimal totalPrice) {
 		validateBigDecimal(totalPrice);
-		return salesRepository.findByTotalPrice(totalPrice).stream()
+		List<Sales> items = salesRepository.findByTotalPrice(totalPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No Sales for total-price %s is found", totalPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(salesMapper::toResponse)
 				.collect(Collectors.toList());
 	}
@@ -115,11 +125,10 @@ public class SalesService implements ISalesService {
 					.map((ItemSalesRequest itemRequest) -> {
 						ItemSales item = new ItemSales();
 						Goods goods = goodsRepository.findById(itemRequest.goodsId())
-								.orElseThrow(() -> new RuntimeException(
+								.orElseThrow(() -> new ValidationException(
 										"Goods not found with id: " + itemRequest.goodsId()));
 						item.setGoods(goods);
 						item.setSales(sales);
-
 						item.setQuantity(itemRequest.quantity());
 						item.setUnitPrice(itemRequest.unitPrice());
 						// (opciono dodavanje procurement i salesOrder)
@@ -140,6 +149,10 @@ public class SalesService implements ISalesService {
 
 	@Override
 	public List<SalesResponse> getAllSales() {
+		List<Sales> items = salesRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Sales list is empty");
+		}
 		return salesRepository.findAll().stream()
 				.map(salesMapper::toResponse)
 				.collect(Collectors.toList());
@@ -148,7 +161,12 @@ public class SalesService implements ISalesService {
 	@Override
 	public List<SalesResponse> findByBuyer_Id(Long buyerId) {
 		fetchBuyerId(buyerId);
-		return salesRepository.findByBuyer_Id(buyerId).stream()
+		List<Sales> items = salesRepository.findByBuyer_Id(buyerId);
+		if(items.isEmpty()) {
+			String msg = String.format("No Sales for buyer-id %d is found", buyerId);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(SalesResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -156,17 +174,25 @@ public class SalesService implements ISalesService {
 	@Override
 	public List<SalesResponse> findByBuyer_CompanyNameContainingIgnoreCase(String buyerCompanyName) {
 		validateString(buyerCompanyName);
-		return salesRepository.findByBuyer_CompanyNameContainingIgnoreCase(buyerCompanyName).stream()
+		List<Sales> items = salesRepository.findByBuyer_CompanyNameContainingIgnoreCase(buyerCompanyName);
+		if(items.isEmpty()) {
+			String msg = String.format("No Sales for buyer's company-name %s is found", buyerCompanyName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(SalesResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SalesResponse> findByBuyer_PibContainingIgnoreCase(String buyerPib) {
-		if(!salesRepository.existsByBuyer_Pib(buyerPib)) {
-			throw new BuyerNotFoundException("Buyer PIB not found "+buyerPib);
+		validateBuyerPIB(buyerPib);
+		List<Sales> items = salesRepository.findByBuyer_PibContainingIgnoreCase(buyerPib);
+		if(items.isEmpty()) {
+			String msg = String.format("No Sales for buyer's pib %s is found", buyerPib);
+			throw new NoDataFoundException(msg);
 		}
-		return salesRepository.findByBuyer_PibContainingIgnoreCase(buyerPib).stream()
+		return items.stream()
 				.map(SalesResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -174,7 +200,12 @@ public class SalesService implements ISalesService {
 	@Override
 	public List<SalesResponse> findByBuyer_AddressContainingIgnoreCase(String buyerAddress) {
 		validateString(buyerAddress);
-		return salesRepository.findByBuyer_AddressContainingIgnoreCase(buyerAddress).stream()
+		List<Sales> items = salesRepository.findByBuyer_AddressContainingIgnoreCase(buyerAddress);
+		if(items.isEmpty()) {
+			String msg = String.format("No Sales for buyer's address %s is found", buyerAddress);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(SalesResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -182,7 +213,12 @@ public class SalesService implements ISalesService {
 	@Override
 	public List<SalesResponse> findByBuyer_ContactPerson(String contactPerson) {
 		validateString(contactPerson);
-		return salesRepository.findByBuyer_ContactPerson(contactPerson).stream()
+		List<Sales> items = salesRepository.findByBuyer_ContactPerson(contactPerson);
+		if(items.isEmpty()) {
+			String msg = String.format("No Sales for buyer's contact-person %s is found", contactPerson);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(SalesResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -190,7 +226,12 @@ public class SalesService implements ISalesService {
 	@Override
 	public List<SalesResponse> findByBuyer_EmailContainingIgnoreCase(String buyerEmail) {
 		validateString(buyerEmail);
-		return salesRepository.findByBuyer_EmailContainingIgnoreCase(buyerEmail).stream()
+		List<Sales> items = salesRepository.findByBuyer_EmailContainingIgnoreCase(buyerEmail);
+		if(items.isEmpty()) {
+			String msg = String.format("No Sales for buyer's email %s is found", buyerEmail);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(SalesResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -198,7 +239,12 @@ public class SalesService implements ISalesService {
 	@Override
 	public List<SalesResponse> findByBuyer_PhoneNumber(String buyerPhoneNumber) {
 		validateString(buyerPhoneNumber);
-		return salesRepository.findByBuyer_PhoneNumber(buyerPhoneNumber).stream()
+		List<Sales> items = salesRepository.findByBuyer_PhoneNumber(buyerPhoneNumber);
+		if(items.isEmpty()) {
+			String msg = String.format("No Sales for buyer's phone-number %s is found", buyerPhoneNumber);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(SalesResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -206,15 +252,25 @@ public class SalesService implements ISalesService {
 	@Override
 	public List<SalesResponse> findByTotalPriceGreaterThan(BigDecimal totalPrice) {
 		validateBigDecimal(totalPrice);
-		return salesRepository.findByTotalPriceGreaterThan(totalPrice).stream()
+		List<Sales> items = salesRepository.findByTotalPriceGreaterThan(totalPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No Sales for total-price greater than %s is found", totalPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(SalesResponse::new)
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<SalesResponse> findByTotalPriceLessThan(BigDecimal totalPrice) {
-		validateBigDecimal(totalPrice);
-		return salesRepository.findByTotalPriceLessThan(totalPrice).stream()
+		validateBigDecimalNonNegative(totalPrice);
+		List<Sales> items = salesRepository.findByTotalPriceLessThan(totalPrice);
+		if(items.isEmpty()) {
+			String msg = String.format("No Sales for total-price less than %s is found", totalPrice);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream()
 				.map(SalesResponse::new)
 				.collect(Collectors.toList());
 	}
@@ -290,6 +346,24 @@ public class SalesService implements ISalesService {
 		DateValidator.validatePastOrPresent(request.createdAt(), "Created at");
 		validateBigDecimal(request.totalPrice());
 		validateString(request.salesDescription());
+	}
+	
+	private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
+	
+	private void validateBuyerPIB(String pib) {
+		if(pib == null || pib.trim().isEmpty()) {
+			throw new ValidationException("Buyer's PIB must not be null nor empty");
+		}
+		if(!salesRepository.existsByBuyer_Pib(pib)) {
+			throw new BuyerNotFoundException("Buyer PIB not found "+pib);
+		}
 	}
 
 }

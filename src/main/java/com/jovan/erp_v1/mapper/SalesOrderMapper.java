@@ -10,50 +10,53 @@ import org.springframework.stereotype.Component;
 import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.model.Invoice;
 import com.jovan.erp_v1.model.SalesOrder;
-import com.jovan.erp_v1.repository.BuyerRepository;
-import com.jovan.erp_v1.repository.InvoiceRepository;
 import com.jovan.erp_v1.request.SalesOrderRequest;
 import com.jovan.erp_v1.response.SalesOrderResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class SalesOrderMapper {
+public class SalesOrderMapper extends AbstractMapper<SalesOrderRequest> {
 
-	
-	private final BuyerRepository buyerRepository;
-    private final InvoiceRepository invoiceRepository;
-    private final ItemSalesMapper itemSalesMapper;
-
-    public SalesOrder toEntity(SalesOrderRequest request) {
+    public SalesOrder toEntity(SalesOrderRequest request,Buyer buyer, Invoice invoice) {
+    	Objects.requireNonNull(request, "SalesOrderRequest must not be null");
+    	Objects.requireNonNull(buyer, "Buyer must not be null");
+    	Objects.requireNonNull(invoice, "Invoice must not be null");
+    	validateIdForCreate(request, SalesOrderRequest::id);
         SalesOrder order = new SalesOrder();
         order.setId(request.id());
-        //order.setOrderNumber(request.orderNumber());
-        order.setOrderDate(request.orderDate());
+        order.setOrderNumber(request.orderNumber());
         order.setTotalAmount(request.totalAmount());
         order.setNote(request.note());
         order.setStatus(request.status());
-        // Buyer
-        if (request.buyerId() != null) {
-            Buyer buyer = buyerRepository.findById(request.buyerId())
-                .orElseThrow(() -> new RuntimeException("Buyer not found with id: " + request.buyerId()));
-            order.setBuyer(buyer);
-        }
-        // Invoice
-        if (request.invoiceId() != null) {
-            Invoice invoice = invoiceRepository.findById(request.invoiceId())
-                .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + request.invoiceId()));
-            order.setInvoice(invoice);
-        }
+        order.setBuyer(buyer);
+        order.setInvoice(invoice);
         // Items
         order.setItems(new ArrayList<>());
         return order;
     }
+    
+    public SalesOrder toEntityUpdate(SalesOrder so,SalesOrderRequest request,Buyer buyer, Invoice invoice) {
+    	Objects.requireNonNull(so, "SalesOrder must not be null");
+    	Objects.requireNonNull(request, "SalesOrderRequest must not be null");
+    	Objects.requireNonNull(buyer, "Buyer must not be null");
+    	Objects.requireNonNull(invoice, "Invoice must not be null");
+    	validateIdForUpdate(request, SalesOrderRequest::id);
+    	so.setOrderNumber(request.orderNumber());
+        so.setTotalAmount(request.totalAmount());
+        so.setNote(request.note());
+        so.setStatus(request.status());
+        so.setBuyer(buyer);
+        so.setInvoice(invoice);
+        so.setItems(new ArrayList<>());
+    	return so;
+    }
 
     public SalesOrderResponse toResponse(SalesOrder order) {
     	Objects.requireNonNull(order, "SalesOrder");
-        return new SalesOrderResponse(order); // koristiš već postojeći konstruktor
+        return new SalesOrderResponse(order); 
     }
     
     public List<SalesOrderResponse> toResponseList(List<SalesOrder> orders){

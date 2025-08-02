@@ -16,7 +16,6 @@ public class ItemSalesResponse {
 	private Long id;
 	private BigDecimal quantity;
 	private BigDecimal unitPrice;
-
 	private GoodsResponse goods;
 	private SalesResponse sales;
 	private ProcurementResponse procurement;

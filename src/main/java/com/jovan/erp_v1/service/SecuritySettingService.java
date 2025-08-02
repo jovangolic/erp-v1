@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.SecuritySettingErrorException;
 import com.jovan.erp_v1.mapper.SecuritySettingMapper;
 import com.jovan.erp_v1.model.SecuritySetting;
@@ -42,6 +43,10 @@ public class SecuritySettingService implements ISecuritySettingService {
     @Override
     public List<SecuritySettingResponse> getAllSettings() {
         List<SecuritySetting> settings = settingRepository.findAll();
+        List<SecuritySetting> items = settingRepository.findAll();
+        if(items.isEmpty()) {
+        	throw new NoDataFoundException("SecuritySetting list is empty");
+        }
         return settings.stream()
                 .map(SecuritySettingMapper::toResponse)
                 .collect(Collectors.toList());
