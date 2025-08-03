@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.jovan.erp_v1.model.BarCode;
-import com.jovan.erp_v1.model.Goods;
+
 
 @Repository
 public interface BarCodeRepository extends JpaRepository<BarCode, Long> {

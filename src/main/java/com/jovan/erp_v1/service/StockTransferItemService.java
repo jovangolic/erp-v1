@@ -5,6 +5,7 @@ import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -20,18 +21,23 @@ import com.jovan.erp_v1.exception.NoSuchProductException;
 import com.jovan.erp_v1.exception.StockTransferErrorException;
 import com.jovan.erp_v1.exception.StockTransferItemErrorException;
 import com.jovan.erp_v1.exception.SupplyNotFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.StockTransferItemMapper;
 import com.jovan.erp_v1.model.Product;
+import com.jovan.erp_v1.model.Shelf;
 import com.jovan.erp_v1.model.StockTransfer;
 import com.jovan.erp_v1.model.StockTransferItem;
+import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.model.Supply;
 import com.jovan.erp_v1.repository.ProductRepository;
+import com.jovan.erp_v1.repository.ShelfRepository;
 import com.jovan.erp_v1.repository.StockTransferItemRepository;
 import com.jovan.erp_v1.repository.StockTransferRepository;
+import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.repository.SupplyRepository;
 import com.jovan.erp_v1.request.StockTransferItemRequest;
 import com.jovan.erp_v1.response.StockTransferItemResponse;
-
+import com.jovan.erp_v1.util.DateValidator;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -43,12 +49,16 @@ public class StockTransferItemService implements IStockTransferItemService {
     private final ProductRepository productRepository;
     private final StockTransferRepository stockTransferRepository;
     private final SupplyRepository supplyRepository;
+    private final StorageRepository storageRepository;
+    private final ShelfRepository shelfRepository;
 
     @Transactional
     @Override
     public StockTransferItemResponse create(StockTransferItemRequest request) {
+    	Product product = fetchProductId(request.productId());
+    	StockTransfer stock = fetchStockTransferId(request.stockTransferId());
     	validateStockTransferItemRequestForCreate(request);
-        StockTransferItem item = stockTransferItemMapper.toEntity(request);
+        StockTransferItem item = stockTransferItemMapper.toEntity(request,product,stock);
         StockTransferItem saved = stockTransferItemRepository.save(item);
         return stockTransferItemMapper.toResponse(saved);
     }
@@ -72,9 +82,7 @@ public class StockTransferItemService implements IStockTransferItemService {
         if(!item.getStockTransfer().getId().equals(request.stockTransferId())) {
         	throw new NoDataFoundException("Changing stock-transfer is not allowed once item is created");
         }
-        item.setProduct(product);
-        item.setQuantity(request.quantity());
-        item.setStockTransfer(st);
+        stockTransferItemMapper.toEntityUpdate(item, request, product, st);
         StockTransferItem saved = stockTransferItemRepository.save(item);
         return stockTransferItemMapper.toResponse(saved);
     }
@@ -109,11 +117,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
     @Override
     public List<StockTransferItemResponse> findByProductId(Long productId) {
-    	if(!stockTransferItemRepository.existsByProductId(productId)) {
+    	fetchProductId(productId);
+    	List<StockTransferItem> items = stockTransferItemRepository.findByProductId(productId);
+    	if(items.isEmpty()) {
     		String msg = String.format("No product found with ID equal to %d", productId);
     		throw new NoDataFoundException(msg);
     	}
-    	List<StockTransferItem> items = stockTransferItemRepository.findByProductId(productId);
         return items.stream()
                 .map(StockTransferItemResponse::new)
                 .collect(Collectors.toList());
@@ -162,7 +171,7 @@ public class StockTransferItemService implements IStockTransferItemService {
 
     @Override
     public List<StockTransferItemResponse> findByQuantityLessThan(BigDecimal quantity) {
-    	validateBigDecimal(quantity);
+    	validateBigDecimalNonNegative(quantity);
     	List<StockTransferItem> items = stockTransferItemRepository.findByQuantityLessThan(quantity);
     	if(items.isEmpty()) {
     		DecimalFormat df = new DecimalFormat("#.##");
@@ -190,11 +199,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
     @Override
     public List<StockTransferItemResponse> findByStockTransferId(Long stockTransferId) {
-    	if(!stockTransferItemRepository.existsByStockTransferId(stockTransferId)) {
+    	fetchStockTransferId(stockTransferId);
+    	List<StockTransferItem> items = stockTransferItemRepository.findByStockTransferId(stockTransferId);
+    	if(items.isEmpty()) {
     		String msg = String.format("No stock transfer found with stockTransferId equal to %d", stockTransferId);
     		throw new NoDataFoundException(msg);
     	}
-    	List<StockTransferItem> items = stockTransferItemRepository.findByStockTransferId(stockTransferId);
         return items.stream()
                 .map(StockTransferItemResponse::new)
                 .collect(Collectors.toList());
@@ -202,11 +212,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
     @Override
     public List<StockTransferItemResponse> findByStockTransfer_FromStorageId(Long fromStorageId) {
-    	if(!stockTransferItemRepository.existsByStockTransfer_FromStorageId(fromStorageId)) {
+    	fetchFromStorageId(fromStorageId);
+    	List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_FromStorageId(fromStorageId);
+    	if(items.isEmpty()) {
     		String msg = String.format("No stock transfer found with fromStorageId equal to %d", fromStorageId);
     		throw new NoDataFoundException(msg);
     	}
-    	List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_FromStorageId(fromStorageId);
         return items.stream()
                 .map(StockTransferItemResponse::new)
                 .collect(Collectors.toList());
@@ -214,11 +225,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
     @Override
     public List<StockTransferItemResponse> findByStockTransfer_ToStorageId(Long toStorageId) {
-    	if(!stockTransferItemRepository.existsByStockTransferId(toStorageId)) {
+    	fetchToStorageId(toStorageId);
+    	List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_ToStorageId(toStorageId);
+    	if(items.isEmpty()) {
     		String msg = String.format("No stock transfer found with toStorageId equal to %d", toStorageId);
     		throw new NoDataFoundException(msg);
     	}
-    	List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_ToStorageId(toStorageId);
         return items.stream()
                 .map(StockTransferItemResponse::new)
                 .collect(Collectors.toList());
@@ -296,11 +308,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByProduct_Shelf_Id(Long shelfId) {
-		if(!stockTransferItemRepository.existsByProduct_Shelf_Id(shelfId)) {
+		fetchShelfId(shelfId);
+		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_Id(shelfId);
+		if(items.isEmpty()) {
 			String msg = String.format("No product found with shelfId equal to %d", shelfId);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_Id(shelfId);
 		return items.stream()
 		        .map(stockTransferItemMapper::toResponse)
 		        .collect(Collectors.toList());
@@ -308,11 +321,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByProduct_Shelf_RowCount(Integer rowCount) {
-		if(!stockTransferItemRepository.existsByProduct_Shelf_RowCount(rowCount)) {
+		validateInteger(rowCount);
+		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_RowCount(rowCount);
+		if(items.isEmpty()) {
 			String msg = String.format("No product found on shelf with row-count equal to %d", rowCount);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_RowCount(rowCount);
 		return items.stream()
 		        .map(stockTransferItemMapper::toResponse)
 		        .collect(Collectors.toList());
@@ -320,11 +334,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByProduct_Shelf_Cols(Integer cols) {
-		if(!stockTransferItemRepository.existsByProduct_Shelf_Cols(cols)) {
+		validateInteger(cols);
+		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_Cols(cols);
+		if(items.isEmpty()) {
 			String msg = String.format("No product found on shelf with cols equal to %d", cols);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_Cols(cols);
 		return items.stream()
 		        .map(stockTransferItemMapper::toResponse)
 		        .collect(Collectors.toList());
@@ -332,11 +347,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByProduct_Shelf_RowCountGreaterThanEqual(Integer rowCount) {
-		if(!stockTransferItemRepository.existsByProduct_Shelf_RowCountGreaterThanEqual(rowCount)) {
+		validateInteger(rowCount);
+		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_RowCountGreaterThanEqual(rowCount);
+		if(items.isEmpty()) {
 			String msg = String.format("No product found on shelf with row-count greater than %d", rowCount);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_RowCountGreaterThanEqual(rowCount);
 		return items.stream()
 		        .map(stockTransferItemMapper::toResponse)
 		        .collect(Collectors.toList());
@@ -344,11 +360,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByProduct_Shelf_ColsGreaterThanEqual(Integer cols) {
-		if(!stockTransferItemRepository.existsByProduct_Shelf_ColsGreaterThanEqual(cols)) {
+		validateInteger(cols);
+		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_ColsGreaterThanEqual(cols);
+		if(items.isEmpty()) {
 			String msg = String.format("No product found on shelf with cols greater than %d", cols);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_ColsGreaterThanEqual(cols);
 		return items.stream()
 		        .map(stockTransferItemMapper::toResponse)
 		        .collect(Collectors.toList());
@@ -356,11 +373,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByProduct_Shelf_RowCountLessThanEqual(Integer rowCount) {
-		if(!stockTransferItemRepository.existsByProduct_Shelf_RowCountLessThanEqual(rowCount)) {
+		validateInteger(rowCount);
+		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_RowCountLessThanEqual(rowCount);
+		if(items.isEmpty()) {
 			String msg = String.format("No product found on shelf with row-count less than %d", rowCount);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_RowCountLessThanEqual(rowCount);
 		return items.stream()
 		        .map(stockTransferItemMapper::toResponse)
 		        .collect(Collectors.toList());
@@ -368,11 +386,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByProduct_Shelf_ColsLessThanEqual(Integer cols) {
-		if(!stockTransferItemRepository.existsByProduct_Shelf_ColsLessThanEqual(cols)) {
+		validateInteger(cols);
+		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_ColsLessThanEqual(cols);
+		if(items.isEmpty()) {
 			String msg = String.format("No product found on shelf with cols less than %d", cols);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_ColsLessThanEqual(cols);
 		return items.stream()
 		        .map(stockTransferItemMapper::toResponse)
 		        .collect(Collectors.toList());
@@ -381,11 +400,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 	@Override
 	public List<StockTransferItemResponse> findByProduct_Shelf_RowCountBetween(Integer minRowCount,
 			Integer maxRowCount) {
-		if(!stockTransferItemRepository.existsByProduct_Shelf_RowCountBetween(minRowCount, maxRowCount)) {
+		validateShelfRowsBetween(minRowCount, maxRowCount);
+		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_RowCountBetween(minRowCount, maxRowCount);
+		if(items.isEmpty()) {
 			String msg = String.format("No product found with shelf between %d and %d", minRowCount, maxRowCount);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_RowCountBetween(minRowCount, maxRowCount);
 		return items.stream()
 		        .map(stockTransferItemMapper::toResponse)
 		        .collect(Collectors.toList());
@@ -393,11 +413,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByProduct_Shelf_ColsBetween(Integer minCols, Integer maxCols) {
-		if(!stockTransferItemRepository.existsByProduct_Shelf_ColsBetween(minCols, maxCols)) {
+		validateShelfColsBetween(minCols, maxCols);
+		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_ColsBetween(minCols, maxCols);
+		if(items.isEmpty()) {
 			String msg = String.format("No product found with shelf between %d and %d", minCols,maxCols);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByProduct_Shelf_ColsBetween(minCols, maxCols);
 		return items.stream()
 		        .map(stockTransferItemMapper::toResponse)
 		        .collect(Collectors.toList());
@@ -418,11 +439,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByStockTransfer_Status(TransferStatus status) {
-		if(!stockTransferItemRepository.existsByStockTransfer_Status(status)) {
+		validateTransferStatus(status);
+		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_Status(status);
+		if(items.isEmpty()) {
 			String msg = String.format("No stock transfer found with status equal to %s", status);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_Status(status);
 		return items.stream()
 		        .map(stockTransferItemMapper::toResponse)
 		        .collect(Collectors.toList());
@@ -430,12 +452,13 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByStockTransfer_TransferDate(LocalDate transferDate) {
-		if(!stockTransferItemRepository.existsByStockTransfer_TransferDate(transferDate)) {
+		DateValidator.validateNotNull(transferDate, "Transfer-date");
+		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_TransferDate(transferDate);
+		if(items.isEmpty()) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 			String msg = String.format("No stock transfer found with transfer-date equal to %s", transferDate.format(formatter));
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_TransferDate(transferDate);
 		return items.stream()
 		        .map(stockTransferItemMapper::toResponse)
 		        .collect(Collectors.toList());
@@ -444,13 +467,14 @@ public class StockTransferItemService implements IStockTransferItemService {
 	@Override
 	public List<StockTransferItemResponse> findByStockTransfer_TransferDateBetween(LocalDate transferDateStart,
 			LocalDate transferDateEnd) {
-		if(!stockTransferItemRepository.existsByStockTransfer_TransferDateBetween(transferDateStart, transferDateEnd)) {
+		DateValidator.validateRange(transferDateStart, transferDateEnd);
+		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_TransferDateBetween(transferDateStart, transferDateEnd);
+		if(items.isEmpty()) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 			String msg = String.format("No stock transfer found with date between %s and %s", 
 					transferDateStart.format(formatter),transferDateEnd.format(formatter));
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_TransferDateBetween(transferDateStart, transferDateEnd);
 		return items.stream()
 		        .map(stockTransferItemMapper::toResponse)
 		        .collect(Collectors.toList());
@@ -458,11 +482,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByStockTransfer_StatusIn(List<TransferStatus> statuses) {
-	    if (!stockTransferItemRepository.existsByStockTransfer_StatusIn(statuses)) {
+	    validateTransferStatusList(statuses);
+	    List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_StatusIn(statuses);
+	    if (items.isEmpty()) {
 	        String msg = String.format("No stock transfers found for statuses: %s", statuses);
 	        throw new NoDataFoundException(msg);
 	    }
-	    List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_StatusIn(statuses);
 	    return items.stream()
 	        .map(stockTransferItemMapper::toResponse)
 	        .collect(Collectors.toList());
@@ -470,33 +495,36 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByStockTransfer_StatusNot(TransferStatus status) {
-		if(!stockTransferItemRepository.existsByStockTransfer_Status(status)) {
+		validateTransferStatus(status);
+		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_StatusNot(status);
+		if(items.isEmpty()) {
 			String msg = String.format("No stock transfer found with status equal to %s", status);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_StatusNot(status);
 		return items.stream().map(stockTransferItemMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StockTransferItemResponse> findByStockTransfer_TransferDateAfter(LocalDate date) {
-		if(!stockTransferItemRepository.existsByStockTransfer_TransferDateAfter(date)) {
+		DateValidator.validateNotInPast(date, "Dat");
+		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_TransferDateAfter(date);
+		if(items.isEmpty()) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 			String msg = String.format("No stock transfer found with date equal to %s", date.format(formatter));
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_TransferDateAfter(date);
 		return items.stream().map(stockTransferItemMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StockTransferItemResponse> findByStockTransfer_TransferDateBefore(LocalDate date) {
-		if(!stockTransferItemRepository.existsByStockTransfer_TransferDateBefore(date)) {
+		DateValidator.validateNotInFuture(date, "Date");
+		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_TransferDateBefore(date);
+		if(items.isEmpty()) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 			String msg = String.format("No stock transfer found with date equal to %s", date.format(formatter));
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_TransferDateBefore(date);
 		return items.stream().map(stockTransferItemMapper::toResponse).collect(Collectors.toList());
 	}
 
@@ -504,18 +532,22 @@ public class StockTransferItemService implements IStockTransferItemService {
 	public List<StockTransferItemResponse> findByStockTransfer_StatusAndQuantityGreaterThan(TransferStatus status,
 			BigDecimal quantity) {
 		validateBigDecimal(quantity);
-		if(!stockTransferItemRepository.existsByStockTransfer_Status(status)) {
+		validateBigDecimal(quantity);
+		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_StatusAndQuantityGreaterThan(status, quantity);
+		if(items.isEmpty()) {
 			String msg = String.format("No stock transfer found with status equal to %s", status);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_StatusAndQuantityGreaterThan(status, quantity);
 		return items.stream().map(stockTransferItemMapper::toResponse).collect(Collectors.toList());
 	}
 
 	@Override
 	public List<StockTransferItemResponse> findByStockTransfer_StatusAndStockTransfer_TransferDateBetween(
 			TransferStatus status, LocalDate start, LocalDate end) {
-		if(!stockTransferItemRepository.existsByStockTransfer_StatusAndStockTransfer_TransferDateBetween(status, start, end)) {
+		validateTransferStatus(status);
+		DateValidator.validateRange(start, end);
+		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_StatusAndStockTransfer_TransferDateBetween(status, start, end);
+		if(items.isEmpty()) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 			String msg = String.format(
 				    "No stock transfer found with status %s and date between %s and %s",
@@ -523,7 +555,6 @@ public class StockTransferItemService implements IStockTransferItemService {
 				);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_StatusAndStockTransfer_TransferDateBetween(status, start, end);
 		return items.stream().map(stockTransferItemMapper::toResponse).collect(Collectors.toList());
 	}
 
@@ -585,11 +616,12 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByStockTransfer_FromStorage_Type(StorageType type) {
-		if(!stockTransferItemRepository.existsByStockTransfer_FromStorage_Type(type)) {
+		validateStorageType(type);
+		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_FromStorage_Type(type);
+		if(items.isEmpty()) {
 			String msg = String.format("No stock transfer found wuth storage-type equal to %s", type);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_FromStorage_Type(type);
 		return items.stream().map(stockTransferItemMapper::toResponse).collect(Collectors.toList());
 	}
 
@@ -650,43 +682,42 @@ public class StockTransferItemService implements IStockTransferItemService {
 
 	@Override
 	public List<StockTransferItemResponse> findByStockTransfer_ToStorage_Type(StorageType type) {
-		if(!stockTransferItemRepository.existsByStockTransfer_ToStorage_Type(type)) {
+		validateStorageType(type);
+		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_ToStorage_Type(type);
+		if(items.isEmpty()) {
 			String msg = String.format("No given storage type found %s", type);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransferItem> items = stockTransferItemRepository.findByStockTransfer_ToStorage_Type(type);
 		return items.stream().map(stockTransferItemMapper::toResponse).collect(Collectors.toList());
 	}
 	
-	
-	
 	private void validateUnitMeasure(UnitMeasure unitMeasure) {
 		if(unitMeasure == null) {
-			throw new NoDataFoundException("UnitMeasure unitMeasure must not be null");
+			throw new ValidationException("UnitMeasure unitMeasure must not be null");
 		}
 	}
 	
 	private void validateSupplierType(SupplierType supplierType) {
 		if(supplierType == null) {
-			throw new NoDataFoundException("SupplierType supplierType must not be null");
+			throw new ValidationException("SupplierType supplierType must not be null");
 		}
 	}
 	
 	private void validateGoodsType(GoodsType goodsType) {
 		if(goodsType == null) {
-			throw new NoDataFoundException("GoodsType goodsType must not be null");
+			throw new ValidationException("GoodsType goodsType must not be null");
 		}
 	}
 	
 	private void validateString(String str) {
 		if(str == null || str.trim().isEmpty()) {
-			throw new NoDataFoundException("String must not be empty nor null");
+			throw new ValidationException("String must not be empty nor null");
 		}
 	}
 	
 	private Supply fetchSupplyId(Long supplyId) {
 		if(supplyId == null) {
-			throw new NoDataFoundException("Supply ID must not be null");
+			throw new ValidationException("Supply ID must not be null");
 		}
 		return supplyRepository.findById(supplyId).orElseThrow(() -> new SupplyNotFoundException("Supply not found with id "+supplyId));
 	}
@@ -698,29 +729,104 @@ public class StockTransferItemService implements IStockTransferItemService {
 	}
 	
 	private void validateStockTransferItemRequestForCreate(StockTransferItemRequest request) {
-		fetchProductId(request.productId());
-		fetchStockTransferId(request.stockTransferId());
 		validateBigDecimal(request.quantity());
 	}
     
     private Product fetchProductId(Long productId) {
     	if(productId == null) {
-    		throw new NoDataFoundException("Product ID must not be null");
+    		throw new ValidationException("Product ID must not be null");
     	}
     	return productRepository.findById(productId).orElseThrow(() -> new NoSuchProductException("Product not found with id: "+productId));
     }
 
     private StockTransfer fetchStockTransferId(Long stockTransferId) {
     	if(stockTransferId == null) {
-    		throw new NoDataFoundException("StockTransfer ID must not be null");
+    		throw new ValidationException("StockTransfer ID must not be null");
     	}
     	return stockTransferRepository.findById(stockTransferId).orElseThrow(() -> new StockTransferErrorException("StockTransfer not found with id: "+stockTransferId));
     }
     
     private void validateBigDecimal(BigDecimal num) {
     	if(num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
-    		throw new NoDataFoundException("Number must be positive");
+    		throw new ValidationException("Number must be positive");
     	}
     }
 
+    private void validateTransferStatus(TransferStatus status) {
+    	Optional.ofNullable(status)
+    		.orElseThrow(()-> new ValidationException("TransferStatus status must nor be null"));
+    }
+    
+    private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
+    
+    private Storage fetchFromStorageId(Long storageId) {
+    	if(storageId == null) {
+    		throw new ValidationException("FromStorage ID must not be null");
+    	}
+    	return storageRepository.findById(storageId).orElseThrow(() -> new ValidationException("FromStorage not found with id "+storageId));
+    }
+    
+    private Storage fetchToStorageId(Long storageId) {
+    	if(storageId == null) {
+    		throw new ValidationException("ToStorage ID must not be null");
+    	}
+    	return storageRepository.findById(storageId).orElseThrow(() -> new ValidationException("ToStorage not found with id "+storageId));
+    }
+    
+    private Shelf fetchShelfId(Long id) {
+    	if(id == null) {
+    		throw new ValidationException("Shelf ID must not be null");
+    	}
+    	return shelfRepository.findById(id).orElseThrow(() -> new ValidationException("Shelf not found with id "+id));
+    }
+    
+    private void validateInteger(Integer num) {
+		if(num == null || num <= 0) {
+			throw new ValidationException("Number must be positive");
+		}
+	}
+    
+    private void validateTransferStatusList(List<TransferStatus> statuses) {
+		if(statuses == null || statuses.isEmpty()) {
+			throw new ValidationException("TransferStatus list must not be empty nor null");
+		}
+		for(TransferStatus status: statuses) {
+			if(status == null) {
+				throw new ValidationException("Each TransferStatus must not be null");
+			}
+		}
+	}
+    
+    private void validateShelfColsBetween(Integer min, Integer max) {
+        if (min == null || max == null) {
+            throw new ValidationException("Both 'min' and 'max' must be provided (not null).");
+        }
+        if (min < 0) {
+            throw new ValidationException("'min' must be zero or a positive number.");
+        }
+        if (max <= 0) {
+            throw new ValidationException("'max' must be a positive number (greater than zero).");
+        }
+    }
+    
+    private void validateShelfRowsBetween(Integer min, Integer max) {
+        if (min == null || max == null) {
+            throw new ValidationException("Both 'min' and 'max' must be provided (not null).");
+        }
+        if (min < 0) {
+            throw new ValidationException("'min' must be zero or a positive number.");
+        }
+        if (max <= 0) {
+            throw new ValidationException("'max' must be a positive number (greater than zero).");
+        }
+    }
+       
+       
 }

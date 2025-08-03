@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -16,9 +17,11 @@ import com.jovan.erp_v1.exception.StockTransferErrorException;
 import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.StockTransferItemMapper;
 import com.jovan.erp_v1.mapper.StockTransferMapper;
+import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.model.StockTransfer;
 import com.jovan.erp_v1.model.StockTransferItem;
 import com.jovan.erp_v1.model.Storage;
+import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.StockTransferRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.request.StockTransferItemRequest;
@@ -36,12 +39,15 @@ public class StockTransferService implements IStockTransferService {
     private final StockTransferMapper stockTransferMapper;
     private final StorageRepository storageRepository;
     private final StockTransferItemMapper stockTransferItemMapper;
+    private final ProductRepository productRepository;
 
     @Transactional
     @Override
     public StockTransferResponse create(StockTransferRequest request) {
+    	Storage from = fetchFromStorageId(request.fromStorageId());
+    	Storage to = fetchToStorageId(request.toStorageId());
     	validateCreateStockTransferRequest(request);
-        StockTransfer stock = stockTransferMapper.toEntity(request);
+        StockTransfer stock = stockTransferMapper.toEntity(request,from, to);
         StockTransfer saved = stockTransferRepository.save(stock);
         return stockTransferMapper.toResponse(saved);
     }
@@ -55,16 +61,20 @@ public class StockTransferService implements IStockTransferService {
         StockTransfer stock = stockTransferRepository.findById(id)
                 .orElseThrow(() -> new StockTransferErrorException("StockTransfer not found " + id));
         validateUpdateStockTransferRequest(request);
-        Storage from = fetchFromStorageId(request.fromStorageId());
-        Storage to = fetchToStorageId(request.toStorageId());
-        stock.setTransferDate(request.transferDate());
-        stock.setFromStorage(from);
-        stock.setToStorage(to);
-        stock.setStatus(request.status());
+        Storage from = stock.getFromStorage();
+        if(request.fromStorageId() != null && (from.getId() == null || !request.fromStorageId().equals(from.getId()))) {
+        	from = fetchFromStorageId(request.fromStorageId());
+        }
+        Storage to = stock.getToStorage();
+        if(request.toStorageId() != null && (to.getId() == null || !request.toStorageId().equals(to.getId()))) {
+        	to = fetchToStorageId(request.toStorageId());
+        }
+        stockTransferMapper.toEntityUpdate(stock, request, from, to);
         stock.getItems().clear();
         List<StockTransferItem> items = request.itemRequest().stream()
                 .map(itemReq -> {
-                    StockTransferItem item = stockTransferItemMapper.toEntity(itemReq);
+                	Product product = productRepository.findById(itemReq.productId()).orElseThrow(() -> new ValidationException("Product not found"));
+                    StockTransferItem item = stockTransferItemMapper.toEntity(itemReq,product,stock);
                     item.setStockTransfer(stock);
                     return item;
                 })
@@ -103,11 +113,12 @@ public class StockTransferService implements IStockTransferService {
 
     @Override
     public List<StockTransferResponse> findByStatus(TransferStatus status) {
-    	if(!stockTransferRepository.existsByStatus(status)) {
+    	validateTransferStatus(status);
+    	List<StockTransfer> items = stockTransferRepository.findByStatus(status);
+    	if(items.isEmpty()) {
     		String msg = String.format("No stock-transfer found with status equal to: %s", status);
     		throw new NoDataFoundException(msg);
     	}
-    	List<StockTransfer> items = stockTransferRepository.findByStatus(status);
         return items.stream()
                 .map(StockTransferResponse::new)
                 .collect(Collectors.toList());
@@ -143,11 +154,12 @@ public class StockTransferService implements IStockTransferService {
 
     @Override
     public List<StockTransferResponse> findByFromStorageId(Long fromStorageId) {
-    	if(!stockTransferRepository.existsByFromStorage_Id(fromStorageId)) {
+    	fetchFromStorageId(fromStorageId);
+    	List<StockTransfer> items = stockTransferRepository.findByFromStorageId(fromStorageId);
+    	if(items.isEmpty()) {
     		String msg = String.format("No stock-transfer found with from-storage id: %d", fromStorageId);
     		throw new NoDataFoundException(msg);
     	}
-    	List<StockTransfer> items = stockTransferRepository.findByFromStorageId(fromStorageId);
         return items.stream()
                 .map(StockTransferResponse::new)
                 .collect(Collectors.toList());
@@ -155,11 +167,12 @@ public class StockTransferService implements IStockTransferService {
 
     @Override
     public List<StockTransferResponse> findByToStorageId(Long toStorageId) {
-    	if(!stockTransferRepository.existsByToStorage_Id(toStorageId)) {
+    	fetchToStorageId(toStorageId);
+    	List<StockTransfer> items = stockTransferRepository.findByToStorageId(toStorageId);
+    	if(items.isEmpty()) {
     		String msg = String.format("No stock-transfer found with to-storage id: %d", toStorageId);
     		throw new NoDataFoundException(msg);
     	}
-    	List<StockTransfer> items = stockTransferRepository.findByToStorageId(toStorageId);
         return items.stream()
                 .map(StockTransferResponse::new)
                 .collect(Collectors.toList());
@@ -219,11 +232,12 @@ public class StockTransferService implements IStockTransferService {
 
     @Override
     public List<StockTransferResponse> findByFromStorage_Type(StorageType fromStorageType) {
-    	if(!stockTransferRepository.existsByFromStorage_Type(fromStorageType)) {
+    	validateStorageType(fromStorageType);
+    	List<StockTransfer> itemsList = stockTransferRepository.findByFromStorage_Type(fromStorageType);
+    	if(itemsList.isEmpty()) {
     		String msg = String.format("No stock-transfer found with from-storage status: %s", fromStorageType);
     		throw new NoDataFoundException(msg);
     	}
-    	List<StockTransfer> itemsList = stockTransferRepository.findByFromStorage_Type(fromStorageType);
         return itemsList.stream()
                 .map(StockTransferResponse::new)
                 .collect(Collectors.toList());
@@ -231,11 +245,12 @@ public class StockTransferService implements IStockTransferService {
 
     @Override
     public List<StockTransferResponse> findByToStorage_Type(StorageType toStorageType) {
-    	if(!stockTransferRepository.existsByToStorage_Type(toStorageType)) {
+    	validateStorageType(toStorageType);
+    	List<StockTransfer> items = stockTransferRepository.findByToStorage_Type(toStorageType);
+    	if(items.isEmpty()) {
     		String msg = String.format("No stock-transfer found with to-storage status: %s", toStorageType);
     		throw new NoDataFoundException(msg);
     	}
-    	List<StockTransfer> items = stockTransferRepository.findByToStorage_Type(toStorageType);
         return items.stream()
                 .map(StockTransferResponse::new)
                 .collect(Collectors.toList());
@@ -245,11 +260,12 @@ public class StockTransferService implements IStockTransferService {
     public List<StockTransferResponse> findByStatusAndDateRange(TransferStatus status, LocalDate startDate,
             LocalDate endDate) {
     	DateValidator.validateRange(startDate, endDate);
-    	if(!stockTransferRepository.existsByStatus(status)) {
+    	validateTransferStatus(status);
+    	List<StockTransfer> items = stockTransferRepository.findByStatusAndDateRange(status, startDate, endDate);
+    	if(items.isEmpty()) {
     		String msg = String.format("No stock transfers found with transfer status: %s", status);
     		throw new NoDataFoundException(msg);
     	}
-    	List<StockTransfer> items = stockTransferRepository.findByStatusAndDateRange(status, startDate, endDate);
         return items.stream()
                 .map(StockTransferResponse::new)
                 .collect(Collectors.toList());
@@ -257,11 +273,13 @@ public class StockTransferService implements IStockTransferService {
 
     @Override
     public List<StockTransferResponse> findByFromAndToStorageType(StorageType fromType, StorageType toType) {
-    	if(!stockTransferRepository.existsByFromAndToStorageType(fromType, toType)) {
+    	validateStorageType(fromType);
+    	validateStorageType(toType);
+    	List<StockTransfer> items = stockTransferRepository.findByFromAndToStorageType(fromType, toType);
+    	if(items.isEmpty()) {
     		String msg = String.format("No StockTransfers found with from-storage type '%s' and to-storage type '%s'", fromType, toType);
     		throw new NoDataFoundException(msg);
     	}
-    	List<StockTransfer> items = stockTransferRepository.findByFromAndToStorageType(fromType, toType);
         return items.stream()
                 .map(StockTransferResponse::new)
                 .collect(Collectors.toList());
@@ -287,11 +305,11 @@ public class StockTransferService implements IStockTransferService {
 	@Override
 	public List<StockTransferResponse> findByFromStorage_Capacity(BigDecimal capacity) {
 		validaBigDecimal(capacity);
-		if(!stockTransferRepository.existsByFromStorage_Capacity(capacity)) {
+		List<StockTransfer> items = stockTransferRepository.findByFromStorage_Capacity(capacity);
+		if(items.isEmpty()) {
 			String msg = String.format("No capacity found for from-storage %s", capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransfer> items = stockTransferRepository.findByFromStorage_Capacity(capacity);
 		return items.stream()
 				.map(stockTransferMapper::toResponse)
 				.collect(Collectors.toList());
@@ -300,11 +318,11 @@ public class StockTransferService implements IStockTransferService {
 	@Override
 	public List<StockTransferResponse> findByToStorage_Capacity(BigDecimal capacity) {
 		validaBigDecimal(capacity);
-		if(!stockTransferRepository.existsByToStorage_Capacity(capacity)) {
+		List<StockTransfer> items = stockTransferRepository.findByToStorage_Capacity(capacity);
+		if(items.isEmpty()) {
 			String msg = String.format("No capacity found for to-storage %s", capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransfer> items = stockTransferRepository.findByToStorage_Capacity(capacity);
 		return items.stream()
 				.map(stockTransferMapper::toResponse)
 				.collect(Collectors.toList());
@@ -313,11 +331,11 @@ public class StockTransferService implements IStockTransferService {
 	@Override
 	public List<StockTransferResponse> findByFromStorage_CapacityGreaterThan(BigDecimal capacity) {
 		validaBigDecimal(capacity);
-		if(!stockTransferRepository.existsByFromStorage_CapacityGreaterThan(capacity)) {
+		List<StockTransfer> items = stockTransferRepository.findByFromStorage_CapacityGreaterThan(capacity);
+		if(items.isEmpty()) {
 			String msg = String.format("No capacity greater than found in from-storage %s", capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransfer> items = stockTransferRepository.findByFromStorage_CapacityGreaterThan(capacity);
 		return items.stream()
 				.map(stockTransferMapper::toResponse)
 				.collect(Collectors.toList());
@@ -326,11 +344,11 @@ public class StockTransferService implements IStockTransferService {
 	@Override
 	public List<StockTransferResponse> findByToStorage_CapacityGreaterThan(BigDecimal capacity) {
 		validaBigDecimal(capacity);
-		if(!stockTransferRepository.existsByToStorage_CapacityGreaterThan(capacity)) {
+		List<StockTransfer> items = stockTransferRepository.findByToStorage_CapacityGreaterThan(capacity);
+		if(items.isEmpty()) {
 			String msg = String.format("No capacity greater than found in to-storage %s", capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransfer> items = stockTransferRepository.findByToStorage_CapacityGreaterThan(capacity);
 		return items.stream()
 				.map(stockTransferMapper::toResponse)
 				.collect(Collectors.toList());
@@ -338,12 +356,12 @@ public class StockTransferService implements IStockTransferService {
 
 	@Override
 	public List<StockTransferResponse> findByFromStorage_CapacityLessThan(BigDecimal capacity) {
-		validaBigDecimal(capacity);
-		if(!stockTransferRepository.existsByFromStorage_CapacityLessThan(capacity)) {
+		validateBigDecimalNonNegative(capacity);
+		List<StockTransfer> items = stockTransferRepository.findByFromStorage_CapacityLessThan(capacity);
+		if(items.isEmpty()) {
 			String msg = String.format("No capacity less than found in from-storage %s", capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransfer> items = stockTransferRepository.findByFromStorage_CapacityLessThan(capacity);
 		return items.stream()
 				.map(stockTransferMapper::toResponse)
 				.collect(Collectors.toList());
@@ -351,12 +369,12 @@ public class StockTransferService implements IStockTransferService {
 
 	@Override
 	public List<StockTransferResponse> findByToStorage_CapacityLessThan(BigDecimal capacity) {
-		validaBigDecimal(capacity);
-		if(!stockTransferRepository.existsByToStorage_CapacityLessThan(capacity)) {
+		validateBigDecimalNonNegative(capacity);
+		List<StockTransfer> items = stockTransferRepository.findByToStorage_CapacityLessThan(capacity);
+		if(items.isEmpty()) {
 			String msg = String.format("No capacity less than found in to-storage %s", capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransfer> items = stockTransferRepository.findByToStorage_CapacityLessThan(capacity);
 		return items.stream()
 				.map(stockTransferMapper::toResponse)
 				.collect(Collectors.toList());
@@ -365,11 +383,12 @@ public class StockTransferService implements IStockTransferService {
 	@Override
 	public List<StockTransferResponse> findByFromStorage_CapacityAndType(BigDecimal capacity, StorageType type) {
 		validaBigDecimal(capacity);
-		if(!stockTransferRepository.existsByFromStorage_Type(type)) {
+		validateStorageType(type);
+		List<StockTransfer> items = stockTransferRepository.findByFromStorage_CapacityGreaterThanAndType(capacity, type);
+		if(items.isEmpty()) {
 			String msg = String.format("No storage type %s for from-storage and capacity %s found", type, capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransfer> items = stockTransferRepository.findByFromStorage_CapacityGreaterThanAndType(capacity, type);
 		return items.stream()
 				.map(stockTransferMapper::toResponse)
 				.collect(Collectors.toList());
@@ -378,11 +397,12 @@ public class StockTransferService implements IStockTransferService {
 	@Override
 	public List<StockTransferResponse> findByToStorage_CapacityAndType(BigDecimal capacity, StorageType type) {
 		validaBigDecimal(capacity);
-		if(!stockTransferRepository.existsByToStorage_Type(type)) {
+		validateStorageType(type);
+		List<StockTransfer> items = stockTransferRepository.findByFromStorage_CapacityGreaterThanAndType(capacity, type);
+		if(items.isEmpty()) {
 			String msg = String.format("No storage type %s for to-storage and capacity %s  found", type, capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransfer> items = stockTransferRepository.findByFromStorage_CapacityGreaterThanAndType(capacity, type);
 		return items.stream()
 				.map(stockTransferMapper::toResponse)
 				.collect(Collectors.toList());
@@ -392,11 +412,12 @@ public class StockTransferService implements IStockTransferService {
 	public List<StockTransferResponse> findByFromStorage_CapacityGreaterThanAndType(BigDecimal capacity,
 			StorageType type) {
 		validaBigDecimal(capacity);
-		if(!stockTransferRepository.existsFromStorageByCapacityGreaterThanAndType(capacity, type)) {
+		validateStorageType(type);
+		List<StockTransfer> items = stockTransferRepository.findByFromStorage_CapacityGreaterThanAndType(capacity, type);
+		if(items.isEmpty()) {
 			String msg = String.format("No storage type %s for from-storage and capacity %s greater than found", type, capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransfer> items = stockTransferRepository.findByFromStorage_CapacityGreaterThanAndType(capacity, type);
 		return items.stream()
 				.map(stockTransferMapper::toResponse)
 				.collect(Collectors.toList());
@@ -406,11 +427,12 @@ public class StockTransferService implements IStockTransferService {
 	public List<StockTransferResponse> findByToStorage_CapacityGreaterThanAndType(BigDecimal capacity,
 			StorageType type) {
 		validaBigDecimal(capacity);
-		if(!stockTransferRepository.existsToStorageByCapacityGreaterThanAndType(capacity, type)) {
+		validateStorageType(type);
+		List<StockTransfer> items = stockTransferRepository.findByToStorage_CapacityGreaterThanAndType(capacity, type);
+		if(items.isEmpty()) {
 			String msg = String.format("No storage type %s for to-storage and capacity %s greater than found", type, capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransfer> items = stockTransferRepository.findByToStorage_CapacityGreaterThanAndType(capacity, type);
 		return items.stream()
 				.map(stockTransferMapper::toResponse)
 				.collect(Collectors.toList());
@@ -419,12 +441,13 @@ public class StockTransferService implements IStockTransferService {
 	@Override
 	public List<StockTransferResponse> findByFromStorage_CapacityLessThanAndType(BigDecimal capacity,
 			StorageType type) {
-		validaBigDecimal(capacity);
-		if(!stockTransferRepository.existsFromStorageByCapacityLessThanAndType(capacity, type)) {
+		validateBigDecimalNonNegative(capacity);
+		validateStorageType(type);
+		List<StockTransfer> items = stockTransferRepository.findByFromStorage_CapacityLessThanAndType(capacity, type);
+		if(items.isEmpty()) {
 			String msg = String.format("No storage type %s for from-storage and capacity %s less than found", type,capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransfer> items = stockTransferRepository.findByFromStorage_CapacityLessThanAndType(capacity, type);
 		return items.stream()
 				.map(stockTransferMapper::toResponse)
 				.collect(Collectors.toList());
@@ -432,12 +455,13 @@ public class StockTransferService implements IStockTransferService {
 
 	@Override
 	public List<StockTransferResponse> findByToStorage_CapacityLessThanAndType(BigDecimal capacity, StorageType type) {
-		validaBigDecimal(capacity);
-		if(!stockTransferRepository.existsToStorageByCapacityLessThanAndType(capacity, type)) {
+		validateBigDecimalNonNegative(capacity);
+		validateStorageType(type);
+		List<StockTransfer> items = stockTransferRepository.findByToStorage_CapacityAndType(capacity, type);
+		if(items.isEmpty()) {
 			String msg = String.format("No storage type %s for to-storage and capacity %s less than found", type, capacity);
 			throw new NoDataFoundException(msg);
 		}
-		List<StockTransfer> items = stockTransferRepository.findByToStorage_CapacityAndType(capacity, type);
 		return items.stream()
 				.map(stockTransferMapper::toResponse)
 				.collect(Collectors.toList());
@@ -477,8 +501,6 @@ public class StockTransferService implements IStockTransferService {
     
     private void validateCreateStockTransferRequest(StockTransferRequest request) {
     	DateValidator.validateNotInFuture(request.transferDate(), "Transfer date");
-    	fetchFromStorageId(request.fromStorageId());
-    	fetchToStorageId(request.toStorageId());
     	validateTransferStatus(request.status());
     	validateStockTransferItemRequest(request.itemRequest());
     }
@@ -510,4 +532,18 @@ public class StockTransferService implements IStockTransferService {
     		throw new ValidationException("Quantity must be positive number");
     	}
     }
+    
+    private void validateStorageType(StorageType type) {
+    	Optional.ofNullable(type)
+    		.orElseThrow(() -> new ValidationException("StorageType type must not be null"));
+    }
+    
+    private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
 }

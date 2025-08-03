@@ -5,57 +5,75 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
-import com.jovan.erp_v1.exception.LogisticsProviderErrorException;
-import com.jovan.erp_v1.exception.OutboundDeliveryErrorException;
-import com.jovan.erp_v1.exception.StorageNotFoundException;
 import com.jovan.erp_v1.model.EventLog;
 import com.jovan.erp_v1.model.LogisticsProvider;
 import com.jovan.erp_v1.model.OutboundDelivery;
 import com.jovan.erp_v1.model.Shipment;
 import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.model.TrackingInfo;
-import com.jovan.erp_v1.repository.LogisticsProviderRepository;
-import com.jovan.erp_v1.repository.OutboundDeliveryRepository;
-import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.request.ShipmentRequest;
 import com.jovan.erp_v1.request.TrackingInfoRequest;
 import com.jovan.erp_v1.response.ShipmentResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class ShipmentMapper {
+public class ShipmentMapper extends AbstractMapper<ShipmentRequest> {
 
-    private final LogisticsProviderRepository logisticsProviderRepository;
-    private final OutboundDeliveryRepository out;
-    private final StorageRepository storageRepository;
     private final EventLogMapper eventLogMapper;
+    private final TrackingInfoMapper trackingInfoMapper;
 
-    public Shipment toEntity(ShipmentRequest request) {
+    public Shipment toEntity(ShipmentRequest request, LogisticsProvider provider, OutboundDelivery outboundDelivery, Storage originStorage) {
+    	Objects.requireNonNull(request, "ShipmentRequest must not be null");
+    	Objects.requireNonNull(outboundDelivery, "OutboundDelivery must not be null");
+    	Objects.requireNonNull(originStorage, "Storage must not be null");
+    	validateIdForCreate(request, ShipmentRequest::id);
 		Shipment sh = new Shipment();
-		sh.setShipmentDate(request.shipmentDate());
+		sh.setId(request.id());
 		sh.setStatus(request.status());
-		LogisticsProvider provider = fetchLogisticsProviderId(request.providerId());
 		sh.setProvider(provider);
-		OutboundDelivery delivery = fetchOutboundDeliveryId(request.outboundDeliveryId());
-		sh.setOutboundDelivery(delivery);
+		sh.setOutboundDelivery(outboundDelivery);
 		TrackingInfoRequest infoReq = request.trackingInfo();
 	    TrackingInfo info = new TrackingInfo();
 	    info.setTrackingNumber(infoReq.trackingNumber());
 	    info.setCurrentLocation(infoReq.currentLocation());
-	    info.setEstimatedDelivery(infoReq.estimatedDelivery());
 	    info.setCurrentStatus(infoReq.currentStatus());
-	    info.setShipment(sh); //važno: povezivanje shipment i trackingInfo dvosmerno
+	    info.setShipment(sh); //vazno: povezivanje shipment i trackingInfo, dvosmerno veza
 	    sh.setTrackingInfo(info);
-		Storage store = fetchStorageId(request.originStorageId());
-		sh.setOriginStorage(store);
+		sh.setOriginStorage(originStorage);
 		List<EventLog> logs = request.eventLogRequest().stream()
 			    .map(logReq -> eventLogMapper.toEntity(logReq, sh))
 			    .collect(Collectors.toList());
-			sh.setEventLogs(logs);
+		sh.setEventLogs(logs);
 		return sh;
 	}
+    
+    public Shipment toEntityUpdate(Shipment ship, ShipmentRequest request, LogisticsProvider provider, OutboundDelivery outboundDelivery,TrackingInfo info, Storage originStorage) {
+    	Objects.requireNonNull(ship, "Shipment must not be null");
+    	Objects.requireNonNull(request, "ShipmentRequest must not be null");
+    	Objects.requireNonNull(outboundDelivery, "OutboundDelivery must not be null");
+    	Objects.requireNonNull(originStorage, "Storage must not be null");
+    	ship.setStatus(request.status());
+    	ship.setProvider(provider);
+    	ship.setOutboundDelivery(outboundDelivery);
+    	TrackingInfo existing = ship.getTrackingInfo();
+    	TrackingInfoRequest infoReq = request.trackingInfo();
+    	trackingInfoMapper.updateEntity(existing, infoReq);
+    	ship.setOriginStorage(originStorage);
+    	List<EventLog> logs = request.eventLogRequest().stream()
+			    .map(logReq -> eventLogMapper.toEntity(logReq, ship))
+			    .collect(Collectors.toList());
+		ship.setEventLogs(logs);
+    	return ship;
+    }
+    
+    public void updateEntity(TrackingInfo info, TrackingInfoRequest req) {
+        info.setTrackingNumber(req.trackingNumber());
+        info.setCurrentLocation(req.currentLocation());
+        info.setCurrentStatus(req.currentStatus());
+    }
 
     public ShipmentResponse toResponse(Shipment ship) {
     	Objects.requireNonNull(ship, "Shipment must not be null");
@@ -68,25 +86,5 @@ public class ShipmentMapper {
     	}
         return s.stream().map(this::toResponse).collect(Collectors.toList());
     }
-    
-    private OutboundDelivery fetchOutboundDeliveryId(Long outId) {
-    	if(outId == null) {
-    		throw new OutboundDeliveryErrorException("OutboundDelivery ID must not be null");
-    	}
-    	return out.findById(outId).orElseThrow(() -> new OutboundDeliveryErrorException("OuboundDelivery not found with id "+outId));
-    }
-    
-    private Storage fetchStorageId(Long storageId) {
-    	if(storageId == null) {
-    		throw new StorageNotFoundException("Storage ID must not be null");
-    	}
-    	return storageRepository.findById(storageId).orElseThrow(() -> new StorageNotFoundException("Storage not found with id "+storageId));
-    }
-    
-    private LogisticsProvider fetchLogisticsProviderId(Long logisticsId) {
-    	if(logisticsId == null) {
-    		throw new LogisticsProviderErrorException("Logistics-provider ID must not be null");
-    	}
-    	return logisticsProviderRepository.findById(logisticsId).orElseThrow(() -> new LogisticsProviderErrorException("Logistics-provider not found with id "+logisticsId));
-    }
+ 
 }

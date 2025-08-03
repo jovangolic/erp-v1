@@ -15,5 +15,4 @@ public interface PermissionRepository extends JpaRepository<Permission, Long> {
 
     boolean existsByPermissionType(PermissionType type);
 
-    Optional<Permission> findById(Long id);
 }

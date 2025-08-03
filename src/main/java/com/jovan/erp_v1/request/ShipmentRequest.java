@@ -13,7 +13,7 @@ public record ShipmentRequest(
                 @NotNull ShipmentStatus status,
                 @NotNull Long providerId,
                 @NotNull Long outboundDeliveryId,
-                @NotNull TrackingInfoRequest trackingInfo, // složen objekat
+                @NotNull TrackingInfoRequest trackingInfo, // slozen objekat
                 @NotNull Long originStorageId,
                 @NotNull @Valid List<EventLogRequest> eventLogRequest) {
 }

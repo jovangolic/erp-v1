@@ -36,8 +36,6 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
   @Query("SELECT COUNT(s) FROM SalesOrder s WHERE YEAR(s.orderDate) = :year")
   int countByOrderDateYear(@Param("year") int year);
 
-  Optional<SalesOrder> findById(Long id);
-
   Optional<SalesOrder> findByOrderNumber(String orderNumber);
 
   Integer countByStatus(OrderStatus status);

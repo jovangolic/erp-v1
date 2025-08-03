@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.jovan.erp_v1.model.FiscalQuarter;
 import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;

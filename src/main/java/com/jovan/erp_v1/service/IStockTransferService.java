@@ -3,13 +3,8 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.TransferStatus;
-import com.jovan.erp_v1.model.StockTransfer;
 import com.jovan.erp_v1.request.StockTransferRequest;
 import com.jovan.erp_v1.response.StockTransferResponse;
 

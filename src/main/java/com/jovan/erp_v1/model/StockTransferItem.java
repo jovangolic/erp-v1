@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,11 +24,13 @@ public class StockTransferItem {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name="product_id")
     private Product product;
 
     @Column
     private BigDecimal quantity;
 
     @ManyToOne
+    @JoinColumn(name="stock_transfer_id")
     private StockTransfer stockTransfer;
 }

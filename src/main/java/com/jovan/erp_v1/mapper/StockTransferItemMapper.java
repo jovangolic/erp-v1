@@ -4,36 +4,41 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Component;
-
-import com.jovan.erp_v1.exception.NoDataFoundException;
-import com.jovan.erp_v1.exception.NoSuchProductException;
-import com.jovan.erp_v1.exception.StockTransferErrorException;
 import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.model.StockTransfer;
 import com.jovan.erp_v1.model.StockTransferItem;
-import com.jovan.erp_v1.repository.ProductRepository;
-import com.jovan.erp_v1.repository.StockTransferRepository;
 import com.jovan.erp_v1.request.StockTransferItemRequest;
 import com.jovan.erp_v1.response.StockTransferItemResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
-public class StockTransferItemMapper {
+public class StockTransferItemMapper extends AbstractMapper<StockTransferItemRequest> {
 
-    private final ProductRepository productRepository;
-    private final StockTransferRepository stockTransferRepository;
 
-    public StockTransferItem toEntity(StockTransferItemRequest request) {
+    public StockTransferItem toEntity(StockTransferItemRequest request,Product product, StockTransfer stock) {
+    	Objects.requireNonNull(request, "StockTransferItemRequest must not be null");
+    	Objects.requireNonNull(product, "Product must not be null");
+    	Objects.requireNonNull(stock, "StockTransfer must not be null");
+    	validateIdForCreate(request, StockTransferItemRequest::id);
         StockTransferItem item = new StockTransferItem();
-        Product product = fetchProductId(request.productId());
+        item.setId(request.id());
         item.setProduct(product);
         item.setQuantity(request.quantity());
-        item.setStockTransfer(fetchStockTransferId(request.stockTransferId()));
+        item.setStockTransfer(stock);
         return item;
+    }
+    
+    public StockTransferItem toEntityUpdate(StockTransferItem item,StockTransferItemRequest request,Product product, StockTransfer stock) {
+    	Objects.requireNonNull(item, "StockTransfer must not be null");
+    	Objects.requireNonNull(request, "StockTransferItemRequest must not be null");
+    	Objects.requireNonNull(product, "Product must not be null");
+    	Objects.requireNonNull(stock, "StockTransfer must not be null");
+    	item.setProduct(product);
+    	item.setStockTransfer(stock);
+    	item.setQuantity(request.quantity());
+    	return item;
     }
 
     public StockTransferItemResponse toResponse(StockTransferItem item) {
@@ -48,17 +53,4 @@ public class StockTransferItemMapper {
         return items.stream().map(this::toResponse).collect(Collectors.toList());
     }
     
-    private Product fetchProductId(Long productId) {
-    	if(productId == null) {
-    		throw new NoDataFoundException("Product ID must not be null");
-    	}
-    	return productRepository.findById(productId).orElseThrow(() -> new NoSuchProductException("Product not found with id: "+productId));
-    }
-    
-    private StockTransfer fetchStockTransferId(Long stockTransferId) {
-    	if(stockTransferId == null) {
-    		throw new NoDataFoundException("StockTransfer ID must not be null");
-    	}
-    	return stockTransferRepository.findById(stockTransferId).orElseThrow(() -> new StockTransferErrorException("StockTransfer not found with id: "+stockTransferId));
-    }
 }
