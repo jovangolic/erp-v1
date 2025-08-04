@@ -48,6 +48,9 @@ public class Storage {
 	
 	@Column
 	private BigDecimal usedCapacity = BigDecimal.ZERO;
+	
+	@Column
+	private Boolean hasShelvesFor;
 
 	@OneToMany(mappedBy = "storage", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Goods> goods;

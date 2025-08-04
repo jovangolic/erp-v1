@@ -65,7 +65,6 @@ public class VendorMapper extends AbstractMapper<VendorRequest> {
 	    vendor.setEmail(request.email());
 	    vendor.setPhoneNumber(request.phoneNumber());
 	    vendor.setAddress(request.address());
-	    // Mapiraj postojece transakcije po ID za brzu pretragu
 	    Map<Long, MaterialTransaction> existingTransactionsById = vendor.getMaterialTransactions()
 	        .stream()
 	        .filter(tx -> tx.getId() != null)

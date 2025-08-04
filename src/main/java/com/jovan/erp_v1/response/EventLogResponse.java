@@ -15,10 +15,12 @@ public class EventLogResponse {
     private Long id;
     private LocalDateTime timestamp;
     private String description;
+    private ShipmentForEventLogResponse shipmentForEventLogResponse;
 
     public EventLogResponse(EventLog log) {
         this.id = log.getId();
         this.timestamp = log.getTimestamp();
         this.description = log.getDescription();
+        this.shipmentForEventLogResponse = log.getShipment() != null ? new ShipmentForEventLogResponse(log.getShipment()) : null;
     }
 }

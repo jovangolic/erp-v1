@@ -27,7 +27,6 @@ public class TransportOrderMapper extends AbstractMapper<TransportOrderRequest> 
 		validateIdForCreate(request, TransportOrderRequest::id);
 		TransportOrder to = new TransportOrder();
 		to.setId(request.id());
-		to.setScheduledDate(request.scheduledDate());
 		to.setVehicle(v);
 		to.setOutboundDelivery(od);
 		to.setDriver(d);
@@ -42,7 +41,6 @@ public class TransportOrderMapper extends AbstractMapper<TransportOrderRequest> 
 		Objects.requireNonNull(d, "Driver must not be null");
 		Objects.requireNonNull(od, "OutboundDelivery must not be null");
 		validateIdForUpdate(request, TransportOrderRequest::id);
-		to.setScheduledDate(request.scheduledDate());
 		to.setVehicle(v);
 		to.setDriver(d);
 		to.setStatus(request.status());

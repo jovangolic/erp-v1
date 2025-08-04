@@ -29,7 +29,6 @@ public class InvoiceMapper extends AbstractMapper<InvoiceRequest> {
         validateIdForCreate(request, InvoiceRequest::id);
         Invoice invoice = new Invoice();
         invoice.setId(request.id());
-        invoice.setIssueDate(LocalDateTime.now());
         invoice.setDueDate(request.dueDate());
         invoice.setStatus(request.status());
         invoice.setTotalAmount(request.totalAmount());
@@ -55,7 +54,6 @@ public class InvoiceMapper extends AbstractMapper<InvoiceRequest> {
 	}
 
     private Invoice buildInvoiceFromRequest(Invoice invoice, InvoiceRequest request, Buyer buyer,Sales sales,Payment payment,SalesOrder so,User createdAt) {
-    	invoice.setIssueDate(request.issueDate());
     	invoice.setDueDate(request.dueDate());
     	invoice.setStatus(request.status());
     	invoice.setTotalAmount(request.totalAmount());

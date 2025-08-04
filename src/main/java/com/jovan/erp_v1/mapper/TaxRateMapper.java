@@ -24,7 +24,6 @@ public class TaxRateMapper extends AbstractMapper<TaxRateRequest> {
             tax.setTaxName(request.taxName());
         }
         tax.setPercentage(request.percentage());
-        tax.setStartDate(request.startDate());
         tax.setEndDate(request.endDate());
         tax.setType(request.type());
         return tax;
@@ -38,7 +37,6 @@ public class TaxRateMapper extends AbstractMapper<TaxRateRequest> {
             tax.setTaxName(request.taxName());
         }
         tax.setPercentage(request.percentage());
-        tax.setStartDate(request.startDate());
         tax.setEndDate(request.endDate());
         if (request.type() != null) {
             tax.setType(request.type());

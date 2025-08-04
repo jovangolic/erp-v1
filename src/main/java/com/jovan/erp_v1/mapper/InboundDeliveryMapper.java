@@ -28,7 +28,7 @@ public class InboundDeliveryMapper extends AbstractMapper<InboundDeliveryRequest
     	Objects.requireNonNull(request,"InboundDeliveryRequest must not be null");
     	validateIdForCreate(request, InboundDeliveryRequest::id);
         InboundDelivery delivery = new InboundDelivery();
-        delivery.setDeliveryDate(request.deliveryDate());
+        delivery.setId(request.id());
         delivery.setSupply(supply);
         delivery.setStatus(request.status());
         if (request.itemRequest().stream().anyMatch(Objects::isNull)) {

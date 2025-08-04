@@ -3,7 +3,6 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.util.List;
 import com.jovan.erp_v1.enumeration.StorageType;
-import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.request.StorageRequest;
 import com.jovan.erp_v1.response.StorageResponse;
 
@@ -57,6 +56,8 @@ public interface IStorageService {
     List<StorageResponse> findClosedStorage();
     List<StorageResponse> findInterimStorage();
     List<StorageResponse> findAvailableStorage();
+    
+    Boolean findFirstByTypeAndHasShelvesForIsNotNull(StorageType type);
     
     //dodato
     BigDecimal getAvailableCapacity(Long storageId);

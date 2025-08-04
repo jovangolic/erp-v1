@@ -22,7 +22,6 @@ public class IncomeStatementMapper extends AbstractMapper<IncomeStatementRequest
         Objects.requireNonNull(request, "IncomeStatementRequest must not be null");
         validateIdForCreate(request, IncomeStatementRequest::id);
         IncomeStatement stat = new IncomeStatement();
-        stat.setPeriodStart(request.periodStart());
         stat.setPeriodEnd(request.periodEnd());
         stat.setTotalRevenue(request.totalRevenue());
         stat.setTotalExpenses(request.totalExpenses());
@@ -40,7 +39,6 @@ public class IncomeStatementMapper extends AbstractMapper<IncomeStatementRequest
     }
     
     private IncomeStatement buildIncomeStatementFromRequest(IncomeStatement income, IncomeStatementRequest request, FiscalYear year) {
-    	income.setPeriodStart(request.periodStart());
         income.setPeriodEnd(request.periodEnd());
         income.setTotalRevenue(request.totalRevenue());
         income.setTotalExpenses(request.totalExpenses());

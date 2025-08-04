@@ -11,13 +11,15 @@ import org.springframework.stereotype.Component;
 import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.request.StorageRequest;
 import com.jovan.erp_v1.response.StorageResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
 
 @Component
-public class StorageMapper {
-
+public class StorageMapper extends AbstractMapper<StorageRequest> {
 
     public Storage toEntity(StorageRequest request) {
+    	Objects.requireNonNull(request, "StorageRequest must not be null");
+    	validateIdForCreate(request, StorageRequest::id);
         Storage storage = new Storage();
         storage.setId(request.id());
         storage.setName(request.name());
@@ -27,6 +29,18 @@ public class StorageMapper {
         storage.setShelves(new ArrayList<>());
         storage.setStatus(request.status());
         return storage;
+    }
+    
+    public Storage toEntityUpdate(Storage st, StorageRequest request) {
+    	Objects.requireNonNull(st, "Storage must not be null");
+    	Objects.requireNonNull(request, "StorageRequest must not be null");
+    	validateIdForUpdate(request, StorageRequest::id);
+    	st.setName(request.name());
+    	st.setLocation(request.location());
+    	st.setCapacity(request.capacity());
+    	st.setType(request.type());
+    	st.setStatus(request.status());
+    	return st;
     }
 
     public StorageResponse toResponse(Storage storage) {

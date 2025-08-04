@@ -234,11 +234,4 @@ public class InboundDeliveryService implements InterfejsInboundDeliveryService {
     	}
     }
     
-    private Product validateProductId(Long productId) {
-    	if(productId == null) {
-    		throw new ValidationException("Product ID must not be null");
-    	}
-    	return productRepository.findById(productId).orElseThrow(() -> new ValidationException("Product not found with id "+productId));
-    }
-
 }

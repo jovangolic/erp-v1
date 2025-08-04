@@ -27,10 +27,10 @@ public class SystemState {
     private Long id;
 
     @Column(nullable = false)
-    private Boolean maintenanceMode; // Da li je sistem u režimu održavanja
+    private Boolean maintenanceMode; // Da li je sistem u rezimu odrzavanja
 
     @Column(nullable = false)
-    private Boolean registrationEnabled; // Da li je omogućena registracija korisnika
+    private Boolean registrationEnabled; // Da li je omogucena registracija korisnika
 
     @Column
     private LocalDateTime lastRestartTime; // Kada je poslednji put sistem restartovan

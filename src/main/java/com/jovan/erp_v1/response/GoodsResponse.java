@@ -23,8 +23,9 @@ public class GoodsResponse {
 	private SupplierType supplierType;
 	private StorageType storageType;
 	private GoodsType goodsType;
-	private String storageName;
-	private Long supplyId;
+	private StorageBasicResponse storageBasicResponse;
+	private SupplyForGoodsResponse supplyForGoodsResponse;
+	private ShelfResponse shelfResponse;
 
 	public GoodsResponse(Goods goods) {
 		this.id = goods.getId();
@@ -36,7 +37,8 @@ public class GoodsResponse {
 		this.supplierType = goods.getSupplierType();
 		this.storageType = goods.getStorageType();
 		this.goodsType = goods.getGoodsType();
-		this.storageName = goods.getStorage().getName();
-		this.supplyId = goods.getSupply() != null ? goods.getSupply().getId() : null; // sigurnosna provera
+		this.storageBasicResponse = goods.getStorage() != null ? new StorageBasicResponse(goods.getStorage()) : null;
+		this.supplyForGoodsResponse = goods.getSupply() != null ? new SupplyForGoodsResponse(goods.getSupply()) : null;
+		this.shelfResponse = goods.getShelf() != null ? new ShelfResponse(goods.getShelf()) :  null;
 	}
 }

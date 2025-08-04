@@ -2,6 +2,7 @@ package com.jovan.erp_v1.repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -99,6 +100,8 @@ public interface StorageRepository extends JpaRepository<Storage, Long> {
     List<Storage> findInterimStorage();
     @Query("SELECT COUNT(s) > 0 FROM Storage s WHERE s.type = 'AVAILABLE'")
     List<Storage> findAvailableStorage();
+    //metoda koja proverava da li novo-kreirano skladiste trena da ima police ili ne
+    Optional<Storage> findFirstByTypeAndHasShelvesForIsNotNull(StorageType type);
     
     
     //boolean

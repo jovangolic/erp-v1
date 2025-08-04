@@ -53,7 +53,6 @@ public class InventoryService implements IInventoryService {
 		inventoryItemsRepository.deleteAllByInventoryId(request.id());
 		inventory.setStorageEmployee(storageEmployee);
 		inventory.setStorageForeman(storageForeman);
-		inventory.setDate(request.date());
 		inventory.setAligned(request.aligned());
 		inventory.setStatus(request.status());
 		Inventory savedInventory = inventoryRepository.save(inventory);

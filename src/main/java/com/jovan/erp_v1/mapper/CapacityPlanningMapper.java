@@ -21,7 +21,6 @@ public class CapacityPlanningMapper extends AbstractMapper<CapacityPlanningReque
         CapacityPlanning cp = new CapacityPlanning();
         validateIdForCreate(request, CapacityPlanningRequest::id);
         cp.setWorkCenter(workCenter);
-        cp.setDate(request.date());
         cp.setAvailableCapacity(request.availableCapacity());
         cp.setPlannedLoad(request.plannedLoad());
         cp.setRemainingCapacity(calculateRemainingCapacity(request.availableCapacity(), request.plannedLoad()));
@@ -35,7 +34,6 @@ public class CapacityPlanningMapper extends AbstractMapper<CapacityPlanningReque
         Objects.requireNonNull(workCenter, "WorkCenter cannot be null");
         validateIdForUpdate(request, CapacityPlanningRequest::id);
         cp.setWorkCenter(workCenter);
-        cp.setDate(request.date());
         cp.setAvailableCapacity(request.availableCapacity());
         cp.setPlannedLoad(request.plannedLoad());
         cp.setRemainingCapacity(calculateRemainingCapacity(request.availableCapacity(), request.plannedLoad()));

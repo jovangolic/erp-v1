@@ -22,7 +22,6 @@ public class BalanceSheetMapper extends AbstractMapper<BalanceSheetRequest> {
         validateIdForUpdate(request, BalanceSheetRequest::id);
         BalanceSheet bs = new BalanceSheet();
         bs.setId(request.id());
-        bs.setDate(request.date());
         bs.setTotalAssets(request.totalAssets());
         bs.setTotalLiabilities(request.totalLiabilities());
         bs.setTotalEquity(request.totalEquity());
@@ -39,7 +38,6 @@ public class BalanceSheetMapper extends AbstractMapper<BalanceSheetRequest> {
     }
     
     private BalanceSheet buildBalanceSheetFromRequest(BalanceSheet bs, BalanceSheetRequest request, FiscalYear fiscalYear) {
-    	bs.setDate(request.date());
         bs.setTotalAssets(request.totalAssets());
         bs.setTotalLiabilities(request.totalLiabilities());
         bs.setTotalEquity(request.totalEquity());

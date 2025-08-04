@@ -33,7 +33,6 @@ public class FiscalQuarterMapper extends AbstractMapper<FiscalQuarterRequest> {
     
     private FiscalQuarter buildFiscalQuarterFromRequest(FiscalQuarter q, FiscalQuarterRequest request, FiscalYear fiscalYear) {
     	q.setQuarterStatus(request.quarterStatus());
-        q.setStartDate(request.startDate());
         q.setEndDate(request.endDate());
         q.setFiscalYear(fiscalYear);
         return q;

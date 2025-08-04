@@ -33,7 +33,6 @@ public class InventoryMapper extends AbstractMapper<InventoryRequest> {
 		inventory.setId(request.id());
 		inventory.setStorageEmployee(employee);
 		inventory.setStorageForeman(foreman);
-		inventory.setDate(request.date());
 		inventory.setAligned(request.aligned());
 		inventory.setStatus(request.status());
 		if (request.inventoryItems() != null) {

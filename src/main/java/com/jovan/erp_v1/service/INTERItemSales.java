@@ -8,7 +8,6 @@ import com.jovan.erp_v1.enumeration.OrderStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
-import com.jovan.erp_v1.model.Goods;
 import com.jovan.erp_v1.request.ItemSalesFilterRequest;
 import com.jovan.erp_v1.request.ItemSalesRequest;
 import com.jovan.erp_v1.response.ItemSalesResponse;

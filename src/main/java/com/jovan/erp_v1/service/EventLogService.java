@@ -34,12 +34,8 @@ public class EventLogService implements IEventLogService {
     public EventLogResponse addEvent(EventLogRequest request) {
     	DateValidator.validateNotNull(request.timestamp(), "Timestamp");
     	validateString(request.description());
-        Shipment shipment = shipmentRepository.findById(request.shipmentId())
-            .orElseThrow(() -> new RuntimeException("Shipment not found"));
-        EventLog log = new EventLog();
-        log.setTimestamp(request.timestamp());
-        log.setDescription(request.description());
-        log.setShipment(shipment);
+        Shipment shipment = validateShipmentId(request.shipmentId());
+        EventLog log = eventLogMapper.toEntity(request, shipment);
         EventLog saved = eventLogRepository.save(log);
         return new EventLogResponse(saved);
     }
@@ -63,14 +59,13 @@ public class EventLogService implements IEventLogService {
         EventLog eventLog = eventLogRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("EventLog not found"));
         validateEventLogRequest(request);
-        eventLog.setTimestamp(request.timestamp());
-        eventLog.setDescription(request.description());
         Shipment shipment = eventLog.getShipment();
         // opciono: update shipment ako request ima shipmentId razlicit
         if (!eventLog.getShipment().getId().equals(request.shipmentId())) {
             shipment = validateShipmentId(request.shipmentId());
             eventLog.setShipment(shipment);
         }
+        eventLogMapper.toUpdateEntity(eventLog, request, shipment);
         eventLog = eventLogRepository.save(eventLog);
         return new EventLogResponse(eventLog);
     }
