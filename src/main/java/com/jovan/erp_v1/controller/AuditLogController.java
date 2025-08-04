@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/audit-logs")
-@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','SECURITY_AUDITOR')")
 public class AuditLogController {
 
     private final IAuditLogService auditLogService;
@@ -35,7 +35,6 @@ public class AuditLogController {
     public ResponseEntity<Void> log(@RequestParam("action") AuditActionType action,
             @RequestParam("userId") Long userId,
             @RequestParam("details") String details) {
-        // Dobavi User entitet iz baze
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
@@ -43,6 +42,7 @@ public class AuditLogController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','QUALITY_MANAGER','ACCOUNTANT')")
     @GetMapping("/{id}")
     public ResponseEntity<AuditLogResponse> getById(@PathVariable Long id) {
         return auditLogService.getById(id)
@@ -50,6 +50,7 @@ public class AuditLogController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','QUALITY_MANAGER','ACCOUNTANT')")
     @GetMapping("/between-dates")
     public ResponseEntity<List<AuditLogResponse>> getLogsBetweenDates(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -58,23 +59,27 @@ public class AuditLogController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','QUALITY_MANAGER','ACCOUNTANT')")
     @GetMapping("/get-by-action")
     public ResponseEntity<List<AuditLogResponse>> getLogsByAction(@RequestParam("action") AuditActionType action) {
         List<AuditLogResponse> responses = auditLogService.getLogsByAction(action);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','QUALITY_MANAGER','ACCOUNTANT')")
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<AuditLogResponse>> getLogsByUserId(@PathVariable Long userId) {
         List<AuditLogResponse> responses = auditLogService.getLogsByUserId(userId);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','QUALITY_MANAGER','ACCOUNTANT')")
     @GetMapping("/get-all-logs")
     public ResponseEntity<List<AuditLogResponse>> getAllLogs() {
         return ResponseEntity.ok(auditLogService.getAllLogs());
     }
 
+    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','QUALITY_MANAGER','ACCOUNTANT')")
     @GetMapping("/search")
     public ResponseEntity<List<AuditLogResponse>> searchLogs(
             @RequestParam(required = false) Long userId,

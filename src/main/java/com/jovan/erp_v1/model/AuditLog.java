@@ -35,7 +35,7 @@ public class AuditLog {
     private Long id;
 
     @ManyToOne(optional = false)
-    private User user; // Ko je izvršio akciju
+    private User user; // Ko je izvrsio akciju
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

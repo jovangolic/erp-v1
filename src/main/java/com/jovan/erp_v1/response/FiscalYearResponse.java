@@ -1,17 +1,13 @@
 package com.jovan.erp_v1.response;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
-import com.jovan.erp_v1.model.FiscalQuarter;
 import com.jovan.erp_v1.model.FiscalYear;
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

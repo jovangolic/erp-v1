@@ -20,10 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
-import com.jovan.erp_v1.exception.StorageNotFoundException;
-import com.jovan.erp_v1.mapper.SupplyMapper;
-import com.jovan.erp_v1.model.Storage;
-import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.request.SupplyRequest;
 import com.jovan.erp_v1.response.StorageGoodsCountResponse;
 import com.jovan.erp_v1.response.StorageIncomingMovementCountResponse;
@@ -47,8 +43,6 @@ import lombok.RequiredArgsConstructor;
 public class SupplyController {
 
 	private final ISupplyService supplyService;
-	private final SupplyMapper supplyMapper;
-	private final StorageRepository storageRepository;
 
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
 	@PostMapping("/create/new-supply")

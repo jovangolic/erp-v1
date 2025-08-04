@@ -26,7 +26,6 @@ import com.jovan.erp_v1.repository.VehicleRepository;
 import com.jovan.erp_v1.request.TransportOrderRequest;
 import com.jovan.erp_v1.response.TransportOrderResponse;
 import com.jovan.erp_v1.service.ITransportOrderService;
-import com.jovan.erp_v1.service.IVehicleService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

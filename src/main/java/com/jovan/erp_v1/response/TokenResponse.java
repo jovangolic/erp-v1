@@ -1,7 +1,5 @@
 package com.jovan.erp_v1.response;
 
-import java.util.Set;
-
 import com.jovan.erp_v1.enumeration.TokenType;
 import com.jovan.erp_v1.model.Token;
 

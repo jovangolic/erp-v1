@@ -9,7 +9,7 @@ import com.jovan.erp_v1.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
 
 @Data
 // @NoArgsConstructor

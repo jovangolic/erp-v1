@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,10 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
-import com.jovan.erp_v1.exception.SupplierNotFoundException;
-import com.jovan.erp_v1.mapper.VendorMapper;
 import com.jovan.erp_v1.request.VendorRequest;
 import com.jovan.erp_v1.response.VendorResponse;
 import com.jovan.erp_v1.service.IVendorService;
@@ -32,7 +28,6 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin("http://localhost:5371")
 public class VendorController {
 
-	private final VendorMapper vendorMapper;
 	private final IVendorService vendorService;
 
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")

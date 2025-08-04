@@ -1,8 +1,6 @@
 package com.jovan.erp_v1.controller;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +10,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,10 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jovan.erp_v1.model.CustomUserDetails;
 import com.jovan.erp_v1.model.Role;
 import com.jovan.erp_v1.model.User;
-import com.jovan.erp_v1.repository.RoleRepository;
 import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.LoginRequest;
 import com.jovan.erp_v1.request.RefreshTokenRequest;
@@ -51,13 +46,12 @@ public class AuthController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final RoleRepository roleRepository;
 
     @PostMapping("/register-user")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserRequest request) {
         try {
             UserResponse registeredUser = userService.registerUser(request);
-            return ResponseEntity.ok(registeredUser); // ili poruka ako ne želiš vraćanje usera
+            return ResponseEntity.ok(registeredUser); 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }

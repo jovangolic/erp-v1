@@ -33,12 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.jovan.erp_v1.dto.GoodsDispatchDTO;
 import com.jovan.erp_v1.exception.ConfirmationDocumentNotFoundException;
-import com.jovan.erp_v1.exception.NoSuchShiftErrorException;
 import com.jovan.erp_v1.model.ConfirmationDocument;
-import com.jovan.erp_v1.model.Shift;
-import com.jovan.erp_v1.model.User;
-import com.jovan.erp_v1.repository.ShiftRepository;
-import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.ConfirmationDocumentRequest;
 import com.jovan.erp_v1.response.ConfirmationDocumentResponse;
 import com.jovan.erp_v1.service.IConfirmationDocumentService;
@@ -54,8 +49,6 @@ public class ConfirmationDocumentController {
 
     private final IConfirmationDocumentService confirmationDocumentService;
     private final PdfGeneratorService pdfGeneratorService;
-    private final UserRepository userRepository;
-    private final ShiftRepository shiftRepository;
 
     @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
     @PostMapping("/create/new-confirm-document")

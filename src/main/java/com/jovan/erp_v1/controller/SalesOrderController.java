@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
-import com.jovan.erp_v1.mapper.SalesOrderMapper;
 import com.jovan.erp_v1.request.SalesOrderRequest;
 import com.jovan.erp_v1.response.SalesOrderResponse;
 import com.jovan.erp_v1.service.ISalesOrder;
@@ -33,9 +32,7 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin("http://localhost:5173")
 public class SalesOrderController {
 
-	
 	private final ISalesOrder salesOrder;
-	private final SalesOrderMapper salesOrderMapper;
 	
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
 	@PostMapping("/create/new-sales-order")

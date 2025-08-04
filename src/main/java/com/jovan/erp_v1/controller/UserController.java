@@ -1,13 +1,10 @@
 package com.jovan.erp_v1.controller;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,12 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.jovan.erp_v1.mapper.UserMapper;
-import com.jovan.erp_v1.model.Role;
 import com.jovan.erp_v1.model.User;
-import com.jovan.erp_v1.repository.RoleRepository;
-import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.UserRequest;
 import com.jovan.erp_v1.request.UserRequestForEmployees;
 import com.jovan.erp_v1.request.UserRequestForEmployeesDetails;
@@ -38,10 +30,6 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
 	private final IUserService userService;
-	private final UserMapper userMapper;
-	private final PasswordEncoder passwordEncoder;
-	private final RoleRepository roleRepository;
-	private final UserRepository userRepository;
 
 	@PostMapping("/create-superadmin")
 	public ResponseEntity<UserResponse> createSuperAdmin(@Valid @RequestBody UserRequest userRequest) {

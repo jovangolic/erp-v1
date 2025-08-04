@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import com.jovan.erp_v1.enumeration.RoleTypes;
 
-import jakarta.validation.constraints.NotBlank;
+
 
 public record CompanyEmailResponse(
         String email,

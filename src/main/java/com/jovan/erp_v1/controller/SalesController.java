@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,12 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.jovan.erp_v1.exception.BuyerNotFoundException;
-import com.jovan.erp_v1.exception.SalesNotFoundException;
-import com.jovan.erp_v1.mapper.SalesMapper;
-import com.jovan.erp_v1.model.Buyer;
-import com.jovan.erp_v1.repository.BuyerRepository;
 import com.jovan.erp_v1.request.SalesRequest;
 import com.jovan.erp_v1.response.SalesResponse;
 import com.jovan.erp_v1.service.ISalesService;
@@ -39,8 +32,6 @@ import lombok.RequiredArgsConstructor;
 public class SalesController {
 
 	private final ISalesService salesService;
-	private final SalesMapper salesMapper;
-	private final BuyerRepository buyerRepository;
 
 	@PostMapping("/create/new-sale")
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")

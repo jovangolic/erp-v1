@@ -1,7 +1,6 @@
 package com.jovan.erp_v1.controller;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -10,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,12 +22,8 @@ import com.jovan.erp_v1.enumeration.InvoiceStatus;
 import com.jovan.erp_v1.enumeration.OrderStatus;
 import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.exception.BuyerNotFoundException;
-import com.jovan.erp_v1.exception.InvoiceNotFoundException;
-import com.jovan.erp_v1.mapper.InvoiceMapper;
 import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.repository.BuyerRepository;
-import com.jovan.erp_v1.repository.PaymentRepository;
-import com.jovan.erp_v1.repository.SalesRepository;
 import com.jovan.erp_v1.request.InvoiceRequest;
 import com.jovan.erp_v1.response.InvoiceResponse;
 import com.jovan.erp_v1.service.IInvoiceService;
@@ -43,10 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class InvoiceController {
 
 	private final IInvoiceService invoiceService;
-	private final InvoiceMapper invoiceMapper;
 	private final BuyerRepository buyerRepository;
-	private final SalesRepository salesRepository;
-	private final PaymentRepository paymentRepository;
 	
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
 	@PostMapping("/create/new-invoice")

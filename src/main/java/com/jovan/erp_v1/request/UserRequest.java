@@ -1,10 +1,6 @@
 package com.jovan.erp_v1.request;
 
-import java.util.Collection;
 import java.util.Set;
-
-import com.jovan.erp_v1.model.Role;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

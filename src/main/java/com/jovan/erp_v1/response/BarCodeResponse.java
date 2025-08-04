@@ -2,7 +2,6 @@ package com.jovan.erp_v1.response;
 
 import java.time.LocalDateTime;
 
-import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.model.BarCode;
 
 import lombok.AllArgsConstructor;

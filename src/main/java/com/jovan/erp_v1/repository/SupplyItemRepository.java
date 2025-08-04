@@ -8,8 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import com.jovan.erp_v1.dto.AvgCostByProcurementResponse;
 import com.jovan.erp_v1.model.SupplyItem;
 import com.jovan.erp_v1.request.AvgCostByProcurementRecord;
 import com.jovan.erp_v1.request.CostSumByProcurement;

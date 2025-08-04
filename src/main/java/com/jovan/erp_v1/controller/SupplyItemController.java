@@ -24,7 +24,6 @@ import com.jovan.erp_v1.dto.ProcurementStatsPerEntityResponse;
 import com.jovan.erp_v1.dto.SumCostGroupedByProcurementResponse;
 import com.jovan.erp_v1.dto.SupplierItemCountResponse;
 import com.jovan.erp_v1.dto.SupplyItemStatsResponse;
-import com.jovan.erp_v1.mapper.SupplyMapper;
 import com.jovan.erp_v1.request.CostSumByProcurement;
 import com.jovan.erp_v1.request.SupplyItemRequest;
 import com.jovan.erp_v1.response.SupplyItemResponse;
@@ -39,10 +38,7 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin("http://localhost:5173")
 public class SupplyItemController {
 
-	
 	private final ISupplyItemService supplyItemService;
-	private final SupplyMapper supplyMapper;
-	
 	
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN')")
 	@PostMapping("/create/new-supply-item")

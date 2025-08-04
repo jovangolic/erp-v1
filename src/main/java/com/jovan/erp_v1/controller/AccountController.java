@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/accounts")
 @CrossOrigin("htttp://5173")
-@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT')")
 public class AccountController {
 
     private final IAccountService accountService;
@@ -51,30 +51,35 @@ public class AccountController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
     @GetMapping("/find-one/{id}")
     public ResponseEntity<AccountResponse> findOne(@PathVariable Long id) {
         AccountResponse response = accountService.findOne(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
     @GetMapping("/find-all")
     public ResponseEntity<List<AccountResponse>> findAll() {
         List<AccountResponse> responses = accountService.findAll();
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
     @GetMapping("/by-account-type")
     public ResponseEntity<List<AccountResponse>> findByType(@RequestParam("type") AccountType type) {
         List<AccountResponse> responses = accountService.findByType(type);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
     @GetMapping("/by-balance")
     public ResponseEntity<List<AccountResponse>> findByBalance(@RequestParam("balance") BigDecimal balance) {
         List<AccountResponse> responses = accountService.findByBalance(balance);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
     @GetMapping("/balance-between")
     public ResponseEntity<List<AccountResponse>> findByBalanceBetween(@RequestParam("min") BigDecimal min,
             @RequestParam("max") BigDecimal max) {
@@ -82,24 +87,28 @@ public class AccountController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
     @GetMapping("/balance-greater-than")
     public ResponseEntity<List<AccountResponse>> findByBalanceGreaterThan(@RequestParam("amount") BigDecimal amount) {
         List<AccountResponse> responses = accountService.findByBalanceGreaterThan(amount);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
     @GetMapping("/balance-less-than")
     public ResponseEntity<List<AccountResponse>> findByBalanceLessThan(@RequestParam("amount") BigDecimal amount) {
         List<AccountResponse> responses = accountService.findByBalanceLessThan(amount);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
     @GetMapping("/by-accountName")
     public ResponseEntity<AccountResponse> findByAccountName(@RequestParam("accountName") String accountName) {
         AccountResponse response = accountService.findByAccountName(accountName);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
     @GetMapping("/by-accName-ignoreCase")
     public ResponseEntity<AccountResponse> findByAccountNameIgnoreCase(
             @RequestParam("accountName") String accountName) {
@@ -107,12 +116,14 @@ public class AccountController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
     @GetMapping("/by-accountNumber")
     public ResponseEntity<AccountResponse> findByAccountNumber(@RequestParam("accountNumber") String accountNumber) {
         AccountResponse response = accountService.findByAccountNumber(accountNumber);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
     @GetMapping("/by-accNumber-and-accName")
     public ResponseEntity<AccountResponse> findByAccountNameAndAccountNumber(
             @RequestParam("accountName") String accountName, @RequestParam("accountNumber") String accountNumber) {

@@ -22,7 +22,6 @@ import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
-import com.jovan.erp_v1.mapper.ProductMapper;
 import com.jovan.erp_v1.request.ProductRequest;
 import com.jovan.erp_v1.response.ProductResponse;
 import com.jovan.erp_v1.service.IProductService;
@@ -36,9 +35,7 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin("http://localhost:5173")
 public class ProductController {
 
-	
 	private final IProductService productService;
-	private final ProductMapper productMapper;
 	
 	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN')")
 	@PostMapping("/create/new-product")

@@ -1,6 +1,6 @@
 package com.jovan.erp_v1.response;
 
-import java.math.BigDecimal;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,7 +8,6 @@ import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
-import com.jovan.erp_v1.model.BarCode;
 import com.jovan.erp_v1.model.RawMaterial;
 
 import lombok.Data;

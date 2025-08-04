@@ -2,6 +2,8 @@ package com.jovan.erp_v1.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import java.util.Map;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +45,6 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         private final PasswordEncoder passwordEncoder;
         private final CustomAccessDeniedHandler accessDeniedHandler;
 
-        // Endpoint grupe za čitljivost i održavanje
         private static final String[] STORAGE_EMPLOYEE_ENDPOINTS = {
                         "/vendor/**", "/goods/**", "/invoice/**", "/storage/**",
                         "/rawMaterial/**", "/confirmationDocument/**",
@@ -63,6 +64,27 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                         ",deliveryItem/**", "/logisticsProvider/**", "inboundDelivery/**", "outboundDelivery/**",
                         "shipment/**", "stockTransfer/**", "stockTransferItem/**", "/transportOrder/**"
         };
+        
+        private static final List<String> ALL_HTTP_METHODS = List.of("GET:/**","POST:/**","PUT:/**","DELETE:/**","PATCH:/**","OPTIONS:/**","HEAD:/**","TRACE:/**");
+        private static final List<String> BASIC_WRITE_METHODS = List.of("POST:/**","PUT:/**","DELETE:/**","GET:/**");
+        private static final List<String> BASIC_READ_METHODS = List.of("GET:/**");
+        
+        private static final Map<String, Map<String, List<String>>> WRITE_ACCESS = Map.of(
+        		"SUPERADMIN", Map.of("/**", ALL_HTTP_METHODS),
+        	    "ADMIN", Map.of("/**", ALL_HTTP_METHODS),
+        	    "ACCOUNTANT", Map.of("/accounts",BASIC_WRITE_METHODS),
+        	    "SECURITY_AUDITOR",Map.of("/audit-logs",BASIC_WRITE_METHODS)
+        );
+        
+        private static final Map<String, Map<String, List<String>>> READ_ACCESS = Map.of(
+        	    "AUDITOR", Map.of(
+        	        "/accounts", BASIC_READ_METHODS,
+        	        "/audit-logs", BASIC_READ_METHODS
+        	    ),
+        	    "FINANCIAL_MANAGER", Map.of(
+        	        "/accounts", BASIC_READ_METHODS
+        	    )
+        	);
 
         @Override
         public void addFormatters(FormatterRegistry registry) {
@@ -95,11 +117,10 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(auth -> auth
-                                                // 🔓 Endpointi dostupni bez autentifikacije
+      
                                                 .requestMatchers("/auth/login", "/users/create-superadmin").permitAll()
                                                 .requestMatchers("/auth/register").hasRole("ADMIN")
 
-                                                // 🔒 Pristup prema ulogama
                                                 .requestMatchers("/admin/**", "/users/create-admin/**")
                                                 .hasRole("SUPERADMIN")
                                                 .requestMatchers("/user/**", "/role/**", "/users/admin/**")
@@ -116,8 +137,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                                                 .hasAnyRole("ADMIN", "SUPERADMIN")
                                                 .requestMatchers(STORAGE_EMPLOYEE_ENDPOINTS).hasRole("STORAGE_EMPLOYEE")
                                                 .requestMatchers(STORAGE_FOREMAN_ENDPOINTS).hasRole("STORAGE_FOREMAN")
-
-                                                // ❗ Bilo koji drugi zahtev zahteva autentifikaciju
+                                                
                                                 .anyRequest().authenticated())
                                 .logout(logout -> logout
                                                 .logoutSuccessHandler(
