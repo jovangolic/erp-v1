@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -438,6 +439,19 @@ public class InventoryService implements IInventoryService {
 			throw new NoDataFoundException(msg);
 		}
 		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	@Override
+	public InventoryResponse approveInventory(Long id) {
+		Inventory inv = inventoryRepository.findById(id).orElseThrow(() -> new ValidationException("Inventory not found wit h id "+id));
+		if(!InventoryStatus.PENDING_APPROVAL.equals(inv.getStatus())) {
+			throw new ValidationException("Inventory must be in PENDING_APPROVAL status to approve");
+		}
+		inv.setStatus(InventoryStatus.APPROVED);
+        inv.setAligned(true); 
+        inv.setModifiedAt(LocalDateTime.now());
+        Inventory saved = inventoryRepository.save(inv);
+        return new InventoryResponse(saved);
 	}
 
 	private List<InventoryItems> mapInventoryItemRequestsToEntities(List<InventoryItemsRequest> requests,

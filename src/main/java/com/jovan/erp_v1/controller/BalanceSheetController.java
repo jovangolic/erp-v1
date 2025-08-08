@@ -23,6 +23,7 @@ import com.jovan.erp_v1.request.BalanceSheetRequest;
 import com.jovan.erp_v1.request.BalanceSheetSearchRequest;
 import com.jovan.erp_v1.response.BalanceSheetResponse;
 import com.jovan.erp_v1.service.IBalanceSheetService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,17 +31,19 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/balanceSheets")
-@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+@PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
 public class BalanceSheetController {
 
     private final IBalanceSheetService balanceSheetService;
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_FULL_ACCESS)
     @PostMapping("/create/new-balance-sheet")
     public ResponseEntity<BalanceSheetResponse> create(@Valid @RequestBody BalanceSheetRequest request) {
         BalanceSheetResponse response = balanceSheetService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<BalanceSheetResponse> update(@PathVariable Long id,
             @Valid @RequestBody BalanceSheetRequest request) {
@@ -48,24 +51,28 @@ public class BalanceSheetController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         balanceSheetService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<BalanceSheetResponse> findOne(@PathVariable Long id) {
         BalanceSheetResponse response = balanceSheetService.findOne(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/find-all")
     public ResponseEntity<List<BalanceSheetResponse>> findAll() {
         List<BalanceSheetResponse> response = balanceSheetService.findAll();
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/by-date")
     public ResponseEntity<BalanceSheetResponse> findByDate(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -73,6 +80,7 @@ public class BalanceSheetController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/date-between")
     public ResponseEntity<List<BalanceSheetResponse>> findByDateBetween(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
@@ -81,6 +89,7 @@ public class BalanceSheetController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/totalAssets")
     public ResponseEntity<List<BalanceSheetResponse>> findByTotalAssets(
             @RequestParam("totalAssets") BigDecimal totalAssets) {
@@ -88,6 +97,7 @@ public class BalanceSheetController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/totalLiabilities")
     public ResponseEntity<List<BalanceSheetResponse>> findByTotalLiabilities(
             @RequestParam("totalLiabilities") BigDecimal totalLiabilities) {
@@ -95,6 +105,7 @@ public class BalanceSheetController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/totalEquity")
     public ResponseEntity<List<BalanceSheetResponse>> findByTotalEquity(
             @RequestParam("totalEquity") BigDecimal totalEquity) {
@@ -102,24 +113,28 @@ public class BalanceSheetController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/fiscalYear/{id}")
     public ResponseEntity<List<BalanceSheetResponse>> findByFiscalYear_Id(@PathVariable Long id) {
         List<BalanceSheetResponse> responses = balanceSheetService.findByFiscalYear_Id(id);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/fiscalYear-year")
     public ResponseEntity<List<BalanceSheetResponse>> findByFiscalYear_Year(@RequestParam("year") Integer year) {
         List<BalanceSheetResponse> responses = balanceSheetService.findByFiscalYear_Year(year);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/fiscalYeay-yearStatus")
     public ResponseEntity<List<BalanceSheetResponse>> findByFiscalYear_YearStatus(FiscalYearStatus yearStatus) {
         List<BalanceSheetResponse> responses = balanceSheetService.findByFiscalYear_YearStatus(yearStatus);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/fiscalYear-quarterStatus")
     public ResponseEntity<List<BalanceSheetResponse>> findByFiscalYear_QuarterStatus(
             @RequestParam("quarterStatus") FiscalQuarterStatus quarterStatus) {
@@ -127,6 +142,7 @@ public class BalanceSheetController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/by-statu-dateRange")
     public ResponseEntity<List<BalanceSheetResponse>> findByStatusAndDateRange(
             @RequestParam("status") FiscalYearStatus status,
@@ -136,25 +152,28 @@ public class BalanceSheetController {
         return ResponseEntity.ok(responses);
     }
     
-    
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/totalAssets-greater-than")
     public ResponseEntity<List<BalanceSheetResponse>> findByTotalAssetsGreaterThan(@RequestParam("totalAssets") BigDecimal totalAssets){
     	List<BalanceSheetResponse> responses = balanceSheetService.findByTotalAssetsGreaterThan(totalAssets);
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/totalAssets-less-than")
     public ResponseEntity<List<BalanceSheetResponse>> findByTotalAssetsLessThan(@RequestParam("totalAssets") BigDecimal totalAssets){
     	List<BalanceSheetResponse> responses = balanceSheetService.findByTotalAssetsLessThan(totalAssets);
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/totalEquity-greater-than")
     public ResponseEntity<List<BalanceSheetResponse>> findByTotalEquityGreaterThan(@RequestParam("totalEquity") BigDecimal totalEquity){
     	List<BalanceSheetResponse> responses = balanceSheetService.findByTotalEquityGreaterThan(totalEquity);
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/totalEquity-less-than") 
     public ResponseEntity<List<BalanceSheetResponse>> findByTotalEquityLessThan(@RequestParam("totalEquity") BigDecimal totalEquity){
     	List<BalanceSheetResponse> responses = balanceSheetService.findByTotalAssetsLessThan(totalEquity);
@@ -162,19 +181,21 @@ public class BalanceSheetController {
     }
     
     //nove metode
-    
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @PostMapping("/search")
     public ResponseEntity<List<BalanceSheetResponse>> searchBalanceSheets(@RequestBody BalanceSheetSearchRequest request) {
         List<BalanceSheetResponse> result = balanceSheetService.searchBalanceSheets(request);
         return ResponseEntity.ok(result);
     }
     
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/by-total-liabilities-less-than")
     public ResponseEntity<List<BalanceSheetResponse>> findByTotalLiabilitiesLessThan(@RequestParam("totalLiabilities") BigDecimal totalLiabilities){
     	List<BalanceSheetResponse> result = balanceSheetService.findByTotalLiabilitiesLessThan(totalLiabilities);
     	return ResponseEntity.ok(result);
     }
     
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/filter-balance-sheet")
     public ResponseEntity<List<BalanceSheetResponse>> searchBalanceSheets(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -185,18 +206,21 @@ public class BalanceSheetController {
        return ResponseEntity.ok(result);
     }
     
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/by-total-liabilities-greater-than")
     public ResponseEntity<List<BalanceSheetResponse>> findByTotalLiabilitiesGreaterThan(@RequestParam("totalLiabilities") BigDecimal totalLiabilities){
     	List<BalanceSheetResponse> result = balanceSheetService.findByTotalLiabilitiesGreaterThan(totalLiabilities);
     	return ResponseEntity.ok(result);
     }
     
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/find-solvent-balance-sheet")
     public ResponseEntity<List<BalanceSheetResponse>> findSolventBalanceSheets(){
     	List<BalanceSheetResponse> result = balanceSheetService.findSolventBalanceSheets();
     	return ResponseEntity.ok(result);
     }
     
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
     @GetMapping("/find-first-by-order-date-desc")
     public ResponseEntity<BalanceSheetResponse> findFirstByOrderByDateDesc(){
     	BalanceSheetResponse item = balanceSheetService.findFirstByOrderByDateDesc();

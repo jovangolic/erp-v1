@@ -27,18 +27,17 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/file-opt")
 @RequiredArgsConstructor
 @CrossOrigin("http://localhost:5173")
+@PreAuthorize("hasRole('SUPERADMIN','ADMIN')")
 public class FileOptController {
 
     private final IFileOptService fileOptService;
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<FileOptResponse> create(@Valid @RequestBody FileOptRequest request) {
         FileOptResponse response = fileOptService.create(request);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update/{id}")
     public ResponseEntity<FileOptResponse> updateFileOpt(@PathVariable Long id,
             @Valid @RequestBody FileOptRequest request) {
@@ -46,7 +45,6 @@ public class FileOptController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteFileOpt(@PathVariable Long id) {
         fileOptService.delete(id);

@@ -31,12 +31,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/barCodes")
 @CrossOrigin("http://localhost:5173")
+@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','STORAGE_FOREMAN','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
 public class BarCodeController {
 
 	private final IBarcodeService barcodeService;
 	private final UserRepository userRepository;
 	
-	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/create")
 	public ResponseEntity<BarCodeResponse> create(@Valid @RequestBody BarCodeRequest request) {
 	    LocalDateTime now = LocalDateTime.now();
@@ -55,7 +55,6 @@ public class BarCodeController {
 	    return ResponseEntity.ok(response);
 	}
 
-	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/update/{id}")
 	public ResponseEntity<BarCodeResponse> update(
 	        @PathVariable Long id, 
@@ -76,43 +75,48 @@ public class BarCodeController {
 	    return ResponseEntity.ok(response);
 	}
 	
-	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<Void> delete(@PathVariable Long id){
 		barcodeService.delete(id);
 		return ResponseEntity.noContent().build();
 	}
 	
+	@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','STORAGE_FOREMAN','STORAGE_EMPLOYEE','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
 	@GetMapping("/get-one/{id}")
 	public ResponseEntity<BarCodeResponse> getOne(@PathVariable Long id){
 		BarCodeResponse response = barcodeService.getOne(id);
 		return ResponseEntity.ok(response);
 	}
 	
+	@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','STORAGE_FOREMAN','STORAGE_EMPLOYEE','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
 	@GetMapping("/get-all")
 	public ResponseEntity<List<BarCodeResponse>> getAll(){
 		List<BarCodeResponse> responses = barcodeService.getAll();
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','STORAGE_FOREMAN','STORAGE_EMPLOYEE','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
 	@GetMapping("/get-by-code")
 	public ResponseEntity<BarCodeResponse> getByCode(@RequestParam("code") String code){
 		BarCodeResponse response = barcodeService.getByCode(code);
 		return ResponseEntity.ok(response);
 	}
 	
+	@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','STORAGE_FOREMAN','STORAGE_EMPLOYEE','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
 	@GetMapping("/goods/{goodsId}")
 	public ResponseEntity<List<BarCodeResponse>> findByGoods_Id(@PathVariable Long goodsId){
 		List<BarCodeResponse> responses = barcodeService.findByGoods_Id(goodsId);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','STORAGE_FOREMAN','STORAGE_EMPLOYEE','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
 	@GetMapping("by-goodsName")
 	public ResponseEntity<List<BarCodeResponse>> findByGoods_Name(@RequestParam("goodsName") String goodsName){
 		List<BarCodeResponse> responses = barcodeService.findByGoods_Name(goodsName);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','STORAGE_FOREMAN','STORAGE_EMPLOYEE','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
 	@GetMapping("/scannedBy-first-last-name")
 	public ResponseEntity<List<BarCodeResponse>> findByScannedBy_FirstNameContainingIgnoreCaseAndScannedBy_LastNameContainingIgnoreCase(
 			@RequestParam("userFirstName") String userFirstName,@RequestParam("userLastName") String userLastName){
@@ -120,12 +124,14 @@ public class BarCodeController {
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','STORAGE_FOREMAN','STORAGE_EMPLOYEE','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
 	@GetMapping("/scannedBy/{scannedById}")
 	public ResponseEntity<List<BarCodeResponse>> getByScannedBy(@PathVariable Long scannedById){
 		List<BarCodeResponse> responses = barcodeService.findByScannedBy_Id(scannedById);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','STORAGE_FOREMAN','STORAGE_EMPLOYEE','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')")
 	@GetMapping("/get-by-date-between")
 	public ResponseEntity<List<BarCodeResponse>> getByScannedAtBetween(
 			@RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,

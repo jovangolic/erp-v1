@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.request.JournalEntryRequest;
 import com.jovan.erp_v1.response.JournalEntryResponse;
 import com.jovan.erp_v1.service.IJournalEntryService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,17 +28,19 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/journalEntries")
-@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+@PreAuthorize(RoleGroups.JOURNAL_ENTRY_READ_ACCESS)
 public class JournalEntryController {
 
     private final IJournalEntryService journalEntryService;
 
+    @PreAuthorize(RoleGroups.JOURNAL_ENTRY_FULL_ACCESS)
     @PostMapping("/create/new-journalEntry")
     public ResponseEntity<JournalEntryResponse> create(@Valid @RequestBody JournalEntryRequest request) {
         JournalEntryResponse response = journalEntryService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.JOURNAL_ENTRY_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<JournalEntryResponse> update(@PathVariable Long id,
             @Valid @RequestBody JournalEntryRequest request) {
@@ -45,24 +48,28 @@ public class JournalEntryController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.JOURNAL_ENTRY_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         journalEntryService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(RoleGroups.JOURNAL_ENTRY_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<JournalEntryResponse> findOne(@PathVariable Long id) {
         JournalEntryResponse response = journalEntryService.findOne(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.JOURNAL_ENTRY_READ_ACCESS)
     @GetMapping("/find-all")
     public ResponseEntity<List<JournalEntryResponse>> findAll() {
         List<JournalEntryResponse> responses = journalEntryService.findAll();
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.JOURNAL_ENTRY_READ_ACCESS)
     @GetMapping("/by-description")
     public ResponseEntity<List<JournalEntryResponse>> findByDescription(
             @RequestParam("description") String description) {
@@ -70,6 +77,7 @@ public class JournalEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.JOURNAL_ENTRY_READ_ACCESS)
     @GetMapping("/entry-date-between")
     public ResponseEntity<List<JournalEntryResponse>> findByEntryDateBetween(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
@@ -78,6 +86,7 @@ public class JournalEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.JOURNAL_ENTRY_READ_ACCESS)
     @GetMapping("/entry-dateOn")
     public ResponseEntity<List<JournalEntryResponse>> findByEntryDateOn(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -85,6 +94,7 @@ public class JournalEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.JOURNAL_ENTRY_READ_ACCESS)
     @GetMapping("/entry-date-before")
     public ResponseEntity<List<JournalEntryResponse>> findByEntryDateBefore(
             @RequestParam("dateTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTime) {
@@ -92,6 +102,7 @@ public class JournalEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.JOURNAL_ENTRY_READ_ACCESS)
     @GetMapping("/entry-date-after")
     public ResponseEntity<List<JournalEntryResponse>> findByEntryDateAfter(
             @RequestParam("dateTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTime) {
@@ -99,12 +110,14 @@ public class JournalEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.JOURNAL_ENTRY_READ_ACCESS)
     @GetMapping("/by-year")
     public ResponseEntity<List<JournalEntryResponse>> findByYear(@RequestParam("year") Integer year) {
         List<JournalEntryResponse> responses = journalEntryService.findByYear(year);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.JOURNAL_ENTRY_READ_ACCESS)
     @GetMapping("/by-description-and-date")
     public ResponseEntity<List<JournalEntryResponse>> findByDescriptionAndEntryDateBetween(
             @RequestParam("description") String description,

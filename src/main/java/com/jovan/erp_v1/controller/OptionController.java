@@ -27,24 +27,22 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/option")
 @CrossOrigin("http://localhost:5173")
+@PreAuthorize("hasRole('SUPERADMIN','ADMIN')")
 public class OptionController {
 
     private final IOptionService optionService;
 
     @PostMapping("/create")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OptionResponse> create(@Valid @RequestBody OptionRequest request) {
         return ResponseEntity.ok(optionService.create(request));
     }
 
     @PutMapping("/update/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OptionResponse> update(@PathVariable Long id, @Valid @RequestBody OptionRequest request) {
         return ResponseEntity.ok(optionService.update(id, request));
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         optionService.delete(id);
         return ResponseEntity.noContent().build();

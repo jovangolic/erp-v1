@@ -13,18 +13,22 @@ import com.jovan.erp_v1.model.OutboundDelivery;
 import com.jovan.erp_v1.model.Product;
 import com.jovan.erp_v1.request.OutboundDeliveryRequest;
 import com.jovan.erp_v1.response.OutboundDeliveryResponse;
+import com.jovan.erp_v1.util.AbstractMapper;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class OutboundDeliveryMapper {
+public class OutboundDeliveryMapper extends AbstractMapper<OutboundDeliveryRequest> {
 
     private final DeliveryItemMapper deliveryItemMapper;
 
     public OutboundDelivery toEntity(OutboundDeliveryRequest request, Buyer buyer, Map<Long, Product> productMap) {
+    	Objects.requireNonNull(request, "OutboundDeliveryRequest must not be null");
+    	Objects.requireNonNull(buyer, "Buyer must not be null");
+    	validateIdForCreate(request, OutboundDeliveryRequest::id);
         OutboundDelivery delivery = new OutboundDelivery();
-        delivery.setDeliveryDate(request.deliveryDate());
+        delivery.setId(request.id());
         delivery.setBuyer(buyer);
         delivery.setStatus(request.status());
         List<DeliveryItem> items = request.itemRequest().stream()

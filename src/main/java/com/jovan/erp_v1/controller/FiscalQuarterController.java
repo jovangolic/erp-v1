@@ -21,6 +21,7 @@ import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.request.FiscalQuarterRequest;
 import com.jovan.erp_v1.response.FiscalQuarterResponse;
 import com.jovan.erp_v1.service.IFiscalQuarterService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,17 +29,19 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/fiscalQuarters")
-@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+@PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
 public class FiscalQuarterController {
 
     private final IFiscalQuarterService fiscalQuarterService;
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_FULL_ACCESS)
     @PostMapping("/create/new-fiscalQuarter")
     public ResponseEntity<FiscalQuarterResponse> create(@Valid @RequestBody FiscalQuarterRequest request) {
         FiscalQuarterResponse response = fiscalQuarterService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<FiscalQuarterResponse> update(@PathVariable Long id,
             @RequestBody FiscalQuarterRequest request) {
@@ -46,24 +49,28 @@ public class FiscalQuarterController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         fiscalQuarterService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<FiscalQuarterResponse> findOne(@PathVariable Long id) {
         FiscalQuarterResponse response = fiscalQuarterService.findOne(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/find-all")
     public ResponseEntity<List<FiscalQuarterResponse>> findAll() {
         List<FiscalQuarterResponse> responses = fiscalQuarterService.findAll();
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/by-fiscalYear/{fiscalYearId}")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear_Id(
             @PathVariable Long fiscalYearId) {
@@ -71,6 +78,7 @@ public class FiscalQuarterController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/quarterStatus")
     public ResponseEntity<List<FiscalQuarterResponse>> findByQuarterStatus(
             @RequestParam("status") FiscalQuarterStatus status) {
@@ -78,6 +86,7 @@ public class FiscalQuarterController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/startDateBetween")
     public ResponseEntity<List<FiscalQuarterResponse>> findByStartDateBetween(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
@@ -86,6 +95,7 @@ public class FiscalQuarterController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/fiscalYear/{fiscalYearId}/quarters")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearAndQuarterStatus(
             @PathVariable Long fiscalYearId, @RequestParam("status") FiscalQuarterStatus status) {
@@ -94,6 +104,7 @@ public class FiscalQuarterController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/startDateAfter")
     public ResponseEntity<List<FiscalQuarterResponse>> findByStartDateAfter(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -101,6 +112,7 @@ public class FiscalQuarterController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/startDateBefore")
     public ResponseEntity<List<FiscalQuarterResponse>> findByStartDateBefore(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -108,25 +120,28 @@ public class FiscalQuarterController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/specific-fiscalYear")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear_Year(@RequestParam("year") Integer year) {
         List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear_Year(year);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/fiscalYear-year-status")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear_YearStatus(@RequestParam("yearStatus") FiscalYearStatus yearStatus){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear_YearStatus(yearStatus);
     	return ResponseEntity.ok(responses);
     }
     
-    
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/by-end-date")
     public ResponseEntity<List<FiscalQuarterResponse>> findByEndDate(@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByEndDate(endDate);
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/fiscalYear-start-date-range")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear_StartDateBetween(@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
@@ -135,73 +150,84 @@ public class FiscalQuarterController {
     }
     
     //nove metode
-    
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/quarter-status-q1")
     public ResponseEntity<List<FiscalQuarterResponse>> findByQuarterStatusQ1(){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByQuarterStatusQ1();
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/quarter-status-q2")
     public ResponseEntity<List<FiscalQuarterResponse>> findByQuarterStatusQ2(){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByQuarterStatusQ2();
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/quarter-status-q3")
     public ResponseEntity<List<FiscalQuarterResponse>> findByQuarterStatusQ3(){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByQuarterStatusQ3();
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/quarter-status-q4")
     public ResponseEntity<List<FiscalQuarterResponse>> findByQuarterStatusQ4(){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByQuarterStatusQ4();
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/year-status-open")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStatusOpen(){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStatusOpen();
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/year-status-closed")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStatusClosed(){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStatusClosed();
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/year-status-archived")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStatusArchived(){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStatusArchived();
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/year-start-date")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStartDate(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStartDate(startDate);
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/year-start-date-after")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStartDateAfter(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStartDateAfter(startDate);
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/year-start-date-before")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStartDateBefore(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearStartDateBefore(startDate);
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/year-end-date")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearEndDate(@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearEndDate(endDate);
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/year-start-date-range")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearStartDateBetween(@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
     		@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
@@ -209,6 +235,7 @@ public class FiscalQuarterController {
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/year-end-date-range")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearEndDateBetween(@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
     		@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end){
@@ -216,30 +243,35 @@ public class FiscalQuarterController {
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/year-quarter-status")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear_QuarterStatus(@RequestParam("quarterStatus") FiscalQuarterStatus quarterStatus){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear_QuarterStatus(quarterStatus);
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search-active-quarters")
     public ResponseEntity<List<FiscalQuarterResponse>> findActiveQuarters(){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findActiveQuarters();
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/quarters-end-soon")
     public ResponseEntity<List<FiscalQuarterResponse>> findQuartersEndingSoon(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findQuartersEndingSoon(date);
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/year-and-quarter-status")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYear_YearAndQuarterStatus(@RequestParam("year") Integer year,@RequestParam("status") FiscalQuarterStatus status){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYear_YearAndQuarterStatus(year, status);
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
     @GetMapping("/search/year-range")
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearBetweenYears(@RequestParam("start") Integer start,@RequestParam("end")  Integer end){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearBetweenYears(start, end);

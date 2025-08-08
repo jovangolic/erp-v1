@@ -20,6 +20,7 @@ import com.jovan.erp_v1.enumeration.OptionCategory;
 import com.jovan.erp_v1.request.LocalizedOptionRequest;
 import com.jovan.erp_v1.response.LocalizedOptionResponse;
 import com.jovan.erp_v1.service.ILocalizedOptionService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/localizedOptions")
-@PreAuthorize("hasRole('ADMIN','SUPERADMIN')")
+@PreAuthorize(RoleGroups.LOCALIZED_OPTION_FULL_ACCESS)
 public class LocalizedOptionController {
 
     private final ILocalizedOptionService localizedOptionService;

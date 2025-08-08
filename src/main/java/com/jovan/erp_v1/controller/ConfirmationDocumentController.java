@@ -20,7 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,12 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.jovan.erp_v1.dto.GoodsDispatchDTO;
-import com.jovan.erp_v1.exception.ConfirmationDocumentNotFoundException;
 import com.jovan.erp_v1.model.ConfirmationDocument;
 import com.jovan.erp_v1.request.ConfirmationDocumentRequest;
 import com.jovan.erp_v1.response.ConfirmationDocumentResponse;
 import com.jovan.erp_v1.service.IConfirmationDocumentService;
 import com.jovan.erp_v1.service.PdfGeneratorService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,12 +44,13 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/confirmationDocuments")
 @RequiredArgsConstructor
+@PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_ACCESS)
 public class ConfirmationDocumentController {
 
     private final IConfirmationDocumentService confirmationDocumentService;
     private final PdfGeneratorService pdfGeneratorService;
 
-    @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
     @PostMapping("/create/new-confirm-document")
     public ResponseEntity<ConfirmationDocumentResponse> create(
             @Valid @RequestBody ConfirmationDocumentRequest request) {
@@ -58,6 +58,7 @@ public class ConfirmationDocumentController {
         return new ResponseEntity<>(new ConfirmationDocumentResponse(saved), HttpStatus.CREATED);
     }
 
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_ACCESS)
     @GetMapping("/get-one/{id}")
     public ResponseEntity<ConfirmationDocument> getById(@PathVariable Long id) {
         return confirmationDocumentService.getDocumentById(id)
@@ -65,6 +66,7 @@ public class ConfirmationDocumentController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_ACCESS)
     @GetMapping("/get-all")
     public ResponseEntity<List<ConfirmationDocumentResponse>> getAll() {
         List<ConfirmationDocument> docs = confirmationDocumentService.getAllDocuments();
@@ -74,24 +76,27 @@ public class ConfirmationDocumentController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_ACCESS)
     @GetMapping("/by-user/{userId}")
     public ResponseEntity<List<ConfirmationDocument>> getByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(confirmationDocumentService.getDocumentsByUserId(userId));
     }
 
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_ACCESS)
     @GetMapping("/created-after/{date}")
     public ResponseEntity<List<ConfirmationDocument>> getAfter(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
         return ResponseEntity.ok(confirmationDocumentService.getDocumentsCreatedAfter(date));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         confirmationDocumentService.deleteDocument(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
     @PostMapping("/upload")
     public ResponseEntity<String> uploadDocument(@RequestParam("file") MultipartFile file,
             @RequestParam("userId") Long userId,
@@ -107,6 +112,7 @@ public class ConfirmationDocumentController {
         }
     }
 
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_ACCESS)
     @GetMapping("/download/{id}")
     public ResponseEntity<Resource> downloadDocument(@PathVariable Long id) {
         Optional<ConfirmationDocument> optDoc = confirmationDocumentService.getDocumentById(id);
@@ -131,13 +137,14 @@ public class ConfirmationDocumentController {
         }
     }
 
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
     @PostMapping("/generate")
     public ResponseEntity<Resource> generateAndSaveDocument(@RequestBody GoodsDispatchDTO dto) throws Exception {
-        // 1. Generiši PDF
+        // 1. Generisi PDF
         byte[] pdfBytes = pdfGeneratorService.generateDispatchConfirmation(dto);
         // 2. Snimi fajl na disk
         String folderPath = "generated-docs/";
-        Files.createDirectories(Paths.get(folderPath)); // Kreiraj folder ako ne postoji
+        Files.createDirectories(Paths.get(folderPath)); 
         String filename = "confirmation_" + System.currentTimeMillis() + ".pdf";
         Path path = Paths.get(folderPath + filename);
         Files.write(path, pdfBytes);
@@ -160,16 +167,12 @@ public class ConfirmationDocumentController {
                 .body(resource);
     }
 
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateConfirmationDocument(@PathVariable Long id,
             @RequestBody ConfirmationDocumentRequest request) {
         ConfirmationDocument doc = confirmationDocumentService.update(id, request);
         return ResponseEntity.ok(doc);
     }
-
-    @ExceptionHandler(ConfirmationDocumentNotFoundException.class)
-    public ResponseEntity<String> handleConfirmationDocumentNotFoundException(
-            ConfirmationDocumentNotFoundException err) {
-        return ResponseEntity.badRequest().body(err.getMessage());
-    }
+    
 }

@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/roles")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')") 
+@PreAuthorize("hasRole('SUPERADMIN','ADMIN')")
 public class RoleController {
 
 	private final IRoleService roleService;

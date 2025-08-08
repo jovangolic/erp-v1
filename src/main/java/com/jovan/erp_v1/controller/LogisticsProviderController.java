@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.request.LogisticsProviderRequest;
 import com.jovan.erp_v1.response.LogisticsProviderResponse;
 import com.jovan.erp_v1.service.ILogisticsProviderService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,17 +25,19 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/logistics-providers")
-@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
+@PreAuthorize(RoleGroups.LOGISTICS_PROVIDER_READ_ACCESS)
 public class LogisticsProviderController {
 
     private final ILogisticsProviderService logisticsProviderService;
 
+    @PreAuthorize(RoleGroups.LOGISTICS_PROVIDER_FULL_ACCESS)
     @PostMapping("/create/new/logistics-provider")
     public ResponseEntity<LogisticsProviderResponse> create(@Valid @RequestBody LogisticsProviderRequest request) {
         LogisticsProviderResponse response = logisticsProviderService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.LOGISTICS_PROVIDER_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<LogisticsProviderResponse> update(@PathVariable Long id,
             @Valid @RequestBody LogisticsProviderRequest request) {
@@ -42,30 +45,35 @@ public class LogisticsProviderController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.LOGISTICS_PROVIDER_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         logisticsProviderService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(RoleGroups.LOGISTICS_PROVIDER_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<LogisticsProviderResponse> findOne(@PathVariable Long id) {
         LogisticsProviderResponse response = logisticsProviderService.findOneById(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.LOGISTICS_PROVIDER_READ_ACCESS)
     @GetMapping("/find-all")
     public ResponseEntity<List<LogisticsProviderResponse>> findAll() {
         List<LogisticsProviderResponse> responses = logisticsProviderService.findAll();
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LOGISTICS_PROVIDER_READ_ACCESS)
     @GetMapping("/by-name")
     public ResponseEntity<List<LogisticsProviderResponse>> findByName(@RequestParam("name") String name) {
         List<LogisticsProviderResponse> responses = logisticsProviderService.findByName(name);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LOGISTICS_PROVIDER_READ_ACCESS)
     @GetMapping("/by-fragment")
     public ResponseEntity<List<LogisticsProviderResponse>> findByNameContainingIgnoreCase(
             @RequestParam("fragment") String fragment) {
@@ -73,12 +81,14 @@ public class LogisticsProviderController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LOGISTICS_PROVIDER_READ_ACCESS)
     @GetMapping("/search")
     public ResponseEntity<List<LogisticsProviderResponse>> searchByNameOrWebsite(@RequestParam("query") String query) {
         List<LogisticsProviderResponse> responses = logisticsProviderService.searchByNameOrWebsite(query);
         return ResponseEntity.ok(responses);
     }
 
+    
     @GetMapping("/by-contactPhone")
     public ResponseEntity<LogisticsProviderResponse> findByContactPhone(
             @RequestParam("contactPhone") String contactPhone) {
@@ -86,12 +96,14 @@ public class LogisticsProviderController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.LOGISTICS_PROVIDER_READ_ACCESS)
     @GetMapping("by-email")
     public ResponseEntity<LogisticsProviderResponse> findByEmail(@RequestParam("email") String email) {
         LogisticsProviderResponse response = logisticsProviderService.findByEmail(email);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.LOGISTICS_PROVIDER_READ_ACCESS)
     @GetMapping("by-website")
     public ResponseEntity<LogisticsProviderResponse> findByWebsite(@RequestParam("website") String website) {
         LogisticsProviderResponse response = logisticsProviderService.findByWebsite(website);

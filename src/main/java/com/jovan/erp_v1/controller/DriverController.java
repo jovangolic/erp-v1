@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.request.DriverRequest;
 import com.jovan.erp_v1.response.DriverResponse;
 import com.jovan.erp_v1.service.IDriverService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,47 +25,54 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/drivers")
-@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
+@PreAuthorize(RoleGroups.DRIVER_READ_ACCESS)
 public class DriverController {
 
     private final IDriverService driverService;
 
+    @PreAuthorize(RoleGroups.DRIVER_FULL_ACCESS)
     @PostMapping("/create/new-driver")
     public ResponseEntity<DriverResponse> create(@Valid @RequestBody DriverRequest request) {
         DriverResponse response = driverService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.DRIVER_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<DriverResponse> update(@PathVariable Long id, @Valid @RequestBody DriverRequest request) {
         DriverResponse response = driverService.update(id, request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.DRIVER_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         driverService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(RoleGroups.DRIVER_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<DriverResponse> findOneById(@PathVariable Long id) {
         DriverResponse response = driverService.findOneById(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.DRIVER_READ_ACCESS)
     @GetMapping("find-all")
     public ResponseEntity<List<DriverResponse>> findAllDrivers() {
         List<DriverResponse> responses = driverService.findAllDrivers();
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.DRIVER_READ_ACCESS)
     @GetMapping("/by-name")
     public ResponseEntity<List<DriverResponse>> findByName(@RequestParam("name") String name) {
         List<DriverResponse> responses = driverService.findByName(name);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.DRIVER_READ_ACCESS)
     @GetMapping("/by-phone")
     public ResponseEntity<DriverResponse> findByPhone(@RequestParam String phone) {
         DriverResponse response = driverService.findByPhone(phone);

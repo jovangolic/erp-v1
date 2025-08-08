@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/email-setting")
+@PreAuthorize("hasRole('SUPERADMIN','ADMIN')")
 public class EmailSettingController {
 
     private final IEmailSettingService service;

@@ -28,25 +28,23 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @CrossOrigin("http://localhost:5173")
 @Validated
+@PreAuthorize("hasRole('SUPERADMIN','ADMIN')")
 public class EditOptController {
 
     private final IEditOptService editOptService;
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<EditOptResponse> create(@Valid @RequestBody EditOptRequest request) {
         EditOptResponse response = editOptService.create(request);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update/{id}")
     public ResponseEntity<EditOptResponse> update(@PathVariable Long id, @Valid @RequestBody EditOptRequest request) {
         EditOptResponse response = editOptService.update(id, request);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         editOptService.delete(id);

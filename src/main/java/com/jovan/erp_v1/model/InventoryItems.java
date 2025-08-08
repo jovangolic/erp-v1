@@ -36,13 +36,13 @@ public class InventoryItems {
 	private Product product;
 	
 	@Column(nullable = false)
-	private BigDecimal quantity; //Količina proizvoda koja je inventurisana
+	private BigDecimal quantity; //Kolicina proizvoda koja je inventurisana
 	
 	@Column(name = "item_condition", nullable = false)
-	private BigDecimal itemCondition;// Stanje proizvoda u skladištu (pre inventure)
+	private BigDecimal itemCondition;// Stanje proizvoda u skladistu (pre inventure)
 	
 	@Column(nullable = true)
-	private BigDecimal difference; //Razlika između stanja na skladištu i inventurisanog
+	private BigDecimal difference; //Razlika između stanja na skladistu i inventurisanog
 	
 	public BigDecimal calculateDifference() {
 		if(this.quantity == null || this.itemCondition == null) {

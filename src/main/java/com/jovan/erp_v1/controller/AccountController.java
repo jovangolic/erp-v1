@@ -20,6 +20,7 @@ import com.jovan.erp_v1.enumeration.AccountType;
 import com.jovan.erp_v1.request.AccountRequest;
 import com.jovan.erp_v1.response.AccountResponse;
 import com.jovan.erp_v1.service.IAccountService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,58 +29,61 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/accounts")
 @CrossOrigin("htttp://5173")
-@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT')")
+@PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
 public class AccountController {
 
     private final IAccountService accountService;
 
+    @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
     @PostMapping("/create/new-account")
     public ResponseEntity<AccountResponse> create(@Valid @RequestBody AccountRequest request) {
         AccountResponse response = accountService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<AccountResponse> update(@PathVariable Long id, @RequestBody AccountRequest request) {
         AccountResponse response = accountService.update(id, request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         accountService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<AccountResponse> findOne(@PathVariable Long id) {
         AccountResponse response = accountService.findOne(id);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
     @GetMapping("/find-all")
     public ResponseEntity<List<AccountResponse>> findAll() {
         List<AccountResponse> responses = accountService.findAll();
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
     @GetMapping("/by-account-type")
     public ResponseEntity<List<AccountResponse>> findByType(@RequestParam("type") AccountType type) {
         List<AccountResponse> responses = accountService.findByType(type);
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
     @GetMapping("/by-balance")
     public ResponseEntity<List<AccountResponse>> findByBalance(@RequestParam("balance") BigDecimal balance) {
         List<AccountResponse> responses = accountService.findByBalance(balance);
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
     @GetMapping("/balance-between")
     public ResponseEntity<List<AccountResponse>> findByBalanceBetween(@RequestParam("min") BigDecimal min,
             @RequestParam("max") BigDecimal max) {
@@ -87,28 +91,28 @@ public class AccountController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
     @GetMapping("/balance-greater-than")
     public ResponseEntity<List<AccountResponse>> findByBalanceGreaterThan(@RequestParam("amount") BigDecimal amount) {
         List<AccountResponse> responses = accountService.findByBalanceGreaterThan(amount);
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
     @GetMapping("/balance-less-than")
     public ResponseEntity<List<AccountResponse>> findByBalanceLessThan(@RequestParam("amount") BigDecimal amount) {
         List<AccountResponse> responses = accountService.findByBalanceLessThan(amount);
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
     @GetMapping("/by-accountName")
     public ResponseEntity<AccountResponse> findByAccountName(@RequestParam("accountName") String accountName) {
         AccountResponse response = accountService.findByAccountName(accountName);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
     @GetMapping("/by-accName-ignoreCase")
     public ResponseEntity<AccountResponse> findByAccountNameIgnoreCase(
             @RequestParam("accountName") String accountName) {
@@ -116,14 +120,14 @@ public class AccountController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
     @GetMapping("/by-accountNumber")
     public ResponseEntity<AccountResponse> findByAccountNumber(@RequestParam("accountNumber") String accountNumber) {
         AccountResponse response = accountService.findByAccountNumber(accountNumber);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','ACCOUNTANT','AUDITOR','FINANCIAL_MANAGER')")
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
     @GetMapping("/by-accNumber-and-accName")
     public ResponseEntity<AccountResponse> findByAccountNameAndAccountNumber(
             @RequestParam("accountName") String accountName, @RequestParam("accountNumber") String accountNumber) {

@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/dashboard")
 @CrossOrigin("http://localhost:5173")
 @Tag(name = "Dashboard", description = "API za dashboard podatke")
+@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN')")
 public class DashboardController {
 
     private final IDashboardService dashboardService;

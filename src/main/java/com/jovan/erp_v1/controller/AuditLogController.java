@@ -19,18 +19,20 @@ import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.response.AuditLogResponse;
 import com.jovan.erp_v1.service.IAuditLogService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/audit-logs")
-@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','SECURITY_AUDITOR')")
+@PreAuthorize(RoleGroups.AUDIT_LOG_READ_ACCESS)
 public class AuditLogController {
 
     private final IAuditLogService auditLogService;
     private final UserRepository userRepository;
 
+    @PreAuthorize(RoleGroups.AUDIT_LOG_FULL_ACCESS)
     @PostMapping("/log")
     public ResponseEntity<Void> log(@RequestParam("action") AuditActionType action,
             @RequestParam("userId") Long userId,
@@ -42,7 +44,7 @@ public class AuditLogController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','QUALITY_MANAGER','ACCOUNTANT')")
+    @PreAuthorize(RoleGroups.AUDIT_LOG_READ_ACCESS)
     @GetMapping("/{id}")
     public ResponseEntity<AuditLogResponse> getById(@PathVariable Long id) {
         return auditLogService.getById(id)
@@ -50,7 +52,7 @@ public class AuditLogController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','QUALITY_MANAGER','ACCOUNTANT')")
+    @PreAuthorize(RoleGroups.AUDIT_LOG_READ_ACCESS)
     @GetMapping("/between-dates")
     public ResponseEntity<List<AuditLogResponse>> getLogsBetweenDates(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -59,27 +61,27 @@ public class AuditLogController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','QUALITY_MANAGER','ACCOUNTANT')")
+    @PreAuthorize(RoleGroups.AUDIT_LOG_READ_ACCESS)
     @GetMapping("/get-by-action")
     public ResponseEntity<List<AuditLogResponse>> getLogsByAction(@RequestParam("action") AuditActionType action) {
         List<AuditLogResponse> responses = auditLogService.getLogsByAction(action);
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','QUALITY_MANAGER','ACCOUNTANT')")
+    @PreAuthorize(RoleGroups.AUDIT_LOG_READ_ACCESS)
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<AuditLogResponse>> getLogsByUserId(@PathVariable Long userId) {
         List<AuditLogResponse> responses = auditLogService.getLogsByUserId(userId);
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','QUALITY_MANAGER','ACCOUNTANT')")
+    @PreAuthorize(RoleGroups.AUDIT_LOG_READ_ACCESS)
     @GetMapping("/get-all-logs")
     public ResponseEntity<List<AuditLogResponse>> getAllLogs() {
         return ResponseEntity.ok(auditLogService.getAllLogs());
     }
 
-    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','QUALITY_MANAGER','ACCOUNTANT')")
+    @PreAuthorize(RoleGroups.AUDIT_LOG_READ_ACCESS)
     @GetMapping("/search")
     public ResponseEntity<List<AuditLogResponse>> searchLogs(
             @RequestParam(required = false) Long userId,

@@ -69,22 +69,214 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         private static final List<String> BASIC_WRITE_METHODS = List.of("POST:/**","PUT:/**","DELETE:/**","GET:/**");
         private static final List<String> BASIC_READ_METHODS = List.of("GET:/**");
         
-        private static final Map<String, Map<String, List<String>>> WRITE_ACCESS = Map.of(
-        		"SUPERADMIN", Map.of("/**", ALL_HTTP_METHODS),
-        	    "ADMIN", Map.of("/**", ALL_HTTP_METHODS),
-        	    "ACCOUNTANT", Map.of("/accounts",BASIC_WRITE_METHODS),
-        	    "SECURITY_AUDITOR",Map.of("/audit-logs",BASIC_WRITE_METHODS)
-        );
-        
-        private static final Map<String, Map<String, List<String>>> READ_ACCESS = Map.of(
-        	    "AUDITOR", Map.of(
-        	        "/accounts", BASIC_READ_METHODS,
-        	        "/audit-logs", BASIC_READ_METHODS
-        	    ),
-        	    "FINANCIAL_MANAGER", Map.of(
-        	        "/accounts", BASIC_READ_METHODS
-        	    )
+        private static final Map<String, Map<String, List<String>>> WRITE_ACCESS = Map.ofEntries(
+        	    Map.entry("SUPERADMIN", Map.ofEntries(
+        	        Map.entry("/**", ALL_HTTP_METHODS)
+        	    )),
+        	    Map.entry("ADMIN", Map.ofEntries(
+        	        Map.entry("/**", ALL_HTTP_METHODS)
+        	    )),
+        	    Map.entry("ACCOUNTANT", Map.ofEntries(
+        	        Map.entry("/accounts", BASIC_WRITE_METHODS),
+        	        Map.entry("/balanceSheets", BASIC_WRITE_METHODS),
+        	        Map.entry("/fiscalQuarters", BASIC_WRITE_METHODS),
+        	        Map.entry("/fiscalYears", BASIC_WRITE_METHODS),
+        	        Map.entry("/incomeStatements", BASIC_WRITE_METHODS),
+        	        Map.entry("/invoices", BASIC_WRITE_METHODS),
+        	        Map.entry("/journalEntries", BASIC_WRITE_METHODS),
+        	        Map.entry("/journalItems", BASIC_WRITE_METHODS),
+        	        Map.entry("/ledgerEntries", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("AUDITOR", Map.ofEntries(
+        	        Map.entry("/eventLogs", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("SECURITY_AUDITOR", Map.ofEntries(
+        	        Map.entry("/audit-logs", BASIC_WRITE_METHODS),
+        	        Map.entry("/barCodes", BASIC_WRITE_METHODS),
+        	        Map.entry("/eventLogs", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("STORAGE_FOREMAN", Map.ofEntries(
+        	        Map.entry("/barCodes", BASIC_WRITE_METHODS),
+        	        Map.entry("/confirmationDocuments", BASIC_WRITE_METHODS),
+        	        Map.entry("/inventoryItems", BASIC_WRITE_METHODS),
+        	        Map.entry("/inboundDeliveries", BASIC_WRITE_METHODS),
+        	        Map.entry("/outboundDeliveries", BASIC_WRITE_METHODS),
+        	        Map.entry("/inventories", BASIC_WRITE_METHODS),
+        	        Map.entry("/logistics-providers", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("STORAGE_EMPLOYEE", Map.ofEntries(
+        	        Map.entry("/barCodes", BASIC_WRITE_METHODS),
+        	        Map.entry("/outboundDeliveries", BASIC_WRITE_METHODS),
+        	        Map.entry("/inventoryItems", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("INVENTORY_MANAGER", Map.ofEntries(
+        	        Map.entry("/barCodes", BASIC_WRITE_METHODS),
+        	        Map.entry("/inboundDeliveries", BASIC_WRITE_METHODS),
+        	        Map.entry("/outboundDeliveries", BASIC_WRITE_METHODS),
+        	        Map.entry("/inventories", BASIC_WRITE_METHODS),
+        	        Map.entry("/inventoryItems", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("INVENTORY_APPROVER", Map.ofEntries(
+        	        Map.entry("/inventories", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("FINANCIAL_MANAGER", Map.ofEntries(
+        	        Map.entry("/fiscalQuarters", BASIC_WRITE_METHODS),
+        	        Map.entry("/fiscalYears", BASIC_WRITE_METHODS),
+        	        Map.entry("/incomeStatements", BASIC_WRITE_METHODS),
+        	        Map.entry("/invoices", BASIC_WRITE_METHODS),
+        	        Map.entry("/journalEntries", BASIC_WRITE_METHODS),
+        	        Map.entry("/journalItems", BASIC_WRITE_METHODS),
+        	        Map.entry("/ledgerEntries", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("MANAGER", Map.ofEntries(
+        	        Map.entry("/fiscalQuarters", BASIC_WRITE_METHODS),
+        	        Map.entry("/fiscalYears", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("PRODUCTION_PLANNER", Map.ofEntries(
+        	        Map.entry("/billOfMaterials", BASIC_WRITE_METHODS),
+        	        Map.entry("/capacityPlannings", BASIC_WRITE_METHODS),
+        	        Map.entry("/inboundDeliveries", BASIC_WRITE_METHODS),
+        	        Map.entry("/outboundDeliveries", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("QUALITY_MANAGER", Map.ofEntries(
+        	        Map.entry("/billOfMaterials", BASIC_WRITE_METHODS),
+        	        Map.entry("/eventLogs", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("PROCUREMENT", Map.ofEntries(
+        	        Map.entry("/buyers", BASIC_WRITE_METHODS),
+        	        Map.entry("/confirmationDocuments", BASIC_WRITE_METHODS),
+        	        Map.entry("/delivery-items", BASIC_WRITE_METHODS),
+        	        Map.entry("/drivers", BASIC_WRITE_METHODS),
+        	        Map.entry("/inboundDeliveries", BASIC_WRITE_METHODS),
+        	        Map.entry("/logistics-providers", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("SALES", Map.ofEntries(
+        	        Map.entry("/buyers", BASIC_WRITE_METHODS),
+        	        Map.entry("/confirmationDocuments", BASIC_WRITE_METHODS),
+        	        Map.entry("/delivery-items", BASIC_WRITE_METHODS),
+        	        Map.entry("/drivers", BASIC_WRITE_METHODS),
+        	        Map.entry("/outboundDeliveries", BASIC_WRITE_METHODS),
+        	        Map.entry("/invoices", BASIC_WRITE_METHODS),
+        	        Map.entry("/itemSales", BASIC_WRITE_METHODS)
+        	    )),
+        	    Map.entry("LOGISTICS_MANAGER", Map.ofEntries(
+        	    	Map.entry("/logistics-providers", BASIC_WRITE_METHODS)))
         	);
+
+        
+        private static final Map<String, Map<String, List<String>>> READ_ACCESS = Map.ofEntries(
+        	    Map.entry("AUDITOR", Map.ofEntries(
+        	        Map.entry("/accounts", BASIC_READ_METHODS),
+        	        Map.entry("/incomeStatements", BASIC_READ_METHODS),
+        	        Map.entry("/audit-logs", BASIC_READ_METHODS),
+        	        Map.entry("/balanceSheets", BASIC_READ_METHODS),
+        	        Map.entry("/buyers", BASIC_READ_METHODS),
+        	        Map.entry("/fiscalQuarters", BASIC_READ_METHODS),
+        	        Map.entry("/fiscalYears", BASIC_READ_METHODS),
+        	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
+        	        Map.entry("/delivery-items", BASIC_READ_METHODS),
+        	        Map.entry("/invoices", BASIC_READ_METHODS),
+        	        Map.entry("/itemSales", BASIC_READ_METHODS),
+        	        Map.entry("/journalEntries", BASIC_READ_METHODS),
+        	        Map.entry("/journalItems", BASIC_READ_METHODS),
+        	        Map.entry("/ledgerEntries", BASIC_READ_METHODS),
+        	        Map.entry("/logistics-providers", BASIC_READ_METHODS)
+        	    )),
+        	    Map.entry("FINANCIAL_MANAGER", Map.ofEntries(
+        	        Map.entry("/accounts", BASIC_READ_METHODS),
+        	        Map.entry("/inboundDeliveries", BASIC_READ_METHODS),
+        	        Map.entry("/outboundDeliveries", BASIC_READ_METHODS),
+        	        Map.entry("/balanceSheets", BASIC_READ_METHODS),
+        	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
+        	        Map.entry("/delivery-items", BASIC_READ_METHODS),
+        	        Map.entry("/eventLogs", BASIC_READ_METHODS),
+        	        Map.entry("/itemSales", BASIC_READ_METHODS)
+        	    )),
+        	    Map.entry("ACCOUNTANT", Map.ofEntries(
+        	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
+        	        Map.entry("/delivery-items", BASIC_READ_METHODS),
+        	        Map.entry("/eventLogs", BASIC_READ_METHODS)
+        	    )),
+        	    Map.entry("PRODUCTION_PLANNER", Map.ofEntries(
+        	        Map.entry("/barCodes", BASIC_READ_METHODS),
+        	        Map.entry("/delivery-items", BASIC_READ_METHODS),
+        	        Map.entry("/goods", BASIC_READ_METHODS)
+        	    )),
+        	    Map.entry("QUALITY_MANAGER", Map.ofEntries(
+        	        Map.entry("/barCodes", BASIC_READ_METHODS),
+        	        Map.entry("/goods", BASIC_READ_METHODS),
+        	        Map.entry("/outboundDeliveries", BASIC_READ_METHODS),
+        	        Map.entry("/capacityPlannings", BASIC_READ_METHODS),
+        	        Map.entry("/inboundDeliveries", BASIC_READ_METHODS),
+        	        Map.entry("/inventories", BASIC_READ_METHODS),
+        	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
+        	        Map.entry("/delivery-items", BASIC_READ_METHODS),
+        	        Map.entry("/inventoryItems", BASIC_READ_METHODS)
+        	    )),
+        	    Map.entry("INVENTORY_MANAGER", Map.ofEntries(
+        	        Map.entry("/billOfMaterials", BASIC_READ_METHODS),
+        	        Map.entry("/goods", BASIC_READ_METHODS),
+        	        Map.entry("/buyers", BASIC_READ_METHODS),
+        	        Map.entry("/capacityPlannings", BASIC_READ_METHODS),
+        	        Map.entry("/eventLogs", BASIC_READ_METHODS),
+        	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
+        	        Map.entry("/delivery-items", BASIC_READ_METHODS),
+        	        Map.entry("/drivers", BASIC_READ_METHODS),
+        	        Map.entry("/invoices", BASIC_READ_METHODS),
+        	        Map.entry("/itemSales", BASIC_READ_METHODS),
+        	        Map.entry("/logistics-providers", BASIC_READ_METHODS)
+        	    )),
+        	    Map.entry("SECURITY_AUDITOR", Map.ofEntries(
+        	        Map.entry("/buyers", BASIC_READ_METHODS),
+        	        Map.entry("/fiscalQuarters", BASIC_READ_METHODS),
+        	        Map.entry("/inboundDeliveries", BASIC_READ_METHODS),
+        	        Map.entry("/incomeStatements", BASIC_READ_METHODS),
+        	        Map.entry("/capacityPlannings", BASIC_READ_METHODS),
+        	        Map.entry("/fiscalYears", BASIC_READ_METHODS),
+        	        Map.entry("/outboundDeliveries", BASIC_READ_METHODS),
+        	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
+        	        Map.entry("/delivery-items", BASIC_READ_METHODS),
+        	        Map.entry("/drivers", BASIC_READ_METHODS),
+        	        Map.entry("/inventories", BASIC_READ_METHODS),
+        	        Map.entry("/inventoryItems", BASIC_READ_METHODS),
+        	        Map.entry("/invoices", BASIC_READ_METHODS),
+        	        Map.entry("/itemSales", BASIC_READ_METHODS),
+        	        Map.entry("/journalEntries", BASIC_READ_METHODS),
+        	        Map.entry("/journalItems", BASIC_READ_METHODS),
+        	        Map.entry("/ledgerEntries", BASIC_READ_METHODS),
+        	        Map.entry("/logistics-providers", BASIC_READ_METHODS)
+        	    )),
+        	    Map.entry("STORAGE_FOREMAN", Map.ofEntries(
+        	        Map.entry("/capacityPlannings", BASIC_READ_METHODS),
+        	        Map.entry("/delivery-items", BASIC_READ_METHODS),
+        	        Map.entry("/drivers", BASIC_READ_METHODS),
+        	        Map.entry("/goods", BASIC_READ_METHODS)
+        	    )),
+        	    Map.entry("STORAGE_EMPLOYEE", Map.ofEntries(
+        	        Map.entry("/capacityPlannings", BASIC_READ_METHODS),
+        	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
+        	        Map.entry("/delivery-items", BASIC_READ_METHODS),
+        	        Map.entry("/drivers", BASIC_READ_METHODS),
+        	        Map.entry("/goods", BASIC_READ_METHODS)
+        	    )),
+        	    Map.entry("MANAGER", Map.ofEntries(
+        	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
+        	        Map.entry("/delivery-items", BASIC_READ_METHODS),
+        	        Map.entry("/eventLogs", BASIC_READ_METHODS)
+        	    )),
+        	    Map.entry("PROCUREMENT", Map.ofEntries(
+        	        Map.entry("/goods", BASIC_READ_METHODS),
+        	        Map.entry("/invoices", BASIC_READ_METHODS),
+        	        Map.entry("/itemSales", BASIC_READ_METHODS)
+        	    )),
+        	    Map.entry("CUSTOMER_SERVICE", Map.ofEntries(
+        	        Map.entry("/invoices", BASIC_READ_METHODS),
+        	        Map.entry("/logistics-providers", BASIC_READ_METHODS)
+        	    )),
+        	    Map.entry("SALES", Map.ofEntries(
+        	    	Map.entry("/logistics-providers", BASIC_READ_METHODS)))
+        	);
+
 
         @Override
         public void addFormatters(FormatterRegistry registry) {

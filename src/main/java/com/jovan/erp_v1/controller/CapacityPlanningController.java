@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.request.CapacityPlanningRequest;
 import com.jovan.erp_v1.response.CapacityPlanningResponse;
 import com.jovan.erp_v1.service.ICapacityPlanningService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,17 +28,19 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/capacityPlannings")
-@PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_PRODUCTION_PLANNER')")
+@PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
 public class CapacityPlanningController {
 
     private final ICapacityPlanningService capacityPlanningService;
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_FULL_ACCESS)
     @PostMapping("/create/new-capacityPlanning")
     public ResponseEntity<CapacityPlanningResponse> create(@Valid @RequestBody CapacityPlanningRequest request) {
         CapacityPlanningResponse response = capacityPlanningService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<CapacityPlanningResponse> update(@PathVariable Long id,
             @Valid @RequestBody CapacityPlanningRequest request) {
@@ -45,30 +48,35 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         capacityPlanningService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<CapacityPlanningResponse> findOne(@PathVariable Long id) {
         CapacityPlanningResponse response = capacityPlanningService.findOne(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/find-all")
     public ResponseEntity<List<CapacityPlanningResponse>> findAll() {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findAll();
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/workCenter/{workCenterId}")
     public ResponseEntity<List<CapacityPlanningResponse>> findByWorkCenter_Id(@PathVariable Long workCenterId) {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findByWorkCenter_Id(workCenterId);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/workCenterName")
     public ResponseEntity<List<CapacityPlanningResponse>> findByWorkCenter_NameContainingIgnoreCase(
             @RequestParam("name") String name) {
@@ -77,6 +85,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/workCenterLocation")
     public ResponseEntity<List<CapacityPlanningResponse>> findByWorkCenter_LocationContainingIgnoreCase(
             @RequestParam("location") String location) {
@@ -85,6 +94,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/date-range")
     public ResponseEntity<List<CapacityPlanningResponse>> findByDateBetween(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
@@ -93,6 +103,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/by-date")
     public ResponseEntity<List<CapacityPlanningResponse>> findByDate(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -100,6 +111,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/date-greaterThan")
     public ResponseEntity<List<CapacityPlanningResponse>> findByDateGreaterThanEqual(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -107,6 +119,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/by-availableCapacity")
     public ResponseEntity<List<CapacityPlanningResponse>> findByAvailableCapacity(
             @RequestParam("availableCapacity") BigDecimal availableCapacity) {
@@ -114,6 +127,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/availableCapacityGreaterThan")
     public ResponseEntity<List<CapacityPlanningResponse>> findByAvailableCapacityGreaterThan(
             @RequestParam("availableCapacity") BigDecimal availableCapacity) {
@@ -122,6 +136,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/availableCapacityLessThan")
     public ResponseEntity<List<CapacityPlanningResponse>> findByAvailableCapacityLessThan(
             @RequestParam("availableCapacity") BigDecimal availableCapacity) {
@@ -130,6 +145,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/by-plannedLoad")
     public ResponseEntity<List<CapacityPlanningResponse>> findByPlannedLoad(
             @RequestParam("plannedLoad") BigDecimal plannedLoad) {
@@ -137,6 +153,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/plannedLoadGreaterThan")
     public ResponseEntity<List<CapacityPlanningResponse>> findByPlannedLoadGreaterThan(
             @RequestParam("plannedLoad") BigDecimal plannedLoad) {
@@ -144,6 +161,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/plannedLoadLessThan")
     public ResponseEntity<List<CapacityPlanningResponse>> findByPlannedLoadLessThan(
             @RequestParam("plannedLoad") BigDecimal plannedLoad) {
@@ -151,6 +169,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/plannedLoad-availableCapacity")
     public ResponseEntity<List<CapacityPlanningResponse>> findByPlannedLoadAndAvailableCapacity(
             @RequestParam("plannedLoad") BigDecimal plannedLoad,
@@ -160,6 +179,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/remainingCapacity")
     public ResponseEntity<List<CapacityPlanningResponse>> findByRemainingCapacity(
             @RequestParam("remainingCapacity") BigDecimal remainingCapacity) {
@@ -167,6 +187,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/remainingLessThan")
     public ResponseEntity<List<CapacityPlanningResponse>> findWhereRemainingCapacityIsLessThanAvailableCapacity() {
         List<CapacityPlanningResponse> responses = capacityPlanningService
@@ -174,6 +195,7 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/remainingGreaterThan")
     public ResponseEntity<List<CapacityPlanningResponse>> findWhereRemainingCapacityIsGreaterThanAvailableCapacity() {
         List<CapacityPlanningResponse> responses = capacityPlanningService
@@ -181,18 +203,21 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/allOrderByUtilizationDesc")
     public ResponseEntity<List<CapacityPlanningResponse>> findAllOrderByUtilizationDesc() {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findAllOrderByUtilizationDesc();
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/loadExceedsCapacity")
     public ResponseEntity<List<CapacityPlanningResponse>> findWhereLoadExceedsCapacity() {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findWhereLoadExceedsCapacity();
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/utilizationGreaterThan")
     public ResponseEntity<List<CapacityPlanningResponse>> findByUtilizationGreaterThan(
             @RequestParam("threshold") BigDecimal threshold) {

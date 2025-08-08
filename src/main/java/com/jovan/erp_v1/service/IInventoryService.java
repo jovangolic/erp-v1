@@ -41,4 +41,5 @@ public interface IInventoryService {
 	List<InventoryResponse> findByStorageForemanIdAndDateBetween( Long foremanId,LocalDate startDate, LocalDate endDate);
     Long countByStorageForemanId( Long foremanId);
     Boolean existsByStatus(InventoryStatus status);
+    InventoryResponse approveInventory(Long id);
 }

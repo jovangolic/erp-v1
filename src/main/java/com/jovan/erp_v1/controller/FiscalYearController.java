@@ -21,23 +21,27 @@ import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.request.FiscalYearRequest;
 import com.jovan.erp_v1.response.FiscalYearResponse;
 import com.jovan.erp_v1.service.IFiscalYearService;
+import com.jovan.erp_v1.util.RoleGroups;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/fiscalYears")
-@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+@PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
 public class FiscalYearController {
 
     private final IFiscalYearService fiscalYearService;
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_FULL_ACCESS)
     @PostMapping("/create/new-fiscalYear")
     public ResponseEntity<FiscalYearResponse> create(@Valid @RequestBody FiscalYearRequest request) {
         FiscalYearResponse response = fiscalYearService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<FiscalYearResponse> update(@PathVariable Long id,
             @Valid @RequestBody FiscalYearRequest request) {
@@ -45,18 +49,21 @@ public class FiscalYearController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         fiscalYearService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<FiscalYearResponse> findOne(@PathVariable Long id) {
         FiscalYearResponse response = fiscalYearService.findOne(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
     @GetMapping("/find-all")
     public ResponseEntity<List<FiscalYearResponse>> findAll() {
         List<FiscalYearResponse> responses = fiscalYearService.findAll();
@@ -72,6 +79,7 @@ public class FiscalYearController {
      * }
      */
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
     @GetMapping("/date-range")
     public ResponseEntity<List<FiscalYearResponse>> findBetweenStartAndEndDates(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
@@ -80,12 +88,14 @@ public class FiscalYearController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
     @GetMapping("/by-year")
     public ResponseEntity<FiscalYearResponse> findByYear(@RequestParam("year") int year) {
         FiscalYearResponse response = fiscalYearService.findByYear(year);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
     @GetMapping("/by-status-and-year")
     public ResponseEntity<FiscalYearResponse> findByYearStatusAndYear(@RequestParam("status") FiscalYearStatus status,
             @RequestParam("year") Integer year) {
@@ -93,6 +103,7 @@ public class FiscalYearController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
     @GetMapping("/by-status-order")
     public ResponseEntity<FiscalYearResponse> findFirstByYearStatusOrderByStartDateDesc(
             @RequestParam("status") FiscalYearStatus status) {
@@ -100,6 +111,7 @@ public class FiscalYearController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
     @GetMapping("/startDate-after")
     public ResponseEntity<List<FiscalYearResponse>> findByStartDateAfter(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -107,6 +119,7 @@ public class FiscalYearController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
     @GetMapping("/endDate-before")
     public ResponseEntity<List<FiscalYearResponse>> findByEndDateBefore(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -114,6 +127,7 @@ public class FiscalYearController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
     @GetMapping("/by-yearStatus")
     public ResponseEntity<List<FiscalYearResponse>> findByYearStatus(
             @RequestParam("yearStatus") FiscalYearStatus yearStatus) {
@@ -121,6 +135,7 @@ public class FiscalYearController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
     @GetMapping("/by-quarterStatus")
     public ResponseEntity<List<FiscalYearResponse>> findByQuarterStatus(
             @RequestParam("quarterStatus") FiscalQuarterStatus quarterStatus) {
@@ -128,6 +143,7 @@ public class FiscalYearController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
     @GetMapping("/quarterStatus-less-than")
     public ResponseEntity<List<FiscalYearResponse>> findByQuarterLessThan(
             @RequestParam("quarterStatus") FiscalQuarterStatus quarterStatus) {
@@ -135,6 +151,7 @@ public class FiscalYearController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
     @GetMapping("/quarterStatus-greater-than")
     public ResponseEntity<List<FiscalYearResponse>> findByQuarterGreaterThan(
             @RequestParam("quarterStatus") FiscalQuarterStatus quarterStatus) {

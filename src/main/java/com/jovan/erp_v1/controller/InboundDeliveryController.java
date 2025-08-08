@@ -21,6 +21,7 @@ import com.jovan.erp_v1.enumeration.DeliveryStatus;
 import com.jovan.erp_v1.request.InboundDeliveryRequest;
 import com.jovan.erp_v1.response.InboundDeliveryResponse;
 import com.jovan.erp_v1.service.InterfejsInboundDeliveryService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,17 +29,19 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/inboundDeliveries")
-@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
+@PreAuthorize(RoleGroups.INBOUND_DELIVERY_READ_ACCESS)
 public class InboundDeliveryController {
 
     private InterfejsInboundDeliveryService inboundDeliveryService;
 
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
     @PostMapping("/create/new-inboundDelivery")
     public ResponseEntity<InboundDeliveryResponse> create(@Valid @RequestBody InboundDeliveryRequest request) {
         InboundDeliveryResponse response = inboundDeliveryService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<InboundDeliveryResponse> update(@PathVariable Long id,
             @Valid @RequestBody InboundDeliveryRequest request) {
@@ -46,30 +49,35 @@ public class InboundDeliveryController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         inboundDeliveryService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<InboundDeliveryResponse> findOne(@PathVariable Long id) {
         InboundDeliveryResponse response = inboundDeliveryService.findByOneId(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_READ_ACCESS)
     @GetMapping("/find-all")
     public ResponseEntity<List<InboundDeliveryResponse>> findAll() {
         List<InboundDeliveryResponse> responses = inboundDeliveryService.findAll();
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_READ_ACCESS)
     @GetMapping("/status")
     public ResponseEntity<List<InboundDeliveryResponse>> findByStatus(@RequestParam("status") DeliveryStatus status) {
         List<InboundDeliveryResponse> responses = inboundDeliveryService.findByStatus(status);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_READ_ACCESS)
     @GetMapping("/date-range")
     public ResponseEntity<List<InboundDeliveryResponse>> findByDeliveryDateBetween(
             @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate from,
@@ -78,6 +86,7 @@ public class InboundDeliveryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_READ_ACCESS)
     @GetMapping("/supply/{supplyId}")
     public ResponseEntity<List<InboundDeliveryResponse>> findBySupplyId(@PathVariable Long supplyId) {
         List<InboundDeliveryResponse> responses = inboundDeliveryService.findBySupplyId(supplyId);
@@ -85,6 +94,7 @@ public class InboundDeliveryController {
     }
 
     // Bulk create - kreira više InboundDelivery odjednom
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
     @PostMapping("/bulk")
     public ResponseEntity<List<InboundDeliveryResponse>> createAll(@RequestBody List<InboundDeliveryRequest> requests) {
         List<InboundDeliveryResponse> responses = inboundDeliveryService.createAll(requests);
@@ -92,6 +102,7 @@ public class InboundDeliveryController {
     }
 
     // Bulk delete - briše više InboundDelivery po ID-jevima
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
     @DeleteMapping("/bulk")
     public ResponseEntity<Void> deleteAllByIds(@RequestBody List<Long> ids) {
         inboundDeliveryService.deleteAllByIds(ids);

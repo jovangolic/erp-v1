@@ -26,25 +26,23 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/help")
 @RequiredArgsConstructor
 @CrossOrigin("http://localhost:5173")
+@PreAuthorize("hasRole('SUPERADMIN','ADMIN')")
 public class HelpController {
 
     private final IHelpService helpService;
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<HelpResponse> createHelp(@Valid @RequestBody HelpRequest request) {
         HelpResponse response = helpService.create(request);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update/{id}")
     public ResponseEntity<HelpResponse> updateHelp(@PathVariable Long id, @Valid @RequestBody HelpRequest request) {
         HelpResponse response = helpService.update(id, request);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteHelp(@PathVariable Long id) {
         helpService.delete(id);

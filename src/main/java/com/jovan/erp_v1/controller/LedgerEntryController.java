@@ -23,6 +23,7 @@ import com.jovan.erp_v1.enumeration.LedgerType;
 import com.jovan.erp_v1.request.LedgerEntryRequest;
 import com.jovan.erp_v1.response.LedgerEntryResponse;
 import com.jovan.erp_v1.service.ILedgerEntryService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,17 +31,19 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/ledgerEntries")
-@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+@PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
 public class LedgerEntryController {
 
     private final ILedgerEntryService ledgerEntryService;
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_FULL_ACCESS)
     @PostMapping("/create/new-ledgerEntry")
     public ResponseEntity<LedgerEntryResponse> create(@Valid @RequestBody LedgerEntryRequest request) {
         LedgerEntryResponse response = ledgerEntryService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<LedgerEntryResponse> update(@PathVariable Long id,
             @Valid @RequestBody LedgerEntryRequest request) {
@@ -48,30 +51,35 @@ public class LedgerEntryController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         ledgerEntryService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<LedgerEntryResponse> findOne(@PathVariable Long id) {
         LedgerEntryResponse response = ledgerEntryService.findOne(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/find-all")
     public ResponseEntity<List<LedgerEntryResponse>> findAll() {
         List<LedgerEntryResponse> responses = ledgerEntryService.findAll();
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/by-type")
     public ResponseEntity<List<LedgerEntryResponse>> findByType(@RequestParam("type") LedgerType type) {
         List<LedgerEntryResponse> responses = ledgerEntryService.findByType(type);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/amount-between-min-max")
     public ResponseEntity<List<LedgerEntryResponse>> findByAmountBetween(@RequestParam("min") BigDecimal min,
             @RequestParam("max") BigDecimal max) {
@@ -79,6 +87,7 @@ public class LedgerEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/by-description")
     public ResponseEntity<List<LedgerEntryResponse>> findByDescriptionContainingIgnoreCase(
             @RequestParam("keyword") String keyword) {
@@ -86,6 +95,7 @@ public class LedgerEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/entryDateBetween")
     public ResponseEntity<List<LedgerEntryResponse>> findByEntryDateBetween(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
@@ -94,12 +104,14 @@ public class LedgerEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/account/{id}")
     public ResponseEntity<List<LedgerEntryResponse>> findByAccount_Id(@PathVariable Long id) {
         List<LedgerEntryResponse> responses = ledgerEntryService.findByAccount_Id(id);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/accountNumber")
     public ResponseEntity<List<LedgerEntryResponse>> findByAccount_AccountNumber(
             @RequestParam("accountNumber") String accountNumber) {
@@ -107,6 +119,7 @@ public class LedgerEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/accountName")
     public ResponseEntity<List<LedgerEntryResponse>> findByAccount_AccountName(
             @RequestParam("accountName") String accountName) {
@@ -114,6 +127,7 @@ public class LedgerEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/search-by-name")
     public ResponseEntity<List<LedgerEntryResponse>> findByAccount_AccountNameContainingIgnoreCase(
             @RequestParam("name") String name) {
@@ -121,12 +135,14 @@ public class LedgerEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/account-type")
     public ResponseEntity<List<LedgerEntryResponse>> findByAccount_Type(@RequestParam("type") AccountType type) {
         List<LedgerEntryResponse> responses = ledgerEntryService.findByAccount_Type(type);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/account-balance")
     public ResponseEntity<List<LedgerEntryResponse>> findByAccount_Balance(
             @RequestParam("balance") BigDecimal balance) {
@@ -134,6 +150,7 @@ public class LedgerEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/entryDateEquals")
     public ResponseEntity<List<LedgerEntryResponse>> findByEntryDateEquals(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -141,6 +158,7 @@ public class LedgerEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/entryDateBefore")
     public ResponseEntity<List<LedgerEntryResponse>> findByEntryDateBefore(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
@@ -148,6 +166,7 @@ public class LedgerEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/entryDateAfter")
     public ResponseEntity<List<LedgerEntryResponse>> findByEntryDateAfter(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
@@ -155,6 +174,7 @@ public class LedgerEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/dateAfter-type")
     public ResponseEntity<List<LedgerEntryResponse>> findByEntryDateAfterAndType(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date,
@@ -163,6 +183,7 @@ public class LedgerEntryController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.LEDGER_ENTRY_READ_ACCESS)
     @GetMapping("/account/{accountId}/date-range")
     public ResponseEntity<List<LedgerEntryResponse>> findByEntryDateBetweenAndAccount_Id(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,

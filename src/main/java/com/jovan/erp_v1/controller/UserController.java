@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('SUPERADMIN','ADMIN')")
 public class UserController {
 
 	private final IUserService userService;

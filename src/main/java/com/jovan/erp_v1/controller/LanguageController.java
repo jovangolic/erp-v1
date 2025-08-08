@@ -29,7 +29,6 @@ public class LanguageController {
 
     private final ILanguageService languageService;
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<LanguageResponse> create(@Valid @RequestBody LanguageRequest request) {
         LanguageResponse response = languageService.create(request);
