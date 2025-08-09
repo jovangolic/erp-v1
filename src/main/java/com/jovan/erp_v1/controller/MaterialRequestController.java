@@ -21,6 +21,7 @@ import com.jovan.erp_v1.enumeration.UnitOfMeasure;
 import com.jovan.erp_v1.request.MaterialRequestDTO;
 import com.jovan.erp_v1.response.MaterialRequestResponse;
 import com.jovan.erp_v1.service.IMaterialRequestService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,17 +29,19 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/materialRequests")
-@PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN')")
+@PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
 public class MaterialRequestController {
 
     private final IMaterialRequestService materialRequestService;
 
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_FULL_ACCESS)
     @PostMapping("/create/new-materialRequest")
     public ResponseEntity<MaterialRequestResponse> create(@Valid @RequestBody MaterialRequestDTO dto) {
         MaterialRequestResponse response = materialRequestService.create(dto);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<MaterialRequestResponse> update(@PathVariable Long id,
             @Valid @RequestBody MaterialRequestDTO dto) {
@@ -46,27 +49,28 @@ public class MaterialRequestController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         materialRequestService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<MaterialRequestResponse> findOne(Long id) {
         MaterialRequestResponse response = materialRequestService.findOne(id);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/find-all")
     public ResponseEntity<List<MaterialRequestResponse>> findAll() {
         List<MaterialRequestResponse> responses = materialRequestService.findAll();
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/workCenter-name")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestingWorkCenter_NameContainingIgnoreCase(
             @RequestParam("workCenterName") String workCenterName) {
@@ -75,7 +79,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/workCenter-location")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestingWorkCenter_LocationContainingIgnoreCase(
             @RequestParam("workCenterLocation") String workCenterLocation) {
@@ -84,7 +88,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/workCenter-capacity")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestingWorkCenter_Capacity(
             @RequestParam("workCenterCapacity") BigDecimal workCenterCapacity) {
@@ -93,7 +97,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/workCenter-capacity-greater-than")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestingWorkCenter_CapacityGreaterThan(
             @RequestParam("workCenterCapacity") BigDecimal workCenterCapacity) {
@@ -102,7 +106,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/workCenter-capacity-less-than")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestingWorkCenter_CapacityLessThan(
             @RequestParam("workCenterCapacity") BigDecimal workCenterCapacity) {
@@ -111,14 +115,14 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/by-quantity")
     public ResponseEntity<List<MaterialRequestResponse>> findByQuantity(@RequestParam("quantity") BigDecimal quantity) {
         List<MaterialRequestResponse> responses = materialRequestService.findByQuantity(quantity);
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/quantity-greater-than")
     public ResponseEntity<List<MaterialRequestResponse>> findByQuantityGreaterThan(
             @RequestParam("quantity") BigDecimal quantity) {
@@ -126,7 +130,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/quantity-less-than")
     public ResponseEntity<List<MaterialRequestResponse>> findByQuantityLessThan(
             @RequestParam("quantity") BigDecimal quantity) {
@@ -134,14 +138,14 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/material/{materialId}")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_Id(@PathVariable Long materialId) {
         List<MaterialRequestResponse> responses = materialRequestService.findByMaterial_Id(materialId);
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/material-by-code")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_CodeContainingIgnoreCase(
             @RequestParam("code") String code) {
@@ -149,7 +153,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/material-by-name")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_NameContainingIgnoreCase(
             @RequestParam("name") String name) {
@@ -157,14 +161,14 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/material-unit")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_Unit(@RequestParam("unit") UnitOfMeasure unit) {
         List<MaterialRequestResponse> responses = materialRequestService.findByMaterial_Unit(unit);
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/material-currentStock")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_CurrentStock(
             @RequestParam("currentStock") BigDecimal currentStock) {
@@ -172,7 +176,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/material-currentStock-lessThan")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_CurrentStockLessThan(
             @RequestParam("currentStock") BigDecimal currentStock) {
@@ -181,7 +185,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/material-currentStock-greaterThan")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_CurrentStockGreaterThan(
             @RequestParam("currentStock") BigDecimal currentStock) {
@@ -190,7 +194,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/material-reorderLevel")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_ReorderLevel(
             @RequestParam("reorderLevel") BigDecimal reorderLevel) {
@@ -198,14 +202,14 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/material/storage/{storageId}")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_Storage_Id(@PathVariable Long storageId) {
         List<MaterialRequestResponse> responses = materialRequestService.findByMaterial_Storage_Id(storageId);
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/request-date")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestDate(
             @RequestParam("requestDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate requestDate) {
@@ -213,7 +217,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/request-date-before")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestDateBefore(
             @RequestParam("requestDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate requestDate) {
@@ -221,7 +225,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/request-date-after")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestDateAfter(
             @RequestParam("requestDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate requestDate) {
@@ -229,7 +233,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/request-date-between")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestDateBetween(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -238,7 +242,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/neededBy")
     public ResponseEntity<List<MaterialRequestResponse>> findByNeededBy(
             @RequestParam("neededBy") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate neededBy) {
@@ -246,7 +250,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/needed-before")
     public ResponseEntity<List<MaterialRequestResponse>> findByNeededByBefore(
             @RequestParam("neededBy") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate neededBy) {
@@ -254,7 +258,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/needed-after")
     public ResponseEntity<List<MaterialRequestResponse>> findByNeededByAfter(
             @RequestParam("neededBy") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate neededBy) {
@@ -262,7 +266,7 @@ public class MaterialRequestController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('PRODUCTION_PLANNER','ADMIN','SUPERADMIN','STORAGE_EMPLOYEE','STORAGE_FOREMAN','ROLE_QUALITY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/needed-between")
     public ResponseEntity<List<MaterialRequestResponse>> findByNeededByBetween(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,

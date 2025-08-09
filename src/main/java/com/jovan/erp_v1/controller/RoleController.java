@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.request.RoleRequest;
 import com.jovan.erp_v1.response.RoleResponse;
 import com.jovan.erp_v1.service.IRoleService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/roles")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('SUPERADMIN','ADMIN')")
+@PreAuthorize(RoleGroups.ROLE_FULL_ACCESS)
 public class RoleController {
 
 	private final IRoleService roleService;
@@ -37,7 +38,7 @@ public class RoleController {
         return new ResponseEntity<>(createdRole, HttpStatus.CREATED);
     }
 
-    // Ažuriranje postojeće uloge (samo admin)
+    // Azuriranje postojece uloge (samo admin)
     @PutMapping("/update/{roleId}")
     public ResponseEntity<RoleResponse> updateRole(@PathVariable Long roleId, @Valid @RequestBody RoleRequest updatedRole) {
         RoleResponse updatedRoleResponse = roleService.updateRole(roleId, updatedRole);
@@ -65,7 +66,7 @@ public class RoleController {
         return ResponseEntity.ok(roleResponse);
     }
 
-    // Dodeljivanje korisnika određenoj ulozi (samo admin)
+    // Dodeljivanje korisnika odredjenoj ulozi (samo admin)
     @PostMapping("/{roleId}/assign/{userId}")
     public ResponseEntity<Void> assignUserToRole(@PathVariable Long roleId, @PathVariable Long userId) {
         roleService.assignUserToRole(roleId, userId);

@@ -23,6 +23,7 @@ import com.jovan.erp_v1.enumeration.UnitOfMeasure;
 import com.jovan.erp_v1.request.MaterialRequirementRequest;
 import com.jovan.erp_v1.response.MaterialRequirementResponse;
 import com.jovan.erp_v1.service.IMaterialRequirementService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,17 +31,19 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/materialRequirements")
-@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER')")
+@PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
 public class MaterialRequirementController {
 
     private final IMaterialRequirementService materialRequirementService;
 
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_FULL_ACCESS)
     @PostMapping("/create/new-materialRequirement")
     public ResponseEntity<MaterialRequirementResponse> create(@Valid @RequestBody MaterialRequirementRequest request) {
         MaterialRequirementResponse response = materialRequirementService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<MaterialRequirementResponse> update(@PathVariable Long id,
             @Valid @RequestBody MaterialRequirementRequest request) {
@@ -48,27 +51,28 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         materialRequirementService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<MaterialRequirementResponse> findOne(@PathVariable Long id) {
         MaterialRequirementResponse response = materialRequirementService.findOne(id);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/find-all")
     public ResponseEntity<List<MaterialRequirementResponse>> findAll() {
         List<MaterialRequirementResponse> responses = materialRequirementService.findAll();
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/productionOrder/{productionOrderId}")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_Id(
             @PathVariable Long productionOrderId) {
@@ -77,7 +81,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/productionOrder-order-number")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_OrderNumberContainingIgnoreCase(
             @RequestParam("orderNumber") String orderNumber) {
@@ -86,7 +90,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/productionOrder/product/{productId}")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_Product_Id(
             @PathVariable Long productId) {
@@ -95,7 +99,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/productionOrder-quantity-planned")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_QuantityPlanned(
             @RequestParam("quantityPlanned") Integer quantityPlanned) {
@@ -104,6 +108,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/productionOrder-quantity-planned-less-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_QuantityPlannedLessThan(
             @RequestParam("quantityPlanned") Integer quantityPlanned) {
@@ -112,6 +117,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/productionOrder-quantity-planned-greater-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_QuantityPlannedGreaterThan(
             @RequestParam("quantityPlanned") Integer quantityPlanned) {
@@ -120,7 +126,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/productionOrder-quantity-produced")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_QuantityProduced(
             @RequestParam("quantityProduced") Integer quantityProduced) {
@@ -129,7 +135,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/productionOrder-startDate")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_StartDate(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
@@ -138,7 +144,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/productionOrder-endDate")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_EndDate(
             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
@@ -146,7 +152,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/productionOrder-status")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_Status(
             @RequestParam("status") ProductionOrderStatus status) {
@@ -154,7 +160,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/productionOrder/workCenter/{workCenterId}")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_WorkCenter_Id(
             @PathVariable Long workCenterId) {
@@ -163,14 +169,14 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material/{materialId}")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_Id(@PathVariable Long materialId) {
         List<MaterialRequirementResponse> responses = materialRequirementService.findByMaterial_Id(materialId);
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material-materialCode")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_CodeContainingIgnoreCase(
             @RequestParam("materialCode") String materialCode) {
@@ -179,7 +185,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material-materialName")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_NameContainingIgnoreCase(
             @RequestParam("materialName") String materialName) {
@@ -188,7 +194,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material-unit")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_Unit(
             @RequestParam("unit") UnitOfMeasure unit) {
@@ -196,7 +202,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material-currentStock")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_CurrentStock(
             @RequestParam("currentStock") BigDecimal currentStock) {
@@ -205,7 +211,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material-currentStock-less-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_CurrentStockLessThan(
             @RequestParam("currentStock") BigDecimal currentStock) {
@@ -214,7 +220,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material-currentStock-greater-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_CurrentStockGreaterThan(
             @RequestParam("currentStock") BigDecimal currentStock) {
@@ -223,14 +229,14 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material/storage/{storageId}")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_Storage_Id(@PathVariable Long storageId) {
         List<MaterialRequirementResponse> responses = materialRequirementService.findByMaterial_Storage_Id(storageId);
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material-reorderLevel")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_ReorderLevel(
             @RequestParam("reorderLevel") BigDecimal reorderLevel) {
@@ -239,7 +245,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material-status")
     public ResponseEntity<List<MaterialRequirementResponse>> findByStatus(
             @RequestParam("status") MaterialRequestStatus status) {
@@ -247,7 +253,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material-requiredQuantity")
     public ResponseEntity<List<MaterialRequirementResponse>> findByRequiredQuantity(
             @RequestParam("requiredQuantity") BigDecimal requiredQuantity) {
@@ -256,7 +262,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material-requiredQuantity-less-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByRequiredQuantityLessThan(
             @RequestParam("requiredQuantity") BigDecimal requiredQuantity) {
@@ -265,7 +271,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/material-requiredQuantity-greater-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByRequiredQuantityGreaterThan(
             @RequestParam("requiredQuantity") BigDecimal requiredQuantity) {
@@ -274,7 +280,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/availableQuantity")
     public ResponseEntity<List<MaterialRequirementResponse>> findByAvailableQuantity(
             @RequestParam("availableQuantity") BigDecimal availableQuantity) {
@@ -283,7 +289,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/availableQuantity-less-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByAvailableQuantityLessThan(
             @RequestParam("availableQuantity") BigDecimal availableQuantity) {
@@ -292,7 +298,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/availableQuantity-greater-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByAvailableQuantityGreaterThan(
             @RequestParam("availableQuantity") BigDecimal availableQuantity) {
@@ -301,7 +307,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/requirementDate")
     public ResponseEntity<List<MaterialRequirementResponse>> findByRequirementDate(
             @RequestParam("requirementDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate requirementDate) {
@@ -309,7 +315,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/requirement-date-range")
     public ResponseEntity<List<MaterialRequirementResponse>> findByRequirementDateBetween(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
@@ -319,7 +325,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/requirementDate-greater-than=equal")
     public ResponseEntity<List<MaterialRequirementResponse>> findByRequirementDateGreaterThanEqual(
             @RequestParam("requirementDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate requirementDate) {
@@ -328,7 +334,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/productionOrder-orderNumber-materialCode")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_OrderNumberContainingIgnoreCaseAndMaterial_CodeContainingIgnoreCase(
             @RequestParam("") String orderNumber, @RequestParam("materialCode") String materialCode) {
@@ -338,7 +344,7 @@ public class MaterialRequirementController {
         return ResponseEntity.ok(responses);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','PRODUCTION_PLANNER','STORAGE_EMPLOYEE','INVENTORY_MANAGER')")
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
     @GetMapping("/search-by-minShortage")
     public ResponseEntity<List<MaterialRequirementResponse>> findWhereShortageIsGreaterThan(
             @RequestParam("minShortage") BigDecimal minShortage) {

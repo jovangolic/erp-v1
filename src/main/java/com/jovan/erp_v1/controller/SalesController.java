@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.request.SalesRequest;
 import com.jovan.erp_v1.response.SalesResponse;
 import com.jovan.erp_v1.service.ISalesService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,31 +30,33 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/sales")
 @CrossOrigin("http://localhost:5173")
+@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 public class SalesController {
 
 	private final ISalesService salesService;
 
+	@PreAuthorize(RoleGroups.SALES_FULL_ACCESS)
 	@PostMapping("/create/new-sale")
-	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
 	public ResponseEntity<SalesResponse> createSales(@Valid @RequestBody SalesRequest request) {
 		SalesResponse response = salesService.createSales(request);
 		return ResponseEntity.ok(response);
 	}
 
-	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
+	@PreAuthorize(RoleGroups.SALES_FULL_ACCESS)
 	@PutMapping("update/{id}")
 	public ResponseEntity<SalesResponse> updateSales(@PathVariable Long id, @Valid @RequestBody SalesRequest request) {
 		SalesResponse updated = salesService.updateSales(id, request);
 		return ResponseEntity.ok(updated);
 	}
 
-	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN','STORAGE_EMPLOYEE')")
+	@PreAuthorize(RoleGroups.SALES_FULL_ACCESS)
 	@DeleteMapping("/delete/sale/{id}")
 	public ResponseEntity<Void> deleteSales(@PathVariable Long id) {
 		salesService.deleteSales(id);
 		return ResponseEntity.noContent().build();
 	}
 
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/between-dates")
 	public ResponseEntity<List<SalesResponse>> getByCreatedAtBetween(
 			@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -62,18 +65,21 @@ public class SalesController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/sale/total-price")
 	public ResponseEntity<List<SalesResponse>> getByTotalPrice(@RequestParam("totalPrice") BigDecimal totalPrice) {
 		List<SalesResponse> responses = salesService.getByTotalPrice(totalPrice);
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("sale/{salesId}")
 	public ResponseEntity<SalesResponse> findBySalesId(@PathVariable Long salesId) {
 		SalesResponse id = salesService.getBySalesId(salesId);
 		return ResponseEntity.ok(id);
 	}
 
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/sale-by-date")
 	public ResponseEntity<List<SalesResponse>> getSalesByDate(
 			@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -81,6 +87,7 @@ public class SalesController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/get-all-sales")
 	public ResponseEntity<List<SalesResponse>> getAllSales() {
 		List<SalesResponse> responses = salesService.getAllSales();
@@ -88,61 +95,70 @@ public class SalesController {
 	}
 	
 	//nove metode
-
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/buyer/{buyerId}")
 	public ResponseEntity<List<SalesResponse>> findByBuyer_Id(Long buyerId){
 		List<SalesResponse> responses = salesService.findByBuyer_Id(buyerId);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-company-name")
 	public ResponseEntity<List<SalesResponse>> findByBuyer_CompanyNameContainingIgnoreCase(String buyerCompanyName){
 		List<SalesResponse> responses = salesService.findByBuyer_CompanyNameContainingIgnoreCase(buyerCompanyName);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-pib")
 	public ResponseEntity<List<SalesResponse>> findByBuyer_PibContainingIgnoreCase(String buyerPib){
 		List<SalesResponse> responses = salesService.findByBuyer_PibContainingIgnoreCase(buyerPib);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-address")
 	public ResponseEntity<List<SalesResponse>> findByBuyer_AddressContainingIgnoreCase(String buyerAddress){
 		List<SalesResponse> responses = salesService.findByBuyer_AddressContainingIgnoreCase(buyerAddress);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-contact-person")
 	public ResponseEntity<List<SalesResponse>> findByBuyer_ContactPerson(String contactPerson){
 		List<SalesResponse> responses = salesService.findByBuyer_ContactPerson(contactPerson);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-email")
 	public ResponseEntity<List<SalesResponse>> findByBuyer_EmailContainingIgnoreCase(String buyerEmail){
 		List<SalesResponse> responses = salesService.findByBuyer_EmailContainingIgnoreCase(buyerEmail);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-phone-number")
 	public ResponseEntity<List<SalesResponse>> findByBuyer_PhoneNumber(String buyerPhoneNumber){
 		List<SalesResponse> responses = salesService.findByBuyer_PhoneNumber(buyerPhoneNumber);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-total-price-max")
 	public ResponseEntity<List<SalesResponse>> findByTotalPriceGreaterThan(BigDecimal totalPrice){
 		List<SalesResponse> responses = salesService.findByTotalPriceGreaterThan(totalPrice);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-total-price-min")
 	public ResponseEntity<List<SalesResponse>> findByTotalPriceLessThan(BigDecimal totalPrice){
 		List<SalesResponse> responses = salesService.findByTotalPriceLessThan(totalPrice);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search")
 	public ResponseEntity<List<SalesResponse>> searchSales(
 	    @RequestParam(required = false) Long buyerId,

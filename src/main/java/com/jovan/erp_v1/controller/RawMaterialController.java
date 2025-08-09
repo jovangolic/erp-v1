@@ -26,6 +26,7 @@ import com.jovan.erp_v1.model.RawMaterial;
 import com.jovan.erp_v1.request.RawMaterialRequest;
 import com.jovan.erp_v1.response.RawMaterialResponse;
 import com.jovan.erp_v1.service.IRawMaterialService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,19 +35,20 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/rawMaterials")
 @RequiredArgsConstructor
 @CrossOrigin("http://localhost:5173")
+@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 public class RawMaterialController {
 
 	private final IRawMaterialService rawMaterialService;
 	private final RawMaterialMapper rawMaterialMapper;
 
-	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN')")
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_FULL_ACCESS)
 	@PostMapping("/create/new-rawMaterial")
 	public ResponseEntity<RawMaterialResponse> create(@Valid @RequestBody RawMaterialRequest request) {
 		RawMaterialResponse response = rawMaterialService.save(request);
 		return ResponseEntity.ok(response);
 	}
 
-	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN')")
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_FULL_ACCESS)
 	@PutMapping("/update/{id}")
 	public ResponseEntity<RawMaterialResponse> update(@PathVariable Long id,
 			@Valid @RequestBody RawMaterialRequest request) {
@@ -54,25 +56,28 @@ public class RawMaterialController {
 		return ResponseEntity.ok(response);
 	}
 
-	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN')")
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_FULL_ACCESS)
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<Void> delete(@PathVariable Long id) {
 		rawMaterialService.delete(id);
 		return ResponseEntity.noContent().build();
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/find-one/{id}")
 	public ResponseEntity<RawMaterialResponse> findOne(@PathVariable Long id) {
 		RawMaterialResponse response = rawMaterialService.findById(id);
 		return ResponseEntity.ok(response);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/get-all-raw-materials")
 	public ResponseEntity<List<RawMaterialResponse>> findAll() {
 		List<RawMaterialResponse> responses = rawMaterialService.findAll();
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("find-by-material-name")
 	public ResponseEntity<List<RawMaterialResponse>> findByName(@RequestParam("name") String name) {
 		List<RawMaterialResponse> responses = rawMaterialService.findByName(name);
@@ -80,7 +85,7 @@ public class RawMaterialController {
 	}
 
 	// nove metode
-
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/filter")
 	public ResponseEntity<List<RawMaterialResponse>> filterRawMaterials(
 			@RequestParam(required = false) Long shelfId,
@@ -94,6 +99,7 @@ public class RawMaterialController {
 		return ResponseEntity.ok(response);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/current-quantity")
 	public ResponseEntity<List<RawMaterialResponse>> findByCurrentQuantity(
 			@RequestParam("currentQuantity") BigDecimal currentQuantity) {
@@ -101,6 +107,7 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/current-quantity-less-than")
 	public ResponseEntity<List<RawMaterialResponse>> findByCurrentQuantityLessThan(
 			@RequestParam("currentQuantity") BigDecimal currentQuantity) {
@@ -108,6 +115,7 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/current-quantity-greater-than")
 	public ResponseEntity<List<RawMaterialResponse>> findByCurrentQuantityGreaterThan(
 			@RequestParam("currentQuantity") BigDecimal currentQuantity) {
@@ -115,6 +123,7 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/product/current-quantity")
 	public ResponseEntity<List<RawMaterialResponse>> findByProduct_CurrentQuantity(
 			@RequestParam("currentQuantity") BigDecimal currentQuantity) {
@@ -122,6 +131,7 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/product/current-quantity-greater-than")
 	public ResponseEntity<List<RawMaterialResponse>> findByProduct_CurrentQuantityGreaterThan(
 			@RequestParam("currentQuantity") BigDecimal currentQuantity) {
@@ -130,6 +140,7 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/product/current-quantity-less-than")
 	public ResponseEntity<List<RawMaterialResponse>> findByProduct_CurrentQuantityLessThan(
 			@RequestParam("currentQuantity") BigDecimal currentQuantity) {
@@ -137,24 +148,28 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/shelf/{shelfId}")
 	public ResponseEntity<List<RawMaterialResponse>> findByShelf_Id(@PathVariable Long shelfId) {
 		List<RawMaterialResponse> responses = rawMaterialService.findByShelf_Id(shelfId);
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/count/shelf/rows")
 	public ResponseEntity<Long> countByShelf_RowCount(@RequestParam("rowCount") Integer rowCount) {
 		Long responses = rawMaterialService.countByShelf_RowCount(rowCount);
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/count/shelf/cols")
 	public ResponseEntity<Long> countByShelf_Cols(@RequestParam("cols") Integer cols) {
 		Long responses = rawMaterialService.countByShelf_Cols(cols);
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/shelf/{shelfId}/quantity-greater-than")
 	public ResponseEntity<List<RawMaterialResponse>> findByShelfAndQuantityGreaterThan(@PathVariable Long shelfId,
 			@RequestParam("quantity") BigDecimal quantity) {
@@ -162,6 +177,7 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/shelf/{shelfId}/quantity-less-than")
 	public ResponseEntity<List<RawMaterialResponse>> findByShelfAndQuantityLessThan(@PathVariable Long shelfId,
 			@RequestParam("quantity") BigDecimal quantity) {
@@ -169,6 +185,7 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/shelf/{shelfId}/quantity-equal")
 	public ResponseEntity<List<RawMaterialResponse>> findByShelfAndExactQuantity(@PathVariable Long shelfId,
 			@RequestParam("quantity") BigDecimal quantity) {
@@ -176,6 +193,7 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/shelf/{shelfId}/current-quantity-greater-than")
 	public ResponseEntity<List<RawMaterialResponse>> findByShelf_IdAndCurrentQuantityGreaterThan(
 			@PathVariable Long shelfId, @RequestParam("quantity") BigDecimal quantity) {
@@ -184,6 +202,7 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/shelf/{shelfId}/current-quantity-less-than")
 	public ResponseEntity<List<RawMaterialResponse>> findByShelf_IdAndCurrentQuantityLessThan(
 			@PathVariable Long shelfId, @RequestParam("quantity") BigDecimal quantity) {
@@ -192,6 +211,7 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/supplierType")
 	public ResponseEntity<List<RawMaterialResponse>> findBySupplierType(
 			@RequestParam("supplierType") SupplierType supplierType) {
@@ -199,6 +219,7 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/storageType")
 	public ResponseEntity<List<RawMaterialResponse>> findByStorageType(
 			@RequestParam("storageType") StorageType storageType) {
@@ -206,12 +227,14 @@ public class RawMaterialController {
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/goodsType")
 	public ResponseEntity<List<RawMaterialResponse>> findByGoodsType(@RequestParam("storageType") GoodsType goodsType) {
 		List<RawMaterialResponse> responses = rawMaterialService.findByGoodsType(goodsType);
 		return ResponseEntity.ok(responses);
 	}
 
+	@PreAuthorize(RoleGroups.RAW_MATERIAL_READ_ACCESS)
 	@GetMapping("/unitMeasure")
 	public ResponseEntity<List<RawMaterialResponse>> findByUnitMeasure(
 			@RequestParam("unitMeasure") UnitMeasure unitMeasure) {

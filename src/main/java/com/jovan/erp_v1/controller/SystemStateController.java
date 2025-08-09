@@ -17,6 +17,7 @@ import com.jovan.erp_v1.enumeration.SystemStatus;
 import com.jovan.erp_v1.request.SystemStateRequest;
 import com.jovan.erp_v1.response.SystemStateResponse;
 import com.jovan.erp_v1.service.ISystemStateService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system-states")
-@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+@PreAuthorize(RoleGroups.SYSTEM_STATE_FULL_ACCESS)
 public class SystemStateController {
 
     private final ISystemStateService service;

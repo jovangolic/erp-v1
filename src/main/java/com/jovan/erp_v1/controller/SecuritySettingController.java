@@ -14,13 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.request.SecuritySettingRequest;
 import com.jovan.erp_v1.response.SecuritySettingResponse;
 import com.jovan.erp_v1.service.ISecuritySettingService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/securitySettings")
-@PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+@PreAuthorize(RoleGroups.SECURITY_SETTING_FULL_ACCESS)
 public class SecuritySettingController {
 
     private final ISecuritySettingService securitySettingService;

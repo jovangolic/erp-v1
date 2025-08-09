@@ -17,6 +17,7 @@ import com.jovan.erp_v1.enumeration.PermissionType;
 import com.jovan.erp_v1.request.PermissionRequest;
 import com.jovan.erp_v1.response.PermissionResponse;
 import com.jovan.erp_v1.service.IPermissionService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RequiredArgsConstructor
 @RequestMapping("/permission")
 @CrossOrigin("http://localhost:5173")
-@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN')")
+@PreAuthorize(RoleGroups.PERMISSION_FULL_ACCESS)
 public class PermissionController {
 
     private final IPermissionService permissionService;

@@ -31,7 +31,15 @@ public class RoleInitializer {
         addRoleIfNotExists("ROLE_INVENTORY_APPROVER");
         addRoleIfNotExists("ROLE_CUSTOMER_SERVICE");
         addRoleIfNotExists("ROLE_LOGISTICS_MANAGER");
+        addRoleIfNotExists("ROLE_TRANSPORT_PLANNER");
+        addRoleIfNotExists("ROLE_DISPATCHER");
+        addRoleIfNotExists("ROLE_DRIVER");
+        addRoleIfNotExists("ROLE_MECHANIC");
+        addRoleIfNotExists("ROLE_PRODUCTION_MANAGER");
+        addRoleIfNotExists("ROLE_MAINTENANCE_MANAGER");
         addRoleIfNotExists("ROLE_SALES");
+        addRoleIfNotExists("ROLE_SALES_MANAGER");
+        addRoleIfNotExists("ROLE_HR_MANAGER");
         addRoleIfNotExists("ROLE_PROCUREMENT");
         addRoleIfNotExists("ROLE_STORAGE_FOREMAN");
         addRoleIfNotExists("ROLE_STORAGE_EMPLOYEE");

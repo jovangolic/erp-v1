@@ -22,6 +22,7 @@ import com.jovan.erp_v1.request.SystemSettingCreateRequest;
 import com.jovan.erp_v1.request.SystemSettingUpdateRequest;
 import com.jovan.erp_v1.response.SystemSettingResponse;
 import com.jovan.erp_v1.service.ISystemSetting;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
@@ -31,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/settings")
 @RequiredArgsConstructor
 @CrossOrigin("http://localhost:5173")
-@PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+@PreAuthorize(RoleGroups.SYSTEM_SETTING_FULL_ACCESS)
 public class SystemSettingController {
 
     private ISystemSetting settings;

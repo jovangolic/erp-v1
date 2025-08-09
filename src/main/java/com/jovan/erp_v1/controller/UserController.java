@@ -20,6 +20,7 @@ import com.jovan.erp_v1.request.UserRequestForEmployeesDetails;
 import com.jovan.erp_v1.response.UserResponse;
 import com.jovan.erp_v1.response.UserResponseForEmployees;
 import com.jovan.erp_v1.service.IUserService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('SUPERADMIN','ADMIN')")
+@PreAuthorize(RoleGroups.USER_FULL_ACCESS)
 public class UserController {
 
 	private final IUserService userService;

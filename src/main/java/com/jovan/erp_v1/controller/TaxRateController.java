@@ -21,6 +21,7 @@ import com.jovan.erp_v1.enumeration.TaxType;
 import com.jovan.erp_v1.request.TaxRateRequest;
 import com.jovan.erp_v1.response.TaxRateResponse;
 import com.jovan.erp_v1.service.ITaxRateService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,59 +29,68 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/taxRates")
-@PreAuthorize("hasAnuRole('ADMIN','SUPERADMIN')")
+@PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
 public class TaxRateController {
 
     private final ITaxRateService taxRateService;
 
+    @PreAuthorize(RoleGroups.TAX_RATE_FULL_ACCESS)
     @PostMapping("/create/new-taxRate")
     public ResponseEntity<TaxRateResponse> create(@Valid @RequestBody TaxRateRequest request) {
         TaxRateResponse response = taxRateService.create(request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<TaxRateResponse> update(@PathVariable Long id, @Valid @RequestBody TaxRateRequest request) {
         TaxRateResponse response = taxRateService.update(id, request);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_FULL_ACCESS)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         taxRateService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/find-one/{id}")
     public ResponseEntity<TaxRateResponse> findOne(@PathVariable Long id) {
         TaxRateResponse response = taxRateService.findOne(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/find-all")
     public ResponseEntity<List<TaxRateResponse>> findAll() {
         List<TaxRateResponse> responses = taxRateService.findAll();
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/by-type")
     public ResponseEntity<List<TaxRateResponse>> findByType(@RequestParam("type") TaxType type) {
         List<TaxRateResponse> responses = taxRateService.findByType(type);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/by-taxName")
     public ResponseEntity<List<TaxRateResponse>> findByTaxName(@RequestParam("taxName") String taxName) {
         List<TaxRateResponse> responses = taxRateService.findByTaxName(taxName);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/by-percentage")
     public ResponseEntity<List<TaxRateResponse>> findByPercentage(@RequestParam("percentage") BigDecimal percentage) {
         List<TaxRateResponse> responses = taxRateService.findByPercentage(percentage);
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/taxName-percentage")
     public ResponseEntity<List<TaxRateResponse>> findByTaxNameAndPercentage(@RequestParam("taxName") String taxName,
             @RequestParam("percentage") BigDecimal percentage) {
@@ -88,6 +98,7 @@ public class TaxRateController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/startDateBefore")
     public ResponseEntity<List<TaxRateResponse>> findByStartDateBeforeAndEndDateAfter(
             @RequestParam("date1") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date1,
@@ -96,6 +107,7 @@ public class TaxRateController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/startDate-lessThan")
     public ResponseEntity<List<TaxRateResponse>> findByStartDateLessThanEqualAndEndDateGreaterThanEqual(
             @RequestParam("date1") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date1,
@@ -105,6 +117,7 @@ public class TaxRateController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/by-overlapping")
     public ResponseEntity<List<TaxRateResponse>> findOverlapping(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
@@ -113,6 +126,7 @@ public class TaxRateController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/by-startDate")
     public ResponseEntity<List<TaxRateResponse>> findByStartDate(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start) {
@@ -120,6 +134,7 @@ public class TaxRateController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/by-endDate")
     public ResponseEntity<List<TaxRateResponse>> findByEndDate(
             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
@@ -127,6 +142,7 @@ public class TaxRateController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/active-byType")
     public ResponseEntity<List<TaxRateResponse>> findActiveByType(@RequestParam("type") TaxType type,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -134,6 +150,7 @@ public class TaxRateController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/type-and-period")
     public ResponseEntity<List<TaxRateResponse>> findByTypeAndPeriod(@RequestParam("type") TaxType type,
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -143,25 +160,28 @@ public class TaxRateController {
     }
     
     //nove metode
-    
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/search/by-type-vat")
     public ResponseEntity<List<TaxRateResponse>> findByVat(){
     	List<TaxRateResponse> responses = taxRateService.findByVat();
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/searh/by-type-income-tax")
     public ResponseEntity<List<TaxRateResponse>> findByIncome_Tax(){
     	List<TaxRateResponse> responses = taxRateService.findByIncome_Tax();
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/search/by-type-sales-tax")
     public ResponseEntity<List<TaxRateResponse>> findBySales_Tax(){
     	List<TaxRateResponse> responses = taxRateService.findBySales_Tax();
     	return ResponseEntity.ok(responses);
     }
     
+    @PreAuthorize(RoleGroups.TAX_RATE_READ_ACCESS)
     @GetMapping("/search/by-type-custom")
     public ResponseEntity<List<TaxRateResponse>> findByCustom(){
     	List<TaxRateResponse> responses = taxRateService.findByCustom();

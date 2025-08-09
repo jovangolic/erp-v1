@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.request.ProcurementRequest;
 import com.jovan.erp_v1.response.ProcurementResponse;
 import com.jovan.erp_v1.service.IProcurementService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,51 +29,54 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/procurements")
 @RequiredArgsConstructor
 @CrossOrigin("http://localhost:5173")
+@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
 public class ProcurementController {
 
 	private final IProcurementService procurementService;
 	
-	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN')")
+	@PreAuthorize(RoleGroups.PROCUREMENT_FULL_ACCESS)
 	@PostMapping("/create/new-procurement")
 	public ResponseEntity<ProcurementResponse> create(@Valid @RequestBody ProcurementRequest request){
 		ProcurementResponse response = procurementService.createProcurement(request);
 		return ResponseEntity.ok(response);
 	}
 	
-	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN')")
+	@PreAuthorize(RoleGroups.PROCUREMENT_FULL_ACCESS)
 	@PutMapping("/update/{id}")
 	public ResponseEntity<ProcurementResponse> update(@PathVariable Long id, @Valid @RequestBody ProcurementRequest request){
 		ProcurementResponse updated = procurementService.updateProcurement(id, request);
 		return ResponseEntity.ok(updated);
 	}
 	
-	@PreAuthorize("hasAnyRole('ADMIN','STORAGE_FOREMAN')")
+	@PreAuthorize(RoleGroups.PROCUREMENT_FULL_ACCESS)
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<Void> deleteProcurement(@PathVariable Long id){
 		procurementService.deleteProcurement(id);
 		return ResponseEntity.noContent().build();
 	}
 	
-	
+	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
 	@GetMapping("/procurement/{id}")
 	public ResponseEntity<ProcurementResponse> getByProcurementId(@PathVariable Long id){
 		ProcurementResponse response = procurementService.getByProcurementId(id);
 		return ResponseEntity.ok(response);
 	}
 	
+	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
 	@GetMapping("/all-procurement")
 	public ResponseEntity<List<ProcurementResponse>> getAllProcurement(){
 		List<ProcurementResponse> responses = procurementService.getAllProcurement();
 		return ResponseEntity.ok(responses);		
 	}
 	
+	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
 	@GetMapping("/procurement/total-cost")
 	public ResponseEntity<List<ProcurementResponse>> getByTotalCost(@RequestParam("totalCost") BigDecimal totalCost){
 		List<ProcurementResponse> responses = procurementService.getByTotalCost(totalCost);
 		return ResponseEntity.ok(responses);
 	}
 	
-	
+	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
 	@GetMapping("/procurement/date-between")
 	public ResponseEntity<List<ProcurementResponse>> getByDateBetween(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
 			@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate){
@@ -80,25 +84,28 @@ public class ProcurementController {
 		return ResponseEntity.ok(responses);
 	}
 	
-	
+	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
 	@GetMapping("/procurement/cost/min-max")
 	public ResponseEntity<List<ProcurementResponse>> getByTotalCostBetween(@RequestParam("min") BigDecimal min,@RequestParam("max") BigDecimal max){
 		List<ProcurementResponse> responses = procurementService.getByTotalCostBetween(min, max);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
 	@GetMapping("/total-cost-greater-than")
 	public ResponseEntity<List<ProcurementResponse>> getByTotalCostGreaterThan(@RequestParam("totalCost")  BigDecimal totalCost){
 		List<ProcurementResponse> responses = procurementService.getByTotalCostGreaterThan(totalCost);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
 	@GetMapping("/total-cost-less-than")
 	public ResponseEntity<List<ProcurementResponse>> getByTotalCostLessThan(@RequestParam("totalCost") BigDecimal totalCost){
 		List<ProcurementResponse> responses = procurementService.getByTotalCostLessThan(totalCost);
 		return ResponseEntity.ok(responses);
 	}
 	
+	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
 	@GetMapping("/payment-date")
 	public ResponseEntity<List<ProcurementResponse>> findByDate(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date){
 		List<ProcurementResponse> responses = procurementService.findByDate(date);

@@ -19,6 +19,7 @@ import com.jovan.erp_v1.enumeration.OptionCategory;
 import com.jovan.erp_v1.request.OptionRequest;
 import com.jovan.erp_v1.response.OptionResponse;
 import com.jovan.erp_v1.service.IOptionService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/option")
 @CrossOrigin("http://localhost:5173")
-@PreAuthorize("hasRole('SUPERADMIN','ADMIN')")
+@PreAuthorize(RoleGroups.OPTION_FULL_ACCESS)
 public class OptionController {
 
     private final IOptionService optionService;

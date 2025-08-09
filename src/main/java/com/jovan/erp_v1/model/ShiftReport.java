@@ -46,7 +46,7 @@ public class ShiftReport {
     private Shift relatedShift;
 
     @Column
-    private String filePath; // za PDF putanju ako se izveštaj štampa
+    private String filePath; // za PDF putanju ako se izvestaj stampa
     
     @CreatedDate
     @Column(name = "created_at_date", updatable = false)

@@ -85,7 +85,16 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/invoices", BASIC_WRITE_METHODS),
         	        Map.entry("/journalEntries", BASIC_WRITE_METHODS),
         	        Map.entry("/journalItems", BASIC_WRITE_METHODS),
-        	        Map.entry("/ledgerEntries", BASIC_WRITE_METHODS)
+        	        Map.entry("/ledgerEntries", BASIC_WRITE_METHODS),
+        	        Map.entry("/payments", BASIC_WRITE_METHODS),
+        	        Map.entry("/procurements", BASIC_WRITE_METHODS),
+        	        Map.entry("/reports", BASIC_WRITE_METHODS),
+        	        Map.entry("/sales", BASIC_WRITE_METHODS),
+        	        Map.entry("/salesOrders", BASIC_WRITE_METHODS),
+        	        Map.entry("/supplies", BASIC_WRITE_METHODS),
+        	        Map.entry("/suppliesItems", BASIC_WRITE_METHODS),
+        	        Map.entry("/taxRates", BASIC_WRITE_METHODS),
+        	        Map.entry("/vendors", BASIC_WRITE_METHODS)
         	    )),
         	    Map.entry("AUDITOR", Map.ofEntries(
         	        Map.entry("/eventLogs", BASIC_WRITE_METHODS)
@@ -93,7 +102,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	    Map.entry("SECURITY_AUDITOR", Map.ofEntries(
         	        Map.entry("/audit-logs", BASIC_WRITE_METHODS),
         	        Map.entry("/barCodes", BASIC_WRITE_METHODS),
-        	        Map.entry("/eventLogs", BASIC_WRITE_METHODS)
+        	        Map.entry("/eventLogs", BASIC_WRITE_METHODS),
+        	        Map.entry("/taxRates", BASIC_WRITE_METHODS)
         	    )),
         	    Map.entry("STORAGE_FOREMAN", Map.ofEntries(
         	        Map.entry("/barCodes", BASIC_WRITE_METHODS),
@@ -102,7 +112,18 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/inboundDeliveries", BASIC_WRITE_METHODS),
         	        Map.entry("/outboundDeliveries", BASIC_WRITE_METHODS),
         	        Map.entry("/inventories", BASIC_WRITE_METHODS),
-        	        Map.entry("/logistics-providers", BASIC_WRITE_METHODS)
+        	        Map.entry("/logistics-providers", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialMovements", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialRequests", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialRequirements", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialTransactions", BASIC_WRITE_METHODS),
+        	        Map.entry("/reports", BASIC_WRITE_METHODS),
+        	        Map.entry("/shelves", BASIC_WRITE_METHODS),
+        	        Map.entry("/shifts", BASIC_WRITE_METHODS),
+        	        Map.entry("/shiftPlannings", BASIC_WRITE_METHODS),
+        	        Map.entry("/shiftReports", BASIC_WRITE_METHODS),
+        	        Map.entry("/shipments", BASIC_WRITE_METHODS),
+        	        Map.entry("/storages", BASIC_WRITE_METHODS)
         	    )),
         	    Map.entry("STORAGE_EMPLOYEE", Map.ofEntries(
         	        Map.entry("/barCodes", BASIC_WRITE_METHODS),
@@ -114,10 +135,22 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/inboundDeliveries", BASIC_WRITE_METHODS),
         	        Map.entry("/outboundDeliveries", BASIC_WRITE_METHODS),
         	        Map.entry("/inventories", BASIC_WRITE_METHODS),
-        	        Map.entry("/inventoryItems", BASIC_WRITE_METHODS)
+        	        Map.entry("/inventoryItems", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialRequests", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialRequirements", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialTransactions", BASIC_WRITE_METHODS),
+        	        Map.entry("/procurements", BASIC_WRITE_METHODS),
+        	        Map.entry("/products", BASIC_WRITE_METHODS),
+        	        Map.entry("/productionOrders", BASIC_WRITE_METHODS),
+        	        Map.entry("/rawMaterials", BASIC_WRITE_METHODS),
+        	        Map.entry("/shelves", BASIC_WRITE_METHODS),
+        	        Map.entry("/stockTransfers", BASIC_WRITE_METHODS),
+        	        Map.entry("/stockTransferItems", BASIC_WRITE_METHODS),
+        	        Map.entry("/storages", BASIC_WRITE_METHODS)
         	    )),
         	    Map.entry("INVENTORY_APPROVER", Map.ofEntries(
-        	        Map.entry("/inventories", BASIC_WRITE_METHODS)
+        	        Map.entry("/inventories", BASIC_WRITE_METHODS),
+        	        Map.entry("/shelves", BASIC_WRITE_METHODS)
         	    )),
         	    Map.entry("FINANCIAL_MANAGER", Map.ofEntries(
         	        Map.entry("/fiscalQuarters", BASIC_WRITE_METHODS),
@@ -126,7 +159,9 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/invoices", BASIC_WRITE_METHODS),
         	        Map.entry("/journalEntries", BASIC_WRITE_METHODS),
         	        Map.entry("/journalItems", BASIC_WRITE_METHODS),
-        	        Map.entry("/ledgerEntries", BASIC_WRITE_METHODS)
+        	        Map.entry("/ledgerEntries", BASIC_WRITE_METHODS),
+        	        Map.entry("/sales", BASIC_WRITE_METHODS),
+        	        Map.entry("/salesOrders", BASIC_WRITE_METHODS)
         	    )),
         	    Map.entry("MANAGER", Map.ofEntries(
         	        Map.entry("/fiscalQuarters", BASIC_WRITE_METHODS),
@@ -136,11 +171,26 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/billOfMaterials", BASIC_WRITE_METHODS),
         	        Map.entry("/capacityPlannings", BASIC_WRITE_METHODS),
         	        Map.entry("/inboundDeliveries", BASIC_WRITE_METHODS),
-        	        Map.entry("/outboundDeliveries", BASIC_WRITE_METHODS)
+        	        Map.entry("/outboundDeliveries", BASIC_WRITE_METHODS),
+        	        Map.entry("/materials", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialMovements", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialRequests", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialRequirements", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialTransactions", BASIC_WRITE_METHODS),
+        	        Map.entry("/products", BASIC_WRITE_METHODS),
+        	        Map.entry("/productionOrders", BASIC_WRITE_METHODS),
+        	        Map.entry("/rawMaterials", BASIC_WRITE_METHODS),
+        	        Map.entry("/reports", BASIC_WRITE_METHODS),
+        	        Map.entry("/stockTransfers", BASIC_WRITE_METHODS),
+        	        Map.entry("/stockTransferItems", BASIC_WRITE_METHODS),
+        	        Map.entry("/workCenters", BASIC_WRITE_METHODS)
         	    )),
         	    Map.entry("QUALITY_MANAGER", Map.ofEntries(
         	        Map.entry("/billOfMaterials", BASIC_WRITE_METHODS),
-        	        Map.entry("/eventLogs", BASIC_WRITE_METHODS)
+        	        Map.entry("/eventLogs", BASIC_WRITE_METHODS),
+        	        Map.entry("/products", BASIC_WRITE_METHODS),
+        	        Map.entry("/rawMaterials", BASIC_WRITE_METHODS),
+        	        Map.entry("/reports", BASIC_WRITE_METHODS)
         	    )),
         	    Map.entry("PROCUREMENT", Map.ofEntries(
         	        Map.entry("/buyers", BASIC_WRITE_METHODS),
@@ -148,7 +198,22 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/delivery-items", BASIC_WRITE_METHODS),
         	        Map.entry("/drivers", BASIC_WRITE_METHODS),
         	        Map.entry("/inboundDeliveries", BASIC_WRITE_METHODS),
-        	        Map.entry("/logistics-providers", BASIC_WRITE_METHODS)
+        	        Map.entry("/logistics-providers", BASIC_WRITE_METHODS),
+        	        Map.entry("/materials", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialMovements", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialRequests", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialRequirements", BASIC_WRITE_METHODS),
+        	        Map.entry("/materialTransactions", BASIC_WRITE_METHODS),
+        	        Map.entry("/procurements", BASIC_WRITE_METHODS),
+        	        Map.entry("/products", BASIC_WRITE_METHODS),
+        	        Map.entry("/productionOrders", BASIC_WRITE_METHODS),
+        	        Map.entry("/rawMaterials", BASIC_WRITE_METHODS),
+        	        Map.entry("/reports", BASIC_WRITE_METHODS),
+        	        Map.entry("/route", BASIC_WRITE_METHODS),
+        	        Map.entry("/salesOrders", BASIC_WRITE_METHODS),
+        	        Map.entry("/supplies", BASIC_WRITE_METHODS),
+        	        Map.entry("/suppliesItems", BASIC_WRITE_METHODS),
+        	        Map.entry("/vendors", BASIC_WRITE_METHODS)
         	    )),
         	    Map.entry("SALES", Map.ofEntries(
         	        Map.entry("/buyers", BASIC_WRITE_METHODS),
@@ -157,10 +222,55 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/drivers", BASIC_WRITE_METHODS),
         	        Map.entry("/outboundDeliveries", BASIC_WRITE_METHODS),
         	        Map.entry("/invoices", BASIC_WRITE_METHODS),
-        	        Map.entry("/itemSales", BASIC_WRITE_METHODS)
+        	        Map.entry("/itemSales", BASIC_WRITE_METHODS),
+        	        Map.entry("/payments", BASIC_WRITE_METHODS),
+        	        Map.entry("/procurements", BASIC_WRITE_METHODS),
+        	        Map.entry("/products", BASIC_WRITE_METHODS),
+        	        Map.entry("/sales", BASIC_WRITE_METHODS),
+        	        Map.entry("/salesOrders", BASIC_WRITE_METHODS)
         	    )),
         	    Map.entry("LOGISTICS_MANAGER", Map.ofEntries(
-        	    	Map.entry("/logistics-providers", BASIC_WRITE_METHODS)))
+        	    	Map.entry("/logistics-providers", BASIC_WRITE_METHODS),
+        	    	Map.entry("/materialRequests", BASIC_WRITE_METHODS),
+        	    	Map.entry("/materialRequirements", BASIC_WRITE_METHODS),
+        	    	Map.entry("/productionOrders", BASIC_WRITE_METHODS),
+        	    	Map.entry("/reports", BASIC_WRITE_METHODS),
+        	    	Map.entry("/route", BASIC_WRITE_METHODS),
+        	    	Map.entry("/salesOrders", BASIC_WRITE_METHODS),
+        	    	Map.entry("/shelves", BASIC_WRITE_METHODS),
+        	    	Map.entry("/shipments", BASIC_WRITE_METHODS),
+        	    	Map.entry("/stockTransfers", BASIC_WRITE_METHODS),
+        	    	Map.entry("/stockTransferItems", BASIC_WRITE_METHODS)
+        	    	)),
+        	    Map.entry("TRANSPORT_PLANNER", Map.ofEntries(
+        	    	Map.entry("/route", BASIC_WRITE_METHODS),
+        	    	Map.entry("/stockTransfers", BASIC_WRITE_METHODS),
+        	    	Map.entry("/shipments", BASIC_WRITE_METHODS),
+        	    	Map.entry("/stockTransferItems", BASIC_WRITE_METHODS),
+        	    	Map.entry("/trackingInfos", BASIC_WRITE_METHODS),
+        	    	Map.entry("/transportOrders", BASIC_WRITE_METHODS),
+        	    	Map.entry("/vehicles", BASIC_WRITE_METHODS))),
+        	    Map.entry("DISPATCHER", Map.ofEntries(
+        	    	Map.entry("/route", BASIC_WRITE_METHODS),
+        	    	Map.entry("/transportOrders", BASIC_WRITE_METHODS))),
+        	    Map.entry("LOGISTICS_MANAGER", Map.ofEntries(
+        	    	Map.entry("", BASIC_WRITE_METHODS),
+        	    	Map.entry("/transportOrders", BASIC_WRITE_METHODS),
+        	    	Map.entry("/trackingInfos", BASIC_WRITE_METHODS),
+        	    	Map.entry("/vehicles", BASIC_WRITE_METHODS))),
+        	    Map.entry("SALES_MANAGER", Map.ofEntries(
+        	    	Map.entry("", BASIC_WRITE_METHODS),
+        	    	Map.entry("/salesOrders", BASIC_WRITE_METHODS))),
+        	    Map.entry("HR_MANAGER", Map.ofEntries(
+        	    	Map.entry("shifts", BASIC_WRITE_METHODS),
+        	    	Map.entry("/shiftPlannings", BASIC_WRITE_METHODS),
+        	    	Map.entry("/shiftReports", BASIC_WRITE_METHODS))),
+        	    Map.entry("DRIVER", Map.ofEntries(
+                	Map.entry("/transportOrders", BASIC_WRITE_METHODS))),
+        	    Map.entry("MAINTENANCE_MANAGER", Map.ofEntries(
+        	    	Map.entry("/workCenters", BASIC_WRITE_METHODS))),
+        	    Map.entry("PRODUCTION_MANAGER", Map.ofEntries(
+            	    Map.entry("/workCenters", BASIC_WRITE_METHODS)))
         	);
 
         
@@ -180,7 +290,26 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/journalEntries", BASIC_READ_METHODS),
         	        Map.entry("/journalItems", BASIC_READ_METHODS),
         	        Map.entry("/ledgerEntries", BASIC_READ_METHODS),
-        	        Map.entry("/logistics-providers", BASIC_READ_METHODS)
+        	        Map.entry("/logistics-providers", BASIC_READ_METHODS),
+        	        Map.entry("/payments", BASIC_READ_METHODS),
+        	        Map.entry("/procurements", BASIC_READ_METHODS),
+        	        Map.entry("/reports", BASIC_READ_METHODS),
+        	        Map.entry("/route", BASIC_READ_METHODS),
+        	        Map.entry("/sales", BASIC_READ_METHODS),
+        	        Map.entry("/salesOrders", BASIC_READ_METHODS),
+        	        Map.entry("/shelves", BASIC_READ_METHODS),
+        	        Map.entry("/shifts", BASIC_READ_METHODS),
+        	        Map.entry("/shiftPlannings", BASIC_READ_METHODS),
+        	        Map.entry("/shiftReports", BASIC_READ_METHODS),
+        	        Map.entry("/shipments", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransfers", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransferItems", BASIC_READ_METHODS),
+        	        Map.entry("/storages", BASIC_READ_METHODS),
+        	        Map.entry("/supplies", BASIC_READ_METHODS),
+        	        Map.entry("/suppliesItems", BASIC_READ_METHODS),
+        	        Map.entry("/taxRates", BASIC_READ_METHODS),
+        	        Map.entry("/vendors", BASIC_READ_METHODS),
+        	        Map.entry("/workCenters", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("FINANCIAL_MANAGER", Map.ofEntries(
         	        Map.entry("/accounts", BASIC_READ_METHODS),
@@ -190,17 +319,33 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
         	        Map.entry("/delivery-items", BASIC_READ_METHODS),
         	        Map.entry("/eventLogs", BASIC_READ_METHODS),
-        	        Map.entry("/itemSales", BASIC_READ_METHODS)
+        	        Map.entry("/itemSales", BASIC_READ_METHODS),
+        	        Map.entry("/payments", BASIC_READ_METHODS),
+        	        Map.entry("/procurements", BASIC_READ_METHODS),
+        	        Map.entry("/productionOrders", BASIC_READ_METHODS),
+        	        Map.entry("/reports", BASIC_READ_METHODS),
+        	        Map.entry("/taxRates", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("ACCOUNTANT", Map.ofEntries(
         	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
         	        Map.entry("/delivery-items", BASIC_READ_METHODS),
-        	        Map.entry("/eventLogs", BASIC_READ_METHODS)
+        	        Map.entry("/eventLogs", BASIC_READ_METHODS),
+        	        Map.entry("/products", BASIC_READ_METHODS),
+        	        Map.entry("/productionOrders", BASIC_READ_METHODS),
+        	        Map.entry("/rawMaterials", BASIC_READ_METHODS),
+        	        Map.entry("/route", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransfers", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransferItems", BASIC_READ_METHODS),
+        	        Map.entry("/supplies", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("PRODUCTION_PLANNER", Map.ofEntries(
         	        Map.entry("/barCodes", BASIC_READ_METHODS),
         	        Map.entry("/delivery-items", BASIC_READ_METHODS),
-        	        Map.entry("/goods", BASIC_READ_METHODS)
+        	        Map.entry("/goods", BASIC_READ_METHODS),
+        	        Map.entry("/shelves", BASIC_READ_METHODS),
+        	        Map.entry("/shifts", BASIC_READ_METHODS),
+        	        Map.entry("/shiftPlannings", BASIC_READ_METHODS),
+        	        Map.entry("/storages", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("QUALITY_MANAGER", Map.ofEntries(
         	        Map.entry("/barCodes", BASIC_READ_METHODS),
@@ -211,7 +356,20 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/inventories", BASIC_READ_METHODS),
         	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
         	        Map.entry("/delivery-items", BASIC_READ_METHODS),
-        	        Map.entry("/inventoryItems", BASIC_READ_METHODS)
+        	        Map.entry("/inventoryItems", BASIC_READ_METHODS),
+        	        Map.entry("/materials", BASIC_READ_METHODS),
+        	        Map.entry("/materialMovements", BASIC_READ_METHODS),
+        	        Map.entry("/materialRequests", BASIC_READ_METHODS),
+        	        Map.entry("/materialRequirements", BASIC_READ_METHODS),
+        	        Map.entry("/materialTransactions", BASIC_READ_METHODS),
+        	        Map.entry("/salesOrders", BASIC_READ_METHODS),
+        	        Map.entry("/shelves", BASIC_READ_METHODS),
+        	        Map.entry("/shiftReports", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransfers", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransferItems", BASIC_READ_METHODS),
+        	        Map.entry("/storages", BASIC_READ_METHODS),
+        	        Map.entry("/supplies", BASIC_READ_METHODS),
+        	        Map.entry("/workCenters", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("INVENTORY_MANAGER", Map.ofEntries(
         	        Map.entry("/billOfMaterials", BASIC_READ_METHODS),
@@ -224,7 +382,14 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/drivers", BASIC_READ_METHODS),
         	        Map.entry("/invoices", BASIC_READ_METHODS),
         	        Map.entry("/itemSales", BASIC_READ_METHODS),
-        	        Map.entry("/logistics-providers", BASIC_READ_METHODS)
+        	        Map.entry("/logistics-providers", BASIC_READ_METHODS),
+        	        Map.entry("/materials", BASIC_READ_METHODS),
+        	        Map.entry("/materialMovements", BASIC_READ_METHODS),
+        	        Map.entry("/reports", BASIC_READ_METHODS),
+        	        Map.entry("/route", BASIC_READ_METHODS),
+        	        Map.entry("/sales", BASIC_READ_METHODS),
+        	        Map.entry("/supplies", BASIC_READ_METHODS),
+        	        Map.entry("/suppliesItems", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("SECURITY_AUDITOR", Map.ofEntries(
         	        Map.entry("/buyers", BASIC_READ_METHODS),
@@ -244,20 +409,55 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/journalEntries", BASIC_READ_METHODS),
         	        Map.entry("/journalItems", BASIC_READ_METHODS),
         	        Map.entry("/ledgerEntries", BASIC_READ_METHODS),
-        	        Map.entry("/logistics-providers", BASIC_READ_METHODS)
+        	        Map.entry("/logistics-providers", BASIC_READ_METHODS),
+        	        Map.entry("/payments", BASIC_READ_METHODS),
+        	        Map.entry("/procurements", BASIC_READ_METHODS),
+        	        Map.entry("/reports", BASIC_READ_METHODS),
+        	        Map.entry("/route", BASIC_READ_METHODS),
+        	        Map.entry("/sales", BASIC_READ_METHODS),
+        	        Map.entry("/salesOrders", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransfers", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransferItems", BASIC_READ_METHODS),
+        	        Map.entry("/supplies", BASIC_READ_METHODS),
+        	        Map.entry("/suppliesItems", BASIC_READ_METHODS),
+        	        Map.entry("/vendors", BASIC_READ_METHODS),
+        	        Map.entry("/workCenters", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("STORAGE_FOREMAN", Map.ofEntries(
         	        Map.entry("/capacityPlannings", BASIC_READ_METHODS),
         	        Map.entry("/delivery-items", BASIC_READ_METHODS),
         	        Map.entry("/drivers", BASIC_READ_METHODS),
-        	        Map.entry("/goods", BASIC_READ_METHODS)
+        	        Map.entry("/goods", BASIC_READ_METHODS),
+        	        Map.entry("/materials", BASIC_READ_METHODS),
+        	        Map.entry("/procurements", BASIC_READ_METHODS),
+        	        Map.entry("/products", BASIC_READ_METHODS),
+        	        Map.entry("/productionOrders", BASIC_READ_METHODS),
+        	        Map.entry("/rawMaterials", BASIC_READ_METHODS),
+        	        Map.entry("/route", BASIC_READ_METHODS),
+        	        Map.entry("/sales", BASIC_READ_METHODS),
+        	        Map.entry("/salesOrders", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransfers", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransferItems", BASIC_READ_METHODS),
+        	        Map.entry("/supplies", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("STORAGE_EMPLOYEE", Map.ofEntries(
         	        Map.entry("/capacityPlannings", BASIC_READ_METHODS),
         	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
         	        Map.entry("/delivery-items", BASIC_READ_METHODS),
         	        Map.entry("/drivers", BASIC_READ_METHODS),
-        	        Map.entry("/goods", BASIC_READ_METHODS)
+        	        Map.entry("/goods", BASIC_READ_METHODS),
+        	        Map.entry("/materials", BASIC_READ_METHODS),
+        	        Map.entry("/materialMovements", BASIC_READ_METHODS),
+        	        Map.entry("/materialRequests", BASIC_READ_METHODS),
+        	        Map.entry("/materialRequirements", BASIC_READ_METHODS),
+        	        Map.entry("/materialTransactions", BASIC_READ_METHODS),
+        	        Map.entry("/products", BASIC_READ_METHODS),
+        	        Map.entry("/productionOrders", BASIC_READ_METHODS),
+        	        Map.entry("/rawMaterials", BASIC_READ_METHODS),
+        	        Map.entry("/reports", BASIC_READ_METHODS),
+        	        Map.entry("/route", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransfers", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransferItems", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("MANAGER", Map.ofEntries(
         	        Map.entry("/confirmationDocuments", BASIC_READ_METHODS),
@@ -267,14 +467,39 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	    Map.entry("PROCUREMENT", Map.ofEntries(
         	        Map.entry("/goods", BASIC_READ_METHODS),
         	        Map.entry("/invoices", BASIC_READ_METHODS),
-        	        Map.entry("/itemSales", BASIC_READ_METHODS)
+        	        Map.entry("/itemSales", BASIC_READ_METHODS),
+        	        Map.entry("/payments", BASIC_READ_METHODS),
+        	        Map.entry("/sales", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransfers", BASIC_READ_METHODS),
+        	        Map.entry("/stockTransferItems", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("CUSTOMER_SERVICE", Map.ofEntries(
         	        Map.entry("/invoices", BASIC_READ_METHODS),
-        	        Map.entry("/logistics-providers", BASIC_READ_METHODS)
+        	        Map.entry("/logistics-providers", BASIC_READ_METHODS),
+        	        Map.entry("/payments", BASIC_READ_METHODS),
+        	        Map.entry("/shipments", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("SALES", Map.ofEntries(
-        	    	Map.entry("/logistics-providers", BASIC_READ_METHODS)))
+        	    	Map.entry("/logistics-providers", BASIC_READ_METHODS),
+        	    	Map.entry("/rawMaterials", BASIC_READ_METHODS),
+        	    	Map.entry("/reports", BASIC_READ_METHODS),
+        	    	Map.entry("/route", BASIC_READ_METHODS))),
+        	    Map.entry("LOGISTICS_MANAGER", Map.ofEntries(
+        	    	Map.entry("/route", BASIC_READ_METHODS))),
+        	    Map.entry("DISPATCHER", Map.ofEntries(
+            	    Map.entry("routes", BASIC_READ_METHODS),
+            	    Map.entry("/shipments", BASIC_READ_METHODS),
+            	    Map.entry("/trackingInfos", BASIC_READ_METHODS),
+            	    Map.entry("/vehicles", BASIC_READ_METHODS))),
+            	Map.entry("SALES_MANAGER", Map.ofEntries(
+            		Map.entry("/salesOrders", BASIC_READ_METHODS))),
+            	Map.entry("HR_MANAGER", Map.ofEntries(
+            	    Map.entry("/shifts", BASIC_READ_METHODS))),
+            	Map.entry("DRIVER", Map.ofEntries(
+                	Map.entry("/transportOrders", BASIC_READ_METHODS),
+                	Map.entry("/vehicles", BASIC_READ_METHODS))),
+            	Map.entry("MECHANIC", Map.ofEntries(
+            		Map.entry("/vehicles", BASIC_READ_METHODS)))
         	);
 
 
