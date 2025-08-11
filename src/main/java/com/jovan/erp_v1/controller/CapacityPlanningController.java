@@ -77,7 +77,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/workCenterName")
+    @GetMapping("/work-center-name")
     public ResponseEntity<List<CapacityPlanningResponse>> findByWorkCenter_NameContainingIgnoreCase(
             @RequestParam("name") String name) {
         List<CapacityPlanningResponse> responses = capacityPlanningService
@@ -86,7 +86,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/workCenterLocation")
+    @GetMapping("/work-center-location")
     public ResponseEntity<List<CapacityPlanningResponse>> findByWorkCenter_LocationContainingIgnoreCase(
             @RequestParam("location") String location) {
         List<CapacityPlanningResponse> responses = capacityPlanningService
@@ -112,7 +112,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/date-greaterThan")
+    @GetMapping("/date-greater-than")
     public ResponseEntity<List<CapacityPlanningResponse>> findByDateGreaterThanEqual(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findByDateGreaterThanEqual(date);
@@ -120,7 +120,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/by-availableCapacity")
+    @GetMapping("/by-available-capacity")
     public ResponseEntity<List<CapacityPlanningResponse>> findByAvailableCapacity(
             @RequestParam("availableCapacity") BigDecimal availableCapacity) {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findByAvailableCapacity(availableCapacity);
@@ -128,7 +128,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/availableCapacityGreaterThan")
+    @GetMapping("/available-capacity-greater-than")
     public ResponseEntity<List<CapacityPlanningResponse>> findByAvailableCapacityGreaterThan(
             @RequestParam("availableCapacity") BigDecimal availableCapacity) {
         List<CapacityPlanningResponse> responses = capacityPlanningService
@@ -137,7 +137,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/availableCapacityLessThan")
+    @GetMapping("/available-capacity-less-than")
     public ResponseEntity<List<CapacityPlanningResponse>> findByAvailableCapacityLessThan(
             @RequestParam("availableCapacity") BigDecimal availableCapacity) {
         List<CapacityPlanningResponse> responses = capacityPlanningService
@@ -146,7 +146,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/by-plannedLoad")
+    @GetMapping("/by-planned-load")
     public ResponseEntity<List<CapacityPlanningResponse>> findByPlannedLoad(
             @RequestParam("plannedLoad") BigDecimal plannedLoad) {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findByPlannedLoad(plannedLoad);
@@ -154,7 +154,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/plannedLoadGreaterThan")
+    @GetMapping("/planned-load-greater-than")
     public ResponseEntity<List<CapacityPlanningResponse>> findByPlannedLoadGreaterThan(
             @RequestParam("plannedLoad") BigDecimal plannedLoad) {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findByPlannedLoadGreaterThan(plannedLoad);
@@ -162,7 +162,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/plannedLoadLessThan")
+    @GetMapping("/planned-load-less-than")
     public ResponseEntity<List<CapacityPlanningResponse>> findByPlannedLoadLessThan(
             @RequestParam("plannedLoad") BigDecimal plannedLoad) {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findByPlannedLoadLessThan(plannedLoad);
@@ -170,7 +170,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/plannedLoad-availableCapacity")
+    @GetMapping("/planned-load-available-capacity")
     public ResponseEntity<List<CapacityPlanningResponse>> findByPlannedLoadAndAvailableCapacity(
             @RequestParam("plannedLoad") BigDecimal plannedLoad,
             @RequestParam("availableCapacity") BigDecimal availableCapacity) {
@@ -180,7 +180,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/remainingCapacity")
+    @GetMapping("/remaining-capacity")
     public ResponseEntity<List<CapacityPlanningResponse>> findByRemainingCapacity(
             @RequestParam("remainingCapacity") BigDecimal remainingCapacity) {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findByRemainingCapacity(remainingCapacity);
@@ -188,7 +188,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/remainingLessThan")
+    @GetMapping("/remaining-less-than")
     public ResponseEntity<List<CapacityPlanningResponse>> findWhereRemainingCapacityIsLessThanAvailableCapacity() {
         List<CapacityPlanningResponse> responses = capacityPlanningService
                 .findWhereRemainingCapacityIsLessThanAvailableCapacity();
@@ -196,7 +196,7 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/remainingGreaterThan")
+    @GetMapping("/remaining-greater-than")
     public ResponseEntity<List<CapacityPlanningResponse>> findWhereRemainingCapacityIsGreaterThanAvailableCapacity() {
         List<CapacityPlanningResponse> responses = capacityPlanningService
                 .findWhereRemainingCapacityIsGreaterThanAvailableCapacity();
@@ -204,21 +204,21 @@ public class CapacityPlanningController {
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/allOrderByUtilizationDesc")
+    @GetMapping("/all-orderBy-utilization-desc")
     public ResponseEntity<List<CapacityPlanningResponse>> findAllOrderByUtilizationDesc() {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findAllOrderByUtilizationDesc();
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/loadExceedsCapacity")
+    @GetMapping("/load-exceeds-capacity")
     public ResponseEntity<List<CapacityPlanningResponse>> findWhereLoadExceedsCapacity() {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findWhereLoadExceedsCapacity();
         return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
-    @GetMapping("/utilizationGreaterThan")
+    @GetMapping("/utilization-greater-than")
     public ResponseEntity<List<CapacityPlanningResponse>> findByUtilizationGreaterThan(
             @RequestParam("threshold") BigDecimal threshold) {
         List<CapacityPlanningResponse> responses = capacityPlanningService.findByUtilizationGreaterThan(threshold);

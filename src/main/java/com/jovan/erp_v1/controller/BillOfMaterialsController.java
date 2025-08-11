@@ -194,8 +194,8 @@ public class BillOfMaterialsController {
     	return ResponseEntity.ok(responses);	
     }
     
-    @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_READ_ACCESS)
-    @GetMapping("/delete-parent/{parentProductId}")
+    @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_FULL_ACCESS)
+    @DeleteMapping("/delete-parent/{parentProductId}")
     public ResponseEntity<Void> deleteByParentProductId(@PathVariable Long parentProductId){
     	billOfMaterialsService.deleteByParentProductId(parentProductId);
     	return ResponseEntity.noContent().build();	

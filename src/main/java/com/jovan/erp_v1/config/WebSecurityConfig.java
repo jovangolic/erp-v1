@@ -44,26 +44,6 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         private final UserDetailsService userDetailsService;
         private final PasswordEncoder passwordEncoder;
         private final CustomAccessDeniedHandler accessDeniedHandler;
-
-        private static final String[] STORAGE_EMPLOYEE_ENDPOINTS = {
-                        "/vendor/**", "/goods/**", "/invoice/**", "/storage/**",
-                        "/rawMaterial/**", "/confirmationDocument/**",
-                        "/sales/**", "/supply/**", "/salesOrder/**",
-                        "/inventory/**", "/inventoryItems/**", "/driver/**", "/vehicle/**", ",deliveryItem/**",
-                        "/logisticsProvider/**", "inboundDelivery/**", "outboundDelivery/**",
-                        "shipment/**", "stockTransfer/**", "stockTransferItem", "/transportOrder/**"
-        };
-
-        private static final String[] STORAGE_FOREMAN_ENDPOINTS = {
-                        "/buyer/**", "/confirmationDocument/**", "/goods/**", "/invoice/**",
-                        "/itemSales/**", "/payment/**", "/product/**", "/procurement/**",
-                        "/rawMaterial/**", "/sales/**", "/salesOrder/**", "/storage/**",
-                        "/supply/**", "/supplyitem/**", "/vendor/**", "/shift/**",
-                        "/shiftReport/**", "/inventory/**", "/inventoryItems/**", "/shelf/**", "/driver/**",
-                        "/vehicle/**",
-                        ",deliveryItem/**", "/logisticsProvider/**", "inboundDelivery/**", "outboundDelivery/**",
-                        "shipment/**", "stockTransfer/**", "stockTransferItem/**", "/transportOrder/**"
-        };
         
         private static final List<String> ALL_HTTP_METHODS = List.of("GET:/**","POST:/**","PUT:/**","DELETE:/**","PATCH:/**","OPTIONS:/**","HEAD:/**","TRACE:/**");
         private static final List<String> BASIC_WRITE_METHODS = List.of("POST:/**","PUT:/**","DELETE:/**","GET:/**");
@@ -533,34 +513,43 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                                                 .accessDeniedHandler(accessDeniedHandler))
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .authorizeHttpRequests(auth -> auth
-      
-                                                .requestMatchers("/auth/login", "/users/create-superadmin").permitAll()
-                                                .requestMatchers("/auth/register").hasRole("ADMIN")
+                                .authorizeHttpRequests(auth -> {
+                                                auth.requestMatchers("/auth/login", "/users/create-superadmin").permitAll();
+                                                auth.requestMatchers("/auth/register").hasRole("ADMIN");
 
-                                                .requestMatchers("/admin/**", "/users/create-admin/**")
-                                                .hasRole("SUPERADMIN")
-                                                .requestMatchers("/user/**", "/role/**", "/users/admin/**")
-                                                .hasRole("ADMIN")
-                                                .requestMatchers("/email/**").hasRole("ADMIN")
-                                                .requestMatchers("/email/**").hasRole("SUPERADMIN")
-                                                .requestMatchers("/companyEmail/**").hasRole("ADMIN")
-                                                .requestMatchers("/email/**").hasRole("SUPERADMIN")
-                                                .requestMatchers("/journalEntries/**", "/ledgerEntries/**",
-                                                                "/incomeStatements/**",
-                                                                "/fiscalYears/**", "/fiscalQuarters/**",
-                                                                "/balanceSheets/**",
-                                                                "/accounts/**", "/journalItems/**", "/taxRates/**")
-                                                .hasAnyRole("ADMIN", "SUPERADMIN")
-                                                .requestMatchers(STORAGE_EMPLOYEE_ENDPOINTS).hasRole("STORAGE_EMPLOYEE")
-                                                .requestMatchers(STORAGE_FOREMAN_ENDPOINTS).hasRole("STORAGE_FOREMAN")
+                                                auth.requestMatchers("/admin/**", "/users/create-admin/**","/companyEmail/**","/email/**")
+                                                .hasRole("SUPERADMIN");
+                                                auth.requestMatchers("/user/**", "/role/**", "/users/admin/**","/email/**").hasRole("ADMIN");
                                                 
-                                                .anyRequest().authenticated())
+                                                WRITE_ACCESS.forEach((role, endpoints) -> {
+                                                    endpoints.forEach((pattern, methods) -> {
+                                                        methods.forEach(method -> {
+                                                            String[] split = method.split(":");
+                                                            String httpMethod = split[0];
+                                                            String path = split[1];
+                                                            auth.requestMatchers(HttpMethod.valueOf(httpMethod), path)
+                                                                .hasRole(role);
+                                                        });
+                                                    });
+                                                });
+
+                                                READ_ACCESS.forEach((role, endpoints) -> {
+                                                    endpoints.forEach((pattern, methods) -> {
+                                                        methods.forEach(method -> {
+                                                            String[] split = method.split(":");
+                                                            String httpMethod = split[0];
+                                                            String path = split[1];
+                                                            auth.requestMatchers(HttpMethod.valueOf(httpMethod), path)
+                                                                .hasRole(role);
+                                                        });
+                                                    });
+                                                });
+                                                auth.anyRequest().authenticated();
+                                })
                                 .logout(logout -> logout
                                                 .logoutSuccessHandler(
                                                                 (request, response, authentication) -> response
                                                                                 .setStatus(HttpServletResponse.SC_OK)));
-
                 http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
                 return http.build();
         }

@@ -38,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('SUPERADMIN','ADMIN')")
 public class AuthController {
 
     private final IUserService userService;
