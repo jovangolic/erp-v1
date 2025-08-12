@@ -82,7 +82,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/productionOrder-order-number")
+    @GetMapping("/production-order-order-number")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_OrderNumberContainingIgnoreCase(
             @RequestParam("orderNumber") String orderNumber) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -91,7 +91,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/productionOrder/product/{productId}")
+    @GetMapping("/production-order/product/{productId}")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_Product_Id(
             @PathVariable Long productId) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -100,7 +100,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/productionOrder-quantity-planned")
+    @GetMapping("/production-order-quantity-planned")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_QuantityPlanned(
             @RequestParam("quantityPlanned") Integer quantityPlanned) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -109,7 +109,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/productionOrder-quantity-planned-less-than")
+    @GetMapping("/production-order-quantity-planned-less-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_QuantityPlannedLessThan(
             @RequestParam("quantityPlanned") Integer quantityPlanned) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -118,7 +118,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/productionOrder-quantity-planned-greater-than")
+    @GetMapping("/production-order-quantity-planned-greater-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_QuantityPlannedGreaterThan(
             @RequestParam("quantityPlanned") Integer quantityPlanned) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -127,16 +127,32 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/productionOrder-quantity-produced")
+    @GetMapping("/production-order-quantity-produced")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_QuantityProduced(
             @RequestParam("quantityProduced") Integer quantityProduced) {
         List<MaterialRequirementResponse> responses = materialRequirementService
                 .findByProductionOrder_QuantityProduced(quantityProduced);
         return ResponseEntity.ok(responses);
     }
+    
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
+    @GetMapping("/production-order-quantity-produced-greater-than")
+    public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_QuantityProducedGreaterThan(
+            @RequestParam("quantityProduced") Integer quantityProduced){
+    	List<MaterialRequirementResponse> responses = materialRequirementService.findByProductionOrder_QuantityProducedGreaterThan(quantityProduced);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
+    @GetMapping("/production-order-quantity-produced-less-than")
+    public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_QuantityProducedLessThan(
+            @RequestParam("quantityProduced") Integer quantityProduced){
+    	List<MaterialRequirementResponse> responses = materialRequirementService.findByProductionOrder_QuantityProducedLessThan(quantityProduced);
+    	return ResponseEntity.ok(responses);
+    }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/productionOrder-startDate")
+    @GetMapping("/production-order-startDate")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_StartDate(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -145,7 +161,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/productionOrder-endDate")
+    @GetMapping("/production-order-endDate")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_EndDate(
             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         List<MaterialRequirementResponse> responses = materialRequirementService.findByProductionOrder_EndDate(endDate);
@@ -153,7 +169,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/productionOrder-status")
+    @GetMapping("/production-order-status")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_Status(
             @RequestParam("status") ProductionOrderStatus status) {
         List<MaterialRequirementResponse> responses = materialRequirementService.findByProductionOrder_Status(status);
@@ -161,7 +177,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/productionOrder/workCenter/{workCenterId}")
+    @GetMapping("/production-order/workCenter/{workCenterId}")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_WorkCenter_Id(
             @PathVariable Long workCenterId) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -177,7 +193,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/material-materialCode")
+    @GetMapping("/material-code")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_CodeContainingIgnoreCase(
             @RequestParam("materialCode") String materialCode) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -186,7 +202,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/material-materialName")
+    @GetMapping("/material-name")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_NameContainingIgnoreCase(
             @RequestParam("materialName") String materialName) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -203,7 +219,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/material-currentStock")
+    @GetMapping("/material-current-stock")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_CurrentStock(
             @RequestParam("currentStock") BigDecimal currentStock) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -212,7 +228,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/material-currentStock-less-than")
+    @GetMapping("/material-current-stock-less-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_CurrentStockLessThan(
             @RequestParam("currentStock") BigDecimal currentStock) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -221,7 +237,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/material-currentStock-greater-than")
+    @GetMapping("/material-current-stock-greater-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_CurrentStockGreaterThan(
             @RequestParam("currentStock") BigDecimal currentStock) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -237,12 +253,28 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/material-reorderLevel")
+    @GetMapping("/material-reorder-level")
     public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_ReorderLevel(
             @RequestParam("reorderLevel") BigDecimal reorderLevel) {
         List<MaterialRequirementResponse> responses = materialRequirementService
                 .findByMaterial_ReorderLevel(reorderLevel);
         return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
+    @GetMapping("/material-reorder-level-greater-than")
+    public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_ReorderLevelGreaterThan(
+            @RequestParam("reorderLevel") BigDecimal reorderLevel){
+    	List<MaterialRequirementResponse> responses = materialRequirementService.findByMaterial_ReorderLevelGreaterThan(reorderLevel);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
+    @GetMapping("/material-reorder-level-less-than")
+    public ResponseEntity<List<MaterialRequirementResponse>> findByMaterial_ReorderLevelLessThan(
+            @RequestParam("reorderLevel") BigDecimal reorderLevel){
+    	List<MaterialRequirementResponse> responses = materialRequirementService.findByMaterial_ReorderLevelLessThan(reorderLevel);
+    	return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
@@ -254,7 +286,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/material-requiredQuantity")
+    @GetMapping("/material-required-quantity")
     public ResponseEntity<List<MaterialRequirementResponse>> findByRequiredQuantity(
             @RequestParam("requiredQuantity") BigDecimal requiredQuantity) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -263,7 +295,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/material-requiredQuantity-less-than")
+    @GetMapping("/material-required-quantity-less-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByRequiredQuantityLessThan(
             @RequestParam("requiredQuantity") BigDecimal requiredQuantity) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -272,7 +304,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/material-requiredQuantity-greater-than")
+    @GetMapping("/material-required-quantity-greater-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByRequiredQuantityGreaterThan(
             @RequestParam("requiredQuantity") BigDecimal requiredQuantity) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -281,7 +313,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/availableQuantity")
+    @GetMapping("/available-quantity")
     public ResponseEntity<List<MaterialRequirementResponse>> findByAvailableQuantity(
             @RequestParam("availableQuantity") BigDecimal availableQuantity) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -290,7 +322,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/availableQuantity-less-than")
+    @GetMapping("/available-quantity-less-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByAvailableQuantityLessThan(
             @RequestParam("availableQuantity") BigDecimal availableQuantity) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -299,7 +331,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/availableQuantity-greater-than")
+    @GetMapping("/available-quantity-greater-than")
     public ResponseEntity<List<MaterialRequirementResponse>> findByAvailableQuantityGreaterThan(
             @RequestParam("availableQuantity") BigDecimal availableQuantity) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -308,7 +340,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/requirementDate")
+    @GetMapping("/requirement-date")
     public ResponseEntity<List<MaterialRequirementResponse>> findByRequirementDate(
             @RequestParam("requirementDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate requirementDate) {
         List<MaterialRequirementResponse> responses = materialRequirementService.findByRequirementDate(requirementDate);
@@ -326,7 +358,7 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/requirementDate-greater-than=equal")
+    @GetMapping("/requirement-date-greater-than-equal")
     public ResponseEntity<List<MaterialRequirementResponse>> findByRequirementDateGreaterThanEqual(
             @RequestParam("requirementDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate requirementDate) {
         List<MaterialRequirementResponse> responses = materialRequirementService
@@ -335,9 +367,9 @@ public class MaterialRequirementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUIREMENT_READ_ACCESS)
-    @GetMapping("/productionOrder-orderNumber-materialCode")
+    @GetMapping("/production-order/order-number-and-material-code")
     public ResponseEntity<List<MaterialRequirementResponse>> findByProductionOrder_OrderNumberContainingIgnoreCaseAndMaterial_CodeContainingIgnoreCase(
-            @RequestParam("") String orderNumber, @RequestParam("materialCode") String materialCode) {
+            @RequestParam("orderNumber") String orderNumber, @RequestParam("materialCode") String materialCode) {
         List<MaterialRequirementResponse> responses = materialRequirementService
                 .findByProductionOrder_OrderNumberContainingIgnoreCaseAndMaterial_CodeContainingIgnoreCase(orderNumber,
                         materialCode);

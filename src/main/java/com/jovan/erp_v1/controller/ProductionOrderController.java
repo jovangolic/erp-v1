@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.ProductionOrderStatus;
+import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
@@ -66,7 +67,13 @@ public class ProductionOrderController {
         ProductionOrderResponse response = productionOrderService.findOne(id);
         return ResponseEntity.ok(response);
     }
-
+    
+    @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
+    @GetMapping("/find-all")
+    public ResponseEntity<List<ProductionOrderResponse>> findAll(){
+    	List<ProductionOrderResponse> response = productionOrderService.findAll();
+    	return ResponseEntity.ok(response);
+    }
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
     @GetMapping("/find-by-order-number")
     public ResponseEntity<ProductionOrderResponse> findByOrderNumber(@RequestParam("orderNumber") String orderNumber) {
@@ -82,7 +89,7 @@ public class ProductionOrderController {
     }
 
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/by-productName")
+    @GetMapping("/by-product-name")
     public ResponseEntity<List<ProductionOrderResponse>> findByProduct_NameContainingIgnoreCase(
             @RequestParam("name") String name) {
         List<ProductionOrderResponse> response = productionOrderService.findByProduct_NameContainingIgnoreCase(name);
@@ -90,7 +97,7 @@ public class ProductionOrderController {
     }
 
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/by-productQuantity")
+    @GetMapping("/by-product-quantity")
     public ResponseEntity<List<ProductionOrderResponse>> findByProduct_CurrentQuantity(
             @RequestParam("currentQuantity") BigDecimal currentQuantity) {
         List<ProductionOrderResponse> response = productionOrderService.findByProduct_CurrentQuantity(currentQuantity);
@@ -113,7 +120,7 @@ public class ProductionOrderController {
     }
 
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/by-workCenterName")
+    @GetMapping("/by-work-cente-name")
     public ResponseEntity<List<ProductionOrderResponse>> findByWorkCenter_NameContainingIgnoreCase(
             @RequestParam("name") String name) {
         List<ProductionOrderResponse> response = productionOrderService.findByWorkCenter_NameContainingIgnoreCase(name);
@@ -121,7 +128,7 @@ public class ProductionOrderController {
     }
 
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/by-workCenter-location")
+    @GetMapping("/by-work-center-location")
     public ResponseEntity<List<ProductionOrderResponse>> findByWorkCenter_LocationContainingIgnoreCase(
             @RequestParam("location") String location) {
         List<ProductionOrderResponse> response = productionOrderService
@@ -130,7 +137,7 @@ public class ProductionOrderController {
     }
 
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/by-workCenter-capacity")
+    @GetMapping("/by-work-center-capacity")
     public ResponseEntity<List<ProductionOrderResponse>> findByWorkCenter_Capacity(
             @RequestParam("capacity") Integer capacity) {
         List<ProductionOrderResponse> response = productionOrderService.findByWorkCenter_Capacity(capacity);
@@ -138,7 +145,7 @@ public class ProductionOrderController {
     }
 
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/by-workCenter-capacityGreaterThan")
+    @GetMapping("/work-center-capacity-greater-than")
     public ResponseEntity<List<ProductionOrderResponse>> findByWorkCenter_CapacityGreaterThan(
             @RequestParam("capacity") Integer capacity) {
         List<ProductionOrderResponse> response = productionOrderService.findByWorkCenter_CapacityGreaterThan(capacity);
@@ -146,7 +153,7 @@ public class ProductionOrderController {
     }
 
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/by-workCenter-capacityLessThan")
+    @GetMapping("/work-center-capacity-less-than")
     public ResponseEntity<List<ProductionOrderResponse>> findByWorkCenter_CapacityLessThan(
             @RequestParam("capacity") Integer capacity) {
         List<ProductionOrderResponse> response = productionOrderService.findByWorkCenter_CapacityLessThan(capacity);
@@ -154,7 +161,7 @@ public class ProductionOrderController {
     }
 
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/by-quantityPlanned")
+    @GetMapping("/by-quantity-planned")
     public ResponseEntity<List<ProductionOrderResponse>> findByQuantityPlanned(
             @RequestParam("quantityPlanned") Integer quantityPlanned) {
         List<ProductionOrderResponse> response = productionOrderService.findByQuantityPlanned(quantityPlanned);
@@ -162,7 +169,7 @@ public class ProductionOrderController {
     }
 
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/by-quantityProduced")
+    @GetMapping("/by-quantity-produced")
     public ResponseEntity<List<ProductionOrderResponse>> findByQuantityProduced(
             @RequestParam("quantityProduced") Integer quantityProduced) {
         List<ProductionOrderResponse> response = productionOrderService.findByQuantityProduced(quantityProduced);
@@ -170,7 +177,7 @@ public class ProductionOrderController {
     }
 
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/date-range")
+    @GetMapping("/start-date-range")
     public ResponseEntity<List<ProductionOrderResponse>> findByStartDateBetween(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
@@ -195,7 +202,7 @@ public class ProductionOrderController {
     }
 
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/searchOrders")
+    @GetMapping("/search-orders")
     public ResponseEntity<List<ProductionOrderResponse>> searchOrders(@RequestParam("productName") String productName,
             @RequestParam("workCenterName") String workCenterName,
             @RequestParam("startDateFrom") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDateFrom,
@@ -215,7 +222,7 @@ public class ProductionOrderController {
     }
 
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/search-ordersWith-date-after-equal")
+    @GetMapping("/search/orders-with-date-after-equal")
     public ResponseEntity<List<ProductionOrderResponse>> findOrdersWithStartDateAfterOrEqual(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
         List<ProductionOrderResponse> response = productionOrderService.findOrdersWithStartDateAfterOrEqual(startDate);
@@ -252,7 +259,7 @@ public class ProductionOrderController {
     }
     
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/search/product-current-less-greater-")
+    @GetMapping("/search/product-current-quantity-less-than")
     public ResponseEntity<List<ProductionOrderResponse>> findByProduct_CurrentQuantityLessThan(@RequestParam("currentQuantity") BigDecimal currentQuantity){
     	List<ProductionOrderResponse> response = productionOrderService.findByProduct_CurrentQuantityLessThan(currentQuantity);
     	return ResponseEntity.ok(response);
@@ -280,6 +287,13 @@ public class ProductionOrderController {
     }
     
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
+    @GetMapping("/search/product-storage-status")
+    public ResponseEntity<List<ProductionOrderResponse>> findByProduct_StorageStatus(@RequestParam("storageStatus") StorageStatus storageStatus){
+    	List<ProductionOrderResponse> response = productionOrderService.findByProduct_StorageStatus(storageStatus);
+    	return ResponseEntity.ok(response);
+    }
+    
+    @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
     @GetMapping("/search/product/{storageId}")
     public ResponseEntity<List<ProductionOrderResponse>> findByProduct_StorageId(@PathVariable Long storageId){
     	List<ProductionOrderResponse> response = productionOrderService.findByProduct_StorageId(storageId);
@@ -287,7 +301,7 @@ public class ProductionOrderController {
     }
     
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/searech/product-storage-name")
+    @GetMapping("/search/product-storage-name")
     public ResponseEntity<List<ProductionOrderResponse>> findByProduct_StorageNameContainingIgnoreCase(@RequestParam("storageName") String storageName){
     	List<ProductionOrderResponse> response = productionOrderService.findByProduct_StorageNameContainingIgnoreCase(storageName);
     	return ResponseEntity.ok(response);
@@ -322,7 +336,7 @@ public class ProductionOrderController {
     }
     
     @PreAuthorize(RoleGroups.PRODUCTION_ORDER_READ_ACCESS)
-    @GetMapping("/searc/product/supply/{supplyId}")
+    @GetMapping("/search/product/supply/{supplyId}")
     public ResponseEntity<List<ProductionOrderResponse>> findByProduct_SupplyId(@PathVariable Long supplyId){
     	List<ProductionOrderResponse> response = productionOrderService.findByProduct_SupplyId(supplyId);
     	return ResponseEntity.ok(response);

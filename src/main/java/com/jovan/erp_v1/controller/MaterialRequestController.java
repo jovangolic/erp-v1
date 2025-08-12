@@ -71,7 +71,7 @@ public class MaterialRequestController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
-    @GetMapping("/workCenter-name")
+    @GetMapping("/work-center-name")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestingWorkCenter_NameContainingIgnoreCase(
             @RequestParam("workCenterName") String workCenterName) {
         List<MaterialRequestResponse> responses = materialRequestService
@@ -80,7 +80,7 @@ public class MaterialRequestController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
-    @GetMapping("/workCenter-location")
+    @GetMapping("/work-center-location")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestingWorkCenter_LocationContainingIgnoreCase(
             @RequestParam("workCenterLocation") String workCenterLocation) {
         List<MaterialRequestResponse> responses = materialRequestService
@@ -89,7 +89,7 @@ public class MaterialRequestController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
-    @GetMapping("/workCenter-capacity")
+    @GetMapping("/work-center-capacity")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestingWorkCenter_Capacity(
             @RequestParam("workCenterCapacity") BigDecimal workCenterCapacity) {
         List<MaterialRequestResponse> responses = materialRequestService
@@ -98,7 +98,7 @@ public class MaterialRequestController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
-    @GetMapping("/workCenter-capacity-greater-than")
+    @GetMapping("/work-center-capacity-greater-than")
     public ResponseEntity<List<MaterialRequestResponse>> findByRequestingWorkCenter_CapacityGreaterThan(
             @RequestParam("workCenterCapacity") BigDecimal workCenterCapacity) {
         List<MaterialRequestResponse> responses = materialRequestService
@@ -169,7 +169,7 @@ public class MaterialRequestController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
-    @GetMapping("/material-currentStock")
+    @GetMapping("/material-current-stock")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_CurrentStock(
             @RequestParam("currentStock") BigDecimal currentStock) {
         List<MaterialRequestResponse> responses = materialRequestService.findByMaterial_CurrentStock(currentStock);
@@ -177,7 +177,7 @@ public class MaterialRequestController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
-    @GetMapping("/material-currentStock-lessThan")
+    @GetMapping("/material-current-stock-less-than")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_CurrentStockLessThan(
             @RequestParam("currentStock") BigDecimal currentStock) {
         List<MaterialRequestResponse> responses = materialRequestService
@@ -186,7 +186,7 @@ public class MaterialRequestController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
-    @GetMapping("/material-currentStock-greaterThan")
+    @GetMapping("/material-current-stock-greater-than")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_CurrentStockGreaterThan(
             @RequestParam("currentStock") BigDecimal currentStock) {
         List<MaterialRequestResponse> responses = materialRequestService
@@ -195,11 +195,25 @@ public class MaterialRequestController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
-    @GetMapping("/material-reorderLevel")
+    @GetMapping("/material-reorder-level")
     public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_ReorderLevel(
             @RequestParam("reorderLevel") BigDecimal reorderLevel) {
         List<MaterialRequestResponse> responses = materialRequestService.findByMaterial_ReorderLevel(reorderLevel);
         return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
+    @GetMapping("/material-reorder-level-greater-than")
+    public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_ReorderLevelGreaterThan(@RequestParam("reorderLevel") BigDecimal reorderLevel){
+    	List<MaterialRequestResponse> responses = materialRequestService.findByMaterial_ReorderLevelGreaterThan(reorderLevel);
+    	return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
+    @GetMapping("/material-reorder-level-less-than")
+    public ResponseEntity<List<MaterialRequestResponse>> findByMaterial_ReorderLevelLessThan(@RequestParam("reorderLevel") BigDecimal reorderLevel){
+    	List<MaterialRequestResponse> responses = materialRequestService.findByMaterial_ReorderLevelLessThan(reorderLevel);
+    	return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
@@ -243,7 +257,7 @@ public class MaterialRequestController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
-    @GetMapping("/neededBy")
+    @GetMapping("/needed-by")
     public ResponseEntity<List<MaterialRequestResponse>> findByNeededBy(
             @RequestParam("neededBy") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate neededBy) {
         List<MaterialRequestResponse> responses = materialRequestService.findByNeededBy(neededBy);

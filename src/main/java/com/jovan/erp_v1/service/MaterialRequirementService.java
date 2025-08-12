@@ -208,6 +208,33 @@ public class MaterialRequirementService implements IMaterialRequirementService {
                 .map(MaterialRequirementResponse::new)
                 .collect(Collectors.toList());
     }
+    
+    @Override
+	public List<MaterialRequirementResponse> findByProductionOrder_QuantityProducedGreaterThan(
+			Integer quantityProduced) {
+		validateInteger(quantityProduced);
+		List<MaterialRequirement> items = materialRequirementRepository.findByProductionOrder_QuantityProducedGreaterThan(quantityProduced);
+    	if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequirement for production-order quantity produced greater than %d is found", quantityProduced);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
+                .map(MaterialRequirementResponse::new)
+                .collect(Collectors.toList());
+	}
+
+	@Override
+	public List<MaterialRequirementResponse> findByProductionOrder_QuantityProducedLessThan(Integer quantityProduced) {
+		validateInteger(quantityProduced);
+		List<MaterialRequirement> items = materialRequirementRepository.findByProductionOrder_QuantityProducedGreaterThan(quantityProduced);
+		if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequirement for production-order quantity produced less than %d is found", quantityProduced);
+        	throw new NoDataFoundException(msg);
+        }
+        return items.stream()
+                .map(MaterialRequirementResponse::new)
+                .collect(Collectors.toList());
+	}
 
     @Override
     public List<MaterialRequirementResponse> findByProductionOrder_StartDate(LocalDate startDate) {
@@ -381,6 +408,36 @@ public class MaterialRequirementService implements IMaterialRequirementService {
                 .map(MaterialRequirementResponse::new)
                 .collect(Collectors.toList());
     }
+    
+    @Override
+	public List<MaterialRequirementResponse> findByMaterial_ReorderLevelGreaterThan(BigDecimal reorderLevel) {
+		validateBigDecimal(reorderLevel);
+		List<MaterialRequirement> items = materialRequirementRepository.findByMaterial_ReorderLevelGreaterThan(reorderLevel);
+    	if(items.isEmpty()) {
+        	if(items.isEmpty()) {
+            	String msg = String.format("No MaterialRequirement for material reorder-level greater than %s is found", reorderLevel);
+            	throw new NoDataFoundException(msg);
+            }
+        }
+		return items.stream()
+                .map(MaterialRequirementResponse::new)
+                .collect(Collectors.toList());
+	}
+
+	@Override
+	public List<MaterialRequirementResponse> findByMaterial_ReorderLevelLessThan(BigDecimal reorderLevel) {
+		validateBigDecimalNonNegative(reorderLevel);
+		List<MaterialRequirement> items = materialRequirementRepository.findByMaterial_ReorderLevelLessThan(reorderLevel);
+		if(items.isEmpty()) {
+        	if(items.isEmpty()) {
+            	String msg = String.format("No MaterialRequirement for material reorder-level less than %s is found", reorderLevel);
+            	throw new NoDataFoundException(msg);
+            }
+        }
+		return items.stream()
+                .map(MaterialRequirementResponse::new)
+                .collect(Collectors.toList());
+	}
 
     @Override
     public List<MaterialRequirementResponse> findByStatus(MaterialRequestStatus status) {
@@ -638,6 +695,5 @@ public class MaterialRequirementService implements IMaterialRequirementService {
         if (shortage.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Dostupna količina ne sme biti veća od potrebne.");
         }
-    }
-
+    }	
 }

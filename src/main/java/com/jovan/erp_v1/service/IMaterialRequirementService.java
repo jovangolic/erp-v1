@@ -24,6 +24,8 @@ public interface IMaterialRequirementService {
     List<MaterialRequirementResponse> findByProductionOrder_QuantityPlannedLessThan(Integer quantityPlanned);
     List<MaterialRequirementResponse> findByProductionOrder_QuantityPlannedGreaterThan(Integer quantityPlanned);
     List<MaterialRequirementResponse> findByProductionOrder_QuantityProduced(Integer quantityProduced);
+    List<MaterialRequirementResponse> findByProductionOrder_QuantityProducedGreaterThan(Integer quantityProduced);
+    List<MaterialRequirementResponse> findByProductionOrder_QuantityProducedLessThan(Integer quantityProduced);
     List<MaterialRequirementResponse> findByProductionOrder_StartDate(LocalDate startDate);
     List<MaterialRequirementResponse> findByProductionOrder_EndDate(LocalDate endDate);
     List<MaterialRequirementResponse> findByProductionOrder_Status(ProductionOrderStatus status);
@@ -37,6 +39,8 @@ public interface IMaterialRequirementService {
     List<MaterialRequirementResponse> findByMaterial_CurrentStockGreaterThan(BigDecimal currentStock);
     List<MaterialRequirementResponse> findByMaterial_Storage_Id(Long storageId);
     List<MaterialRequirementResponse> findByMaterial_ReorderLevel(BigDecimal reorderLevel);
+    List<MaterialRequirementResponse> findByMaterial_ReorderLevelGreaterThan(BigDecimal reorderLevel);
+    List<MaterialRequirementResponse> findByMaterial_ReorderLevelLessThan(BigDecimal reorderLevel);
     List<MaterialRequirementResponse> findByStatus(MaterialRequestStatus status);
     List<MaterialRequirementResponse> findByRequiredQuantity(BigDecimal requiredQuantity);
     List<MaterialRequirementResponse> findByRequiredQuantityLessThan(BigDecimal requiredQuantity);

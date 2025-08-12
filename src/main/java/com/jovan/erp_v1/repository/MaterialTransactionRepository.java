@@ -27,6 +27,8 @@ public interface MaterialTransactionRepository extends JpaRepository<MaterialTra
         @Query("SELECT mt FROM MaterialTransaction mt WHERE mt.material.storage.id = :storageId")
         List<MaterialTransaction> findByMaterial_Storage_Id(@Param("storageId") Long storageId);
         List<MaterialTransaction> findByMaterial_ReorderLevel(BigDecimal reorderLevel);
+        List<MaterialTransaction> findByMaterial_ReorderLevelGreaterThan(BigDecimal reorderLevel);
+        List<MaterialTransaction> findByMaterial_ReorderLevelLessThan(BigDecimal reorderLevel);
         List<MaterialTransaction> findByQuantity(BigDecimal quantity);
         List<MaterialTransaction> findByQuantityGreaterThan(BigDecimal quantity);
         List<MaterialTransaction> findByQuantityLessThan(BigDecimal quantity);

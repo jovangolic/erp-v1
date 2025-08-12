@@ -309,6 +309,32 @@ public class MaterialRequestService implements IMaterialRequestService {
                 .map(MaterialRequestResponse::new)
                 .collect(Collectors.toList());
     }
+    
+    @Override
+	public List<MaterialRequestResponse> findByMaterial_ReorderLevelGreaterThan(BigDecimal reorderLevel) {
+		validateBigDecimal(reorderLevel);
+		List<MaterialRequest> items = materialRequestRepository.findByMaterial_ReorderLevelGreaterThan(reorderLevel);
+		if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for material reorder-level greater than %s is found", reorderLevel);
+        	throw new NoDataFoundException(msg);
+        }
+    	return items.stream()
+                .map(MaterialRequestResponse::new)
+                .collect(Collectors.toList());
+	}
+
+	@Override
+	public List<MaterialRequestResponse> findByMaterial_ReorderLevelLessThan(BigDecimal reorderLevel) {
+		validateBigDecimalNonNegative(reorderLevel);
+		List<MaterialRequest> items = materialRequestRepository.findByMaterial_ReorderLevelLessThan(reorderLevel);
+		if(items.isEmpty()) {
+        	String msg = String.format("No MaterialRequest for material reorder-level less than %s is found", reorderLevel);
+        	throw new NoDataFoundException(msg);
+        }
+		return items.stream()
+                .map(MaterialRequestResponse::new)
+                .collect(Collectors.toList());
+	}
 
     @Override
     public List<MaterialRequestResponse> findByMaterial_Storage_Id(Long storageId) {
@@ -497,4 +523,5 @@ public class MaterialRequestService implements IMaterialRequestService {
 			throw new ValidationException("Cost must have at most two decimal places.");
 		}
 	}
+
 }

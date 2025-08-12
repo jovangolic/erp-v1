@@ -31,6 +31,8 @@ public interface MaterialRequestRepository extends JpaRepository<MaterialRequest
     List<MaterialRequest> findByMaterial_CurrentStockLessThan(BigDecimal currentStock);
     List<MaterialRequest> findByMaterial_CurrentStockGreaterThan(BigDecimal currentStock);
     List<MaterialRequest> findByMaterial_ReorderLevel(BigDecimal reorderLevel);
+    List<MaterialRequest> findByMaterial_ReorderLevelGreaterThan(BigDecimal reorderLevel);
+    List<MaterialRequest> findByMaterial_ReorderLevelLessThan(BigDecimal reorderLevel);
     @Query("SELECT mr FROM MaterialRequest mr WHERE mr.material.storage.id = :storageId")
     List<MaterialRequest> findByMaterial_Storage_Id(@Param("storageId") Long storageId);
     List<MaterialRequest> findByRequestDate(LocalDate requestDate);

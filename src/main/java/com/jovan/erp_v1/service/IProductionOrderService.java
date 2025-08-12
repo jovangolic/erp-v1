@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import com.jovan.erp_v1.enumeration.ProductionOrderStatus;
+import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
@@ -49,6 +50,7 @@ public interface IProductionOrderService {
     List<ProductionOrderResponse> findByProduct_UnitMeasure(UnitMeasure unitMeasure);
     List<ProductionOrderResponse> findByProduct_SupplierType(SupplierType supplierType);
     List<ProductionOrderResponse> findByProduct_StorageType(StorageType storageType);
+    List<ProductionOrderResponse> findByProduct_StorageStatus(StorageStatus storageStatus);
     List<ProductionOrderResponse> findByProduct_StorageId( Long storageId);
     List<ProductionOrderResponse> findByProduct_StorageNameContainingIgnoreCase( String storageName);
     List<ProductionOrderResponse> findByProduct_StorageLocationContainingIgnoreCase( String storageLocation);

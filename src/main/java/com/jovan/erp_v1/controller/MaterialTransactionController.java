@@ -79,42 +79,42 @@ public class MaterialTransactionController {
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/material-materialCode")
+	@GetMapping("/material/material-code")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByMaterial_CodeContainingIgnoreCase(@RequestParam("materialCode") String materialCode){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByMaterial_CodeContainingIgnoreCase(materialCode);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/material-materialName")
+	@GetMapping("/material/material-name")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByMaterial_NameContainingIgnoreCase(@RequestParam("materialName") String materialName){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByMaterial_NameContainingIgnoreCase(materialName);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/mayerial-unit")
+	@GetMapping("/material-unit")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByMaterial_Unit(@RequestParam("unit") UnitOfMeasure unit){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByMaterial_Unit(unit);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/material-currentStock")
+	@GetMapping("/material-current-stock")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByMaterial_CurrentStock(@RequestParam("currentStock") BigDecimal currentStock){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByMaterial_CurrentStock(currentStock);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/material-currentStock-greater-than")
+	@GetMapping("/material-current-stock-greater-than")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByMaterial_CurrentStockGreaterThan(@RequestParam("currentStock") BigDecimal currentStock){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByMaterial_CurrentStockGreaterThan(currentStock);
 				return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/material-currentStock-less-than")
+	@GetMapping("/material-current-stock-less-than")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByMaterial_CurrentStockLessThan(@RequestParam("currentStock") BigDecimal currentStock){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByMaterial_CurrentStockLessThan(currentStock);
 		return ResponseEntity.ok(responses);
@@ -128,9 +128,23 @@ public class MaterialTransactionController {
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/material-reorderLevel")
+	@GetMapping("/material-reorder-level")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByMaterial_ReorderLevel(@RequestParam("reorderLevel") BigDecimal reorderLevel){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByMaterial_ReorderLevel(reorderLevel);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
+	@GetMapping("/material-reorder-level-greater-than")
+	public ResponseEntity<List<MaterialTransactionResponse>> findByMaterial_ReorderLevelGreaterThan(@RequestParam("reorderLevel") BigDecimal reorderLevel){
+		List<MaterialTransactionResponse> responses = materialTransactionService.findByMaterial_ReorderLevelGreaterThan(reorderLevel);
+		return ResponseEntity.ok(responses);
+	}
+	
+	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
+	@GetMapping("/material-reorder-level-less-than")
+	public ResponseEntity<List<MaterialTransactionResponse>> findByMaterial_ReorderLevelLessThan(@RequestParam("reorderLevel") BigDecimal reorderLevel){
+		List<MaterialTransactionResponse> responses = materialTransactionService.findByMaterial_ReorderLevelLessThan(reorderLevel);
 		return ResponseEntity.ok(responses);
 	}
 	
@@ -163,14 +177,14 @@ public class MaterialTransactionController {
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/by-transactionDate")
+	@GetMapping("/by-transaction-date")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByTransactionDate(@RequestParam("transactionDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate transactionDate){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByTransactionDate(transactionDate);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/transactionDate-range")
+	@GetMapping("/transaction-date-range")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByTransactionDateBetween(@RequestParam("transactionDateStart") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate transactionDateStart,
             @RequestParam("transactionDateEnd") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate transactionDateEnd){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByTransactionDateBetween(transactionDateStart, transactionDateEnd);
@@ -178,7 +192,7 @@ public class MaterialTransactionController {
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/transactionDate-greater-than-equal")
+	@GetMapping("/transaction-date-greater-than-equal")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByTransactionDateGreaterThanEqual(@RequestParam("transactionDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate transactionDate){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByTransactionDateGreaterThanEqual(transactionDate);
 		return ResponseEntity.ok(responses);
@@ -192,28 +206,28 @@ public class MaterialTransactionController {
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/vendor-vendorName")
+	@GetMapping("/vendor-name")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByVendor_NameContainingIgnoreCase(@RequestParam("vendorName") String vendorName){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByVendor_NameContainingIgnoreCase(vendorName);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/vendor-vendorEmail")
+	@GetMapping("/vendor-email")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByVendor_EmailContainingIgnoreCase(@RequestParam("vendorEmail") String vendorEmail){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByVendor_EmailContainingIgnoreCase(vendorEmail);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/vendor-vendorPhone")
+	@GetMapping("/vendor-phone")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByVendor_PhoneNumber(@RequestParam("vendorPhone") String vendorPhone){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByVendor_PhoneNumber(vendorPhone);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/vendor-vendorAddress")
+	@GetMapping("/vendor-address")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByVendor_AddressContainingIgnoreCase(@RequestParam("vendorAddress") String vendorAddress){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByVendor_AddressContainingIgnoreCase(vendorAddress);
 		return ResponseEntity.ok(responses);
@@ -248,7 +262,7 @@ public class MaterialTransactionController {
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/createdUser-name")
+	@GetMapping("/createdUser-full-name")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByCreatedByUser_FirstNameContainingIgnoreCaseAndCreatedByUser_LastNameContainingIgnoreCase(
 			@RequestParam("userFirstName") String userFirstName,@RequestParam("userLastName") String userLastName){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByCreatedByUser_FirstNameContainingIgnoreCaseAndCreatedByUser_LastNameContainingIgnoreCase(userFirstName, userLastName);
@@ -256,7 +270,7 @@ public class MaterialTransactionController {
 	}
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
-	@GetMapping("/createdByUser-userEmail")
+	@GetMapping("/createdByUser-user-email")
 	public ResponseEntity<List<MaterialTransactionResponse>> findByCreatedByUser_EmailContainingIgnoreCase(@RequestParam("userEmail") String userEmail){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByCreatedByUser_EmailContainingIgnoreCase(userEmail);
 		return ResponseEntity.ok(responses);

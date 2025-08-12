@@ -229,6 +229,32 @@ public class MaterialTransactionService implements IMaterialTransactionService {
         		.map(MaterialTransactionResponse::new)
         		.collect(Collectors.toList());
     }
+    
+    @Override
+	public List<MaterialTransactionResponse> findByMaterial_ReorderLevelGreaterThan(BigDecimal reorderLevel) {
+		validateBigDecimal(reorderLevel);
+		List<MaterialTransaction> items = materialTransactionRepository.findByMaterial_ReorderLevelGreaterThan(reorderLevel);
+    	if(items.isEmpty()) {
+    		String msg = String.format("No MaterialTransaction for material reorder-level greater than %s is found", reorderLevel);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
+        		.map(MaterialTransactionResponse::new)
+        		.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<MaterialTransactionResponse> findByMaterial_ReorderLevelLessThan(BigDecimal reorderLevel) {
+		validateBigDecimalNonNegative(reorderLevel);
+		List<MaterialTransaction> items = materialTransactionRepository.findByMaterial_ReorderLevelLessThan(reorderLevel);
+		if(items.isEmpty()) {
+    		String msg = String.format("No MaterialTransaction for material reorder-level less than %s is found", reorderLevel);
+    		throw new NoDataFoundException(msg);
+    	}
+        return items.stream()
+        		.map(MaterialTransactionResponse::new)
+        		.collect(Collectors.toList());
+	}
 
     @Override
     public List<MaterialTransactionResponse> findByQuantity(BigDecimal quantity) {
@@ -545,4 +571,5 @@ public class MaterialTransactionService implements IMaterialTransactionService {
 			throw new ValidationException("Cost must have at most two decimal places.");
 		}
 	}
+
 }

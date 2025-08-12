@@ -73,7 +73,7 @@ public class MaterialMovementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_MOVEMENT_READ_ACCESS)
-    @GetMapping("/by-movementType")
+    @GetMapping("/by-movement-type")
     public ResponseEntity<List<MaterialMovementResponse>> findByType(MovementType type) {
         List<MaterialMovementResponse> responses = materialMovementService.findByType(type);
         return ResponseEntity.ok(responses);
@@ -118,7 +118,7 @@ public class MaterialMovementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_MOVEMENT_READ_ACCESS)
-    @GetMapping("/fromStorageName")
+    @GetMapping("/from-storage-name")
     public ResponseEntity<List<MaterialMovementResponse>> findByFromStorage_NameContainingIgnoreCase(
             @RequestParam("fromStorageName") String fromStorageName) {
         List<MaterialMovementResponse> responses = materialMovementService
@@ -127,7 +127,7 @@ public class MaterialMovementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_MOVEMENT_READ_ACCESS)
-    @GetMapping("/toStorageName")
+    @GetMapping("/to-storage-name")
     public ResponseEntity<List<MaterialMovementResponse>> findByToStorage_NameContainingIgnoreCase(
             @RequestParam("toStorageName") String toStorageName) {
         List<MaterialMovementResponse> responses = materialMovementService
@@ -136,7 +136,7 @@ public class MaterialMovementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_MOVEMENT_READ_ACCESS)
-    @GetMapping("/fromStorageLocation")
+    @GetMapping("/from-storage-location")
     public ResponseEntity<List<MaterialMovementResponse>> findByFromStorage_LocationContainingIgnoreCase(
             @RequestParam("fromStorageLocation") String fromStorageLocation) {
         List<MaterialMovementResponse> responses = materialMovementService
@@ -145,7 +145,7 @@ public class MaterialMovementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_MOVEMENT_READ_ACCESS)
-    @GetMapping("/toStorageLocation")
+    @GetMapping("/to-storage-location")
     public ResponseEntity<List<MaterialMovementResponse>> findByToStorage_LocationContainingIgnoreCase(
             @RequestParam("toStorageLocation") String toStorageLocation) {
         List<MaterialMovementResponse> responses = materialMovementService
@@ -154,7 +154,7 @@ public class MaterialMovementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_MOVEMENT_READ_ACCESS)
-    @GetMapping("/fromStorage-capacity")
+    @GetMapping("/from-storage-capacity")
     public ResponseEntity<List<MaterialMovementResponse>> findByFromStorage_Capacity(
             @RequestParam("capacity") BigDecimal capacity) {
         List<MaterialMovementResponse> responses = materialMovementService.findByFromStorage_Capacity(capacity);
@@ -162,7 +162,7 @@ public class MaterialMovementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_MOVEMENT_READ_ACCESS)
-    @GetMapping("/toStorage-capacity")
+    @GetMapping("/to-storage-capacity")
     public ResponseEntity<List<MaterialMovementResponse>> findByToStorage_Capacity(
             @RequestParam("capacity") BigDecimal capacity) {
         List<MaterialMovementResponse> responses = materialMovementService.findByToStorage_Capacity(capacity);
@@ -170,7 +170,7 @@ public class MaterialMovementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_MOVEMENT_READ_ACCESS)
-    @GetMapping("/by-movementDate")
+    @GetMapping("/by-movement-date")
     public ResponseEntity<List<MaterialMovementResponse>> findByMovementDate(
             @RequestParam("movementDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate movementDate) {
         List<MaterialMovementResponse> responses = materialMovementService.findByMovementDate(movementDate);
@@ -195,7 +195,7 @@ public class MaterialMovementController {
     }
 
     @PreAuthorize(RoleGroups.MATERIAL_MOVEMENT_READ_ACCESS)
-    @GetMapping("/by-movementDate-after-equal")
+    @GetMapping("/by-movement-date-after-equal")
     public ResponseEntity<List<MaterialMovementResponse>> findByMovementDateAfterOrEqual(
             @RequestParam("movementDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate movementDate) {
         List<MaterialMovementResponse> responses = materialMovementService.findByMovementDateAfterOrEqual(movementDate);

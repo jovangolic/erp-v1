@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import com.jovan.erp_v1.model.ProductionOrder;
 import com.jovan.erp_v1.enumeration.ProductionOrderStatus;
+import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
@@ -49,6 +50,7 @@ public interface ProductionOrderRepository
     List<ProductionOrder> findByProduct_UnitMeasure(UnitMeasure unitMeasure);
     List<ProductionOrder> findByProduct_SupplierType(SupplierType supplierType);
     List<ProductionOrder> findByProduct_StorageType(StorageType storageType);
+    List<ProductionOrder> findByProduct_StorageStatus(StorageStatus storageStatus);
     @Query("SELECT po FROM ProductionOrder po WHERE po.product.storage.id = :storageId")
     List<ProductionOrder> findByProduct_StorageId(@Param("storageId") Long storageId);
     @Query("SELECT po FROM ProductionOrder po WHERE LOWER(po.product.storage.name) LIKE LOWER(CONCAT('%', :storageName, '%'))")

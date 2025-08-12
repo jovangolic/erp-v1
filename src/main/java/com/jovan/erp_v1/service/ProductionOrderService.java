@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.ProductionOrderStatus;
+import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
@@ -377,6 +378,17 @@ public class ProductionOrderService implements IProductionOrderService {
 		}
 		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
 	}
+	
+	@Override
+	public List<ProductionOrderResponse> findByProduct_StorageStatus(StorageStatus storageStatus) {
+		validateStorageStatus(storageStatus);
+		List<ProductionOrder> items = productionOrderRepository.findByProduct_StorageStatus(storageStatus);
+		if(items.isEmpty()) {
+			String msg = String.format("No ProductionOrder for product storage-status %s is found", storageStatus);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(productionOrderMapper::toResponse).collect(Collectors.toList());
+	}
 
 	@Override
 	public List<ProductionOrderResponse> findByProduct_StorageId(Long storageId) {
@@ -655,4 +667,10 @@ public class ProductionOrderService implements IProductionOrderService {
     	Optional.ofNullable(unitMeasure)
     		.orElseThrow(() -> new ValidationException("UnitMeasure unitMeasure must not be null"));
     }
+    
+    private void validateStorageStatus(StorageStatus status) {
+    	Optional.ofNullable(status)
+    		.orElseThrow(() -> new ValidationException("StorageStatus status must not be null"));
+    }
+
 }
