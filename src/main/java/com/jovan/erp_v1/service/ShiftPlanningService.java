@@ -201,10 +201,10 @@ public class ShiftPlanningService implements IShiftPlanningService {
     }
 
     @Override
-    public List<ShiftPlanningResponse> findByEmployeeFirstAndLastName(String firstName, String lastName) {
+    public List<ShiftPlanningResponse> findByEmployeeFirstContainingIgnoreCaseAndLastNameContainingIgnoreCase(String firstName, String lastName) {
     	validateString(firstName);
     	validateString(lastName);
-    	List<ShiftPlanning> items = shiftPlanningRepository.findByEmployeeFirstAndLastName(firstName, lastName);
+    	List<ShiftPlanning> items = shiftPlanningRepository.findByEmployeeFirstContainingIgnoreCaseAndLastNameContainingIgnoreCase(firstName, lastName);
     	if(items.isEmpty()) {
     		String msg = String.format("No ShiftPlanning for employee's first-name %s and last-name %s is found", 
     				firstName,lastName);

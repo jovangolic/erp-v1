@@ -71,7 +71,7 @@ public class ShiftPlanningController {
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/workCenter-name")
+    @GetMapping("/work-center-name")
     public ResponseEntity<List<ShiftPlanningResponse>> findByWorkCenter_NameContainingIgnoreCase(
             @RequestParam("name") String name) {
         List<ShiftPlanningResponse> response = shiftPlanningService.findByWorkCenter_NameContainingIgnoreCase(name);
@@ -79,7 +79,7 @@ public class ShiftPlanningController {
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/workCenter-capacity")
+    @GetMapping("/work-center-capacity")
     public ResponseEntity<List<ShiftPlanningResponse>> findByWorkCenter_Capacity(
             @RequestParam("capacity") BigDecimal capacity) {
         List<ShiftPlanningResponse> response = shiftPlanningService.findByWorkCenter_Capacity(capacity);
@@ -87,21 +87,21 @@ public class ShiftPlanningController {
     }
     
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/workCenter-capacity-greater-than")
+    @GetMapping("/work-center-capacity-greater-than")
     public ResponseEntity<List<ShiftPlanningResponse>> findByWorkCenter_CapacityGreaterThan(@RequestParam("capacity") BigDecimal capacity){
     	List<ShiftPlanningResponse> response = shiftPlanningService.findByWorkCenter_CapacityGreaterThan(capacity);
     	return ResponseEntity.ok(response);
     }
     
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/workCenter-capacity-less-than")
+    @GetMapping("/work-center-capacity-less-than")
     public ResponseEntity<List<ShiftPlanningResponse>> findByWorkCenter_CapacityLessThan(@RequestParam("capacity") BigDecimal capacity){
     	List<ShiftPlanningResponse> response = shiftPlanningService.findByWorkCenter_CapacityLessThan(capacity);
     	return ResponseEntity.ok(response);
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/workCenter-location")
+    @GetMapping("/work-center-location")
     public ResponseEntity<List<ShiftPlanningResponse>> findByWorkCenter_LocationContainingIgnoreCase(
             @RequestParam("location") String location) {
         List<ShiftPlanningResponse> response = shiftPlanningService
@@ -110,21 +110,21 @@ public class ShiftPlanningController {
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/employee/{id}/all")
+    @GetMapping("/employee/{id}")
     public ResponseEntity<List<ShiftPlanningResponse>> findByEmployee_Id(@PathVariable Long id) {
         List<ShiftPlanningResponse> response = shiftPlanningService.findByEmployee_Id(id);
         return ResponseEntity.ok(response);
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/by-email")
+    @GetMapping("/employee-email")
     public ResponseEntity<List<ShiftPlanningResponse>> findByEmployee_Email(@RequestParam("email") String email) {
         List<ShiftPlanningResponse> response = shiftPlanningService.findByEmployee_Email(email);
         return ResponseEntity.ok(response);
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/by-username")
+    @GetMapping("/employee-username")
     public ResponseEntity<List<ShiftPlanningResponse>> findByEmployee_UsernameContainingIgnoreCase(
             @RequestParam("username") String username) {
         List<ShiftPlanningResponse> response = shiftPlanningService
@@ -133,7 +133,7 @@ public class ShiftPlanningController {
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/by-phone-number")
+    @GetMapping("/employee-phone-number")
     public ResponseEntity<List<ShiftPlanningResponse>> findByEmployee_PhoneNumber(
             @RequestParam("phoneNumber") String phoneNumber) {
         List<ShiftPlanningResponse> response = shiftPlanningService.findByEmployee_PhoneNumber(phoneNumber);
@@ -166,7 +166,7 @@ public class ShiftPlanningController {
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/orders-after-date")
+    @GetMapping("/orders-with-start-date-after")
     public ResponseEntity<List<ShiftPlanningResponse>> findOrdersWithStartDateAfterOrEqual(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         List<ShiftPlanningResponse> response = shiftPlanningService.findOrdersWithStartDateAfterOrEqual(date);
@@ -174,7 +174,7 @@ public class ShiftPlanningController {
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/by-shiftType")
+    @GetMapping("/by-shift-type")
     public ResponseEntity<List<ShiftPlanningResponse>> findByShiftType(@RequestParam("shiftType") ShiftType shiftType) {
         List<ShiftPlanningResponse> response = shiftPlanningService.findByShiftType(shiftType);
         return ResponseEntity.ok(response);
@@ -196,7 +196,7 @@ public class ShiftPlanningController {
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/employee/{employeeId}/shiftType")
+    @GetMapping("/employee/{employeeId}/shift-type")
     public ResponseEntity<List<ShiftPlanningResponse>> findByEmployee_IdAndShiftType(@PathVariable Long employeeId,
             @RequestParam("shiftType") ShiftType shiftType) {
         List<ShiftPlanningResponse> response = shiftPlanningService.findByEmployee_IdAndShiftType(employeeId,
@@ -205,7 +205,7 @@ public class ShiftPlanningController {
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/workCenter/{workcenterIds}/date")
+    @GetMapping("/work-center/{workCenterIds}/date")
     public ResponseEntity<List<ShiftPlanningResponse>> findByWorkCenter_IdAndDateAfterAndAssignedFalse(
             @PathVariable Long workCenterIds,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -215,7 +215,7 @@ public class ShiftPlanningController {
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/employee/{employeeId}/dateRange")
+    @GetMapping("/employee/{employeeId}/date-range")
     public ResponseEntity<List<ShiftPlanningResponse>> findShiftsForEmployeeBetweenDates(@PathVariable Long employeeId,
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
@@ -225,7 +225,7 @@ public class ShiftPlanningController {
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/employee/{employeeId}/date-shiftType")
+    @GetMapping("/employee/{employeeId}/date-shift-type")
     public ResponseEntity<Boolean> existsByEmployee_IdAndDateAndShiftType(Long employeeId, LocalDate date,
             @RequestParam("shiftType") ShiftType shiftType) {
         Boolean response = shiftPlanningService.existsByEmployee_IdAndDateAndShiftType(employeeId, date, shiftType);
@@ -233,11 +233,11 @@ public class ShiftPlanningController {
     }
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
-    @GetMapping("/by-employee-firstLastName")
-    public ResponseEntity<List<ShiftPlanningResponse>> findByEmployeeFirstAndLastName(
+    @GetMapping("/by-employee-full-name")
+    public ResponseEntity<List<ShiftPlanningResponse>> findByEmployeeFirstContainingIgnoreCaseAndLastNameContainingIgnoreCase(
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName) {
-        List<ShiftPlanningResponse> response = shiftPlanningService.findByEmployeeFirstAndLastName(firstName,
+        List<ShiftPlanningResponse> response = shiftPlanningService.findByEmployeeFirstContainingIgnoreCaseAndLastNameContainingIgnoreCase(firstName,
                 lastName);
         return ResponseEntity.ok(response);
     }

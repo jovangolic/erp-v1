@@ -20,7 +20,7 @@ public interface IShiftPlanningService {
     List<ShiftPlanningResponse> findByEmployee_Id(Long id);
     List<ShiftPlanningResponse> findByEmployee_Email(String email);
     List<ShiftPlanningResponse> findByEmployee_UsernameContainingIgnoreCase(String username);
-    List<ShiftPlanningResponse> findByEmployeeFirstAndLastName(String firstName, String lastName);
+    List<ShiftPlanningResponse> findByEmployeeFirstContainingIgnoreCaseAndLastNameContainingIgnoreCase(String firstName, String lastName);
     List<ShiftPlanningResponse> findByEmployee_PhoneNumber(String phoneNumber);
     List<ShiftPlanningResponse> findByDate(LocalDate date);
     List<ShiftPlanningResponse> findByDateBetween(LocalDate start, LocalDate end);

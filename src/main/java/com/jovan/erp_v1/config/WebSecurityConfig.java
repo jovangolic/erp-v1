@@ -220,7 +220,10 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	    	Map.entry("/shelves", BASIC_WRITE_METHODS),
         	    	Map.entry("/shipments", BASIC_WRITE_METHODS),
         	    	Map.entry("/stockTransfers", BASIC_WRITE_METHODS),
-        	    	Map.entry("/stockTransferItems", BASIC_WRITE_METHODS)
+        	    	Map.entry("/stockTransferItems", BASIC_WRITE_METHODS),
+        	    	Map.entry("/transportOrders", BASIC_WRITE_METHODS),
+        	    	Map.entry("/trackingInfos", BASIC_WRITE_METHODS),
+        	    	Map.entry("/vehicles", BASIC_WRITE_METHODS)
         	    	)),
         	    Map.entry("TRANSPORT_PLANNER", Map.ofEntries(
         	    	Map.entry("/route", BASIC_WRITE_METHODS),
@@ -233,13 +236,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	    Map.entry("DISPATCHER", Map.ofEntries(
         	    	Map.entry("/route", BASIC_WRITE_METHODS),
         	    	Map.entry("/transportOrders", BASIC_WRITE_METHODS))),
-        	    Map.entry("LOGISTICS_MANAGER", Map.ofEntries(
-        	    	Map.entry("", BASIC_WRITE_METHODS),
-        	    	Map.entry("/transportOrders", BASIC_WRITE_METHODS),
-        	    	Map.entry("/trackingInfos", BASIC_WRITE_METHODS),
-        	    	Map.entry("/vehicles", BASIC_WRITE_METHODS))),
         	    Map.entry("SALES_MANAGER", Map.ofEntries(
-        	    	Map.entry("", BASIC_WRITE_METHODS),
+        	    	Map.entry("/sales", BASIC_WRITE_METHODS),
         	    	Map.entry("/salesOrders", BASIC_WRITE_METHODS))),
         	    Map.entry("HR_MANAGER", Map.ofEntries(
         	    	Map.entry("shifts", BASIC_WRITE_METHODS),
