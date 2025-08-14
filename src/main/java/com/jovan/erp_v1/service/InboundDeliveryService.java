@@ -2,10 +2,13 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -13,7 +16,10 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
+import com.jovan.erp_v1.enumeration.StorageStatus;
+import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.exception.InboundDeliveryErrorException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.NoSuchProductException;
 import com.jovan.erp_v1.exception.ProductNotFoundException;
 import com.jovan.erp_v1.exception.SupplyNotFoundException;
@@ -23,9 +29,11 @@ import com.jovan.erp_v1.mapper.InboundDeliveryMapper;
 import com.jovan.erp_v1.model.DeliveryItem;
 import com.jovan.erp_v1.model.InboundDelivery;
 import com.jovan.erp_v1.model.Product;
+import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.model.Supply;
 import com.jovan.erp_v1.repository.InboundDeliveryRepository;
 import com.jovan.erp_v1.repository.ProductRepository;
+import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.repository.SupplyRepository;
 import com.jovan.erp_v1.request.DeliveryItemInboundRequest;
 import com.jovan.erp_v1.request.InboundDeliveryRequest;
@@ -43,6 +51,7 @@ public class InboundDeliveryService implements InterfejsInboundDeliveryService {
     private final DeliveryItemMapper deliveryItemMapper;
     private final SupplyRepository supplyRepository;
     private final ProductRepository productRepository;
+    private final StorageRepository storageRepository;
 
     @Transactional
     @Override
@@ -169,9 +178,353 @@ public class InboundDeliveryService implements InterfejsInboundDeliveryService {
         inboundDeliveryRepository.deleteAllById(ids);
     }
     
+    @Override
+	public List<InboundDeliveryResponse> findBySupply_Storage_Id(Long storageId) {
+		validateStorageId(storageId);
+    	List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_Storage_Id(storageId);
+		if(items.isEmpty()){
+			String msg = String.format("No InboundDelivery for supply's storage-id %d, is found", storageId);
+			throw new NoDataFoundException(msg);
+		}
+    	return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_Storage_NameContainingIgnoreCase(String storageName) {
+		validateString(storageName);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_Storage_NameContainingIgnoreCase(storageName);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-name %s , is found", storageName);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_Storage_LocationContainingIgnoreCase(String storageLocation) {
+		validateString(storageLocation);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_Storage_LocationContainingIgnoreCase(storageLocation);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-location %s , is found", storageLocation);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageCapacity(BigDecimal storageCapacity) {
+		validateBigDecimal(storageCapacity);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageCapacity(storageCapacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage capacity %s, is found", storageCapacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageCapacityGreaterThan(BigDecimal storageCapacity) {
+		validateBigDecimal(storageCapacity);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageCapacityGreaterThan(storageCapacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage capacity greater than %s, is found", storageCapacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageCapacityLessThan(BigDecimal storageCapacity) {
+		validateBigDecimalNonNegative(storageCapacity);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageCapacityLessThan(storageCapacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage capacity less than %s, is found", storageCapacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageType(StorageType type) {
+		validateStorageType(type);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageType(type);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-type %s, is found", type);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageStatus(StorageStatus status) {
+		validaStorageStatus(status);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageStatus(status);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-status %s is found", status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageNameContainingIgnoreCaseAndType(String storageName,
+			StorageType type) {
+		validateString(storageName);
+		validateStorageType(type);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageNameContainingIgnoreCaseAndType(storageName, type);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-name %s and storage-type %s, is found", 
+					storageName,type);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageNameContainingIgnoreCaseAndStatus(String storageName,
+			StorageStatus status) {
+		validateString(storageName);
+		validaStorageStatus(status);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageNameContainingIgnoreCaseAndStatus(storageName, status);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-name %s and storage-status %s, is found",
+					storageName,status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageLocationContainingIgnoreCaseAndType(String storageLocation,
+			StorageType type) {
+		validateString(storageLocation);
+		validateStorageType(type);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageLocationContainingIgnoreCaseAndType(storageLocation, type);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-location %s and storage-type %s, is found", 
+					storageLocation,type);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageLocationContainingIgnoreCaseAndStatus(String storageLocation,
+			StorageStatus status) {
+		validateString(storageLocation);
+		validaStorageStatus(status);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageLocationContainingIgnoreCaseAndStatus(storageLocation, status);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-location %s and storage-status %s, is found",
+					storageLocation,status);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageNameContainingIgnoreCaseAndCapacity(String storageName,
+			BigDecimal capacity) {
+		validateString(storageName);
+		validateBigDecimal(capacity);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageNameContainingIgnoreCaseAndCapacity(storageName, capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-name %s and storage capacity %s, is found",
+					storageName,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageNameContainingIgnoreCaseAndCapacityGreaterThan(String storageName,
+			BigDecimal capacity) {
+		validateString(storageName);
+		validateBigDecimal(capacity);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageNameContainingIgnoreCaseAndCapacityGreaterThan(storageName, capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-name %s and storage capacity greater than %s, is found",
+					storageName,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageNameContainingIgnoreCaseAndCapacityLessThan(String storageName,
+			BigDecimal capacity) {
+		validateString(storageName);
+		validateBigDecimalNonNegative(capacity);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageNameContainingIgnoreCaseAndCapacityLessThan(storageName, capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-name %s and storage capacity less than %s, is found",
+					storageName,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageNameContainingIgnoreCaseAndLocationContainingIgnoreCase(
+			String storageName, String storageLocation) {
+		validateString(storageName);
+		validateString(storageLocation);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageNameContainingIgnoreCaseAndLocationContainingIgnoreCase(storageName, storageLocation);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-name %s and storage-location %s, is found",
+					storageName,storageLocation);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageLocationContainingIgnoreCaseAndCapacity(String storageLocation,
+			BigDecimal capacity) {
+		validateString(storageLocation);
+		validateBigDecimal(capacity);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageLocationContainingIgnoreCaseAndCapacity(storageLocation, capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-location %s and storage capacity %s, is found",
+					storageLocation,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageLocationContainingIgnoreCaseAndCapacityGreaterThan(
+			String storageLocation, BigDecimal capacity) {
+		validateString(storageLocation);
+		validateBigDecimal(capacity);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageLocationContainingIgnoreCaseAndCapacityGreaterThan(storageLocation, capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-location %s and storage capacity greater than %s, is found",
+					storageLocation,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_StorageLocationContainingIgnoreCaseAndCapacityLessThan(
+			String storageLocation, BigDecimal capacity) {
+		validateString(storageLocation);
+		validateBigDecimalNonNegative(capacity);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_StorageLocationContainingIgnoreCaseAndCapacityLessThan(storageLocation, capacity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's storage-location %s and storage capacity less than %s, is found",
+					storageLocation,capacity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findByStorageWithoutShelvesOrUnknown() {
+		List<InboundDelivery> items = inboundDeliveryRepository.findByStorageWithoutShelvesOrUnknown();;
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InboundDelivery for supply's storage without shelves, is found");
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_Quantity(BigDecimal quantity) {
+		validateBigDecimal(quantity);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_Quantity(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's quantity %s is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_QuantityGreaterThan(BigDecimal quantity) {
+		validateBigDecimal(quantity);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_QuantityGreaterThan(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's quantity greater than %s, is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_QuantityLessThan(BigDecimal quantity) {
+		validateBigDecimalNonNegative(quantity);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_QuantityLessThan(quantity);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply's quantity less than %s , is found", quantity);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_QuantityBetween(BigDecimal min, BigDecimal max) {
+		validateMinAndMax(min, max);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_QuantityBetween(min, max);
+		if(items.isEmpty()) {
+			String msg = String.format("No InboundDelivery for supply quantity between %s and %s, is found", min,max);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_Updates(LocalDateTime updates) {
+		DateValidator.validateNotNull(updates, "Supply updates");
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_Updates(updates);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No InboundDelivery for supply updates %s, found", updates.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_UpdatesAfter(LocalDateTime updates) {
+		DateValidator.validateNotInPast(updates, "Supply update after");
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_UpdatesAfter(updates);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No InboundDelivery for supply updates after %s, found", updates.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_UpdatesBefore(LocalDateTime updates) {
+		DateValidator.validateNotInFuture(updates, "Supply date before");
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_UpdatesBefore(updates);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No InboundDelivery for supply updates before %s, found", updates.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> findBySupply_UpdatesBetween(LocalDateTime updatesFrom, LocalDateTime updatesTo) {
+		DateValidator.validateRange(updatesFrom, updatesTo);
+		List<InboundDelivery> items = inboundDeliveryRepository.findBySupply_UpdatesBetween(updatesFrom, updatesTo);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No InboundDelivery for supply updates between %s and %s, is found",
+					updatesFrom.format(formatter), updatesTo.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
+	}
+    
     private void validateDeliveryStatus(DeliveryStatus status) {
     	if(status == null) {
-    		throw new IllegalArgumentException("Status za DeliveryStatus nije pronadjen");
+    		throw new ValidationException("Status za DeliveryStatus nije pronadjen");
     	}
     }
     
@@ -212,26 +565,77 @@ public class InboundDeliveryService implements InterfejsInboundDeliveryService {
     private void validateInboundDeliveryItems(InboundDeliveryRequest requests) {
     	List<DeliveryItemInboundRequest> req = requests.itemRequest();
     	if(req == null || req.isEmpty()) {
-    		throw new IllegalArgumentException("Request lista ne sme biti prazna");
+    		throw new ValidationException("Request lista ne sme biti prazna");
     	}
     	for(DeliveryItemInboundRequest item: req) {
     		if(item.productId() == null) {
     			throw new NoSuchProductException("Product ID ne sme biti null");
     		}
     		if(item == null || item.quantity().compareTo(BigDecimal.ZERO) <= 0) {
-    			throw new IllegalArgumentException("Kolicina mora biti veca od nule");
+    			throw new ValidationException("Kolicina mora biti veca od nule");
     		}
     		if(item.inboundDeliveryId() == null) {
-    			throw new InboundDeliveryErrorException("InboundDelivery ID ne sme biti null");
+    			throw new ValidationException("InboundDelivery ID ne sme biti null");
     		}
     	}
     	//provera duplikata
     	Set<Long> productIds = new HashSet<Long>();
     	for(DeliveryItemInboundRequest item: req) {
     		if(!productIds.add(item.productId())) {
-    			throw new IllegalArgumentException("Duplikat pronadjen za proizvod ID: " + item.productId());
+    			throw new ValidationException("Duplikat pronadjen za proizvod ID: " + item.productId());
     		}
     	}
     }
     
+    private void validateMinAndMax(BigDecimal min, BigDecimal max) {
+        if (min == null || max == null) {
+            throw new ValidationException("Min i Max ne smeju biti null");
+        }
+
+        if (min.compareTo(BigDecimal.ZERO) < 0 || max.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ValidationException("Min mora biti >= 0, a Max mora biti > 0");
+        }
+
+        if (min.compareTo(max) > 0) {
+            throw new ValidationException("Min ne može biti veći od Max");
+        }
+    }
+    
+    private void validateString(String str) {
+        if (str == null || str.trim().isEmpty()) {
+            throw new ValidationException("Tekstualni karakter ne sme biti null ili prazan");
+        }
+    }
+
+    private void validateBigDecimalNonNegative(BigDecimal num) {
+		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Number must be zero or positive");
+		}
+		if (num.scale() > 2) {
+			throw new ValidationException("Cost must have at most two decimal places.");
+		}
+	}
+    
+    private void validateBigDecimal(BigDecimal num) {
+        if (num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Mora biti pozitivan broj");
+        }
+    }
+
+	private void validateStorageType(StorageType type) {
+		Optional.ofNullable(type)
+			.orElseThrow(() -> new ValidationException("StorageType type must not be null"));
+	}
+	
+	private void validaStorageStatus(StorageStatus status) {
+		Optional.ofNullable(status)
+			.orElseThrow(() -> new ValidationException("StorageStatus status must not be null"));
+	}
+    
+	private Storage validateStorageId(Long storageId) {
+		if(storageId == null) {
+			throw new ValidationException("Storage ID must not be null");
+		}
+		return storageRepository.findById(storageId).orElseThrow(() -> new ValidationException("Storage not found with id "+storageId));
+	}
 }
