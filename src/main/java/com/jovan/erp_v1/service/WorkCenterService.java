@@ -16,9 +16,14 @@ import com.jovan.erp_v1.exception.StorageNotFoundException;
 import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.exception.WorkCenterErrorException;
 import com.jovan.erp_v1.mapper.WorkCenterMapper;
+import com.jovan.erp_v1.model.Product;
+import com.jovan.erp_v1.model.Shelf;
 import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.model.WorkCenter;
+import com.jovan.erp_v1.repository.ProductRepository;
+import com.jovan.erp_v1.repository.ShelfRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
+import com.jovan.erp_v1.repository.SupplyRepository;
 import com.jovan.erp_v1.repository.WorkCenterRepository;
 import com.jovan.erp_v1.repository.specification.WorkCenterSpecification;
 import com.jovan.erp_v1.request.CountWorkCenterCapacityRequest;
@@ -41,6 +46,7 @@ public class WorkCenterService implements IWorkCenterService {
     private final WorkCenterRepository workCenterRepository;
     private final WorkCenterMapper workCenterMapper;
     private final StorageRepository storageRepository;
+    
 
     @Transactional
     @Override
@@ -716,4 +722,5 @@ public class WorkCenterService implements IWorkCenterService {
         }
     }
 
+    
 }

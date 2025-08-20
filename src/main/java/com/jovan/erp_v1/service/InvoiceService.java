@@ -103,11 +103,26 @@ public class InvoiceService implements IInvoiceService {
 		validateInvoiceStatus(request.status());
 		validateBigDecimal(request.totalAmount());
 		validateString(request.note(), "Note");
-		Buyer buyer = fetchBuyer(request.buyerId());
-		User user = fetchCreatedBy(request.createdById());
-		Sales sales = fetchSales(request.salesId());
-		Payment payment = fetchPayment(request.paymentId());
-		SalesOrder salesOrder = fetchSalesOrder(request.salesOrderId());
+		Buyer buyer = invoice.getBuyer();
+		if(request.buyerId() != null && (buyer.getId() == null || !request.buyerId().equals(buyer.getId()))) {
+			buyer = fetchBuyer(request.buyerId());
+		}
+		User user = invoice.getCreatedBy();
+		if(request.createdById() != null && (user.getId() == null || !request.createdById().equals(user.getId()))) {
+			user = fetchCreatedBy(request.createdById());
+		}
+		Sales sales = invoice.getRelatedSales();
+		if(request.salesId() != null && (sales.getId() == null || !request.salesId().equals(sales.getId()))) {
+			sales = fetchSales(request.salesId());
+		}
+		Payment payment = invoice.getPayment();
+		if(request.paymentId() != null && (payment.getId() == null || !request.paymentId().equals(payment.getId()))) {
+			payment = fetchPayment(request.paymentId());
+		}
+		SalesOrder salesOrder = invoice.getSalesOrder();
+		if(request.salesOrderId() != null && (salesOrder.getId() == null || !request.salesOrderId().equals(salesOrder.getId()))) {
+			salesOrder = fetchSalesOrder(request.salesOrderId());
+		}
 		// Ako se menja SalesOrder, provera da li novi vec ima neku drugu fakturu
 		if (salesOrder.getInvoice() != null && !salesOrder.getInvoice().getId().equals(invoice.getId())) {
 			throw new IllegalStateException("The new sales order is already linked to another invoice");

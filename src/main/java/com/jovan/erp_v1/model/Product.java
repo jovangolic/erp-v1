@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.model;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -29,4 +30,7 @@ public class Product extends Goods {
     
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BarCode> barCodes;
+    
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QualityStandard> qualityStandards = new ArrayList<>();
 }
