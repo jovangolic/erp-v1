@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.jovan.erp_v1.enumeration.InspectionResult;
 import com.jovan.erp_v1.enumeration.InspectionType;
+import com.jovan.erp_v1.exception.ValidationException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,6 +26,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -64,13 +67,13 @@ public class Inspection {
 	@JoinColumn(name="inspector_id")
 	private User inspector;
 	
-	@Column
+	@Column(nullable = false)
 	private Integer quantityInspected;
 	
-	@Column
+	@Column(nullable = false)
     private Integer quantityAccepted;
 	
-	@Column
+	@Column(nullable = false)
     private Integer quantityRejected;
 	
 	@Column
@@ -104,4 +107,46 @@ public class Inspection {
     @LastModifiedBy
     @Column(name = "modified_by")
     private String modifiedBy;
+    
+    @PrePersist
+    @PreUpdate
+    private void validateQuantities() {
+        if (this.quantityAccepted == null || this.quantityRejected == null || this.quantityInspected == null) {
+            throw new ValidationException("Quantities must not be null.");
+        }
+        if (this.quantityAccepted < 0 || this.quantityRejected < 0 || this.quantityInspected <= 0) {
+            throw new ValidationException("Quantities must be positive (inspected > 0, accepted/rejected ≥ 0).");
+        }
+        if (!this.quantityInspected.equals(this.quantityAccepted + this.quantityRejected)) {
+            throw new ValidationException("Quantity inspected must equal accepted + rejected.");
+        }
+    }
+
+    public Integer calculateQuantityInspected() {
+        if (this.quantityAccepted == null || this.quantityRejected == null) {
+            return null;
+        }
+        return this.quantityAccepted + this.quantityRejected;
+    }
+    
+    public Integer calculateQuantityAccepted() {
+        if (this.quantityInspected == null || this.quantityRejected == null) {
+            return null;
+        }
+        return this.quantityInspected - this.quantityRejected;
+    }
+
+    public Integer calculateQuantityRejected() {
+        if (this.quantityInspected == null || this.quantityAccepted == null) {
+            return null;
+        }
+        return this.quantityInspected - this.quantityAccepted;
+    }
+
+    public boolean isConsistent() {
+        return this.quantityInspected != null
+                && this.quantityAccepted != null
+                && this.quantityRejected != null
+                && this.quantityInspected.equals(this.quantityAccepted + this.quantityRejected);
+    }
 }
