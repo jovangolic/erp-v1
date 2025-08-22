@@ -166,27 +166,27 @@ public class TestMeasurementController {
 	 }
 	 
 	 @GetMapping("/search/inspection-date")
-	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_Date(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date){
-		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_Date(date);
+	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_InspectionDate(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date){
+		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_InspectionDate(date);
 		 return ResponseEntity.ok(items);
 	 }
 	 
 	 @GetMapping("/search/inspection-date-after")
-	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_DateAfter(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date){
-		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_DateAfter(date);
+	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_InspectionDateAfter(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date){
+		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_InspectionDateAfter(date);
 		 return ResponseEntity.ok(items);
 	 }
 	 
 	 @GetMapping("/search/inspection-date-before")
-	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_DateBefore(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date){
-		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_DateBefore(date);
+	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_InspectionDateBefore(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date){
+		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_InspectionDateBefore(date);
 		 return ResponseEntity.ok(items);
 	 }
 	 
 	 @GetMapping("/search/inspection-date-between")
-	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_DateBetween(@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_InspectionDateBetween(@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
 			 @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end){
-		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_DateBetween(start, end);
+		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_InspectionDateBetween(start, end);
 		 return ResponseEntity.ok(items);
 	 }
 	 

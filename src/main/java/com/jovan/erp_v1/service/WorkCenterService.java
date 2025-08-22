@@ -16,14 +16,9 @@ import com.jovan.erp_v1.exception.StorageNotFoundException;
 import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.exception.WorkCenterErrorException;
 import com.jovan.erp_v1.mapper.WorkCenterMapper;
-import com.jovan.erp_v1.model.Product;
-import com.jovan.erp_v1.model.Shelf;
 import com.jovan.erp_v1.model.Storage;
 import com.jovan.erp_v1.model.WorkCenter;
-import com.jovan.erp_v1.repository.ProductRepository;
-import com.jovan.erp_v1.repository.ShelfRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
-import com.jovan.erp_v1.repository.SupplyRepository;
 import com.jovan.erp_v1.repository.WorkCenterRepository;
 import com.jovan.erp_v1.repository.specification.WorkCenterSpecification;
 import com.jovan.erp_v1.request.CountWorkCenterCapacityRequest;
@@ -72,7 +67,7 @@ public class WorkCenterService implements IWorkCenterService {
         validateString(request.location());
         validateBigDecimal(request.capacity());
         Storage st = wc.getLocalStorage();
-        if(request.localStorageId() != null && (st == null) || !request.localStorageId().equals(st.getId())){
+        if(request.localStorageId() != null && (st.getId() == null) || !request.localStorageId().equals(st.getId())){
         	st = fetchStorage(request.localStorageId());
         }
         workCenterMapper.toUpdateEntity(wc, request, st);

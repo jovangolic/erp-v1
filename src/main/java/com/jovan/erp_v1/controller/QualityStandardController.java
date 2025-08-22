@@ -65,7 +65,7 @@ public class QualityStandardController {
 	}
 	
 	@GetMapping("/search-standards")
-	public List<QualityStandardResponse> search(
+	public ResponseEntity<List<QualityStandardResponse>> search(
 	        @RequestParam(required = false) Long supplyId,
 	        @RequestParam(required = false) BigDecimal productStorageMin,
 	        @RequestParam(required = false) BigDecimal productStorageMax,
@@ -74,9 +74,10 @@ public class QualityStandardController {
 	        @RequestParam(required = false) Integer shelfRow,
 	        @RequestParam(required = false) Integer shelfCol
 	) {
-	    return qualityStandardService.searchQualityStandards(
+	    List<QualityStandardResponse> items =  qualityStandardService.searchQualityStandards(
 	            supplyId, productStorageMin, productStorageMax, supplyMin, supplyMax, shelfRow, shelfCol
 	    );
+	    return ResponseEntity.ok(items);
 	}
 	
 	@GetMapping("/by-unit")

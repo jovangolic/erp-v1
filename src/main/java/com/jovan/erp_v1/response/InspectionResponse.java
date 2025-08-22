@@ -20,7 +20,7 @@ public class InspectionResponse {
 	private Long id;
 	private String code;
 	private InspectionType type;
-	private LocalDateTime date;
+	private LocalDateTime inspectionDate;
 	private BasicBatchResponse basicBatchResponse;
 	private ProductResponse productResponse;
 	private UserResponse userResponse;
@@ -37,7 +37,7 @@ public class InspectionResponse {
 		this.id = insp.getId();
 		this.code = insp.getCode();
 		this.type = insp.getType();
-		this.date = insp.getDate();
+		this.inspectionDate = insp.getInspectionDate();
 		this.basicBatchResponse = insp.getBatch() != null ? new BasicBatchResponse(insp.getBatch()) : null;
 		this.productResponse = insp.getProduct() != null ? new ProductResponse(insp.getProduct()) : null;
 		this.userResponse = insp.getInspector() != null ? new UserResponse(insp.getInspector()) : null;

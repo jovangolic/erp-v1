@@ -33,10 +33,10 @@ public interface TestMeasurementRepository extends JpaRepository<TestMeasurement
 	List<TestMeasurement> findByInspectionId(Long inspectionId);
 	List<TestMeasurement> findByInspection_CodeContainingIgnoreCase(String code);
 	List<TestMeasurement> findByInspection_Type(InspectionType type);
-	List<TestMeasurement> findByInspection_Date(LocalDateTime date);
-	List<TestMeasurement> findByInspection_DateAfter(LocalDateTime date);
-	List<TestMeasurement> findByInspection_DateBefore(LocalDateTime date);
-	List<TestMeasurement> findByInspection_DateBetween(LocalDateTime start, LocalDateTime end);
+	List<TestMeasurement> findByInspection_InspectionDate(LocalDateTime date);
+	List<TestMeasurement> findByInspection_InspectionDateAfter(LocalDateTime date);
+	List<TestMeasurement> findByInspection_InspectionDateBefore(LocalDateTime date);
+	List<TestMeasurement> findByInspection_InspectionDateBetween(LocalDateTime start, LocalDateTime end);
 	@Query("SELECT tm FROM TestMeasurement tm WHERE tm.inspection.batch.id = :batchId")
 	List<TestMeasurement> findByInspection_BatchId(@Param("batchId") Long batchId);
 	//product methods for inspection

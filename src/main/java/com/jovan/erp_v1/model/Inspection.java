@@ -53,7 +53,7 @@ public class Inspection {
 	private InspectionType type;
 	
 	@Column
-	private LocalDateTime date;
+	private LocalDateTime inspectionDate;
 	
 	@ManyToOne
 	@JoinColumn(name="batch_id")

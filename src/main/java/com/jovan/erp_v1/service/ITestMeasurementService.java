@@ -48,10 +48,10 @@ public interface ITestMeasurementService {
 	List<TestMeasurementResponse> findByInspectionId(Long inspectionId);
 	List<TestMeasurementResponse> findByInspection_CodeContainingIgnoreCase(String code);
 	List<TestMeasurementResponse> findByInspection_Type(InspectionType type);
-	List<TestMeasurementResponse> findByInspection_Date(LocalDateTime date);
-	List<TestMeasurementResponse> findByInspection_DateAfter(LocalDateTime date);
-	List<TestMeasurementResponse> findByInspection_DateBefore(LocalDateTime date);
-	List<TestMeasurementResponse> findByInspection_DateBetween(LocalDateTime start, LocalDateTime end);
+	List<TestMeasurementResponse> findByInspection_InspectionDate(LocalDateTime date);
+	List<TestMeasurementResponse> findByInspection_InspectionDateAfter(LocalDateTime date);
+	List<TestMeasurementResponse> findByInspection_InspectionDateBefore(LocalDateTime date);
+	List<TestMeasurementResponse> findByInspection_InspectionDateBetween(LocalDateTime start, LocalDateTime end);
 	List<TestMeasurementResponse> findByInspection_BatchId( Long batchId);
 	//product methods for inspection
 

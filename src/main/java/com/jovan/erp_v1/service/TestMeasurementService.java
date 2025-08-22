@@ -310,9 +310,9 @@ public class TestMeasurementService implements ITestMeasurementService {
 	}
 
 	@Override
-	public List<TestMeasurementResponse> findByInspection_Date(LocalDateTime date) {
+	public List<TestMeasurementResponse> findByInspection_InspectionDate(LocalDateTime date) {
 		DateValidator.validateNotNull(date, "Date");
-		List<TestMeasurement> items = testMeasurementRepository.findByInspection_Date(date);
+		List<TestMeasurement> items = testMeasurementRepository.findByInspection_InspectionDate(date);
 		if(items.isEmpty()) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 			String msg = String.format("No TestMeasurement for inspection date %s, found", date.format(formatter));
@@ -322,9 +322,9 @@ public class TestMeasurementService implements ITestMeasurementService {
 	}
 
 	@Override
-	public List<TestMeasurementResponse> findByInspection_DateAfter(LocalDateTime date) {
+	public List<TestMeasurementResponse> findByInspection_InspectionDateAfter(LocalDateTime date) {
 		DateValidator.validateNotInPast(date, "Date-after");
-		List<TestMeasurement> items = testMeasurementRepository.findByInspection_DateAfter(date);
+		List<TestMeasurement> items = testMeasurementRepository.findByInspection_InspectionDateAfter(date);
 		if(items.isEmpty()) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 			String msg = String.format("No TestMeasurement for inspection date-after %s, found", date.format(formatter));
@@ -334,9 +334,9 @@ public class TestMeasurementService implements ITestMeasurementService {
 	}
 
 	@Override
-	public List<TestMeasurementResponse> findByInspection_DateBefore(LocalDateTime date) {
+	public List<TestMeasurementResponse> findByInspection_InspectionDateBefore(LocalDateTime date) {
 		DateValidator.validateNotInFuture(date, "Date-before");
-		List<TestMeasurement> items = testMeasurementRepository.findByInspection_DateBefore(date);
+		List<TestMeasurement> items = testMeasurementRepository.findByInspection_InspectionDateBefore(date);
 		if(items.isEmpty()) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 			String msg = String.format("No TestMeasurement for inspection date before %s, found", date.format(formatter));
@@ -346,9 +346,9 @@ public class TestMeasurementService implements ITestMeasurementService {
 	}
 
 	@Override
-	public List<TestMeasurementResponse> findByInspection_DateBetween(LocalDateTime start, LocalDateTime end) {
+	public List<TestMeasurementResponse> findByInspection_InspectionDateBetween(LocalDateTime start, LocalDateTime end) {
 		DateValidator.validateRange(start, end);
-		List<TestMeasurement> items = testMeasurementRepository.findByInspection_DateBetween(start, end);
+		List<TestMeasurement> items = testMeasurementRepository.findByInspection_InspectionDateBetween(start, end);
 		if(items.isEmpty()) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 			String msg = String.format("No TestMeasurement for inspection date between %s and %s, found",
