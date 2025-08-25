@@ -29,6 +29,6 @@ public interface DefectRepository extends JpaRepository<Defect, Long> {
 	@Query("SELECT d FROM Defect d WHERE d.severity IN :levels")
 	List<Defect> findBySeverityIn(@Param("levels") List<SeverityLevel> levels);
 	
-	Boolean existsByCode(String code);
-	Boolean existsByName(String name);
+	Boolean existsByNameContainingIgnoreCase(String name);
+	Boolean existsByCodeContainingIgnoreCase(String code);
 }

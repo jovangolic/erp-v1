@@ -71,7 +71,7 @@ public class TestMeasurementController {
 		return ResponseEntity.ok(items);
 	}
 	
-	@GetMapping("/exists")
+	@GetMapping("/exists-by-within-spec")
     public ResponseEntity<Boolean> existsByWithinSpec(@RequestParam Boolean withinSpec) {
         boolean exists = testMeasurementService.existsByWithinSpec(withinSpec);
         return ResponseEntity.ok(exists);
@@ -144,6 +144,12 @@ public class TestMeasurementController {
 	 @GetMapping("/measured-value-less-than")
 	 public ResponseEntity<List<TestMeasurementResponse>> findByMeasuredValueLessThan(@RequestParam("measuredValue") BigDecimal measuredValue){
 		 List<TestMeasurementResponse> items = testMeasurementService.findByMeasuredValueLessThan(measuredValue);
+		 return ResponseEntity.ok(items);
+	 }
+	 
+	 @GetMapping("/measured-value-between")
+	 public ResponseEntity<List<TestMeasurementResponse>> findByMeasuredValueBetween(@RequestParam("min") BigDecimal min,@RequestParam("max") BigDecimal max){
+		 List<TestMeasurementResponse> items = testMeasurementService.findByMeasuredValueBetween(min, max);
 		 return ResponseEntity.ok(items);
 	 }
 	 
@@ -292,6 +298,12 @@ public class TestMeasurementController {
 		 return ResponseEntity.ok(items);
 	 }
 	 
+	 @GetMapping("/search/inspection/quantity-inspected-between")
+	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_QuantityInspectedBetween(@RequestParam("min") BigDecimal min,@RequestParam("max") BigDecimal max){
+		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_QuantityInspectedBetween(min, max);
+		 return ResponseEntity.ok(items);
+	 }
+	 
 	 @GetMapping("/search/inspection/quantity-accepted")
 	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_QuantityAccepted(@RequestParam("quantityAccepted") BigDecimal quantityAccepted){
 		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_QuantityAccepted(quantityAccepted);
@@ -310,6 +322,12 @@ public class TestMeasurementController {
 		 return ResponseEntity.ok(items);
 	 }
 	 
+	 @GetMapping("/search/inspection/quantity-accepted-between")
+	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_QuantityAcceptedBetween(@RequestParam("min") BigDecimal min,@RequestParam("max") BigDecimal max){
+		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_QuantityAcceptedBetween(min, max);
+		 return ResponseEntity.ok(items);
+	 }
+	 
 	 @GetMapping("/search/inspection/quantity-rejected")
 	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_QuantityRejected(@RequestParam("quantityRejected") BigDecimal quantityRejected){
 		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_QuantityRejected(quantityRejected);
@@ -325,6 +343,12 @@ public class TestMeasurementController {
 	 @GetMapping("/search/inspection/quantity-rejected-less-than")
 	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_QuantityRejectedLessThan(@RequestParam("quantityRejected") BigDecimal quantityRejected){
 		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_QuantityRejectedLessThan(quantityRejected);
+		 return ResponseEntity.ok(items);
+	 }
+	 
+	 @GetMapping("/search/inspection/quantity-rejected-between")
+	 public ResponseEntity<List<TestMeasurementResponse>> findByInspection_QuantityRejectedBetween(@RequestParam("min") BigDecimal min, @RequestParam("max") BigDecimal max){
+		 List<TestMeasurementResponse> items = testMeasurementService.findByInspection_QuantityRejectedBetween(min, max);
 		 return ResponseEntity.ok(items);
 	 }
 	 

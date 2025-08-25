@@ -31,10 +31,10 @@ public class Defect {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column
+	@Column(unique = true, nullable = false)
 	private String code;
 	
-	@Column
+	@Column(nullable = false)
     private String name;
 	
 	@Column

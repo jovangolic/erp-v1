@@ -216,6 +216,18 @@ public class DefectService implements IDefectService {
 		return items.stream().map(defectMapper::toResponse).collect(Collectors.toList());
 	}
 	
+	@Override
+	public Boolean existsByNameContainingIgnoreCase(String name) {
+		validateString(name);
+		return defectRepository.existsByNameContainingIgnoreCase(name);
+	}
+
+	@Override
+	public Boolean existsByCodeContainingIgnoreCase(String code) {
+		validateString(code);
+		return defectRepository.existsByCodeContainingIgnoreCase(code);
+	}
+	
 	private void validateString(String str) {
 		if(str == null || str.trim().isEmpty()) {
 			throw new ValidationException("String must not be null nor empty");
@@ -241,7 +253,7 @@ public class DefectService implements IDefectService {
 		if(value == null || value.trim().isEmpty()) {
 	        throw new ValidationException(fieldName + " must not be null or empty");
 	    }
-		if(defectRepository.existsByName(value)) {
+		if(defectRepository.existsByNameContainingIgnoreCase(value)) {
 			throw new ValidationException("Given name doesn't exist");
 		}
 	}
@@ -250,7 +262,7 @@ public class DefectService implements IDefectService {
 		if(value == null || value.trim().isEmpty()) {
 	        throw new ValidationException(fieldName + " must not be null or empty");
 	    }
-		if(defectRepository.existsByCode(value)) {
+		if(defectRepository.existsByCodeContainingIgnoreCase(value)) {
 			throw new ValidationException("Given code doesn't exist");
 		}
 	}
@@ -262,5 +274,5 @@ public class DefectService implements IDefectService {
 	        }
 	    }
 	}
-	
+
 }

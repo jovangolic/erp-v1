@@ -44,6 +44,7 @@ public interface ITestMeasurementService {
 	List<TestMeasurementResponse> findByMeasuredValue(BigDecimal measuredValue);
 	List<TestMeasurementResponse> findByMeasuredValueGreaterThan(BigDecimal measuredValue);
 	List<TestMeasurementResponse> findByMeasuredValueLessThan(BigDecimal measuredValue);
+	List<TestMeasurementResponse> findByMeasuredValueBetween(BigDecimal min, BigDecimal max);
 	boolean existsByWithinSpec(Boolean withinSpec);
 	List<TestMeasurementResponse> findByInspectionId(Long inspectionId);
 	List<TestMeasurementResponse> findByInspection_CodeContainingIgnoreCase(String code);
@@ -72,14 +73,17 @@ public interface ITestMeasurementService {
 	List<TestMeasurementResponse> findByInspection_QuantityInspected(BigDecimal quantityInspected);
 	List<TestMeasurementResponse> findByInspection_QuantityInspectedGreaterThan(BigDecimal quantityInspected);
 	List<TestMeasurementResponse> findByInspection_QuantityInspectedLessThan(BigDecimal quantityInspected);
+	List<TestMeasurementResponse> findByInspection_QuantityInspectedBetween(BigDecimal min, BigDecimal max);
 	
 	List<TestMeasurementResponse> findByInspection_QuantityAccepted(BigDecimal quantityAccepted);
 	List<TestMeasurementResponse> findByInspection_QuantityAcceptedGreaterThan(BigDecimal quantityAccepted);
 	List<TestMeasurementResponse> findByInspection_QuantityAcceptedLessThan(BigDecimal quantityAccepted);
+	List<TestMeasurementResponse> findByInspection_QuantityAcceptedBetween(BigDecimal min, BigDecimal max);
 	
 	List<TestMeasurementResponse> findByInspection_QuantityRejected(BigDecimal quantityRejected);
 	List<TestMeasurementResponse> findByInspection_QuantityRejectedGreaterThan(BigDecimal quantityRejected);
 	List<TestMeasurementResponse> findByInspection_QuantityRejectedLessThan(BigDecimal quantityRejected);
+	List<TestMeasurementResponse> findByInspection_QuantityRejectedBetween(BigDecimal min, BigDecimal max);
 	
 	List<TestMeasurementResponse> findByInspection_Notes(String notes);
 	List<TestMeasurementResponse> findByInspection_Result(InspectionResult result);

@@ -26,4 +26,6 @@ public interface IDefectService {
 	Long countByCode(String code);
 	Long countByName(String name);
 	List<DefectResponse> findBySeverityIn( List<SeverityLevel> levels);
+	Boolean existsByNameContainingIgnoreCase(String name);
+	Boolean existsByCodeContainingIgnoreCase(String code);
 }

@@ -29,6 +29,7 @@ public interface TestMeasurementRepository extends JpaRepository<TestMeasurement
 	List<TestMeasurement> findByMeasuredValue(BigDecimal measuredValue);
 	List<TestMeasurement> findByMeasuredValueGreaterThan(BigDecimal measuredValue);
 	List<TestMeasurement> findByMeasuredValueLessThan(BigDecimal measuredValue);
+	List<TestMeasurement> findByMeasuredValueBetween(BigDecimal min, BigDecimal max);
 	boolean existsByWithinSpec(Boolean withinSpec);
 	List<TestMeasurement> findByInspectionId(Long inspectionId);
 	List<TestMeasurement> findByInspection_CodeContainingIgnoreCase(String code);
@@ -66,14 +67,17 @@ public interface TestMeasurementRepository extends JpaRepository<TestMeasurement
 	List<TestMeasurement> findByInspection_QuantityInspected(BigDecimal quantityInspected);
 	List<TestMeasurement> findByInspection_QuantityInspectedGreaterThan(BigDecimal quantityInspected);
 	List<TestMeasurement> findByInspection_QuantityInspectedLessThan(BigDecimal quantityInspected);
+	List<TestMeasurement> findByInspection_QuantityInspectedBetween(BigDecimal min, BigDecimal max);
 	
 	List<TestMeasurement> findByInspection_QuantityAccepted(BigDecimal quantityAccepted);
 	List<TestMeasurement> findByInspection_QuantityAcceptedGreaterThan(BigDecimal quantityAccepted);
 	List<TestMeasurement> findByInspection_QuantityAcceptedLessThan(BigDecimal quantityAccepted);
+	List<TestMeasurement> findByInspection_QuantityAcceptedBetween(BigDecimal min, BigDecimal max);
 	
 	List<TestMeasurement> findByInspection_QuantityRejected(BigDecimal quantityRejected);
 	List<TestMeasurement> findByInspection_QuantityRejectedGreaterThan(BigDecimal quantityRejected);
 	List<TestMeasurement> findByInspection_QuantityRejectedLessThan(BigDecimal quantityRejected);
+	List<TestMeasurement> findByInspection_QuantityRejectedBetween(BigDecimal min, BigDecimal max);
 	
 	List<TestMeasurement> findByInspection_Notes(String notes);
 	List<TestMeasurement> findByInspection_Result(InspectionResult result);

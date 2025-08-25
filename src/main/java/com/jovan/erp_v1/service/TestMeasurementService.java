@@ -1029,6 +1029,64 @@ public class TestMeasurementService implements ITestMeasurementService {
 		return items.stream().map(testMeasurementMapper::toResponse).collect(Collectors.toList());
 	}
 	
+	@Override
+	public List<TestMeasurementResponse> findByMeasuredValueBetween(BigDecimal min, BigDecimal max) {
+		validateMinAndMax(min, max);
+		List<TestMeasurement> items = testMeasurementRepository.findByMeasuredValueBetween(min, max);
+		if(items.isEmpty()) {
+			String msg = String.format("No measured-value between %s and %s, found", min,max);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(testMeasurementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<TestMeasurementResponse> findByInspection_QuantityInspectedBetween(BigDecimal min, BigDecimal max) {
+		validateMinAndMax(min, max);
+		List<TestMeasurement> items = testMeasurementRepository.findByInspection_QuantityInspectedBetween(min, max);
+		if(items.isEmpty()) {
+			String msg = String.format("No inspection for quantity-rejected between %s and %s, found", min,max);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(testMeasurementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<TestMeasurementResponse> findByInspection_QuantityAcceptedBetween(BigDecimal min, BigDecimal max) {
+		validateMinAndMax(min, max);
+		List<TestMeasurement> items = testMeasurementRepository.findByInspection_QuantityAcceptedBetween(min, max);
+		if(items.isEmpty()) {
+			String msg = String.format("No inspection for quantity-accepted between %s and %s, found", min,max);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(testMeasurementMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<TestMeasurementResponse> findByInspection_QuantityRejectedBetween(BigDecimal min, BigDecimal max) {
+		validateMinAndMax(min, max);
+		List<TestMeasurement> items = testMeasurementRepository.findByInspection_QuantityRejectedBetween(min, max);
+		if(items.isEmpty()) {
+			String msg = String.format("No inspection for quantity-rejected between %s and %s, found", min,max);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(testMeasurementMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	private void validateMinAndMax(BigDecimal min, BigDecimal max) {
+        if (min == null || max == null) {
+            throw new IllegalArgumentException("Min i Max ne smeju biti null");
+        }
+
+        if (min.compareTo(BigDecimal.ZERO) < 0 || max.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Min mora biti >= 0, a Max mora biti > 0");
+        }
+
+        if (min.compareTo(max) > 0) {
+            throw new IllegalArgumentException("Min ne može biti veći od Max");
+        }
+    }
+	
 	private void validateBigDecimal(BigDecimal num) {
         if (num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Mora biti pozitivan broj");
@@ -1177,5 +1235,5 @@ public class TestMeasurementService implements ITestMeasurementService {
             throw new ValidationException("TestMeasurement with code '" + code + "' not found.");
         }
     }
-    
+
 }
