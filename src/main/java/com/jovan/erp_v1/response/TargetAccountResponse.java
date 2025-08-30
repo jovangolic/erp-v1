@@ -12,16 +12,15 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountResponse {
+public class TargetAccountResponse {
 
-    private Long id;
+	private Long id;
     private String accountNumber;
     private String accountName;
     private AccountType type;
     private BigDecimal balance;
-    
 
-    public AccountResponse(Account acc) {
+    public TargetAccountResponse(Account acc) {
         this.id = acc.getId();
         this.accountNumber = acc.getAccountNumber();
         this.accountName = acc.getAccountName();

@@ -6,6 +6,10 @@ package com.jovan.erp_v1.util;
  */
 public class RoleGroups {
 
+	public static final String BAR_CODE_FULL_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','STORAGE_FOREMAN','STORAGE_EMPLOYEE','INVENTORY_MANAGER')";
+	
+	public static final String BAR_CODE_READ_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','STORAGE_FOREMAN','STORAGE_EMPLOYEE','INVENTORY_MANAGER','PRODUCTION_PLANNER','QUALITY_MANAGER')";
+	
 	public static final String DRIVER_FULL_ACCESS =
 	        "hasAnyRole('SUPERADMIN','ADMIN','SALES','PROCUREMENT')";
 

@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
-import com.jovan.erp_v1.enumeration.TransactionType;
+import com.jovan.erp_v1.enumeration.MaterialTransactionType;
 import com.jovan.erp_v1.enumeration.UnitOfMeasure;
 import com.jovan.erp_v1.model.MaterialTransaction;
 
@@ -32,7 +32,7 @@ public interface MaterialTransactionRepository extends JpaRepository<MaterialTra
         List<MaterialTransaction> findByQuantity(BigDecimal quantity);
         List<MaterialTransaction> findByQuantityGreaterThan(BigDecimal quantity);
         List<MaterialTransaction> findByQuantityLessThan(BigDecimal quantity);
-        List<MaterialTransaction> findByType(TransactionType type);
+        List<MaterialTransaction> findByType(MaterialTransactionType type);
         List<MaterialTransaction> findByTransactionDate(LocalDate transactionDate);
         List<MaterialTransaction> findByTransactionDateBetween(LocalDate transactionDateStart,
                         LocalDate transactionDateEnd);

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.jovan.erp_v1.request.MaterialTransactionRequest;
 import com.jovan.erp_v1.response.MaterialTransactionResponse;
-import com.jovan.erp_v1.enumeration.TransactionType;
+import com.jovan.erp_v1.enumeration.MaterialTransactionType;
 import com.jovan.erp_v1.enumeration.UnitOfMeasure;
 import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
 import com.jovan.erp_v1.util.DateValidator;
@@ -296,7 +296,7 @@ public class MaterialTransactionService implements IMaterialTransactionService {
     }
 
     @Override
-    public List<MaterialTransactionResponse> findByType(TransactionType type) {
+    public List<MaterialTransactionResponse> findByType(MaterialTransactionType type) {
     	validateTransactionType(type);
     	List<MaterialTransaction> items = materialTransactionRepository.findByType(type);
     	if(items.isEmpty()) {
@@ -532,7 +532,7 @@ public class MaterialTransactionService implements IMaterialTransactionService {
         }
     }
     
-    private void validateTransactionType(TransactionType type) {
+    private void validateTransactionType(MaterialTransactionType type) {
     	if(type == null) {
     		throw new IllegalArgumentException("Tip za TransactionType ne sme biti null");
     	}

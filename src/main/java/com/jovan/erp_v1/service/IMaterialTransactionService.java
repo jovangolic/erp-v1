@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.time.LocalDate;
 import com.jovan.erp_v1.enumeration.UnitOfMeasure;
-import com.jovan.erp_v1.enumeration.TransactionType;
+import com.jovan.erp_v1.enumeration.MaterialTransactionType;
 import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
 import com.jovan.erp_v1.request.MaterialTransactionRequest;
 import com.jovan.erp_v1.response.MaterialTransactionResponse;
@@ -30,7 +30,7 @@ public interface IMaterialTransactionService {
         List<MaterialTransactionResponse> findByQuantity(BigDecimal quantity);
         List<MaterialTransactionResponse> findByQuantityGreaterThan(BigDecimal quantity);
         List<MaterialTransactionResponse> findByQuantityLessThan(BigDecimal quantity);
-        List<MaterialTransactionResponse> findByType(TransactionType type);
+        List<MaterialTransactionResponse> findByType(MaterialTransactionType type);
         List<MaterialTransactionResponse> findByTransactionDate(LocalDate transactionDate);
         List<MaterialTransactionResponse> findByTransactionDateBetween(LocalDate transactionDateStart,
                         LocalDate transactionDateEnd);

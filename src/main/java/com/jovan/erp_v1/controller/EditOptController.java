@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.EditOptType;
@@ -70,13 +71,13 @@ public class EditOptController {
     }
     
     @GetMapping("/by-name")
-    public ResponseEntity<EditOptResponse> findByName(String name){
+    public ResponseEntity<EditOptResponse> findByName(@RequestParam("name") String name){
     	EditOptResponse response = editOptService.findByName(name);
     	return ResponseEntity.ok(response);
     }
     
     @GetMapping("/by-value")
-    public ResponseEntity<EditOptResponse> findByValue(String value){
+    public ResponseEntity<EditOptResponse> findByValue(@RequestParam("value") String value){
     	EditOptResponse response = editOptService.findByValue(value);
     	return ResponseEntity.ok(response);
     }

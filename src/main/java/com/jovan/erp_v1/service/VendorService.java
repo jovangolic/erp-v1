@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
-import com.jovan.erp_v1.enumeration.TransactionType;
+import com.jovan.erp_v1.enumeration.MaterialTransactionType;
 import com.jovan.erp_v1.exception.MaterialNotFoundException;
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.SupplierNotFoundException;
@@ -387,7 +387,7 @@ public class VendorService implements IVendorService {
 		return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found with id "+userId));
 	}
 	
-	private void validateTransactionType(TransactionType type) {
+	private void validateTransactionType(MaterialTransactionType type) {
 		Optional.ofNullable(type)
 			.orElseThrow(() -> new ValidationException("TransactionType type must not be null"));
 	}

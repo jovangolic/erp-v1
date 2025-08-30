@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
-import com.jovan.erp_v1.enumeration.TransactionType;
+import com.jovan.erp_v1.enumeration.MaterialTransactionType;
 import com.jovan.erp_v1.model.MaterialTransaction;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +18,7 @@ public class MaterialTransactionResponse {
     private Long id;
     private MaterialResponse materialResponse;
     private BigDecimal quantity;
-    private TransactionType type;
+    private MaterialTransactionType type;
     private LocalDate transactionDate;
     private VendorResponse vendorResponse;
     private String documentReference;

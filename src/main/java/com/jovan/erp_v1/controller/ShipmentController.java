@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,7 +40,7 @@ public class ShipmentController {
 
     @PreAuthorize(RoleGroups.SHIPMENT_FULL_ACCESS)
     @PostMapping("/create/new-shipment")
-    public ResponseEntity<ShipmentResponse> create(@Valid @RequestParam ShipmentRequest request) {
+    public ResponseEntity<ShipmentResponse> create(@Valid @RequestBody ShipmentRequest request) {
         ShipmentResponse response = shipmentService.create(request);
         return ResponseEntity.ok(response);
     }
@@ -47,7 +48,7 @@ public class ShipmentController {
     @PreAuthorize(RoleGroups.SHIPMENT_FULL_ACCESS)
     @PutMapping("/update/{id}")
     public ResponseEntity<ShipmentResponse> update(@PathVariable Long id,
-            @Valid @RequestParam ShipmentRequest request) {
+            @Valid @RequestBody ShipmentRequest request) {
         ShipmentResponse response = shipmentService.update(id, request);
         return ResponseEntity.ok(response);
     }

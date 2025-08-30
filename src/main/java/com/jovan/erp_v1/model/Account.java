@@ -1,6 +1,8 @@
 package com.jovan.erp_v1.model;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jovan.erp_v1.enumeration.AccountType;
 
@@ -11,6 +13,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -37,4 +40,10 @@ public class Account {
 
     @Column(nullable = false)
     private BigDecimal balance = BigDecimal.ZERO;
+    
+    @OneToMany(mappedBy = "sourceAccount")
+    private List<Transaction> sourceTransactions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "targetAccount")
+    private List<Transaction> targetTransactions = new ArrayList<>();
 }

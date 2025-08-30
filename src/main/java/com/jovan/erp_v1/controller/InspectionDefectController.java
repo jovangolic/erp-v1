@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,14 +45,14 @@ public class InspectionDefectController {
 	
 	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
 	@PostMapping("/crete/new-inspectionDefects")
-	public ResponseEntity<InspectionDefectResponse> create(@Valid @RequestParam InspectionDefectRequest request){
+	public ResponseEntity<InspectionDefectResponse> create(@Valid @RequestBody InspectionDefectRequest request){
 		InspectionDefectResponse items = inspectionDefectService.create(request);
 		return ResponseEntity.ok(items);
 	}
 	
 	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
 	@PutMapping("/update/{id}")
-	public ResponseEntity<InspectionDefectResponse> update(@PathVariable Long id, @Valid @RequestParam InspectionDefectRequest request){
+	public ResponseEntity<InspectionDefectResponse> update(@PathVariable Long id, @Valid @RequestBody InspectionDefectRequest request){
 		InspectionDefectResponse items = inspectionDefectService.update(id, request);
 		return ResponseEntity.ok(items);
 	}

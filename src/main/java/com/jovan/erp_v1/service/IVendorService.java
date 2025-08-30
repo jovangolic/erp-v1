@@ -2,7 +2,6 @@ package com.jovan.erp_v1.service;
 
 import java.util.List;
 import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
-import com.jovan.erp_v1.model.Vendor;
 import com.jovan.erp_v1.request.VendorRequest;
 import com.jovan.erp_v1.response.VendorResponse;
 

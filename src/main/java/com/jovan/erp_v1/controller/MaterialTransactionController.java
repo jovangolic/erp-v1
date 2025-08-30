@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.MaterialTransactionStatus;
-import com.jovan.erp_v1.enumeration.TransactionType;
+import com.jovan.erp_v1.enumeration.MaterialTransactionType;
 import com.jovan.erp_v1.enumeration.UnitOfMeasure;
 import com.jovan.erp_v1.request.MaterialTransactionRequest;
 import com.jovan.erp_v1.response.MaterialTransactionResponse;
@@ -171,7 +171,7 @@ public class MaterialTransactionController {
 	
 	@PreAuthorize(RoleGroups.MATERIAL_TRANSACTION_READ_ACCESS)
 	@GetMapping("/by-type")
-	public ResponseEntity<List<MaterialTransactionResponse>> findByType(@RequestParam("type") TransactionType type){
+	public ResponseEntity<List<MaterialTransactionResponse>> findByType(@RequestParam("type") MaterialTransactionType type){
 		List<MaterialTransactionResponse> responses = materialTransactionService.findByType(type);
 		return ResponseEntity.ok(responses);
 	}
