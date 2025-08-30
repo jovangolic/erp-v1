@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.enumeration.AccountType;
 import com.jovan.erp_v1.request.AccountRequest;
 import com.jovan.erp_v1.response.AccountResponse;
+import com.jovan.erp_v1.response.AccountWithTransactionsResponse;
 import com.jovan.erp_v1.service.IAccountService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -67,6 +68,14 @@ public class AccountController {
     public ResponseEntity<List<AccountResponse>> findAll() {
         List<AccountResponse> responses = accountService.findAll();
         return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
+    // GET /accounts/detailed-account/{id} -> jedan racun sa transakcijama
+    @GetMapping("/detailed-account/{id}")
+    public ResponseEntity<AccountWithTransactionsResponse> findOneWithTransactions(@PathVariable Long id){
+    	AccountWithTransactionsResponse responses = accountService.findOneWithTransactions(id);
+    	return ResponseEntity.ok(responses);
     }
 
     @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)

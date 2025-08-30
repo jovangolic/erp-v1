@@ -13,7 +13,7 @@ public record TransactionRequest(
 		Long id,
 		@NotNull(message = "Amount is required")
         @DecimalMin(value = "0.01", inclusive = true, message = "Amount must be greater than 0")
-        BigDecimal anount,
+        BigDecimal amount,
         
         @NotNull(message = "Transaction date is required")
         @FutureOrPresent(message = "Transaction date must be in the present or future")

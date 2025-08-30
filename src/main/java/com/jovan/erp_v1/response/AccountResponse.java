@@ -1,10 +1,8 @@
 package com.jovan.erp_v1.response;
 
 import java.math.BigDecimal;
-
 import com.jovan.erp_v1.enumeration.AccountType;
 import com.jovan.erp_v1.model.Account;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,7 +17,6 @@ public class AccountResponse {
     private String accountName;
     private AccountType type;
     private BigDecimal balance;
-    
 
     public AccountResponse(Account acc) {
         this.id = acc.getId();
@@ -28,4 +25,5 @@ public class AccountResponse {
         this.type = acc.getType();
         this.balance = acc.getBalance();
     }
+    
 }

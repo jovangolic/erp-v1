@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.jovan.erp_v1.model.Account;
 import com.jovan.erp_v1.request.AccountRequest;
 import com.jovan.erp_v1.response.AccountResponse;
+import com.jovan.erp_v1.response.AccountWithTransactionsResponse;
 import com.jovan.erp_v1.util.AbstractMapper;
 
 
@@ -47,5 +48,17 @@ public class AccountMapper extends AbstractMapper<AccountRequest> {
     		return Collections.emptyList();
     	}
         return accs.stream().map(this::toResponse).collect(Collectors.toList());
+    }
+    
+    public AccountWithTransactionsResponse toResponseDetailed(Account acc) {
+    	Objects.requireNonNull(acc, "Account must not be null");
+    	return new AccountWithTransactionsResponse(acc);
+    }
+    
+    public List<AccountWithTransactionsResponse> toResponseDetailedList(List<Account> acc){
+    	if(acc == null || acc.isEmpty()) {
+    		return Collections.emptyList();
+    	}
+    	return acc.stream().map(this::toResponseDetailed).collect(Collectors.toList());
     }
 }

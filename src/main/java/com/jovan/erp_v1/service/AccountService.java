@@ -16,6 +16,7 @@ import com.jovan.erp_v1.model.Account;
 import com.jovan.erp_v1.repository.AccountRepository;
 import com.jovan.erp_v1.request.AccountRequest;
 import com.jovan.erp_v1.response.AccountResponse;
+import com.jovan.erp_v1.response.AccountWithTransactionsResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -77,7 +78,16 @@ public class AccountService implements IAccountService {
                 .orElseThrow(() -> new AccountNotFoundErrorException("Account not found  with id: " + id));
         return new AccountResponse(acc);
     }
+    
+    // Vraca jedan racun sa svim transakcijama - za detaljan prikaz
+    @Override
+	public AccountWithTransactionsResponse findOneWithTransactions(Long id) {
+    	Account acc = accountRepository.findById(id)
+                .orElseThrow(() -> new ValidationException("Account not found with id " + id));
+        return accountMapper.toResponseDetailed(acc);
+	}
 
+    // Vraca sve racune (bez transakcija) - za listu u UI
     @Override
     public List<AccountResponse> findAll() {
     	List<Account> items = accountRepository.findAll();
@@ -230,5 +240,4 @@ public class AccountService implements IAccountService {
     		throw new IllegalArgumentException("Tip za AccountType ne sme biti null");
     	}
     }
-    
 }
