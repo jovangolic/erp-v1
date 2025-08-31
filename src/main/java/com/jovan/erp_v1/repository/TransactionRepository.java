@@ -36,7 +36,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 	List<Transaction> findBySourceAccountAccountName(String accountName);
 	List<Transaction> findBySourceAccountType(AccountType type);
 	List<Transaction> findBySourceAccountAccountNumberContainingIgnoreCaseAndSourceAccountAccountNameContainingIgnoreCase(String accountNumber, String accountName);
-	List<Transaction> findByTargetAccountId(Long sourceAccountId);
+	List<Transaction> findByTargetAccountId(Long targetAccountId);
 	List<Transaction> findByTargetAccountAccountNumberContainingIgnoreCase(String accountNumber);
 	List<Transaction> findByTargetAccountAccountName(String accountName);
 	List<Transaction> findByTargetAccountType(AccountType type);

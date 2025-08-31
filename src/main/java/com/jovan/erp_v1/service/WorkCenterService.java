@@ -715,7 +715,5 @@ public class WorkCenterService implements IWorkCenterService {
         if (loc == null || loc.trim().isEmpty()) {
             throw new IllegalArgumentException("String lokacija ne sme biti null ili prazan");
         }
-    }
-
-    
+    }  
 }

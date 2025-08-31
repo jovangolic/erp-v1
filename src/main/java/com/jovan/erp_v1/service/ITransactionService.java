@@ -37,7 +37,7 @@ public interface ITransactionService {
 	List<TransactionResponse> findBySourceAccountAccountName(String accountName);
 	List<TransactionResponse> findBySourceAccountType(AccountType type);
 	List<TransactionResponse> findBySourceAccountAccountNumberContainingIgnoreCaseAndSourceAccountAccountNameContainingIgnoreCase(String accountNumber, String accountName);
-	List<TransactionResponse> findByTargetAccountId(Long sourceAccountId);
+	List<TransactionResponse> findByTargetAccountId(Long targetAccountId);
 	List<TransactionResponse> findByTargetAccountAccountNumberContainingIgnoreCase(String accountNumber);
 	List<TransactionResponse> findByTargetAccountAccountName(String accountName);
 	List<TransactionResponse> findByTargetAccountType(AccountType type);
