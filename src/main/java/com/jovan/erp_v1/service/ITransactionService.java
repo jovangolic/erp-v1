@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.jovan.erp_v1.enumeration.AccountType;
+import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.TransactionType;
+import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.request.TransactionRequest;
 import com.jovan.erp_v1.response.TransactionResponse;
 
@@ -55,4 +57,15 @@ public interface ITransactionService {
 	boolean existsByTargetAccount_AccountNumberContainingIgnoreCase(String accountNumber);
 	boolean existsByTargetAccount_AccountNameContainingIgnoreCase(String accountName);
 	boolean existsBySourceAccountIdAndTargetAccountId(Long sourceId, Long targetId);
+	
+	//transction operations
+    TransactionResponse fundTransfer(String sourceAccountNumber, String targetAccountNumber,PaymentMethod paymentMethod, User user, BigDecimal amount);
+
+    TransactionResponse cashWithdrawal(String accountNumber, BigDecimal amount,PaymentMethod paymentMethod, User user);
+
+    TransactionResponse deposit(String accountNumber, BigDecimal amount, PaymentMethod paymentMethod, User user);
+
+    TransactionResponse makePayment(String sourceAccountNumber, String targetAccountNumber, BigDecimal amount, PaymentMethod paymentMethod, User user);
+
+    TransactionResponse refund(Long originalTransactionId, User initiatingUser);
 }

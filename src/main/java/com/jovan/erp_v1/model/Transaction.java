@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.TransactionType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,6 +57,10 @@ public class Transaction {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user; // Korisnik/firma koji/a je obavio/la transakciju
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true) // nije obavezno za sve transakcije
+    private PaymentMethod paymentMethod;
 	
 	@CreatedDate
     @Column(name = "created_at", updatable = false)

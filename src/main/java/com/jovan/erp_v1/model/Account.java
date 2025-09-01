@@ -38,7 +38,7 @@ public class Account {
     @Column(nullable = false)
     private AccountType type;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
     
     @OneToMany(mappedBy = "sourceAccount")

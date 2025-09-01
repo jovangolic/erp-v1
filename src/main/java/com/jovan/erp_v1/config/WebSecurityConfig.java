@@ -74,7 +74,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/supplies", BASIC_WRITE_METHODS),
         	        Map.entry("/suppliesItems", BASIC_WRITE_METHODS),
         	        Map.entry("/taxRates", BASIC_WRITE_METHODS),
-        	        Map.entry("/vendors", BASIC_WRITE_METHODS)
+        	        Map.entry("/vendors", BASIC_WRITE_METHODS),
+        	        Map.entry("/transactions", BASIC_WRITE_METHODS)
         	    )),
         	    Map.entry("AUDITOR", Map.ofEntries(
         	        Map.entry("/eventLogs", BASIC_WRITE_METHODS)
@@ -143,7 +144,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/journalItems", BASIC_WRITE_METHODS),
         	        Map.entry("/ledgerEntries", BASIC_WRITE_METHODS),
         	        Map.entry("/sales", BASIC_WRITE_METHODS),
-        	        Map.entry("/salesOrders", BASIC_WRITE_METHODS)
+        	        Map.entry("/salesOrders", BASIC_WRITE_METHODS),
+        	        Map.entry("/transactions", BASIC_WRITE_METHODS)
         	    )),
         	    Map.entry("MANAGER", Map.ofEntries(
         	        Map.entry("/fiscalQuarters", BASIC_WRITE_METHODS),
@@ -311,7 +313,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/suppliesItems", BASIC_READ_METHODS),
         	        Map.entry("/taxRates", BASIC_READ_METHODS),
         	        Map.entry("/vendors", BASIC_READ_METHODS),
-        	        Map.entry("/workCenters", BASIC_READ_METHODS)
+        	        Map.entry("/workCenters", BASIC_READ_METHODS),
+        	        Map.entry("/transactions", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("FINANCIAL_MANAGER", Map.ofEntries(
         	        Map.entry("/accounts", BASIC_READ_METHODS),
@@ -436,7 +439,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	        Map.entry("/vendors", BASIC_READ_METHODS),
         	        Map.entry("/workCenters", BASIC_READ_METHODS),
         	        Map.entry("/defects", BASIC_READ_METHODS),
-        	        Map.entry("/inspectionDefects", BASIC_READ_METHODS)
+        	        Map.entry("/inspectionDefects", BASIC_READ_METHODS),
+        	        Map.entry("/transactions", BASIC_READ_METHODS)
         	    )),
         	    Map.entry("STORAGE_FOREMAN", Map.ofEntries(
         	        Map.entry("/capacityPlannings", BASIC_READ_METHODS),

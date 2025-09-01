@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ApiMessages {
 
-	
+	ACCOUNT_NOT_FOUND("Account does not exist"),
+	BALANCE_INSUFFICIENT_ERROR("Insufficient balance"),
+	CASH_TRANSFER_SAME_ACCOUNT_ERROR("Source and target account cannot be the same"),
     EMAIL_SUBJECT_LOGIN("New login to ERP-Storage Management System"),
     IDENTIFIER_MISSING_ERROR("Missing identifier"),
     PASSWORD_CONTAINS_WHITESPACE_ERROR("Password cannot contain any whitespace characters"),

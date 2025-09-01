@@ -3,19 +3,23 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.AccountType;
+import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.TransactionType;
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.TransactionMapper;
 import com.jovan.erp_v1.model.Account;
+import com.jovan.erp_v1.model.Role;
 import com.jovan.erp_v1.model.Transaction;
 import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.AccountRepository;
@@ -23,7 +27,10 @@ import com.jovan.erp_v1.repository.TransactionRepository;
 import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.TransactionRequest;
 import com.jovan.erp_v1.response.TransactionResponse;
+import com.jovan.erp_v1.util.ApiMessages;
 import com.jovan.erp_v1.util.DateValidator;
+import com.jovan.erp_v1.util.MoneyUtils;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,21 +39,32 @@ import lombok.RequiredArgsConstructor;
 public class TransactionService implements ITransactionService {
 
 	private final TransactionRepository transactionRepository;
-	private TransactionMapper transactionMapper;
+	private final TransactionMapper transactionMapper;
 	private final AccountRepository accountRepository;
 	private final UserRepository userRepository;
 
 	@Transactional
 	@Override
 	public TransactionResponse create(TransactionRequest request) {
-		validateBigDecimal(request.amount());
+		BigDecimal amount = MoneyUtils.normalize(request.amount());
+	    validateAmount(amount);
 		validateTransactionType(request.transactionType());
 		Account sourceAcc = validateSourceAccountId(request.sourceAccountId());
 		Account targetAcc = validateTargetAccountId(request.targetAccountId());
 		User user = validateUserId(request.userId());
-		Transaction t = transactionMapper.toEntity(request, sourceAcc, targetAcc, user);
-		Transaction saved = transactionRepository.save(t);
-		return new TransactionResponse(saved);
+		if (request.transactionType() == TransactionType.DEBIT &&
+		        sourceAcc.getBalance().compareTo(amount) < 0) {
+		        throw new ValidationException("Insufficient funds in source account");
+		}
+		sourceAcc.setBalance(MoneyUtils.subtract(sourceAcc.getBalance(), amount));
+	    targetAcc.setBalance(MoneyUtils.add(targetAcc.getBalance(), amount));
+	    accountRepository.save(sourceAcc);
+	    accountRepository.save(targetAcc);
+	    Transaction t = transactionMapper.toEntity(request, sourceAcc, targetAcc, user);
+	    t.setAmount(amount);
+	    t.setTransactionDate(request.transactionDate());
+	    Transaction saved = transactionRepository.save(t);
+	    return new TransactionResponse(saved);    
 	}
 
 	@Transactional
@@ -56,23 +74,41 @@ public class TransactionService implements ITransactionService {
 			throw new ValidationException("ID in path and body do not match");
 		}
 		Transaction t = transactionRepository.findById(id).orElseThrow(() -> new ValidationException("Transaction not found with id "+id));
-		validateBigDecimal(request.amount());
-		validateTransactionType(request.transactionType());
-		Account sourceAcc = t.getSourceAccount();
-		if(request.sourceAccountId() != null && (sourceAcc.getId() == null || !request.sourceAccountId().equals(sourceAcc.getId()))) {
-			sourceAcc = validateSourceAccountId(request.sourceAccountId());
-		}
-		Account targetAcc = t.getTargetAccount();
-		if(request.targetAccountId() != null && (targetAcc.getId() == null || !request.targetAccountId().equals(targetAcc.getId()))) {
-			targetAcc = validateTargetAccountId(request.targetAccountId());
-		}
-		User user = t.getUser();
-		if(request.userId() != null && (user.getId() == null || !request.userId().equals(user.getId()))) {
-			user = validateUserId(request.userId());
-		}
-		transactionMapper.toEntityUpdate(t, request, sourceAcc, targetAcc, user);
-		Transaction saved = transactionRepository.save(t);
-		return new TransactionResponse(saved);
+		BigDecimal oldAmount = t.getAmount();
+	    Account oldSource = t.getSourceAccount();
+	    Account oldTarget = t.getTargetAccount();
+	    BigDecimal newAmount = MoneyUtils.normalize(request.amount());
+	    validateAmount(newAmount);
+	    validateTransactionType(request.transactionType());
+	    Account newSource = oldSource;
+	    if(request.sourceAccountId() != null && !request.sourceAccountId().equals(oldSource.getId())) {
+	        newSource = validateSourceAccountId(request.sourceAccountId());
+	    }
+	    Account newTarget = oldTarget;
+	    if(request.targetAccountId() != null && !request.targetAccountId().equals(oldTarget.getId())) {
+	        newTarget = validateTargetAccountId(request.targetAccountId());
+	    }
+	    User user = t.getUser();
+	    if(request.userId() != null && !request.userId().equals(user.getId())) {
+	        user = validateUserId(request.userId());
+	    }
+	    oldSource.setBalance(MoneyUtils.add(oldSource.getBalance(), oldAmount));
+	    oldTarget.setBalance(MoneyUtils.subtract(oldTarget.getBalance(), oldAmount));
+	    if (request.transactionType() == TransactionType.DEBIT &&
+	        newSource.getBalance().compareTo(newAmount) < 0) {
+	        throw new ValidationException("Insufficient funds in source account");
+	    }
+	    newSource.setBalance(MoneyUtils.subtract(newSource.getBalance(), newAmount));
+	    newTarget.setBalance(MoneyUtils.add(newTarget.getBalance(), newAmount));
+	    accountRepository.save(oldSource);
+	    accountRepository.save(oldTarget);
+	    if (!oldSource.equals(newSource)) accountRepository.save(newSource);
+	    if (!oldTarget.equals(newTarget)) accountRepository.save(newTarget);
+	    transactionMapper.toEntityUpdate(t, request, newSource, newTarget, user);
+	    t.setAmount(newAmount);
+	    t.setTransactionDate(request.transactionDate());
+	    Transaction saved = transactionRepository.save(t);
+	    return new TransactionResponse(saved);
 	}
 
 	@Transactional
@@ -494,6 +530,198 @@ public class TransactionService implements ITransactionService {
 		return transactionRepository.existsBySourceAccountIdAndTargetAccountId(sourceId, targetId);
 	}
 	
+	@Transactional
+	@Override
+	public TransactionResponse fundTransfer(String sourceAccountNumber, String targetAccountNumber,PaymentMethod paymentMethod, User user, BigDecimal amount) {
+		Account source = validateAccountNumber(sourceAccountNumber);
+		Account target = validateAccountNumber(targetAccountNumber);
+		validateUserRole(user, RoleGroups.TRANSACTION_FULL_ACCESS);
+		validatePaymentMethod(paymentMethod);
+		validateAmount(amount);
+		if (sourceAccountNumber.equals(targetAccountNumber)) {
+            throw new ValidationException(ApiMessages.CASH_TRANSFER_SAME_ACCOUNT_ERROR.getMessage());
+        }
+		if(target == null) {
+			throw new ValidationException(ApiMessages.ACCOUNT_NOT_FOUND.getMessage());
+		}
+		BigDecimal sourceBalance = source.getBalance();
+		if(sourceBalance.compareTo(amount) < 0) {
+			throw new ValidationException(ApiMessages.BALANCE_INSUFFICIENT_ERROR.getMessage());
+		}
+		BigDecimal newSourceBalance = sourceBalance.subtract(amount);
+		source.setBalance(newSourceBalance);
+		accountRepository.save(source);
+		BigDecimal targetBalance = target.getBalance();
+		BigDecimal newTargetBalance = targetBalance.add(amount);
+		target.setBalance(newTargetBalance);
+		accountRepository.save(target);
+		Transaction t = new Transaction();
+		t.setAmount(amount);
+		t.setTransactionType(TransactionType.TRANSFER);
+		t.setSourceAccount(source);
+		t.setTargetAccount(target);
+		t.setPaymentMethod(paymentMethod != null ? paymentMethod : PaymentMethod.BANK_TRANSFER);
+		Transaction saved = transactionRepository.save(t);
+		return new TransactionResponse(saved);
+	}
+
+	@Transactional
+	@Override
+	public TransactionResponse cashWithdrawal(String accountNumber, BigDecimal amount,PaymentMethod paymentMethod, User user) {
+		validateUserRole(user, RoleGroups.TRANSACTION_FULL_ACCESS);
+		Account account = validateAccountNumber(accountNumber);
+		validatePaymentMethod(paymentMethod);
+		validateAmount(amount);
+		BigDecimal currentBalance = account.getBalance();
+		if(currentBalance.compareTo(amount) < 0) {
+			throw new ValidationException(ApiMessages.BALANCE_INSUFFICIENT_ERROR.getMessage());
+		}
+		BigDecimal newBalance = currentBalance.subtract(amount);
+		account.setBalance(newBalance);
+		accountRepository.save(account);
+		Transaction t = new Transaction();
+		t.setAmount(amount);
+		t.setTransactionType(TransactionType.WITHDRAWAL);
+		t.setSourceAccount(account);
+		t.setTargetAccount(null);
+		t.setUser(user);
+		Transaction saved = transactionRepository.save(t);
+		return new TransactionResponse(saved);
+	}
+
+	@Transactional
+	@Override
+	public TransactionResponse deposit(String accountNumber, BigDecimal amount, PaymentMethod paymentMethod, User user) {
+		validateUserRole(user, RoleGroups.TRANSACTION_FULL_ACCESS);
+		validatePaymentMethod(paymentMethod);
+	    Account targetAccount = validateAccountNumber(accountNumber);
+	    validateAmount(amount);
+	    BigDecimal newBalance = targetAccount.getBalance().add(amount);
+	    targetAccount.setBalance(newBalance);
+	    accountRepository.save(targetAccount);
+	    // Kreiranje nove transakcije
+	    Transaction transaction = new Transaction();
+	    transaction.setAmount(amount);
+	    transaction.setTransactionType(TransactionType.DEPOSIT);
+	    // Kod depozita: nema izvornog racuna (novac dolazi "spolja"), target je account
+	    transaction.setTargetAccount(targetAccount);
+	    transaction.setSourceAccount(null);	    
+	    // Setovanje korisnika koji je izvrsio transakciju
+	    transaction.setUser(user);
+	    Transaction savedTransaction = transactionRepository.save(transaction);
+	    return new TransactionResponse(savedTransaction);
+	}
+
+	@Transactional
+	@Override
+	public TransactionResponse makePayment(String sourceAccountNumber, String targetAccountNumber, BigDecimal amount, PaymentMethod paymentMethod, User user) {
+		Account source = validateAccountNumber(sourceAccountNumber);
+	    Account target = validateAccountNumber(targetAccountNumber);
+	    validateUserRole(user, RoleGroups.TRANSACTION_FULL_ACCESS);
+	    validatePaymentMethod(paymentMethod);
+	    validateAmount(amount);
+	    if (sourceAccountNumber.equals(targetAccountNumber)) {
+	        throw new ValidationException(ApiMessages.CASH_TRANSFER_SAME_ACCOUNT_ERROR.getMessage());
+	    }
+	    BigDecimal newSourceBalance = source.getBalance().subtract(amount);
+	    if(newSourceBalance.compareTo(BigDecimal.ZERO) < 0) {
+	        throw new ValidationException(ApiMessages.BALANCE_INSUFFICIENT_ERROR.getMessage());
+	    }
+	    source.setBalance(newSourceBalance);
+	    target.setBalance(target.getBalance().add(amount));
+	    accountRepository.save(source);
+	    accountRepository.save(target);
+	    Transaction t = new Transaction();
+	    t.setAmount(amount);
+	    t.setTransactionType(TransactionType.PAYMENT);
+	    t.setSourceAccount(source);
+	    t.setTargetAccount(target);
+	    t.setUser(user);
+	    t.setPaymentMethod(paymentMethod);
+	    return new TransactionResponse(transactionRepository.save(t));
+	}
+
+	@Transactional
+	@Override
+	public TransactionResponse refund(Long originalTransactionId, User initiatingUser) {
+		//trazenje originalne transakcije
+		Transaction original = transactionRepository.findById(originalTransactionId)
+	            .orElseThrow(() -> new ValidationException("Original transaction not found"));
+		validateUserRole(initiatingUser, RoleGroups.TRANSACTION_FULL_ACCESS);
+		if (original.getTransactionType() == TransactionType.REFUND) {
+	        throw new ValidationException("Cannot refund a refund transaction");
+	    }
+		//provera balansa
+		Account source = original.getTargetAccount();
+	    Account target = original.getSourceAccount();
+	    BigDecimal amount = original.getAmount();
+	    //provera da li su source i target nepostojeci
+	    if (source == null || target == null) {
+	        throw new ValidationException("Source or target account missing in original transaction");
+	    }
+	    BigDecimal sourceBalance = source.getBalance();
+	    if (sourceBalance.compareTo(amount) < 0) {
+	        throw new ValidationException(ApiMessages.BALANCE_INSUFFICIENT_ERROR.getMessage());
+	    }
+	    source.setBalance(sourceBalance.subtract(amount));
+	    accountRepository.save(source);
+	    BigDecimal targetBalance = target.getBalance();
+	    target.setBalance(targetBalance.add(amount));
+	    accountRepository.save(target);
+	    Transaction refundTransaction = new Transaction();
+	    refundTransaction.setAmount(amount);
+	    refundTransaction.setTransactionType(TransactionType.REFUND);
+	    refundTransaction.setSourceAccount(source);
+	    refundTransaction.setTargetAccount(target);
+	    refundTransaction.setUser(initiatingUser);
+	    // Opcionalno
+	    refundTransaction.setPaymentMethod(original.getPaymentMethod());
+	    Transaction savedRefund = transactionRepository.save(refundTransaction);
+	    return new TransactionResponse(savedRefund);
+	}
+	
+	private void validateUserRole(User user, String roleGroup) {
+	    if (user == null) {
+	        throw new ValidationException("User must not be null");
+	    }
+	    Set<String> allowedRoles = Arrays.stream(roleGroup
+	                    .replace("hasAnyRole(", "")
+	                    .replace(")", "")
+	                    .replace("'", "")
+	                    .split(","))
+	            .map(String::trim)
+	            .collect(Collectors.toSet());
+
+	    boolean hasRole = user.getRoles().stream()
+	            .map(Role::getName)
+	            .anyMatch(allowedRoles::contains);
+	    if (!hasRole) {
+	        throw new ValidationException("User does not have permission to perform this action");
+	    }
+	}
+	
+	private void validatePaymentMethod(PaymentMethod paymentMethod) {
+		Optional.ofNullable(paymentMethod)
+			.orElseThrow(() -> new ValidationException("PaymentMethod paymentMethod must not be null"));
+	}
+	
+	private Account validateAccountNumber(String accountNumber) {
+		Account acc = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() -> new ValidationException("Acount-number not found"));
+		if(acc == null) {
+			throw new ValidationException(ApiMessages.ACCOUNT_NOT_FOUND.getMessage());
+		}
+		return acc;
+	}
+	
+	private void validateAmount(BigDecimal amount) {
+	    amount = MoneyUtils.normalize(amount);
+	    if (!MoneyUtils.isPositive(amount)) {
+	        throw new ValidationException("Amount must be greater than 0");
+	    }
+	    if (!MoneyUtils.isMultipleOf(amount, 100)) {
+	        throw new ValidationException("Amount must be in multiples of 100");
+	    }
+	}
 	
 	private void validateTransactionType(TransactionType transactionType) {
 		Optional.ofNullable(transactionType)
@@ -567,4 +795,6 @@ public class TransactionService implements ITransactionService {
 			throw new ValidationException("Cost must have at most two decimal places.");
 		}
 	}
+
+	
 }
