@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,8 +22,10 @@ import com.jovan.erp_v1.mapper.TransactionMapper;
 import com.jovan.erp_v1.model.Account;
 import com.jovan.erp_v1.model.Role;
 import com.jovan.erp_v1.model.Transaction;
+import com.jovan.erp_v1.model.TransactionAudit;
 import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.AccountRepository;
+import com.jovan.erp_v1.repository.TransactionAuditRepository;
 import com.jovan.erp_v1.repository.TransactionRepository;
 import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.TransactionRequest;
@@ -42,6 +45,7 @@ public class TransactionService implements ITransactionService {
 	private final TransactionMapper transactionMapper;
 	private final AccountRepository accountRepository;
 	private final UserRepository userRepository;
+	private final TransactionAuditRepository transactionAuditRepository;
 
 	@Transactional
 	@Override
@@ -111,13 +115,33 @@ public class TransactionService implements ITransactionService {
 	    return new TransactionResponse(saved);
 	}
 
-	@Transactional
+	/*@Transactional
 	@Override
 	public void delete(Long id) {
 		if(!transactionRepository.existsById(id)) {
 			throw new ValidationException("Transaction not found with id "+id);
 		}
 		transactionRepository.deleteById(id);
+	}*/
+	@Transactional
+	@Override
+	public void delete(Long id) {
+	    Transaction transaction = transactionRepository.findById(id)
+	        .orElseThrow(() -> new ValidationException("Transaction not found with id " + id));
+	    TransactionAudit audit = TransactionAudit.builder()
+	            .transactionId(transaction.getId())
+	            .amount(transaction.getAmount())
+	            .transactionType(transaction.getTransactionType())
+	            .sourceAccountNumber(transaction.getSourceAccount().getAccountNumber())
+	            .targetAccountNumber(transaction.getTargetAccount().getAccountNumber())
+	            .userId(transaction.getUser().getId())
+	            .transactionDate(transaction.getTransactionDate())
+	            .deletedAt(LocalDateTime.now())
+	            .deletedBy(SecurityContextHolder.getContext().getAuthentication().getName()) // korisnicko ime
+	            .build();
+
+	    transactionAuditRepository.save(audit);
+	    transactionRepository.delete(transaction);
 	}
 
 	@Override
