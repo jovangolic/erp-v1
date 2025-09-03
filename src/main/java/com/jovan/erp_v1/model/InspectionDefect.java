@@ -32,4 +32,7 @@ public class InspectionDefect {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "defect_id", nullable = false)
     private Defect defect;
+    
+    @Column(nullable = false)
+	private Boolean confirmed = false;
 }

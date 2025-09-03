@@ -103,4 +103,7 @@ public interface InspectionDefectRepository extends JpaRepository<InspectionDefe
 	Long countByDefect_Name(String name);
 	Boolean existsByDefect_Code(String code);
 	Boolean existsByDefect_Name(String name);
+	
+	List<InspectionDefect> findByConfirmed(Boolean confirmed);
+	List<InspectionDefect> findByDefectIdAndConfirmed(Long defectId, Boolean confirmed);
 }

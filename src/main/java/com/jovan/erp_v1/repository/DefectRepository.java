@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.jovan.erp_v1.enumeration.DefectStatus;
 import com.jovan.erp_v1.enumeration.SeverityLevel;
 import com.jovan.erp_v1.model.Defect;
 
@@ -28,6 +29,18 @@ public interface DefectRepository extends JpaRepository<Defect, Long> {
 	Long countByName(String name);
 	@Query("SELECT d FROM Defect d WHERE d.severity IN :levels")
 	List<Defect> findBySeverityIn(@Param("levels") List<SeverityLevel> levels);
+	
+	@Query("SELECT d FROM Defect d " +
+	           "WHERE (:severity IS NULL OR d.severity = :severity) " +
+	           "AND (:descPart IS NULL OR LOWER(d.description) LIKE LOWER(CONCAT('%', :descPart, '%'))) " +
+	           "AND (:status IS NULL OR d.status = :status) " +
+	           "AND (:confirmed IS NULL OR d.confirmed = :confirmed)")
+	List<Defect> searchDefects(
+		    @Param("severity") SeverityLevel severity, @Param("descPart") String descPart,@Param("status") DefectStatus status,@Param("confirmed") Boolean confirmed);
+	
+	//metoda za pracenje jednog defekta
+	@Query("SELECT d FROM Defect d LEFT JOIN FETCH d.inspections WHERE d.id = :id")
+    List<Defect> trackDefect(@Param("id") Long id);
 	
 	Boolean existsByNameContainingIgnoreCase(String name);
 	Boolean existsByCodeContainingIgnoreCase(String code);

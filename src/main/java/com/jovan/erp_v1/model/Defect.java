@@ -3,6 +3,7 @@ package com.jovan.erp_v1.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jovan.erp_v1.enumeration.DefectStatus;
 import com.jovan.erp_v1.enumeration.SeverityLevel;
 
 import jakarta.persistence.CascadeType;
@@ -43,6 +44,13 @@ public class Defect {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
 	private SeverityLevel severity;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, length = 20)
+	private DefectStatus status = DefectStatus.NEW;
+	
+	@Column(nullable = false)
+	private Boolean confirmed = false;
 	
 	@OneToMany(mappedBy = "defect", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<InspectionDefect> inspections = new ArrayList<>();

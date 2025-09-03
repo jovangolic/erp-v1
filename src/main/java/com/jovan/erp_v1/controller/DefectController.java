@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.DefectStatus;
 import com.jovan.erp_v1.enumeration.SeverityLevel;
 import com.jovan.erp_v1.request.DefectRequest;
 import com.jovan.erp_v1.response.DefectResponse;
@@ -176,5 +177,47 @@ public class DefectController {
 	public ResponseEntity<Boolean> existsByCodeContainingIgnoreCase(@RequestParam("code") String code){
 		Boolean items = defectService.existsByCodeContainingIgnoreCase(code);
 		return ResponseEntity.ok(items);
+	}
+	
+	//genericka metoda
+	@PreAuthorize(RoleGroups.DEFECT_FULL_ACCESS)
+	@PostMapping("/{id}/status/{status}")
+	public ResponseEntity<DefectResponse> changeStatus(
+	        @PathVariable Long id,
+	        @PathVariable DefectStatus status) {
+	    return ResponseEntity.ok(defectService.changeStatus(id, status));
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_FULL_ACCESS)
+	@PostMapping("/{id}/confirm")
+    public ResponseEntity<DefectResponse> confirm(@PathVariable Long id) {
+        return ResponseEntity.ok(defectService.confirmDefect(id));
+    }
+
+	@PreAuthorize(RoleGroups.DEFECT_FULL_ACCESS)
+    @PostMapping("/{id}/close")
+    public ResponseEntity<DefectResponse> close(@PathVariable Long id) {
+        return ResponseEntity.ok(defectService.closeDefect(id));
+    }
+
+	@PreAuthorize(RoleGroups.DEFECT_FULL_ACCESS)
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<DefectResponse> cancel(@PathVariable Long id) {
+        return ResponseEntity.ok(defectService.cancelDefect(id));
+    }
+	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/search-defects")
+	public ResponseEntity<List<DefectResponse>> searchDefects(@RequestParam("severity") SeverityLevel severity,@RequestParam("descPart") String descPart,
+			@RequestParam("status") DefectStatus status,@RequestParam("confirmed") Boolean confirmed){
+		List<DefectResponse> items = defectService.searchDefects(severity, descPart, status, confirmed);
+		return ResponseEntity.ok(items);
+	}
+	
+	@GetMapping("/track/{id}")
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS) // ili FULL_ACCESS po potrebi
+	public ResponseEntity<DefectResponse> trackDefect(@PathVariable Long id) {
+	    DefectResponse defect = defectService.trackDefect(id);
+	    return ResponseEntity.ok(defect);
 	}
 }

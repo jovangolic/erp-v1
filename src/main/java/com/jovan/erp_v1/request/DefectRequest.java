@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.request;
 
+import com.jovan.erp_v1.enumeration.DefectStatus;
 import com.jovan.erp_v1.enumeration.SeverityLevel;
 import jakarta.validation.constraints.NotBlank;
 
@@ -12,6 +13,8 @@ public record DefectRequest(
 		@NotBlank
 		String description,
 		@NotBlank
-		SeverityLevel severity
+		SeverityLevel severity,
+		DefectStatus status,   // opciono
+        Boolean confirmed      // opciono
 		) {
 }

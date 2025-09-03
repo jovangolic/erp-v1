@@ -106,4 +106,7 @@ public interface InfInspectionDefectService {
 	Long countByDefect_Name(String name);
 	Boolean existsByDefect_Code(String code);
 	Boolean existsByDefect_Name(String name);
+	
+	List<InspectionDefectResponse> findByConfirmed(Boolean confirmed);
+	List<InspectionDefectResponse> findByDefectIdAndConfirmed(Long defectId, Boolean confirmed);
 }

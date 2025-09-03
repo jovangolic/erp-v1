@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.InspectionResult;
@@ -54,6 +55,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 	private final UserRepository userRepository;
 	private final QualityCheckRepository qualityCheckRepository;
 	
+	@Transactional
 	@Override
 	public InspectionDefectResponse create(InspectionDefectRequest request) {
 		validateInteger(request.quantityAffected());
@@ -63,6 +65,8 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		InspectionDefect saved = inspectionDefectRepository.save(df);
 		return new InspectionDefectResponse(saved);
 	}
+	
+	@Transactional
 	@Override
 	public InspectionDefectResponse update(Long id, InspectionDefectRequest request) {
 		if (!request.id().equals(id)) {
@@ -82,6 +86,8 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		InspectionDefect saved = inspectionDefectRepository.save(def);
 		return new InspectionDefectResponse(saved);
 	}
+	
+	@Transactional
 	@Override
 	public void delete(Long id) {
 		if(!inspectionDefectRepository.existsById(id)) {
@@ -89,11 +95,13 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		inspectionDefectRepository.deleteById(id);
 	}
+	
 	@Override
 	public InspectionDefectResponse findOne(Long id) {
 		InspectionDefect def = inspectionDefectRepository.findById(id).orElseThrow(() -> new ValidationException("No InspectionDefect found with id "+id));
 		return new InspectionDefectResponse(def);
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findAll() {
 		List<InspectionDefect> items = inspectionDefectRepository.findAll();
@@ -113,6 +121,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByQuantityAffectedGreaterThan(Integer quantityAffected) {
 		validateInteger(quantityAffected);
@@ -123,6 +132,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByQuantityAffectedLessThan(Integer quantityAffected) {
 		validateMinInteger(quantityAffected);
@@ -133,6 +143,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByQuantityAffectedBetween(Integer min, Integer max) {
 		validateMinAndMaxInteger(min, max);
@@ -143,6 +154,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspectionId(Long inspectionId) {
 		validateInspectionId(inspectionId);
@@ -153,11 +165,13 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public boolean existsByInspectionCode(String inspectionCode) {
 		validateString(inspectionCode);
 		return inspectionDefectRepository.existsByInspectionCode(inspectionCode);
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_CodeLikeIgnoreCase(String inspectionCode) {
 		validateString(inspectionCode);
@@ -168,6 +182,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Type(InspectionType type) {
 		validateInspectionType(type);
@@ -178,6 +193,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Result(InspectionResult result) {
 		validateInspectionResult(result);
@@ -188,6 +204,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Notes(String notes) {
 		validateString(notes);
@@ -198,6 +215,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_TypeAndInspection_Result(InspectionType type,
 			InspectionResult result) {
@@ -210,6 +228,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_NotesAndInspection_Type(String notes, InspectionType type) {
 		validateString(notes);
@@ -221,6 +240,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_NotesAndInspection_Result(String notes,
 			InspectionResult result) {
@@ -233,6 +253,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_InspectionDate(LocalDateTime inspectionDate) {
 		DateValidator.validateNotNull(inspectionDate, "Inspection date");
@@ -244,6 +265,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_InspectionDateBefore(LocalDateTime inspectionDate) {
 		DateValidator.validateNotInFuture(inspectionDate, "Inspection date before");
@@ -255,6 +277,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_InspectionDateAfter(LocalDateTime inspectionDate) {
 		DateValidator.validateNotInPast(inspectionDate, "Inspection date after");
@@ -266,6 +289,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_InspectionDateBetween(LocalDateTime start,
 			LocalDateTime end) {
@@ -279,6 +303,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_InspectionDateAndInspection_Result(
 			LocalDateTime inspectionDate, InspectionResult result) {
@@ -293,6 +318,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_InspectorId(Long inspectorId) {
 		validateUserId(inspectorId);
@@ -303,6 +329,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_InspectorFirstNameContainingIgnoreCaseAndInspection_InspectorLastNameContainingIgnoreCase(
 			String firstName, String lastName) {
@@ -315,6 +342,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_InspectorEmailLikeIgnoreCase(String inspectorEmail) {
 		validateString(inspectorEmail);
@@ -325,6 +353,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_InspectorPhoneNumberLikeIgnoreCase(
 			String inspectorPhoneNumber) {
@@ -336,6 +365,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QuantityInspected(Integer quantityInspected) {
 		validateInteger(quantityInspected);
@@ -346,6 +376,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QuantityInspectedGreaterThan(Integer quantityInspected) {
 		validateInteger(quantityInspected);
@@ -356,6 +387,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QuantityInspectedLessThan(Integer quantityInspected) {
 		validateMinInteger(quantityInspected);
@@ -366,6 +398,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QuantityInspectedBetween(Integer min, Integer max) {
 		validateMinAndMaxInteger(min, max);
@@ -376,6 +409,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QuantityAccepted(Integer quantityAccepted) {
 		validateInteger(quantityAccepted);
@@ -386,6 +420,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QuantityAcceptedGreaterThan(Integer quantityAccepted) {
 		validateInteger(quantityAccepted);
@@ -396,6 +431,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QuantityAcceptedLessThan(Integer quantityAccepted) {
 		validateMinInteger(quantityAccepted);
@@ -406,6 +442,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QuantityAcceptedBetween(Integer min, Integer max) {
 		validateMinAndMaxInteger(min, max);
@@ -416,6 +453,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QuantityRejected(Integer quantityRejected) {
 		validateInteger(quantityRejected);
@@ -426,6 +464,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QuantityRejectedGreaterThan(Integer quantityRejected) {
 		validateInteger(quantityRejected);
@@ -436,6 +475,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QuantityRejectedLessThan(Integer quantityRejected) {
 		validateMinInteger(quantityRejected);
@@ -446,6 +486,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QuantityRejectedBetween(Integer min, Integer max) {
 		validateMinAndMaxInteger(min, max);
@@ -456,6 +497,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_Id(Long qualityCheckId) {
 		validateQualityCheckId(qualityCheckId);
@@ -466,6 +508,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_LocDate(LocalDateTime locDate) {
 		DateValidator.validateNotNull(locDate, "Date-time");
@@ -477,6 +520,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_LocDateAfter(LocalDateTime locDate) {
 		DateValidator.validateNotInPast(locDate, "Date-after");
@@ -488,6 +532,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_LocDateBefore(LocalDateTime locDate) {
 		DateValidator.validateNotInFuture(locDate, "Date-before");
@@ -499,6 +544,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_LocDateBetween(LocalDateTime start,
 			LocalDateTime end) {
@@ -512,6 +558,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_Notes(String notes) {
 		validateString(notes);
@@ -522,6 +569,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_ReferenceId(Long referenceId) {
 		validateReferenceId(referenceId);
@@ -532,6 +580,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_ReferenceType(ReferenceType referenceType) {
 		validateReferenceType(referenceType);
@@ -542,6 +591,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_CheckType(QualityCheckType checkType) {
 		validateQualityCheckType(checkType);
@@ -552,6 +602,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_Status(QualityCheckStatus status) {
 		validateQualityCheckStatus(status);
@@ -562,6 +613,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_ReferenceTypeAndInspection_QualityCheck_CheckType(
 			ReferenceType referenceType, QualityCheckType checkType) {
@@ -575,6 +627,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_ReferenceTypeAndInspection_QualityCheck_Status(
 			ReferenceType referenceType, QualityCheckStatus status) {
@@ -588,6 +641,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_QualityCheck_CheckTypeAndInspection_QualityCheck_Status(
 			QualityCheckType checkType, QualityCheckStatus status) {
@@ -601,6 +655,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Product_Id(Long productId) {
 		validateProductId(productId);
@@ -611,6 +666,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Product_CurrentQuantity(BigDecimal currentQuantity) {
 		validateBigDecimal(currentQuantity);
@@ -621,6 +677,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Product_CurrentQuantityGreaterThan(
 			BigDecimal currentQuantity) {
@@ -632,6 +689,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Product_CurrentQuantityLessThan(BigDecimal currentQuantity) {
 		validateBigDecimalNonNegative(currentQuantity);
@@ -642,6 +700,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Product_CurrentQuantityBetween(BigDecimal min,
 			BigDecimal max) {
@@ -653,6 +712,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Product_NameContainingIgnoreCase(String productName) {
 		validateString(productName);
@@ -663,6 +723,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Product_UnitMeasure(UnitMeasure unitMeasure) {
 		validateUnitMeasure(unitMeasure);
@@ -673,6 +734,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Product_SupplierType(SupplierType supplierType) {
 		validateSupplierType(supplierType);
@@ -683,6 +745,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Product_StorageType(StorageType storageType) {
 		validateStorageType(storageType);
@@ -693,6 +756,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Product_GoodsType(GoodsType goodsType) {
 		validateGoodsType(goodsType);
@@ -703,6 +767,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByInspection_Batch_Id(Long batchId) {
 		validateBatchId(batchId);
@@ -713,6 +778,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByDefect_CodeContainingIgnoreCase(String code) {
 		validateString(code);
@@ -723,6 +789,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByDefect_NameContainingIgnoreCase(String name) {
 		validateString(name);
@@ -733,6 +800,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByDefect_DescriptionContainingIgnoreCase(String description) {
 		validateString(description);
@@ -743,6 +811,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByDefect_CodeContainingIgnoreCaseAndDefect_NameContainingIgnoreCase(
 			String code, String name) {
@@ -755,6 +824,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByDefect_Severity(SeverityLevel severity) {
 		validateSeverityLevel(severity);
@@ -765,6 +835,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByDefect_CodeContainingIgnoreCaseAndDefect_Severity(String code,
 			SeverityLevel severity) {
@@ -777,6 +848,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByDefect_NameContainingIgnoreCaseAndDefect_Severity(String name,
 			SeverityLevel severity) {
@@ -790,6 +862,7 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<InspectionDefectResponse> findByDefect_SeverityAndDefect_DescriptionContainingIgnoreCase(
 			SeverityLevel severity, String descPart) {
@@ -803,30 +876,57 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public Long countByDefect_Severity(SeverityLevel severity) {
 		validateSeverityLevel(severity);
 		return inspectionDefectRepository.countByDefect_Severity(severity);
 	}
+	
 	@Override
 	public Long countByDefect_Code(String code) {
 		validateString(code);
 		return inspectionDefectRepository.countByDefect_Code(code);
 	}
+	
 	@Override
 	public Long countByDefect_Name(String name) {
 		validateString(name);
 		return inspectionDefectRepository.countByDefect_Name(name);
 	}
+	
 	@Override
 	public Boolean existsByDefect_Code(String code) {
 		validateString(code);
 		return inspectionDefectRepository.existsByDefect_Code(code);
 	}
+	
 	@Override
 	public Boolean existsByDefect_Name(String name) {
 		validateString(name);
 		return inspectionDefectRepository.existsByDefect_Name(name);
+	}
+	
+	@Override
+	public List<InspectionDefectResponse> findByConfirmed(Boolean confirmed) {
+		List<InspectionDefect> items = inspectionDefectRepository.findByConfirmed(confirmed);
+		if(items.isEmpty()) {
+			String msg = String.format("No InspectionDefect for confirmed %b, found", confirmed);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<InspectionDefectResponse> findByDefectIdAndConfirmed(Long defectId, Boolean confirmed) {
+		validateDefectId(defectId);
+		List<InspectionDefect> items = inspectionDefectRepository.findByDefectIdAndConfirmed(defectId, confirmed);
+		if(items.isEmpty()) {
+			String msg = String.format("No InspectionDefect for defect-id %d and confirmed %b, found",
+					defectId,confirmed);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
 	
 	private void validateString(String str) {
@@ -988,4 +1088,5 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return batchRepository.findById(batchId).orElseThrow(() -> new ValidationException("Batch not found with id "+batchId));
 	}
+	
 }

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.jovan.erp_v1.enumeration.DefectStatus;
 import com.jovan.erp_v1.enumeration.SeverityLevel;
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ValidationException;
@@ -228,6 +229,91 @@ public class DefectService implements IDefectService {
 		return defectRepository.existsByCodeContainingIgnoreCase(code);
 	}
 	
+	@Transactional
+	@Override
+	public DefectResponse confirmDefect(Long id) {
+		Defect defect = defectRepository.findById(id).orElseThrow(() -> new ValidationException("Defect not found with id "+id));
+		defect.setConfirmed(true);
+		defect.setStatus(DefectStatus.CONFIRMED);
+		defect.getInspections().stream()
+			.filter(ins -> ins.getQuantityAffected() > 0)
+			.forEach(ins -> ins.setConfirmed(true));
+		defectRepository.save(defect);
+		return new DefectResponse(defect);
+	}
+	
+	@Transactional
+	@Override
+	public DefectResponse closeDefect(Long id) {
+		Defect defect = defectRepository.findById(id).orElseThrow(() -> new ValidationException("Defect not found with id "+id));
+		if (defect.getStatus() != DefectStatus.CONFIRMED) {
+	        throw new ValidationException("Only CONFIRMED defects can be closed");
+	    }
+	    defect.setStatus(DefectStatus.CLOSED);
+	    return new DefectResponse(defectRepository.save(defect));
+	}
+
+	@Transactional
+	@Override
+	public DefectResponse cancelDefect(Long id) {
+		Defect defect = defectRepository.findById(id).orElseThrow(() -> new ValidationException("Defect not found with id "+id));
+		if (defect.getStatus() != DefectStatus.NEW && defect.getStatus() != DefectStatus.CONFIRMED) {
+		    throw new ValidationException("Only NEW or CONFIRMED defects can be cancelled");
+		}
+		defect.setStatus(DefectStatus.CANCELLED);
+		return new DefectResponse(defect);
+	}
+	
+	//genericka metoda za dodavanje novih defekt-statusa
+	@Transactional
+	@Override
+	public DefectResponse changeStatus(Long id, DefectStatus newStatus) {
+		validateDefectStatus(newStatus);
+		Defect defect = defectRepository.findById(id)
+		        .orElseThrow(() -> new ValidationException("Defect not found with id " + id));
+		if (defect.getStatus() == DefectStatus.CLOSED) {
+            throw new ValidationException("Closed defects cannot change status");
+        }
+        if (newStatus == DefectStatus.CONFIRMED) {
+            if (defect.getStatus() != DefectStatus.NEW) {
+                throw new ValidationException("Only NEW defects can be confirmed");
+            }
+            defect.setConfirmed(true);
+            defect.getInspections().forEach(ins -> ins.setConfirmed(true));
+        }
+        defect.setStatus(newStatus);
+        return new DefectResponse(defectRepository.save(defect));
+	}
+	
+	@Override
+	public List<DefectResponse> searchDefects(SeverityLevel severity, String descPart, DefectStatus status,
+			Boolean confirmed) {
+		if (severity != null) validaSeverityLevel(severity);
+	    if (descPart != null && !descPart.trim().isEmpty()) validateString(descPart);
+	    if (status != null) validateDefectStatus(status);
+	    if (severity == null && (descPart == null || descPart.trim().isEmpty()) 
+	            && status == null && confirmed == null) {
+	        return defectRepository.findAll().stream()
+	                .map(defectMapper::toResponse)
+	                .collect(Collectors.toList());
+	    }
+	    List<Defect> items = defectRepository.searchDefects(severity, descPart, status, confirmed);
+	    return items.stream()
+	            .map(defectMapper::toResponse)
+	            .collect(Collectors.toList());
+	}
+	
+	@Transactional(readOnly = true)
+	@Override
+	public DefectResponse trackDefect(Long id) {
+		List<Defect> defects = defectRepository.trackDefect(id);
+	    if (defects.isEmpty()) {
+	        throw new NoDataFoundException("Defect with id " + id + " not found");
+	    }
+	    Defect defect = defects.get(0);
+	    return new DefectResponse(defect);
+	}
+	
 	private void validateString(String str) {
 		if(str == null || str.trim().isEmpty()) {
 			throw new ValidationException("String must not be null nor empty");
@@ -273,6 +359,11 @@ public class DefectService implements IDefectService {
 	            throw new ValidationException(fieldName + " must not be null or empty");
 	        }
 	    }
+	}
+	
+	private void validateDefectStatus(DefectStatus newStatus) {
+		Optional.ofNullable(newStatus)
+			.orElseThrow(() -> new ValidationException("DefectStatus newStatus must not be null"));
 	}
 
 }

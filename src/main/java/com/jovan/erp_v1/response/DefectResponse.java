@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.response;
 
+import com.jovan.erp_v1.enumeration.DefectStatus;
 import com.jovan.erp_v1.enumeration.SeverityLevel;
 import com.jovan.erp_v1.model.Defect;
 
@@ -17,6 +18,8 @@ public class DefectResponse {
 	private String name;
 	private String description;
 	private SeverityLevel severity;
+	private DefectStatus status; 
+    private Boolean confirmed;
 	
 	public DefectResponse(Defect d) {
 		this.id = d.getId();
@@ -24,6 +27,7 @@ public class DefectResponse {
 		this.name = d.getName();
 		this.description = d.getDescription();
 		this.severity = d.getSeverity();
-		
+		this.status = d.getStatus();
+		this.confirmed = d.getConfirmed();
 	}
 }

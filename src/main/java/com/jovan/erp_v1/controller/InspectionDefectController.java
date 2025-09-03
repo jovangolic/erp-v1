@@ -599,4 +599,18 @@ public class InspectionDefectController {
 		Boolean items = inspectionDefectService.existsByDefect_Name(name);
 		return ResponseEntity.ok(items);
 	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_READ_ACCESS)
+	@GetMapping("/confirmed")
+	public ResponseEntity<List<InspectionDefectResponse>> findByConfirmed(@RequestParam("confirmed") Boolean confirmed){
+		List<InspectionDefectResponse> items = inspectionDefectService.findByConfirmed(confirmed);
+		return ResponseEntity.ok(items);
+	}
+	
+	@GetMapping("/defects/{defectId}/confirmed")
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_READ_ACCESS)
+	public ResponseEntity<List<InspectionDefectResponse>> findByDefectIdAndConfirmed(@PathVariable Long defectId,@RequestParam("confirmed") Boolean confirmed){
+		List<InspectionDefectResponse> items = inspectionDefectService.findByDefectIdAndConfirmed(defectId, confirmed);
+		return ResponseEntity.ok(items);
+	}
 }

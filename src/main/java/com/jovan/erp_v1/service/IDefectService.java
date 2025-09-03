@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.service;
 
 import java.util.List;
+import com.jovan.erp_v1.enumeration.DefectStatus;
 import com.jovan.erp_v1.enumeration.SeverityLevel;
 import com.jovan.erp_v1.request.DefectRequest;
 import com.jovan.erp_v1.response.DefectResponse;
@@ -28,4 +29,14 @@ public interface IDefectService {
 	List<DefectResponse> findBySeverityIn( List<SeverityLevel> levels);
 	Boolean existsByNameContainingIgnoreCase(String name);
 	Boolean existsByCodeContainingIgnoreCase(String code);
+	
+	List<DefectResponse> searchDefects( SeverityLevel severity, String descPart, DefectStatus status, Boolean confirmed);
+	DefectResponse trackDefect(Long id);
+	
+	//posebne metode za svaku konstantu iz defect-status enuma
+	DefectResponse confirmDefect(Long id);
+	DefectResponse closeDefect(Long id);
+	DefectResponse cancelDefect(Long id);
+	//genericka metoda za dodavanje novih defekt-statusa
+	DefectResponse changeStatus(Long id, DefectStatus newStatus);
 }
