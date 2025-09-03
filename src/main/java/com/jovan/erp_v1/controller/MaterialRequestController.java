@@ -58,7 +58,7 @@ public class MaterialRequestController {
 
     @PreAuthorize(RoleGroups.MATERIAL_REQUEST_READ_ACCESS)
     @GetMapping("/find-one/{id}")
-    public ResponseEntity<MaterialRequestResponse> findOne(Long id) {
+    public ResponseEntity<MaterialRequestResponse> findOne(@PathVariable Long id) {
         MaterialRequestResponse response = materialRequestService.findOne(id);
         return ResponseEntity.ok(response);
     }

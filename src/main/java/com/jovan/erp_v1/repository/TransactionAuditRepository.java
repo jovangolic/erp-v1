@@ -13,7 +13,8 @@ public interface TransactionAuditRepository extends JpaRepository<TransactionAud
 
 	List<TransactionAudit> findByUserId(Long userId);
     List<TransactionAudit> findByTransactionId(Long transactionId);
-    List<TransactionAudit> findByAccountNumberContainingIgnoreCase(String accountNumber);
+    List<TransactionAudit> findBySourceAccountNumberContainingIgnoreCase(String sourceAccountNumber);
+    List<TransactionAudit> findByTargetAccountNumberContainingIgnoreCase(String targetAccountNumber);
     List<TransactionAudit> findByTransactionType(TransactionType transactionType);
     
 }

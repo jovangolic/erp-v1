@@ -226,7 +226,8 @@ public class ShiftPlanningController {
 
     @PreAuthorize(RoleGroups.SHIFT_PLANNING_READ_ACCESS)
     @GetMapping("/employee/{employeeId}/date-shift-type")
-    public ResponseEntity<Boolean> existsByEmployee_IdAndDateAndShiftType(Long employeeId, LocalDate date,
+    public ResponseEntity<Boolean> existsByEmployee_IdAndDateAndShiftType(@PathVariable Long employeeId,
+    		@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam("shiftType") ShiftType shiftType) {
         Boolean response = shiftPlanningService.existsByEmployee_IdAndDateAndShiftType(employeeId, date, shiftType);
         return ResponseEntity.ok(response);

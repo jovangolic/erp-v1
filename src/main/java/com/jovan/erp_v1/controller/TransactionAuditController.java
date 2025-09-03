@@ -37,9 +37,15 @@ public class TransactionAuditController {
 		return ResponseEntity.ok(items);
 	}
 	
-	@GetMapping("/by-account-number")
-	public ResponseEntity<List<TransactionAuditResponse>> findByAccountNumberContainingIgnoreCase(@RequestParam("accountNumber") String accountNumber){
-		List<TransactionAuditResponse> items = transactionAuditService.findByAccountNumberContainingIgnoreCase(accountNumber);
+	@GetMapping("/by-source-account-number")
+	public ResponseEntity<List<TransactionAuditResponse>> findBySourceAccountNumberContainingIgnoreCase(@RequestParam("sourceAccountNumber") String sourceAccountNumber){
+		List<TransactionAuditResponse> items = transactionAuditService.findBySourceAccountNumberContainingIgnoreCase(sourceAccountNumber);
+		return ResponseEntity.ok(items);
+	}
+	
+	@GetMapping("/by-target-account-number")
+	public ResponseEntity<List<TransactionAuditResponse>> findByTargetAccountNumberContainingIgnoreCase(@RequestParam("targetAccountNumber") String targetAccountNumber){
+		List<TransactionAuditResponse> items = transactionAuditService.findByTargetAccountNumberContainingIgnoreCase(targetAccountNumber);
 		return ResponseEntity.ok(items);
 	}
 	

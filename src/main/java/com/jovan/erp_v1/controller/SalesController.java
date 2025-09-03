@@ -97,63 +97,63 @@ public class SalesController {
 	//nove metode
 	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/buyer/{buyerId}")
-	public ResponseEntity<List<SalesResponse>> findByBuyer_Id(Long buyerId){
+	public ResponseEntity<List<SalesResponse>> findByBuyer_Id(@PathVariable Long buyerId){
 		List<SalesResponse> responses = salesService.findByBuyer_Id(buyerId);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-company-name")
-	public ResponseEntity<List<SalesResponse>> findByBuyer_CompanyNameContainingIgnoreCase(String buyerCompanyName){
+	public ResponseEntity<List<SalesResponse>> findByBuyer_CompanyNameContainingIgnoreCase(@RequestParam("buyerCompanyName") String buyerCompanyName){
 		List<SalesResponse> responses = salesService.findByBuyer_CompanyNameContainingIgnoreCase(buyerCompanyName);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-pib")
-	public ResponseEntity<List<SalesResponse>> findByBuyer_PibContainingIgnoreCase(String buyerPib){
+	public ResponseEntity<List<SalesResponse>> findByBuyer_PibContainingIgnoreCase(@RequestParam("buyerPib") String buyerPib){
 		List<SalesResponse> responses = salesService.findByBuyer_PibContainingIgnoreCase(buyerPib);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-address")
-	public ResponseEntity<List<SalesResponse>> findByBuyer_AddressContainingIgnoreCase(String buyerAddress){
+	public ResponseEntity<List<SalesResponse>> findByBuyer_AddressContainingIgnoreCase(@RequestParam("buyerAddress") String buyerAddress){
 		List<SalesResponse> responses = salesService.findByBuyer_AddressContainingIgnoreCase(buyerAddress);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-contact-person")
-	public ResponseEntity<List<SalesResponse>> findByBuyer_ContactPerson(String contactPerson){
+	public ResponseEntity<List<SalesResponse>> findByBuyer_ContactPerson(@RequestParam("contactPerson") String contactPerson){
 		List<SalesResponse> responses = salesService.findByBuyer_ContactPerson(contactPerson);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-email")
-	public ResponseEntity<List<SalesResponse>> findByBuyer_EmailContainingIgnoreCase(String buyerEmail){
+	public ResponseEntity<List<SalesResponse>> findByBuyer_EmailContainingIgnoreCase(@RequestParam("buyerEmail") String buyerEmail){
 		List<SalesResponse> responses = salesService.findByBuyer_EmailContainingIgnoreCase(buyerEmail);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-phone-number")
-	public ResponseEntity<List<SalesResponse>> findByBuyer_PhoneNumber(String buyerPhoneNumber){
+	public ResponseEntity<List<SalesResponse>> findByBuyer_PhoneNumber(@RequestParam("buyerPhoneNumber") String buyerPhoneNumber){
 		List<SalesResponse> responses = salesService.findByBuyer_PhoneNumber(buyerPhoneNumber);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-total-price-max")
-	public ResponseEntity<List<SalesResponse>> findByTotalPriceGreaterThan(BigDecimal totalPrice){
+	public ResponseEntity<List<SalesResponse>> findByTotalPriceGreaterThan(@RequestParam("totalPrice") BigDecimal totalPrice){
 		List<SalesResponse> responses = salesService.findByTotalPriceGreaterThan(totalPrice);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
 	@GetMapping("/search/by-total-price-min")
-	public ResponseEntity<List<SalesResponse>> findByTotalPriceLessThan(BigDecimal totalPrice){
+	public ResponseEntity<List<SalesResponse>> findByTotalPriceLessThan(@RequestParam("totalPrice") BigDecimal totalPrice){
 		List<SalesResponse> responses = salesService.findByTotalPriceLessThan(totalPrice);
 		return ResponseEntity.ok(responses);
 	}

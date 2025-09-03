@@ -291,7 +291,7 @@ public class InventoryItemsController {
 	}
 	
 	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_READ_ACCESS)
-	@GetMapping("/search/inventory-date-and-storage-foreman/{storageForemanId}")
+	@GetMapping("/search/inventory-date-and-storage-foreman/{foremanId}")
 	public ResponseEntity<List<InventoryItemsResponse>> findByInventoryDateAndInventoryStorageForemanId(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
 			@PathVariable Long foremanId){
 		List<InventoryItemsResponse> responses = inventoryItemsService.findByInventoryDateAndInventoryStorageForemanId(date, foremanId);

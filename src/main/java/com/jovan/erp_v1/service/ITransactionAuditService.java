@@ -8,7 +8,8 @@ public interface ITransactionAuditService {
 
 	List<TransactionAuditResponse> findByUserId(Long userId);
     List<TransactionAuditResponse> findByTransactionId(Long transactionId);
-    List<TransactionAuditResponse> findByAccountNumberContainingIgnoreCase(String accountNumber);
+    List<TransactionAuditResponse> findBySourceAccountNumberContainingIgnoreCase(String sourceAccountNumber);
+    List<TransactionAuditResponse> findByTargetAccountNumberContainingIgnoreCase(String targetAccountNumber);
     List<TransactionAuditResponse> findByTransactionType(TransactionType transactionType);
     List<TransactionAuditResponse> findAll();
 	

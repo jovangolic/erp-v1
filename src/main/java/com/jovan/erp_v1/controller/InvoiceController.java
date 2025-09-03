@@ -51,8 +51,8 @@ public class InvoiceController {
 	
 	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
 	@PutMapping("/update/{invoiceId}")
-	public ResponseEntity<InvoiceResponse> updateInvoice(@PathVariable Long invoideId, @Valid @RequestBody InvoiceRequest request){
-		InvoiceResponse updated = invoiceService.updateInvoice(invoideId, request);
+	public ResponseEntity<InvoiceResponse> updateInvoice(@PathVariable Long invoiceId, @Valid @RequestBody InvoiceRequest request){
+		InvoiceResponse updated = invoiceService.updateInvoice(invoiceId, request);
 		return ResponseEntity.ok(updated);
 	}
 	

@@ -181,7 +181,7 @@ public class BillOfMaterialsController {
     
     @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_READ_ACCESS)
     @GetMapping("/parent-product/{parentProductId}/component/{componentId}")
-    public ResponseEntity<BillOfMaterialsResponse>  findByParentProductIdAndComponentId(Long parentProductId, Long componentId){
+    public ResponseEntity<BillOfMaterialsResponse>  findByParentProductIdAndComponentId(@PathVariable Long parentProductId,@PathVariable Long componentId){
     	BillOfMaterialsResponse responses = billOfMaterialsService.findByParentProductIdAndComponentId(parentProductId, componentId);
     	return ResponseEntity.ok(responses);	
     }

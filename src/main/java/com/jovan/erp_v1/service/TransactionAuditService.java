@@ -40,6 +40,7 @@ public class TransactionAuditService implements ITransactionAuditService {
 		}
 		return items.stream().map(mapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<TransactionAuditResponse> findByTransactionId(Long transactionId) {
 		if(transactionId == null) {
@@ -52,16 +53,30 @@ public class TransactionAuditService implements ITransactionAuditService {
 		}
 		return items.stream().map(mapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
-	public List<TransactionAuditResponse> findByAccountNumberContainingIgnoreCase(String accountNumber) {
-		validateAccountNumber(accountNumber);
-		List<TransactionAudit> items = transactionAuditRepository.findByAccountNumberContainingIgnoreCase(accountNumber);
+	public List<TransactionAuditResponse> findBySourceAccountNumberContainingIgnoreCase(String sourceAccountNumber) {
+		validateAccountNumber(sourceAccountNumber);
+		List<TransactionAudit> items = transactionAuditRepository.findBySourceAccountNumberContainingIgnoreCase(sourceAccountNumber);
 		if(items.isEmpty()) {
-			String msg = String.format("No TransactionAudit found for account-number %s", accountNumber);
+			String msg = String.format("No TransactionAudit found for source-account-number %s", sourceAccountNumber);
 			throw new NoDataFoundException(msg);
 		}
 		return items.stream().map(mapper::toResponse).collect(Collectors.toList());
 	}
+	
+	
+	@Override
+	public List<TransactionAuditResponse> findByTargetAccountNumberContainingIgnoreCase(String targetAccountNumber) {
+		validateAccountNumber(targetAccountNumber);
+		List<TransactionAudit> items = transactionAuditRepository.findByTargetAccountNumberContainingIgnoreCase(targetAccountNumber);
+		if(items.isEmpty()) {
+			String msg = String.format("No TransactionAudit found for target-account-number %s", targetAccountNumber);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(mapper::toResponse).collect(Collectors.toList());
+	}
+	
 	@Override
 	public List<TransactionAuditResponse> findByTransactionType(TransactionType transactionType) {
 		validateTransactionType(transactionType);
@@ -72,6 +87,7 @@ public class TransactionAuditService implements ITransactionAuditService {
 		}
 		return items.stream().map(mapper::toResponse).collect(Collectors.toList());
 	}
+	
 	@Override
 	public List<TransactionAuditResponse> findAll() {
 		List<TransactionAudit> items = transactionAuditRepository.findAll();
@@ -100,4 +116,5 @@ public class TransactionAuditService implements ITransactionAuditService {
 		}
 		return acc;
 	}
+	
 }

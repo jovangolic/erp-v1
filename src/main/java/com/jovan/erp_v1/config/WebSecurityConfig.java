@@ -599,6 +599,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                                                 auth.requestMatchers("/admin/**", "/users/create-admin/**","/companyEmail/**","/email/**")
                                                 .hasRole("SUPERADMIN");
                                                 auth.requestMatchers("/user/**", "/role/**", "/users/admin/**","/email/**").hasRole("ADMIN");
+                                                auth.requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll();
                                                 
                                                 WRITE_ACCESS.forEach((role, endpoints) -> {
                                                     endpoints.forEach((pattern, methods) -> {
