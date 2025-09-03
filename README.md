@@ -1,8 +1,19 @@
-#Currenty doing refurbishing, use Eclipse or InteliJ
+ERP Backend System G-soft ERP for micro, small and medium-sized enterprises
+Description:
+G-soft is an ERP software developed with the aim of helping micro, small and medium-sized enterprises to improve, offer and expand their business.
+It was developed using SOLID principles of software development, which makes it sustainable, easily upgradeable and suitable for long-term maintenance. It is these features that make G-soft a valuable product for IT companies and potential partners.
 
-ERP Backend System — SLAM (Storage, Logistics and Accounting Management)
+Current functionalities:
+• Storage
+• Logistics
+• Accounting
+• Material management
+• Production planning
+• Quality control
+Disclaimer:
 
-This is the backend component of SLAM, a modular ERP system designed specifically for micro, small, and medium-sized enterprises (MSMEs) to streamline warehouse, logistics, and accounting operations.
+G-soft is not a copy of existing ERP systems, but an original solution tailored to local market needs.
+
 
     ⚠️ Disclaimer: This system is not a copy of any existing ERP solution, including SAP. SLAM is an original software product designed and developed from scratch.
 
