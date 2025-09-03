@@ -1,5 +1,5 @@
-ERP Backend System G-soft ERP for micro, small and medium-sized enterprises
-Description:
+## ERP Backend System G-soft ERP for micro, small and medium-sized enterprises
+## Description:
 G-soft is an ERP software developed with the aim of helping micro, small and medium-sized enterprises to improve, offer and expand their business.
 It was developed using SOLID principles of software development, which makes it sustainable, easily upgradeable and suitable for long-term maintenance. It is these features that make G-soft a valuable product for IT companies and potential partners.
 
