@@ -1,7 +1,5 @@
 package com.jovan.erp_v1.controller;
 
-
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +30,6 @@ import com.jovan.erp_v1.response.UserResponse;
 import com.jovan.erp_v1.security.JwtService;
 import com.jovan.erp_v1.service.ITokenService;
 import com.jovan.erp_v1.service.IUserService;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -101,6 +99,17 @@ public class AuthController {
                         jwtToken,
                         refreshToken,
                         user.getRoles().stream().map(Role::getName).toList()));
+    }
+    
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("Invalid Authorization header");
+        }
+        String token = authHeader.substring(7);
+        tokenService.invalidateToken(token);
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok("User logged out successfully.");
     }
 
     @PostMapping("/refresh")

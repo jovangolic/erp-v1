@@ -288,6 +288,14 @@ public class DefectService implements IDefectService {
 	}
 	
 	@Override
+	public List<DefectResponse> findByReports(Long id, String description) {
+		if(id != null) validateDefectId(id);
+	    if(description != null && !description.trim().isEmpty()) validateString(description);
+		List<Defect> items = defectRepository.findByReports(id, description);
+		return items.stream().map(defectMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	@Override
 	public List<DefectResponse> searchDefects(SeverityLevel severity, String descPart, DefectStatus status,
 			Boolean confirmed) {
 		if (severity != null) validaSeverityLevel(severity);
@@ -363,7 +371,7 @@ public class DefectService implements IDefectService {
 	    return new DefectResponse(defect);
 	}
 	
-	private List<Long> findByRangeId(Long from, Long to) {
+	/*private List<Long> findByRangeId(Long from, Long to) {
 		if(from == null || to == null) {
 			throw new ValidationException("IdFrom & idTo must not be null");
 		}
@@ -378,7 +386,7 @@ public class DefectService implements IDefectService {
 			idsRange.add(i);
 		}
 		return idsRange;
-	}
+	}*/
 	
 	private Defect validateDefectId(Long id) {
 		if(id == null) {

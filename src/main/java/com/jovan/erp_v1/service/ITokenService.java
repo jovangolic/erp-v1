@@ -2,10 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.util.Optional;
 import java.util.function.Function;
-
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-
 import com.jovan.erp_v1.exception.InvalidTokenException;
 import com.jovan.erp_v1.model.Token;
 import com.jovan.erp_v1.model.User;

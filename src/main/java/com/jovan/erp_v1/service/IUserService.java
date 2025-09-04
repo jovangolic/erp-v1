@@ -45,7 +45,7 @@ public interface IUserService extends UserDetailsService {
 
 	Optional<User> findByUsername(String username);
 
-	// Ažuriranje i brisanje
+	// Azuriranje i brisanje
 	User updateUser(Long id, UserRequest request);
 
 	// void deleteUser(String email);

@@ -215,6 +215,13 @@ public class DefectController {
 	}
 	
 	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/reports")
+	public ResponseEntity<List<DefectResponse>> findByReports(@RequestParam Long id ,@RequestParam(required = false) String description){
+		List<DefectResponse> items = defectService.findByReports(id, description);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
 	@GetMapping("/general-search")
 	public ResponseEntity<List<DefectResponse>> generalSearch(
 	        @RequestParam(required = false) Long id,

@@ -35,6 +35,8 @@ public interface IDefectService {
 	List<DefectResponse> generalSearch( Long id, Long idFrom,  Long idTo, String code, String name, String description,
 			SeverityLevel severity, DefectStatus status, Boolean confirmed);
 	
+	List<DefectResponse> findByReports( Long id,  String description);
+	
 	DefectResponse trackDefect(Long id);
 	
 	//posebne metode za svaku konstantu iz defect-status enuma

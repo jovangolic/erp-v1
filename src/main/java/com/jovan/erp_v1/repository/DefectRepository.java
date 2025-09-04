@@ -53,6 +53,11 @@ public interface DefectRepository extends JpaRepository<Defect, Long> {
 			@Param("code") String code,@Param("name") String name,@Param("description") String description,
 			@Param("severity") SeverityLevel severity,@Param("status") DefectStatus status,@Param("confirmed") Boolean confirmed);
 	
+	@Query("SELECT d FROM Defect d " +
+	           "WHERE (:id IS NULL OR d.id = :id) " +
+	           "AND (:description IS NULL OR LOWER(d.description) LIKE LOWER(CONCAT('%', :description, '%')))")
+	List<Defect> findByReports(@Param("id") Long id,
+	                               @Param("description") String description);
 	//metoda za pracenje jednog defekta
 	@Query("SELECT d FROM Defect d LEFT JOIN FETCH d.inspections WHERE d.id = :id")
     List<Defect> trackDefect(@Param("id") Long id);
