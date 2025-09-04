@@ -38,6 +38,21 @@ public interface DefectRepository extends JpaRepository<Defect, Long> {
 	List<Defect> searchDefects(
 		    @Param("severity") SeverityLevel severity, @Param("descPart") String descPart,@Param("status") DefectStatus status,@Param("confirmed") Boolean confirmed);
 	
+	@Query("SELECT d FROM Defect d "+
+			" WHERE ( :id IS NULL OR d.id = :id) "+
+			" AND (:idFrom IS NULL OR :idTo IS NULL OR (d.id BETWEEN :idFrom AND :idTo))" +
+			" AND ( :idFrom IS NULL OR d.id >= :idFrom)"+
+			" AND ( :idTo IS NULL OR d.id <= :idTo)"+
+			" AND ( :code IS NULL OR LOWER(d.code) LIKE LOWER(CONCAT('%', :code, '%')))" +
+			" AND ( :name IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', :name, '%')))" +
+			" AND ( :description IS NULL OR LOWER(d.description) LIKE LOWER(CONCAT('%', :description,'%')))" +
+			" AND ( :SEVERITY is null or d.severity = :severity)" +
+			" AND ( :status IS NULL OR d.status = :status)" +
+			" AND ( :confirmed IS NULL OR d.confirmed = :confirmed)")
+	List<Defect> generalSearch(@Param("id") Long id,@Param("idFrom") Long idFrom, @Param("idTo") Long idTo,
+			@Param("code") String code,@Param("name") String name,@Param("description") String description,
+			@Param("severity") SeverityLevel severity,@Param("status") DefectStatus status,@Param("confirmed") Boolean confirmed);
+	
 	//metoda za pracenje jednog defekta
 	@Query("SELECT d FROM Defect d LEFT JOIN FETCH d.inspections WHERE d.id = :id")
     List<Defect> trackDefect(@Param("id") Long id);

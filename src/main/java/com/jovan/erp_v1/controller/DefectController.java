@@ -214,10 +214,28 @@ public class DefectController {
 		return ResponseEntity.ok(items);
 	}
 	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/general-search")
+	public ResponseEntity<List<DefectResponse>> generalSearch(
+	        @RequestParam(required = false) Long id,
+	        @RequestParam(required = false) Long idFrom,
+	        @RequestParam(required = false) Long idTo,
+	        @RequestParam(required = false) String code,
+	        @RequestParam(required = false) String name,
+	        @RequestParam(required = false) String description,
+	        @RequestParam(required = false) SeverityLevel severity,
+	        @RequestParam(required = false) DefectStatus status,
+	        @RequestParam(required = false) Boolean confirmed) {
+
+	    List<DefectResponse> items = defectService.generalSearch(id, idFrom, idTo, code, name, description, severity, status, confirmed);
+	    return ResponseEntity.ok(items);
+	}
+	
 	@GetMapping("/track/{id}")
 	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS) // ili FULL_ACCESS po potrebi
 	public ResponseEntity<DefectResponse> trackDefect(@PathVariable Long id) {
 	    DefectResponse defect = defectService.trackDefect(id);
 	    return ResponseEntity.ok(defect);
 	}
+	
 }

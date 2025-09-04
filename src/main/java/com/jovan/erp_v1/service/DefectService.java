@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -303,6 +305,53 @@ public class DefectService implements IDefectService {
 	            .collect(Collectors.toList());
 	}
 	
+	@Override
+	public List<DefectResponse> generalSearch(Long id, Long idFrom, Long idTo, String code, String name, String description,
+			SeverityLevel severity, DefectStatus status, Boolean confirmed) {
+		// Ako je trazen samo jedan ID odmah vrati rezultat za taj ID
+	    if (id != null) {
+	        validateDefectId(id);
+	        return defectRepository.findById(id)
+	                .map(defectMapper::toResponse)
+	                .map(Collections::singletonList)
+	                .orElseThrow(() -> new NoDataFoundException("Defect not found with id " + id));
+	    }
+	    //Validacija za range ID
+	    if (idFrom != null || idTo != null) {
+	        if (idFrom == null || idTo == null) {
+	            throw new ValidationException("Both idFrom and idTo must be provided for range search");
+	        }
+	        if (idFrom > idTo) {
+	            throw new ValidationException("idFrom must not be greater than idTo");
+	        }
+	    }
+	    // Validacija za ostale filtere
+	    if (code != null) validateCodeExist(code, "Code");
+	    if (name != null) validateNameExist(name, "Name");
+	    if (description != null) validateString(description);
+	    if (severity != null) validaSeverityLevel(severity);
+	    if (status != null) validateDefectStatus(status);
+	    // Ako nije prosledjen nijedan filter vrati sve defekte
+	    if (idFrom == null && idTo == null &&
+	        (code == null || code.trim().isEmpty()) &&
+	        (name == null || name.trim().isEmpty()) &&
+	        (description == null || description.trim().isEmpty()) &&
+	        severity == null && status == null && confirmed == null) {
+	        return defectRepository.findAll().stream()
+	                .map(defectMapper::toResponse)
+	                .collect(Collectors.toList());
+	    }
+	    List<Defect> items = defectRepository.generalSearch(id,idFrom, idTo, code, name, description, severity, status, confirmed);
+	    if (items.isEmpty()) {
+	        String msg = String.format("No defects found for given filters: idFrom=%s, idTo=%s, code=%s, name=%s, desc=%s, severity=%s, status=%s, confirmed=%s",
+	                idFrom, idTo, code, name, description, severity, status, confirmed);
+	        throw new NoDataFoundException(msg);
+	    }
+	    return items.stream()
+	            .map(defectMapper::toResponse)
+	            .collect(Collectors.toList());
+	}
+	
 	@Transactional(readOnly = true)
 	@Override
 	public DefectResponse trackDefect(Long id) {
@@ -312,6 +361,30 @@ public class DefectService implements IDefectService {
 	    }
 	    Defect defect = defects.get(0);
 	    return new DefectResponse(defect);
+	}
+	
+	private List<Long> findByRangeId(Long from, Long to) {
+		if(from == null || to == null) {
+			throw new ValidationException("IdFrom & idTo must not be null");
+		}
+		if(from > to) {
+			throw new ValidationException("IdFrom must not be greater than idTo");
+		}
+		if ((to - from) > 10000) { // za limit
+	        throw new ValidationException("Range is too large, please narrow down your search");
+	    }
+		List<Long> idsRange = new ArrayList<>();
+		for(var i = from; i <= to; i++) {
+			idsRange.add(i);
+		}
+		return idsRange;
+	}
+	
+	private Defect validateDefectId(Long id) {
+		if(id == null) {
+			throw new ValidationException("Defect ID must not be null");
+		}
+		return defectRepository.findById(id).orElseThrow(() -> new ValidationException("Defect not found with id "+id));
 	}
 	
 	private void validateString(String str) {

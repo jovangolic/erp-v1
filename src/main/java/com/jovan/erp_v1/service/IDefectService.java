@@ -31,6 +31,10 @@ public interface IDefectService {
 	Boolean existsByCodeContainingIgnoreCase(String code);
 	
 	List<DefectResponse> searchDefects( SeverityLevel severity, String descPart, DefectStatus status, Boolean confirmed);
+	
+	List<DefectResponse> generalSearch( Long id, Long idFrom,  Long idTo, String code, String name, String description,
+			SeverityLevel severity, DefectStatus status, Boolean confirmed);
+	
 	DefectResponse trackDefect(Long id);
 	
 	//posebne metode za svaku konstantu iz defect-status enuma
