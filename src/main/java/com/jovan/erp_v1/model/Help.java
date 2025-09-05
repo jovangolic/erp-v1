@@ -4,7 +4,10 @@ import java.time.LocalDateTime;
 
 import com.jovan.erp_v1.enumeration.HelpCategory;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,17 +30,24 @@ public class Help {
     private Long id;
 
     @NotBlank
-    private String title; // Naslov teme pomoći, npr. "Kako kreirati korisnika"
+    @Column(nullable = false)
+    private String title; // Naslov teme pomoci, npr. "Kako kreirati korisnika"
 
     @Lob
-    private String content; // Detaljna uputstva, može biti i HTML
+    @Column(nullable = false)
+    private String content; // Detaljna uputstva, moze biti i HTML
 
-    private HelpCategory category; // npr. "Korisnici", "Podešavanja", "Nabavke"
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private HelpCategory category; // npr. "Korisnici", "Podesavanja", "Nabavke"
 
+    @Column(nullable = false)
     private boolean isVisible = true; // Da li je prikazano korisnicima
 
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist

@@ -12,12 +12,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.HelpCategory;
 import com.jovan.erp_v1.request.HelpRequest;
 import com.jovan.erp_v1.response.HelpResponse;
 import com.jovan.erp_v1.service.IHelpService;
+import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/help")
 @RequiredArgsConstructor
 @CrossOrigin("http://localhost:5173")
-@PreAuthorize("hasRole('SUPERADMIN','ADMIN')")
+@PreAuthorize(RoleGroups.HELP_FULL_ACCESS)
 public class HelpController {
 
     private final IHelpService helpService;
@@ -73,4 +75,34 @@ public class HelpController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/all-categories")
+    public ResponseEntity<List<HelpResponse>> findAllCategories(){
+    	List<HelpResponse> items = helpService.findAllCategories();
+    	return ResponseEntity.ok(items);
+    }
+    
+    @GetMapping("/search/title")
+    public ResponseEntity<List<HelpResponse>> findByTitleContainingIgnoreCase(@RequestParam("title") String title){
+    	List<HelpResponse> items = helpService.findByTitleContainingIgnoreCase(title);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @GetMapping("/search/content")
+    public ResponseEntity<List<HelpResponse>> findByContentContainingIgnoreCase(@RequestParam("content") String content){
+    	List<HelpResponse> items = helpService.findByContentContainingIgnoreCase(content);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @GetMapping("/search/title-content")
+    public ResponseEntity<List<HelpResponse>> findByTitleContainingIgnoreCaseAndContentContainingIgnoreCase(@RequestParam("title") String title,
+    		@RequestParam("content") String content){
+    	List<HelpResponse> items = helpService.findByTitleContainingIgnoreCaseAndContentContainingIgnoreCase(title, content);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @GetMapping("/exists/title")
+    public ResponseEntity<Boolean> existsByTitle(@RequestParam("title") String title){
+    	Boolean items = helpService.existsByTitle(title);
+    	return ResponseEntity.ok(items);
+    }
 }

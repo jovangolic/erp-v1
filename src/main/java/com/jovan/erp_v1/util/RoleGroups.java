@@ -5,6 +5,8 @@ package com.jovan.erp_v1.util;
  *Klasa za uloge namenjena za kontrolere
  */
 public class RoleGroups {
+	
+	public static final String HELP_FULL_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN')";
 
 	public static final String BAR_CODE_FULL_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','SECURITY_AUDITOR','STORAGE_FOREMAN','STORAGE_EMPLOYEE','INVENTORY_MANAGER')";
 	
