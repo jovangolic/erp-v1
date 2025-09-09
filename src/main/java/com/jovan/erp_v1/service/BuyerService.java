@@ -98,7 +98,7 @@ public class BuyerService implements IBuyerService {
 	}
 
 	@Override
-	public List<BuyerResponse> searchBuyers(String keyword) {
+	public List<BuyerResponse> searchBuyer(String keyword) {
 		validateString(keyword);
 		List<Buyer> items = buyerRepository.findByCompanyNameContainingIgnoreCase(keyword);
 		if(items.isEmpty()) {

@@ -11,7 +11,7 @@ public interface IBuyerService {
     List<BuyerResponse> getAllBuyers();
     BuyerResponse getBuyerById(Long id);
     void deleteBuyer(Long id);
-    List<BuyerResponse> searchBuyers(String keyword);
+    List<BuyerResponse> searchBuyer(String keyword);
     BuyerResponse getBuyerByPid(String pib);
     
     //nove metode

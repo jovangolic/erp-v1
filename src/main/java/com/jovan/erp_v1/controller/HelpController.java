@@ -105,4 +105,10 @@ public class HelpController {
     	Boolean items = helpService.existsByTitle(title);
     	return ResponseEntity.ok(items);
     }
+    
+    @GetMapping("/faq")
+    public ResponseEntity<List<HelpResponse>> getFaqContent(){
+    	List<HelpResponse> items = helpService.findFaqContent();
+    	return ResponseEntity.ok(items);
+    }
 }

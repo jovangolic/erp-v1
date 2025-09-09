@@ -79,8 +79,8 @@ public class BuyerController {
 
 	@PreAuthorize(RoleGroups.BUYER_READ_ACCESS)
 	@GetMapping("/search")
-	public ResponseEntity<List<BuyerResponse>> searchBuyers(@RequestParam String keyword) {
-		List<BuyerResponse> results = buyerService.searchBuyers(keyword);
+	public ResponseEntity<List<BuyerResponse>> searchBuyer(@RequestParam String keyword) {
+		List<BuyerResponse> results = buyerService.searchBuyer(keyword);
 		return ResponseEntity.ok(results);
 	}
 

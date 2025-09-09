@@ -19,4 +19,7 @@ public interface IHelpService {
     List<HelpResponse> findByContentContainingIgnoreCase(String content);
     List<HelpResponse> findByTitleContainingIgnoreCaseAndContentContainingIgnoreCase(String title, String content);
     Boolean existsByTitle(String title);
+    
+    //Frequently asked questions- FAQ
+    List<HelpResponse> findFaqContent();
 }

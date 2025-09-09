@@ -55,6 +55,11 @@ public class HelpService implements IHelpService {
         validateString(request.title());
     	validateString(request.content());
     	validateHelpCategory(request.category());
+    	// Ako se menja naslov, provera da li postoji duplikat
+        if (!help.getTitle().equalsIgnoreCase(request.title()) &&
+            helpRepository.existsByTitle(request.title())) {
+            throw new ValidationException("Help with given title already exists");
+        }
         help.setTitle(request.title());
         help.setContent(request.content());
         help.setCategory(request.category());
@@ -153,6 +158,15 @@ public class HelpService implements IHelpService {
 		validateString(title);
 		return helpRepository.existsByTitle(title);
 	}
+	
+	@Override
+	public List<HelpResponse> findFaqContent() {
+		List<Help> items = helpRepository.findByCategory(HelpCategory.GENERAL);
+		if (items.isEmpty()) {
+	        throw new NoDataFoundException("No FAQ content found");
+	    }
+		return items.stream().map(HelpResponse::new).collect(Collectors.toList());
+	}
     
     private void validateHelpCategory(HelpCategory category) {
     	Optional.ofNullable(category)
@@ -174,4 +188,5 @@ public class HelpService implements IHelpService {
     	}
     	return str;
     }
+
 }
