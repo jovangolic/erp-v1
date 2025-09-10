@@ -23,4 +23,5 @@ public interface HelpRepository extends JpaRepository<Help, Long> {
     List<Help> findByTitleContainingIgnoreCaseAndContentContainingIgnoreCase(String title, String content);
     
     Boolean existsByTitle(String title);
+   
 }

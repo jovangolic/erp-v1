@@ -28,9 +28,9 @@ public class Option {
     private Long id;
 
     @Column
-    private String label; // Šta se prikazuje korisniku
+    private String label; // Sta se prikazuje korisniku
     @Column
-    private String value; // Šta se šalje/koristi u sistemu
+    private String value; // Sta se salje/koristi u sistemu
 
     @Column
     @Enumerated(EnumType.STRING)
