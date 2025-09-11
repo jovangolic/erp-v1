@@ -40,8 +40,16 @@ G-soft is not a copy of existing ERP systems, but an original solution tailored 
 - 💰 Accounting features: invoicing, payment records, and reporting
 
 ---
+# About page
+<img width="1920" height="955" alt="ERP-About-image" src="https://github.com/user-attachments/assets/67010ed6-be00-4656-a48f-01bfe71b88b9" />
+
+# Defect-list page. The Defect-list is part of Quality Control field
+
+<img width="1903" height="1120" alt="Exapmle-defect-list-page jsx" src="https://github.com/user-attachments/assets/bead4fa8-c8f9-46ee-b5b9-6864561b1539" />
+
 
 ## 🏗️ Tech Stack
+
 
 - **Java 17**
 - **Spring Boot**
