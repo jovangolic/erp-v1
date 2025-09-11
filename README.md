@@ -312,4 +312,4 @@ Contributions are welcome! Please fork the repository and create a pull request 
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-# © 2025 SLAM ERP – All rights reserved.
+# © 2025 G-Soft ERP System – All rights reserved. Property of Jovan Golic
