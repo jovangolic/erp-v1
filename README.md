@@ -43,7 +43,15 @@ G-soft is not a copy of existing ERP systems, but an original solution tailored 
 # About page
 <img width="1920" height="955" alt="ERP-About-image" src="https://github.com/user-attachments/assets/67010ed6-be00-4656-a48f-01bfe71b88b9" />
 
-# Defect-list page. The Defect-list is part of Quality Control field
+# Defect List Page
+
+The **Defect List** page is part of the **Quality Control** module.  
+
+- The central section of the screen is dedicated to a single defect, with various search and filter options (by ID, code, name, description, severity, and status).  
+- Below the defect search area, there is a table that lists all inspections related to the selected defect.  
+- The table is currently limited to 10 rows per page, with navigation buttons (**Previous** and **Next**) to switch between pages.  
+- Above the table, additional filters allow users to refine the inspection results by parameters such as status, confirmation, and date range.  
+- The design intention for this page is to remain **user-friendly and easy to navigate**, ensuring that users can quickly find and manage defect-related inspections. 
 
 <img width="1903" height="1120" alt="Exapmle-defect-list-page jsx" src="https://github.com/user-attachments/assets/bead4fa8-c8f9-46ee-b5b9-6864561b1539" />
 
