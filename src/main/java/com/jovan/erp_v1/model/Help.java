@@ -11,7 +11,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.validation.constraints.NotBlank;
@@ -33,8 +32,7 @@ public class Help {
     @Column(nullable = false)
     private String title; // Naslov teme pomoci, npr. "Kako kreirati korisnika"
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content; // Detaljna uputstva, moze biti i HTML
 
     @Enumerated(EnumType.STRING)

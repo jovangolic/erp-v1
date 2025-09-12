@@ -321,4 +321,6 @@ public class RoleGroups {
 	public static final String TRANSACTION_READ_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','ACCOUNTANT','FINANCIAL_MANAGER','AUDITOR','SECURITY_AUDITOR')";
 	
 	public static final String TRANSACTION_AUDIT_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','ACCOUNTANT','FINANCIAL_MANAGER','AUDITOR','SECURITY_AUDITOR')";
+	
+	public static final String GOTO_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN')";
 }

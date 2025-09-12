@@ -2,6 +2,7 @@ package com.jovan.erp_v1.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -19,8 +20,11 @@ public interface HelpRepository extends JpaRepository<Help, Long> {
     List<Help> findAllCategories();
     
     List<Help> findByTitleContainingIgnoreCase(String title);
-    List<Help> findByContentContainingIgnoreCase(String content);
-    List<Help> findByTitleContainingIgnoreCaseAndContentContainingIgnoreCase(String title, String content);
+    
+    @Query("SELECT h FROM Help h WHERE LOWER(h.content) LIKE LOWER(CONCAT('%',:content, '%'))")
+    List<Help> findByContentContainingIgnoreCase(@Param("content") String content);
+    @Query("SELECT h FROM Help h WHERE LOWER(h.title) LIKE LOWER(CONCAT('%',:title ,'%')) AND LOWER(h.content) LIKE LOWER(CONCAT('%',:content, '%'))")
+    List<Help> findByTitleContainingIgnoreCaseAndContentContainingIgnoreCase(@Param("title") String title,@Param("content") String content);
     
     Boolean existsByTitle(String title);
    
