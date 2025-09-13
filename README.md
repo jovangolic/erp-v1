@@ -55,6 +55,8 @@ The **Defect List** page is part of the **Quality Control** module.
 
 <img width="1903" height="1120" alt="Exapmle-defect-list-page jsx" src="https://github.com/user-attachments/assets/bead4fa8-c8f9-46ee-b5b9-6864561b1539" />
 
+# Creating new Defect, containing graph with random data
+<img width="1903" height="1739" alt="Creating-new-defect" src="https://github.com/user-attachments/assets/d1d70005-150d-42ae-8f99-ac270c1a0d5a" />
 
 ## 🏗️ Tech Stack
 
