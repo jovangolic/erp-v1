@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,11 @@ import org.springframework.stereotype.Repository;
 import com.jovan.erp_v1.enumeration.DefectStatus;
 import com.jovan.erp_v1.enumeration.SeverityLevel;
 import com.jovan.erp_v1.model.Defect;
+import com.jovan.erp_v1.statistics.defects.DefectConfirmedStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectSeverityStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectStatusSeverityStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectStatusStatDTO;
 
 @Repository
 public interface DefectRepository extends JpaRepository<Defect, Long> {
@@ -64,4 +70,36 @@ public interface DefectRepository extends JpaRepository<Defect, Long> {
 	
 	Boolean existsByNameContainingIgnoreCase(String name);
 	Boolean existsByCodeContainingIgnoreCase(String code);
+	
+	//date-time
+	List<Defect> findByCreatedDate(LocalDateTime createdDate);
+	List<Defect> findByCreatedDateAfter(LocalDateTime createdDate);
+	List<Defect> findByCreatedDateBefore(LocalDateTime createdDate);
+	List<Defect> findByCreatedDateBetween(LocalDateTime start, LocalDateTime end);
+	Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+	
+	//defect stats
+	@Query("SELECT new com.jovan.erp_v1.statistics.defects.DefectSeverityStatDTO(d.severity, COUNT(d)) " +
+		       "FROM Defect d GROUP BY d.severity")
+	List<DefectSeverityStatDTO> countDefectsBySeverity();
+
+	@Query("SELECT new com.jovan.erp_v1.statistics.defects.DefectStatusStatDTO(d.status, COUNT(d)) " +
+		       "FROM Defect d GROUP BY d.status")
+	List<DefectStatusStatDTO> countDefectsByStatus();
+
+	@Query("SELECT new com.jovan.erp_v1.statistics.defects.DefectConfirmedStatDTO(d.confirmed, COUNT(d)) " +
+		       "FROM Defect d GROUP BY d.confirmed")
+	List<DefectConfirmedStatDTO> countDefectsByConfirmed();
+
+	@Query("SELECT new com.jovan.erp_v1.statistics.defects.DefectStatusSeverityStatDTO(d.status, d.severity, COUNT(d)) " +
+		       "FROM Defect d GROUP BY d.status, d.severity")
+	List<DefectStatusSeverityStatDTO> countDefectsByStatusAndSeverity();
+
+	@Query("SELECT new com.jovan.erp_v1.statistics.defects.DefectMonthlyStatDTO(" +
+		       "CAST(FUNCTION('YEAR', d.createdDate) AS integer), " +
+		       "CAST(FUNCTION('MONTH', d.createdDate) AS integer), " +
+		       "COUNT(d)) " +
+		       "FROM Defect d " +
+		       "GROUP BY FUNCTION('YEAR', d.createdDate), FUNCTION('MONTH', d.createdDate)")
+	List<DefectMonthlyStatDTO> countDefectsByYearAndMonth();
 }
