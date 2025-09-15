@@ -1,10 +1,17 @@
 package com.jovan.erp_v1.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import com.jovan.erp_v1.enumeration.DefectStatus;
 import com.jovan.erp_v1.enumeration.SeverityLevel;
 import com.jovan.erp_v1.request.DefectRequest;
 import com.jovan.erp_v1.response.DefectResponse;
+import com.jovan.erp_v1.statistics.defects.DefectConfirmedStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectSeverityStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectStatusSeverityStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectStatusStatDTO;
 
 public interface IDefectService {
 
@@ -33,7 +40,8 @@ public interface IDefectService {
 	List<DefectResponse> searchDefects( SeverityLevel severity, String descPart, DefectStatus status, Boolean confirmed);
 	
 	List<DefectResponse> generalSearch( Long id, Long idFrom,  Long idTo, String code, String name, String description,
-			SeverityLevel severity, DefectStatus status, Boolean confirmed);
+			SeverityLevel severity, DefectStatus status, Boolean confirmed,LocalDateTime created,
+	         LocalDateTime createdAfter,LocalDateTime createdBefore);
 	
 	List<DefectResponse> findByReports( Long id,  String description);
 	
@@ -45,4 +53,33 @@ public interface IDefectService {
 	DefectResponse cancelDefect(Long id);
 	//genericka metoda za dodavanje novih defekt-statusa
 	DefectResponse changeStatus(Long id, DefectStatus newStatus);
+	
+	//date-time
+	List<DefectResponse> findByCreatedDate(LocalDateTime createdDate);
+	List<DefectResponse> findByCreatedDateAfter(LocalDateTime createdDate);
+	List<DefectResponse> findByCreatedDateBefore(LocalDateTime createdDate);
+	List<DefectResponse> findByCreatedDateBetween(LocalDateTime start, LocalDateTime end);
+	Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+	//defect stats
+	List<DefectSeverityStatDTO> countDefectsBySeverity();
+	List<DefectStatusStatDTO> countDefectsByStatus();
+	List<DefectConfirmedStatDTO> countDefectsByConfirmed();
+	List<DefectStatusSeverityStatDTO> countDefectsByStatusAndSeverity();
+	List<DefectMonthlyStatDTO> countDefectsByYearAndMonth();
+	
+	//general search with date-only
+	List<DefectResponse> generalSearch(
+	        Long id,
+	        Long idFrom,
+	        Long idTo,
+	        String code,
+	        String name,
+	        String description,
+	        SeverityLevel severity,
+	        DefectStatus status,
+	        Boolean confirmed,
+	        LocalDate dateOnly
+	);
+	
+	List<DefectResponse> searchByDateOnly(LocalDate dateOnly);
 }

@@ -1,7 +1,10 @@
 package com.jovan.erp_v1.controller;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +22,11 @@ import com.jovan.erp_v1.enumeration.SeverityLevel;
 import com.jovan.erp_v1.request.DefectRequest;
 import com.jovan.erp_v1.response.DefectResponse;
 import com.jovan.erp_v1.service.IDefectService;
+import com.jovan.erp_v1.statistics.defects.DefectConfirmedStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectSeverityStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectStatusSeverityStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectStatusStatDTO;
 import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
@@ -232,10 +240,20 @@ public class DefectController {
 	        @RequestParam(required = false) String description,
 	        @RequestParam(required = false) SeverityLevel severity,
 	        @RequestParam(required = false) DefectStatus status,
-	        @RequestParam(required = false) Boolean confirmed) {
+	        @RequestParam(required = false) Boolean confirmed,
+	        @RequestParam(required = false) LocalDateTime created,
+	        @RequestParam(required = false) LocalDateTime createdAfter,
+	        @RequestParam(required = false) LocalDateTime createdBefore) {
 
-	    List<DefectResponse> items = defectService.generalSearch(id, idFrom, idTo, code, name, description, severity, status, confirmed);
+	    List<DefectResponse> items = defectService.generalSearch(id, idFrom, idTo, code, name, description, severity, status, confirmed,created,createdAfter,createdBefore);
 	    return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/search/by-date")
+	public ResponseEntity<List<DefectResponse>> searchByDate(
+	        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+	    return ResponseEntity.ok(defectService.searchByDateOnly(date));
 	}
 	
 	@GetMapping("/track/{id}")
@@ -245,4 +263,77 @@ public class DefectController {
 	    return ResponseEntity.ok(defect);
 	}
 	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/count/defects-severity")
+	public ResponseEntity<List<DefectSeverityStatDTO>> countDefectsBySeverity(){
+		List<DefectSeverityStatDTO> items = defectService.countDefectsBySeverity();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/count/defects-status")
+	public ResponseEntity<List<DefectStatusStatDTO>> countDefectsByStatus(){
+		List<DefectStatusStatDTO> items = defectService.countDefectsByStatus();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/count/defects-confirmed")
+	public ResponseEntity<List<DefectConfirmedStatDTO>> countDefectsByConfirmed(){
+		List<DefectConfirmedStatDTO> items = defectService.countDefectsByConfirmed();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/count/defects-status-and-severity")
+	public ResponseEntity<List<DefectStatusSeverityStatDTO>> countDefectsByStatusAndSeverity(){
+		List<DefectStatusSeverityStatDTO> items = defectService.countDefectsByStatusAndSeverity();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/count/defects-year-and-month")
+	public ResponseEntity<List<DefectMonthlyStatDTO>> countDefectsByYearAndMonth(){
+		List<DefectMonthlyStatDTO> items = defectService.countDefectsByYearAndMonth();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/created-date")
+	public ResponseEntity<List<DefectResponse>> findByCreatedDate(@RequestParam("createdDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDate){
+		List<DefectResponse> items = defectService.findByCreatedDate(createdDate);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/created-date-after")
+	public ResponseEntity<List<DefectResponse>> findByCreatedDateAfter(@RequestParam("createdDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDate){
+		List<DefectResponse> items = defectService.findByCreatedDateAfter(createdDate);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/created-date-before")
+	public ResponseEntity<List<DefectResponse>> findByCreatedDateBefore(@RequestParam("createdDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDate){
+		List<DefectResponse> items = defectService.findByCreatedDateBefore(createdDate);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/created-date-between")
+	public ResponseEntity<List<DefectResponse>> findByCreatedDateBetween(
+			@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+			@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end){
+		List<DefectResponse> items = defectService.findByCreatedDateBetween(start, end);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_READ_ACCESS)
+	@GetMapping("/count/created-date-between")
+	public ResponseEntity<Long> countByCreatedAtBetween(
+			@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+			@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end){
+		Long items = defectService.countByCreatedAtBetween(start, end);
+		return ResponseEntity.ok(items);
+	}
 }

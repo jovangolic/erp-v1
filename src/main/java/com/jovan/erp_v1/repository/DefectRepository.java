@@ -44,20 +44,40 @@ public interface DefectRepository extends JpaRepository<Defect, Long> {
 	List<Defect> searchDefects(
 		    @Param("severity") SeverityLevel severity, @Param("descPart") String descPart,@Param("status") DefectStatus status,@Param("confirmed") Boolean confirmed);
 	
-	@Query("SELECT d FROM Defect d "+
-			" WHERE ( :id IS NULL OR d.id = :id) "+
-			" AND (:idFrom IS NULL OR :idTo IS NULL OR (d.id BETWEEN :idFrom AND :idTo))" +
-			" AND ( :idFrom IS NULL OR d.id >= :idFrom)"+
-			" AND ( :idTo IS NULL OR d.id <= :idTo)"+
-			" AND ( :code IS NULL OR LOWER(d.code) LIKE LOWER(CONCAT('%', :code, '%')))" +
-			" AND ( :name IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', :name, '%')))" +
-			" AND ( :description IS NULL OR LOWER(d.description) LIKE LOWER(CONCAT('%', :description,'%')))" +
-			" AND ( :SEVERITY is null or d.severity = :severity)" +
-			" AND ( :status IS NULL OR d.status = :status)" +
-			" AND ( :confirmed IS NULL OR d.confirmed = :confirmed)")
-	List<Defect> generalSearch(@Param("id") Long id,@Param("idFrom") Long idFrom, @Param("idTo") Long idTo,
-			@Param("code") String code,@Param("name") String name,@Param("description") String description,
-			@Param("severity") SeverityLevel severity,@Param("status") DefectStatus status,@Param("confirmed") Boolean confirmed);
+	@Query("""
+		    SELECT d FROM Defect d
+		     WHERE (:id IS NULL OR d.id = :id)
+		       AND (:idFrom IS NULL OR d.id >= :idFrom)
+		       AND (:idTo IS NULL OR d.id <= :idTo)
+		       AND (:code IS NULL OR LOWER(d.code) LIKE LOWER(CONCAT('%', :code, '%')))
+		       AND (:name IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', :name, '%')))
+		       AND (:description IS NULL OR LOWER(d.description) LIKE LOWER(CONCAT('%', :description, '%')))
+		       AND (:severity IS NULL OR d.severity = :severity)
+		       AND (:status IS NULL OR d.status = :status)
+		       AND (:confirmed IS NULL OR d.confirmed = :confirmed)
+		       AND (:created IS NULL OR d.createdDate = :created)
+		       AND (:createdAfter IS NULL OR d.createdDate >= :createdAfter)
+		       AND (:createdBefore IS NULL OR d.createdDate <= :createdBefore)
+		""")
+	List<Defect> generalSearch(
+	        @Param("id") Long id,
+	        @Param("idFrom") Long idFrom,
+	        @Param("idTo") Long idTo,
+	        @Param("code") String code,
+	        @Param("name") String name,
+	        @Param("description") String description,
+	        @Param("severity") SeverityLevel severity,
+	        @Param("status") DefectStatus status,
+	        @Param("confirmed") Boolean confirmed,
+	        @Param("created") LocalDateTime created,
+	        @Param("createdAfter") LocalDateTime createdAfter,
+	        @Param("createdBefore") LocalDateTime createdBefore
+	);
+	
+	@Query("SELECT d FROM Defect d " +
+		       "WHERE d.createdDate >= :startOfDay AND d.createdDate <= :endOfDay")
+	List<Defect> findByCreatedDateOnly(@Param("startOfDay") LocalDateTime startOfDay,
+		                                   @Param("endOfDay") LocalDateTime endOfDay);
 	
 	@Query("SELECT d FROM Defect d " +
 	           "WHERE (:id IS NULL OR d.id = :id) " +

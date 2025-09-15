@@ -1,6 +1,9 @@
 package com.jovan.erp_v1.service;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +21,12 @@ import com.jovan.erp_v1.model.Defect;
 import com.jovan.erp_v1.repository.DefectRepository;
 import com.jovan.erp_v1.request.DefectRequest;
 import com.jovan.erp_v1.response.DefectResponse;
+import com.jovan.erp_v1.statistics.defects.DefectConfirmedStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectSeverityStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectStatusSeverityStatDTO;
+import com.jovan.erp_v1.statistics.defects.DefectStatusStatDTO;
+import com.jovan.erp_v1.util.DateValidator;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +44,7 @@ public class DefectService implements IDefectService {
 		validateCodeExist(request.code(), "Code");
 		validateNameExist(request.name(), "Name");
 		validateString(request.description());
-		validaSeverityLevel(request.severity());
+		validateSeverityLevel(request.severity());
 		Defect d = defectMapper.toEntity(request);
 		Defect saved = defectRepository.save(d);
 		return new DefectResponse(saved);
@@ -125,7 +134,7 @@ public class DefectService implements IDefectService {
 
 	@Override
 	public List<DefectResponse> findBySeverity(SeverityLevel severity) {
-		validaSeverityLevel(severity);
+		validateSeverityLevel(severity);
 		List<Defect> items = defectRepository.findBySeverity(severity);
 		if(items.isEmpty()) {
 			String msg = String.format("No Defect for severity-level %s is found", severity);
@@ -137,7 +146,7 @@ public class DefectService implements IDefectService {
 	@Override
 	public List<DefectResponse> findByCodeContainingIgnoreCaseAndSeverity(String code, SeverityLevel severity) {
 		validateString(code);
-		validaSeverityLevel(severity);
+		validateSeverityLevel(severity);
 		List<Defect> items = defectRepository.findByCodeContainingIgnoreCaseAndSeverity(code, severity);
 		if(items.isEmpty()) {
 			String msg = String.format("No Defect for code %s and severity-level %s, is found", code,severity);
@@ -149,7 +158,7 @@ public class DefectService implements IDefectService {
 	@Override
 	public List<DefectResponse> findByNameContainingIgnoreCaseAndSeverity(String name, SeverityLevel severity) {
 		validateString(name);
-		validaSeverityLevel(severity);
+		validateSeverityLevel(severity);
 		List<Defect> items = defectRepository.findByNameContainingIgnoreCaseAndSeverity(name, severity);
 		if(items.isEmpty()) {
 			String msg = String.format("No Defect for name %s and severity-level %s, is found", name,severity);
@@ -179,7 +188,7 @@ public class DefectService implements IDefectService {
 	@Override
 	public List<DefectResponse> findBySeverityAndDescriptionContainingIgnoreCase(SeverityLevel severity,
 			String descPart) {
-		validaSeverityLevel(severity);
+		validateSeverityLevel(severity);
 		validateString(descPart);
 		List<Defect> items = defectRepository.findBySeverityAndDescriptionContainingIgnoreCase(severity, descPart);
 		if(items.isEmpty()) {
@@ -192,7 +201,7 @@ public class DefectService implements IDefectService {
 
 	@Override
 	public Long countBySeverity(SeverityLevel severity) {
-		validaSeverityLevel(severity);
+		validateSeverityLevel(severity);
 		return defectRepository.countBySeverity(severity);
 	}
 
@@ -298,7 +307,7 @@ public class DefectService implements IDefectService {
 	@Override
 	public List<DefectResponse> searchDefects(SeverityLevel severity, String descPart, DefectStatus status,
 			Boolean confirmed) {
-		if (severity != null) validaSeverityLevel(severity);
+		if (severity != null) validateSeverityLevel(severity);
 	    if (descPart != null && !descPart.trim().isEmpty()) validateString(descPart);
 	    if (status != null) validateDefectStatus(status);
 	    if (severity == null && (descPart == null || descPart.trim().isEmpty()) 
@@ -315,7 +324,8 @@ public class DefectService implements IDefectService {
 	
 	@Override
 	public List<DefectResponse> generalSearch(Long id, Long idFrom, Long idTo, String code, String name, String description,
-			SeverityLevel severity, DefectStatus status, Boolean confirmed) {
+			SeverityLevel severity, DefectStatus status, Boolean confirmed,LocalDateTime created,
+	         LocalDateTime createdAfter,LocalDateTime createdBefore) {
 		// Ako je trazen samo jedan ID odmah vrati rezultat za taj ID
 	    if (id != null) {
 	        validateDefectId(id);
@@ -337,23 +347,108 @@ public class DefectService implements IDefectService {
 	    if (code != null) validateCodeExist(code, "Code");
 	    if (name != null) validateNameExist(name, "Name");
 	    if (description != null) validateString(description);
-	    if (severity != null) validaSeverityLevel(severity);
+	    if (severity != null) validateSeverityLevel(severity);
 	    if (status != null) validateDefectStatus(status);
+	    // Validacija datuma
+	    if (created != null) {
+	        DateValidator.validateNotInFuture(created, "Created-date");
+	    }
+	    if (createdAfter != null || createdBefore != null) {
+	        DateValidator.validateRange(createdAfter, createdBefore);
+	    }
 	    // Ako nije prosledjen nijedan filter vrati sve defekte
 	    if (idFrom == null && idTo == null &&
 	        (code == null || code.trim().isEmpty()) &&
 	        (name == null || name.trim().isEmpty()) &&
 	        (description == null || description.trim().isEmpty()) &&
-	        severity == null && status == null && confirmed == null) {
+	        severity == null && status == null && confirmed == null &&
+	        created == null && createdAfter == null && createdBefore == null) {
 	        return defectRepository.findAll().stream()
 	                .map(defectMapper::toResponse)
 	                .collect(Collectors.toList());
 	    }
-	    List<Defect> items = defectRepository.generalSearch(id,idFrom, idTo, code, name, description, severity, status, confirmed);
+	    List<Defect> items = defectRepository.generalSearch(
+	            id, idFrom, idTo,
+	            code, name, description,
+	            severity, status, confirmed,
+	            created, createdAfter, createdBefore
+	    );
 	    if (items.isEmpty()) {
-	        String msg = String.format("No defects found for given filters: idFrom=%s, idTo=%s, code=%s, name=%s, desc=%s, severity=%s, status=%s, confirmed=%s",
-	                idFrom, idTo, code, name, description, severity, status, confirmed);
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+	        String msg = String.format(
+	                "No defects found for given filters: idFrom=%s, idTo=%s, code=%s, name=%s, desc=%s, severity=%s, status=%s, confirmed=%s, created=%s, createdAfter=%s, createdBefore=%s",
+	                idFrom, idTo, code, name, description, severity, status, confirmed,
+	                created != null ? created.format(formatter) : null,
+	                createdAfter != null ? createdAfter.format(formatter) : null,
+	                createdBefore != null ? createdBefore.format(formatter) : null
+	        );
 	        throw new NoDataFoundException(msg);
+	    }
+	    return items.stream()
+	            .map(defectMapper::toResponse)
+	            .collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<DefectResponse> generalSearch(Long id, Long idFrom, Long idTo, String code, String name,
+			String description, SeverityLevel severity, DefectStatus status, Boolean confirmed, LocalDate dateOnly) {
+		if (id != null) {
+	        validateDefectId(id);
+	        return defectRepository.findById(id)
+	                .map(defectMapper::toResponse)
+	                .map(Collections::singletonList)
+	                .orElseThrow(() -> new NoDataFoundException("Defect not found with id " + id));
+	    }
+	    if (idFrom != null || idTo != null) {
+	        if (idFrom == null || idTo == null) {
+	            throw new ValidationException("Both idFrom and idTo must be provided for range search");
+	        }
+	        if (idFrom > idTo) {
+	            throw new ValidationException("idFrom must not be greater than idTo");
+	        }
+	    }
+	    if (code != null) validateCodeExist(code, "Code");
+	    if (name != null) validateNameExist(name, "Name");
+	    if (description != null) validateString(description);
+	    if (severity != null) validateSeverityLevel(severity);
+	    if (status != null) validateDefectStatus(status);
+	    if (idFrom == null && idTo == null &&
+	        (code == null || code.trim().isEmpty()) &&
+	        (name == null || name.trim().isEmpty()) &&
+	        (description == null || description.trim().isEmpty()) &&
+	        severity == null && status == null && confirmed == null &&
+	        dateOnly == null) {
+	        return defectRepository.findAll().stream()
+	                .map(defectMapper::toResponse)
+	                .collect(Collectors.toList());
+	    }
+	    if (dateOnly != null && dateOnly.isAfter(LocalDate.now())) {
+	        LocalDateTime startOfDay = dateOnly.atStartOfDay();
+	        LocalDateTime endOfDay = dateOnly.atTime(LocalTime.MAX);
+	        return generalSearch(
+	                null, idFrom, idTo, code, name, description,
+	                severity, status, confirmed,
+	                null, startOfDay, endOfDay
+	        );
+	    }
+	    // Fallback na originalnu metodu
+	    return generalSearch(
+	            id, idFrom, idTo, code, name, description,
+	            severity, status, confirmed,
+	            null, null, null
+	    );
+	}
+	
+	@Override
+	public List<DefectResponse> searchByDateOnly(LocalDate dateOnly) {
+	    if (dateOnly == null) {
+	        throw new ValidationException("Date must not be null");
+	    }
+	    LocalDateTime startOfDay = dateOnly.atStartOfDay();
+	    LocalDateTime endOfDay = dateOnly.atTime(LocalTime.MAX);
+	    List<Defect> items = defectRepository.findByCreatedDateOnly(startOfDay, endOfDay);
+	    if (items.isEmpty()) {
+	        throw new NoDataFoundException("No defects found for date " + dateOnly);
 	    }
 	    return items.stream()
 	            .map(defectMapper::toResponse)
@@ -369,6 +464,140 @@ public class DefectService implements IDefectService {
 	    }
 	    Defect defect = defects.get(0);
 	    return new DefectResponse(defect);
+	}
+	
+	//date-time and statistics
+	
+	@Override
+	public List<DefectResponse> findByCreatedDate(LocalDateTime createdDate) {
+		DateValidator.validateNotNull(createdDate, "Created-date");
+		List<Defect> items = defectRepository.findByCreatedDate(createdDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Defect for created-date %s, is found", createdDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(defectMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<DefectResponse> findByCreatedDateAfter(LocalDateTime createdDate) {
+		DateValidator.validateNotInPast(createdDate, "Created-after");
+		List<Defect> items = defectRepository.findByCreatedDateAfter(createdDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Defect for created-date after %s, is found", createdDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(defectMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<DefectResponse> findByCreatedDateBefore(LocalDateTime createdDate) {
+		DateValidator.validateNotInFuture(createdDate, "Created-before");
+		List<Defect> items = defectRepository.findByCreatedDateBefore(createdDate);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Defect for created-date before %s, is found", createdDate.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(defectMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<DefectResponse> findByCreatedDateBetween(LocalDateTime start, LocalDateTime end) {
+		DateValidator.validateRange(start, end);
+		List<Defect> items = defectRepository.findByCreatedDateBetween(start, end);
+		if(items.isEmpty()) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+			String msg = String.format("No Defect for created-date between %s and %s, is found",
+					start.format(formatter),end.format(formatter));
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(defectMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end) {
+		DateValidator.validateRange(start, end);
+		return defectRepository.countByCreatedAtBetween(start, end);
+	}
+
+	@Override
+	public List<DefectSeverityStatDTO> countDefectsBySeverity() {
+		List<DefectSeverityStatDTO> items = defectRepository.countDefectsBySeverity();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No severity count for defect, found");
+		}
+		return items.stream()
+				.map(item -> {
+					SeverityLevel severity = item.severity();
+					Long count = item.count();
+					return new DefectSeverityStatDTO(severity, count);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<DefectStatusStatDTO> countDefectsByStatus() {
+		List<DefectStatusStatDTO> items = defectRepository.countDefectsByStatus();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No status count for defect, found");
+		}
+		return items.stream()
+				.map(item -> {
+					DefectStatus status = item.status();
+					Long count = item.count();
+					return new DefectStatusStatDTO(status, count);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<DefectConfirmedStatDTO> countDefectsByConfirmed() {
+		List<DefectConfirmedStatDTO> items = defectRepository.countDefectsByConfirmed();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No confirmed count for defect, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Boolean confirmed = item.confirmed();
+					Long count = item.count();
+					return new DefectConfirmedStatDTO(confirmed, count);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<DefectStatusSeverityStatDTO> countDefectsByStatusAndSeverity() {
+		List<DefectStatusSeverityStatDTO> items = defectRepository.countDefectsByStatusAndSeverity();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No status count and severity count for defect, found");
+		}
+		return items.stream()
+				.map(item -> {
+					DefectStatus status = item.status();
+					SeverityLevel severity = item.severity();
+					Long count = item.count();
+					return new DefectStatusSeverityStatDTO(status, severity, count);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<DefectMonthlyStatDTO> countDefectsByYearAndMonth() {
+		List<DefectMonthlyStatDTO> items = defectRepository.countDefectsByYearAndMonth();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No defcts count for year and month, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Integer year = item.getYear();
+					Integer month = item.getMonth();
+					Long count = item.getCount();
+					return new DefectMonthlyStatDTO(year, month, count);
+				})
+				.toList();
 	}
 	
 	/*private List<Long> findByRangeId(Long from, Long to) {
@@ -401,7 +630,7 @@ public class DefectService implements IDefectService {
 		}
 	}
 	
-	private void validaSeverityLevel(SeverityLevel severity) {
+	private void validateSeverityLevel(SeverityLevel severity) {
 		Optional.ofNullable(severity)
 			.orElseThrow(() -> new ValidationException("SeverityLevel severity must not be null"));
 	}
