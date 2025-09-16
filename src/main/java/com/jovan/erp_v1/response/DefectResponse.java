@@ -1,5 +1,7 @@
 package com.jovan.erp_v1.response;
 
+import java.time.LocalDateTime;
+
 import com.jovan.erp_v1.enumeration.DefectStatus;
 import com.jovan.erp_v1.enumeration.SeverityLevel;
 import com.jovan.erp_v1.model.Defect;
@@ -20,6 +22,7 @@ public class DefectResponse {
 	private SeverityLevel severity;
 	private DefectStatus status; 
     private Boolean confirmed;
+    private LocalDateTime createdDate;
 	
 	public DefectResponse(Defect d) {
 		this.id = d.getId();
@@ -29,5 +32,6 @@ public class DefectResponse {
 		this.severity = d.getSeverity();
 		this.status = d.getStatus();
 		this.confirmed = d.getConfirmed();
+		this.createdDate = d.getCreatedDate();
 	}
 }

@@ -120,6 +120,7 @@ public interface DefectRepository extends JpaRepository<Defect, Long> {
 		       "CAST(FUNCTION('MONTH', d.createdDate) AS integer), " +
 		       "COUNT(d)) " +
 		       "FROM Defect d " +
-		       "GROUP BY FUNCTION('YEAR', d.createdDate), FUNCTION('MONTH', d.createdDate)")
+		       "GROUP BY FUNCTION('YEAR', d.createdDate), FUNCTION('MONTH', d.createdDate) " +
+		       "ORDER BY FUNCTION('YEAR', d.createdDate), FUNCTION('MONTH', d.createdDate)")
 	List<DefectMonthlyStatDTO> countDefectsByYearAndMonth();
 }
