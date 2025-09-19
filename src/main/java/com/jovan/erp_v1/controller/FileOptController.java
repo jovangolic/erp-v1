@@ -74,5 +74,11 @@ public class FileOptController {
         List<FileOptResponse> responses = fileOptService.getByAction(action);
         return ResponseEntity.ok(responses);
     }
+    
+    @PostMapping("/save")
+    public ResponseEntity<FileOptResponse> saveFileOpt(@Valid @RequestBody FileOptRequest request) {
+        FileOptResponse response = fileOptService.saveFileOpt(request);
+        return ResponseEntity.ok(response);
+    }
 
 }

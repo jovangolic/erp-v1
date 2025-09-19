@@ -115,6 +115,30 @@ public class FileOptService implements IFileOptService {
                 .collect(Collectors.toList());
     }
     
+    @Transactional
+    @Override
+	public FileOptResponse saveFileOpt(FileOptRequest request) {
+    	FileOpt fileOpt = FileOpt.builder()
+                .id(request.id())
+                .extension(request.extension())
+                .mimeType(request.mimeType())
+                .maxSizeInBytes(request.maxSizeInBytes())
+                .uploadEnabled(request.uploadEnabled())
+                .previewEnabled(request.previewEnabled())
+                .availableActions(request.availableActions())
+                .build();
+        FileOpt saved = fileOptRepository.save(fileOpt);
+        return new FileOptResponse(
+            saved.getId(),
+            saved.getExtension(),
+            saved.getMimeType(),
+            saved.getMaxSizeInBytes(),
+            saved.isUploadEnabled(),
+            saved.isPreviewEnabled(),
+            saved.getAvailableActions()
+        );
+	}
+    
     private void validateFileExtension(FileExtension extension) {
     	Optional.ofNullable(extension)
     		.orElseThrow(() -> new ValidationException("FileExtension extension must not be null"));
@@ -173,4 +197,5 @@ public class FileOptService implements IFileOptService {
     		throw new ValidationException("Boolean value must not be null");
     	}
     }
+
 }

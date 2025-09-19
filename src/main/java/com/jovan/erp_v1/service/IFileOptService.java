@@ -16,4 +16,6 @@ public interface IFileOptService {
     List<FileOptResponse> getAll();
     List<FileOptResponse> getByExtension(FileExtension extension);
     List<FileOptResponse> getByAction(FileAction action);
+    
+    FileOptResponse saveFileOpt(FileOptRequest request);
 }
