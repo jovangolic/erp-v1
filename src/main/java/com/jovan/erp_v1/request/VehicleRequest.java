@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.request;
 
+import com.jovan.erp_v1.enumeration.VehicleFuel;
 import com.jovan.erp_v1.enumeration.VehicleStatus;
 
 import jakarta.validation.constraints.NotBlank;
@@ -9,5 +10,6 @@ public record VehicleRequest(
         Long id,
         @NotBlank String registrationNumber,
         @NotEmpty String model,
-        @NotBlank VehicleStatus status) {
+        @NotBlank VehicleStatus status,
+        @NotBlank VehicleFuel fuel) {
 }

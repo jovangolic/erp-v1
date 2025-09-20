@@ -23,6 +23,7 @@ public class VehicleMapper extends AbstractMapper<VehicleRequest> {
         v.setModel(request.model());
         v.setRegistrationNumber(request.registrationNumber());
         v.setStatus(request.status());
+        v.setFuel(request.fuel());
         return v;
     }
     
@@ -33,6 +34,7 @@ public class VehicleMapper extends AbstractMapper<VehicleRequest> {
     	v.setRegistrationNumber(request.registrationNumber());
     	v.setModel(request.model());
     	v.setStatus(request.status());
+    	v.setFuel(request.fuel());
     	return v;
     }
 

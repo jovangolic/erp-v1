@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.model;
 
+import com.jovan.erp_v1.enumeration.VehicleFuel;
 import com.jovan.erp_v1.enumeration.VehicleStatus;
 
 import jakarta.persistence.Column;
@@ -32,4 +33,8 @@ public class Vehicle {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private VehicleStatus status;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private VehicleFuel fuel;
 }

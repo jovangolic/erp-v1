@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jovan.erp_v1.enumeration.VehicleFuel;
 import com.jovan.erp_v1.enumeration.VehicleStatus;
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ValidationException;
@@ -32,6 +33,7 @@ public class VehicleService implements IVehicleService {
     	validateString(request.registrationNumber());
         validateString(request.model());
         validateVehicleStatus(request.status());
+        validateVehicleFuel(request.fuel());
         Vehicle vehicle = vehicleMapper.toEntity(request);
         Vehicle saved = vehicleRepository.save(vehicle);
         return new VehicleResponse(saved);
@@ -48,6 +50,7 @@ public class VehicleService implements IVehicleService {
         validateString(request.registrationNumber());
         validateString(request.model());
         validateVehicleStatus(request.status());
+        validateVehicleFuel(request.fuel());
         vehicleMapper.toEntityUpdate(vehicle, request);
         Vehicle v = vehicleRepository.save(vehicle);
         return new VehicleResponse(v);
@@ -170,6 +173,30 @@ public class VehicleService implements IVehicleService {
                 .collect(Collectors.toList());
     }
     
+    @Override
+	public List<VehicleResponse> findByFuel(VehicleFuel fuel) {
+		validateVehicleFuel(fuel);
+		List<Vehicle> items = vehicleRepository.findByFuel(fuel);
+		if(items.isEmpty()) {
+			String msg = String.format("No Vehicle for fuel type %s, is found", fuel);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(vehicleMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<VehicleResponse> findByModelContainingIgnoreCaseAndFuel(String model, VehicleFuel fuel) {
+		validateString(model);
+		validateVehicleFuel(fuel);
+		List<Vehicle> items = vehicleRepository.findByModelContainingIgnoreCaseAndFuel(model, fuel);
+		if(items.isEmpty()) {
+			String msg = String.format("No Vehicle for model %s and fuel type %s, is found", 
+					model, fuel);
+			throw new NoDataFoundException(msg);
+		}
+		return items.stream().map(vehicleMapper::toResponse).collect(Collectors.toList());
+	}
+    
     private void validateString(String str) {
     	if(str == null || str.trim().isEmpty()) {
     		throw new ValidationException("String must not be null nor empty");
@@ -180,4 +207,10 @@ public class VehicleService implements IVehicleService {
     	Optional.ofNullable(status)
     		.orElseThrow(() -> new ValidationException("VehicleStatus status must not be null"));
     }
+    
+    private void validateVehicleFuel(VehicleFuel fuel) {
+    	Optional.ofNullable(fuel)
+    		.orElseThrow(() -> new ValidationException("VehicleFuel fuel must nor be null"));
+    }
+
 }

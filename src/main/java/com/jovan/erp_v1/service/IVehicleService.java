@@ -2,6 +2,7 @@ package com.jovan.erp_v1.service;
 
 import java.util.List;
 
+import com.jovan.erp_v1.enumeration.VehicleFuel;
 import com.jovan.erp_v1.enumeration.VehicleStatus;
 import com.jovan.erp_v1.request.VehicleRequest;
 import com.jovan.erp_v1.response.VehicleResponse;
@@ -20,4 +21,7 @@ public interface IVehicleService {
     List<VehicleResponse> findByStatus(VehicleStatus status);
     List<VehicleResponse> findByModelAndStatus(String model, VehicleStatus status);
     List<VehicleResponse> findByModelContainingIgnoreCase(String modelFragment);
+    
+    List<VehicleResponse> findByFuel(VehicleFuel fuel);
+    List<VehicleResponse> findByModelContainingIgnoreCaseAndFuel(String model, VehicleFuel fuel);
 }

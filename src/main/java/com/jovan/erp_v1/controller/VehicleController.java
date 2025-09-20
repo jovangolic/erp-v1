@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.VehicleFuel;
 import com.jovan.erp_v1.enumeration.VehicleStatus;
 import com.jovan.erp_v1.request.VehicleRequest;
 import com.jovan.erp_v1.response.VehicleResponse;
@@ -118,5 +119,20 @@ public class VehicleController {
             @RequestParam("modelFragment") String modelFragment) {
         List<VehicleResponse> responses = vehicleService.findByModelContainingIgnoreCase(modelFragment);
         return ResponseEntity.ok(responses);
+    }
+    
+    @PreAuthorize(RoleGroups.VEHICLE_READ_ACCESS)
+    @GetMapping("/by-fuel")
+    public ResponseEntity<List<VehicleResponse>> findByFuel(@RequestParam("fuel") VehicleFuel fuel){
+    	List<VehicleResponse> items = vehicleService.findByFuel(fuel);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.VEHICLE_READ_ACCESS)
+    @GetMapping("/model-and-fuel")
+    public ResponseEntity<List<VehicleResponse>> findByModelContainingIgnoreCaseAndFuel(@RequestParam("model") String model,
+    		@RequestParam("fuel") VehicleFuel fuel){
+    	List<VehicleResponse> items = vehicleService.findByModelContainingIgnoreCaseAndFuel(model, fuel);
+    	return ResponseEntity.ok(items);
     }
 }
