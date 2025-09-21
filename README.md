@@ -53,10 +53,22 @@ The **Defect List** page is part of the **Quality Control** module.
 - Above the table, additional filters allow users to refine the inspection results by parameters such as status, confirmation, and date range.  
 - The design intention for this page is to remain **user-friendly and easy to navigate**, ensuring that users can quickly find and manage defect-related inspections. 
 
-<img width="1903" height="1120" alt="Exapmle-defect-list-page jsx" src="https://github.com/user-attachments/assets/bead4fa8-c8f9-46ee-b5b9-6864561b1539" />
+<img width="1903" height="1153" alt="Defects-list" src="https://github.com/user-attachments/assets/94e84ffa-b3e3-4d87-8ada-8d46d2554e91" />
 
 # Creating new Defect, containing graph with random data
-<img width="1903" height="1739" alt="Creating-new-defect" src="https://github.com/user-attachments/assets/d1d70005-150d-42ae-8f99-ac270c1a0d5a" />
+<img width="1903" height="3596" alt="Defects-add" src="https://github.com/user-attachments/assets/0824365f-0dcc-45aa-8463-2211fec3f4d3" />
+
+# Edit defect, containing graph with random data
+<img width="1903" height="3694" alt="Defects-edit" src="https://github.com/user-attachments/assets/70829a6e-5459-4664-8fe2-526ef2c09967" />
+That error, is because, their is no data
+
+# API integration and validation
+
+The frontend uses Axios to communicate with backend REST API services. Each entity (eg items, users, invoices) has its own defined API methods for creating, updating, deleting and searching. Data validation and display of error messages have been implemented to make each interaction with the system clear to the user.
+
+# Example for running, the frontned part:
+You can use VSC or other EDI, than in terminal do this: cd erp-front, npm install, npm run dev . After, open the browser, and write this http://localhost:5173/defects 
+This is going to be the pattern, for the all components.
 
 ## 🏗️ Tech Stack
 
