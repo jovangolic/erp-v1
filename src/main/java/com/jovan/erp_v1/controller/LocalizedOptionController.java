@@ -126,4 +126,10 @@ public class LocalizedOptionController {
     	return ResponseEntity.ok(responses);
     }
     
+    @PostMapping("/save")
+    public ResponseEntity<LocalizedOptionResponse> saveLozalizedOptions(@Valid @RequestBody LocalizedOptionRequest request){
+    	LocalizedOptionResponse items = localizedOptionService.saveLozalizedOptions(request);
+    	return ResponseEntity.ok(items);
+    }
+    
 }

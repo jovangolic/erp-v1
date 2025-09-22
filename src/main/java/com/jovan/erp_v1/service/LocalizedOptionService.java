@@ -212,6 +212,19 @@ public class LocalizedOptionService implements ILocalizedOptionService {
 				.collect(Collectors.toList());
 	}
 	
+	@Transactional
+	@Override
+	public LocalizedOptionResponse saveLozalizedOptions(LocalizedOptionRequest request) {
+		LocalizedOption lo = LocalizedOption.builder()
+				.id(request.getId())
+				.option(fetchOption(request.getOptionId()))
+				.language(fetchLanguage(request.getLanguageId()))
+				.localizedLabel(request.getLocalizedLabel())
+				.build();
+		LocalizedOption saved = localizedOptionRepository.save(lo);
+		return new LocalizedOptionResponse(saved);
+	}
+	
 	private void validateOptionCategory(OptionCategory category) {
 		if(category == null) {
 			throw new IllegalArgumentException("OptionCategory category must not be null");
@@ -256,4 +269,5 @@ public class LocalizedOptionService implements ILocalizedOptionService {
 		fetchLanguage(languageId);
 		fetchOption(optionId);
 	}
+
 }

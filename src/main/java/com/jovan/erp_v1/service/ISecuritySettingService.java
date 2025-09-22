@@ -12,4 +12,6 @@ public interface ISecuritySettingService {
     SecuritySettingResponse updateSetting(SecuritySettingRequest request);
 
     List<SecuritySettingResponse> getAllSettings();
+    
+    SecuritySettingResponse saveSecuritySettings(SecuritySettingRequest request);
 }

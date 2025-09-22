@@ -28,4 +28,6 @@ public interface ILocalizedOptionService {
     List<LocalizedOptionResponse> findByLanguage_LanguageCodeType(LanguageCodeType languageCodeType);
     List<LocalizedOptionResponse> findByLanguage_LanguageNameType(LanguageNameType languageNameType);
     
+    //save
+    LocalizedOptionResponse saveLozalizedOptions(LocalizedOptionRequest request);
 }

@@ -56,7 +56,7 @@ public class OptionController {
     }
 
     @GetMapping("/get-all")
-    public ResponseEntity<List<OptionResponse>> getAll() {
+    public ResponseEntity<List<OptionResponse>> getAllOptions() {
         return ResponseEntity.ok(optionService.getAll());
     }
 

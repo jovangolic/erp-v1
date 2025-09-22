@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import com.jovan.erp_v1.response.SecuritySettingResponse;
 import com.jovan.erp_v1.service.ISecuritySettingService;
 import com.jovan.erp_v1.util.RoleGroups;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -38,9 +40,15 @@ public class SecuritySettingController {
         return ResponseEntity.ok(updated);
     }
 
-    @GetMapping
+    @GetMapping("/get-all")
     public ResponseEntity<List<SecuritySettingResponse>> getAllSettings() {
         List<SecuritySettingResponse> settings = securitySettingService.getAllSettings();
         return ResponseEntity.ok(settings);
+    }
+    
+    @PostMapping("/save")
+    public ResponseEntity<SecuritySettingResponse> saveSecuritySettings(@Valid @RequestBody SecuritySettingRequest request){
+    	SecuritySettingResponse items = securitySettingService.saveSecuritySettings(request);
+    	return ResponseEntity.ok(items);
     }
 }

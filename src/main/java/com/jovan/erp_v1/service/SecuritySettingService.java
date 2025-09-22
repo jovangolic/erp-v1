@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.SecuritySettingErrorException;
@@ -52,9 +53,22 @@ public class SecuritySettingService implements ISecuritySettingService {
                 .collect(Collectors.toList());
     }
     
+    @Transactional
+    @Override
+	public SecuritySettingResponse saveSecuritySettings(SecuritySettingRequest request) {
+		SecuritySetting sec = SecuritySetting.builder()
+				.id(request.id())
+				.settingName(request.settingName())
+				.value(request.value())
+				.build();
+		SecuritySetting saved = settingRepository.save(sec);
+		return new SecuritySettingResponse(saved.getId(), saved.getSettingName(), saved.getValue());
+	}
+    
     private void validateString(String str) {
     	if(str == null || str.trim().isEmpty()) {
     		throw new IllegalArgumentException("String must not be null nor empty");
     	}
     }
+
 }

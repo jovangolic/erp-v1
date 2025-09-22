@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LocalizedOptionRequest {
 	
+	private Long id;
     @NotNull
     private Long optionId;
     @NotNull

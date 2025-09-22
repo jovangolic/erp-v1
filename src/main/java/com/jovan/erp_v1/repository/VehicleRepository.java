@@ -28,14 +28,14 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     List<Vehicle> findByModelContainingIgnoreCaseAndFuel(String model, VehicleFuel fuel);
     
     @Query("""
-    		SELECT v FROM Vehicle 
+    		SELECT v FROM Vehicle v
     		WHERE (:id IS NULL OR v.id = :id)
     		AND (:idFrom IS NULL OR v.id >= :idFrom)
 		    AND (:idTo IS NULL OR v.id <= :idTo)
 		    AND (:registrationNumber IS NULL OR LOWER(v.registrationNumber) LIKE LOWER(CONCAT('%', :registrationNumber, '%')))
 		    AND (:model IS NULL OR LOWER(v.model) LIKE LOWER(CONCAT('%', :model, '%')))
 		    AND (:status IS NULL OR v.status = :status)
-		    AND (:fuel IS NULL OR v.fuel = :fuel = :status)
+		    AND (:fuel IS NULL OR v.fuel = :fuel)
     		""")
     List<Vehicle> generalSearch(
     		@Param("id") Long id,
