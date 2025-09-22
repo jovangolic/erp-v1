@@ -89,6 +89,17 @@ public class LanguageService implements ILanguageService {
         return new LanguageResponse(name);
     }
     
+    @Override
+    @Transactional
+	public LanguageResponse saveLanguage(LanguageRequest request) {
+		Language l = Language.builder()
+				.languageCodeType(request.getLanguageCodeType())
+				.languageNameType(request.getLanguageNameType())
+				.build();
+		Language saved = languageRepository.save(l);
+		return new LanguageResponse(saved.getId(), saved.getLanguageCodeType(), saved.getLanguageNameType());
+	}
+    
     private void validateLanguageNameType(LanguageNameType nameType) {
     	if(nameType == null) {
     		throw new LanguageErrorException("LanguageNameType nameType must not be null");
@@ -100,4 +111,5 @@ public class LanguageService implements ILanguageService {
     		throw new LanguageErrorException("LanguageCodeType codeType must not be null");
     	}
     }
+
 }

@@ -70,4 +70,10 @@ public class LanguageController {
         LanguageResponse response = languageService.findByNameType(nameType);
         return ResponseEntity.ok(response);
     }
+    
+    @PostMapping("/save")
+    public ResponseEntity<LanguageResponse> saveLanguage(@Valid @RequestBody LanguageRequest request){
+    	LanguageResponse items = languageService.saveLanguage(request);
+    	return ResponseEntity.ok(items);
+    }
 }

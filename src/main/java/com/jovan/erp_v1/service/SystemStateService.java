@@ -71,6 +71,21 @@ public class SystemStateService implements ISystemStateService {
         systemStateRepository.save(state);
     }
     
+    @Override
+	public SystemStateResponse getOneById(Long id) {
+		SystemState ss = systemStateRepository.findById(id).orElseThrow(() -> new ValidationException("SystemState not found with id "+id));
+		return new SystemStateResponse(ss);
+	}
+
+	@Override
+	public List<SystemStateResponse> getAllSystemStates() {
+		List<SystemState> items = systemStateRepository.findAll();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("SystemState list is empty");
+		}
+		return items.stream().map(mapper::toResponse).collect(Collectors.toList());
+	}
+    
     //nove metode
 
 	@Override
@@ -280,4 +295,5 @@ public class SystemStateService implements ISystemStateService {
 			throw new ValidationException("Boolean attribute value must not be null");
 		}
 	}
+
 }

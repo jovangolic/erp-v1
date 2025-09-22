@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,9 +22,11 @@ public class LocalizedOption {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name="option_id")
     private Option option; // Veza sa osnovnom opcijom
 
     @ManyToOne
+    @JoinColumn(name="language_id")
     private Language language; // Veza sa jezikom
 
     @Column(nullable = false)

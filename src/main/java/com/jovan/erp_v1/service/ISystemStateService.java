@@ -14,6 +14,9 @@ public interface ISystemStateService {
     void setMaintenanceMode(boolean enabled);
     void setRegistrationEnabled(boolean enabled);
     
+    SystemStateResponse getOneById(Long id);
+    List<SystemStateResponse> getAllSystemStates();
+    
     //nove metode
     List<SystemStateResponse> findByStatusMessage(SystemStatus statusMessage);
     List<SystemStateResponse> findRunning();

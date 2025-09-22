@@ -4,6 +4,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,9 +41,20 @@ public class SystemStateController {
         service.updateState(request);
         return ResponseEntity.ok().build();
     }
+    
+    @GetMapping("/get-one/{id}")
+    public ResponseEntity<SystemStateResponse> getOneById(@PathVariable Long id){
+    	SystemStateResponse items = service.getOneById(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @GetMapping("/get-all")
+    public ResponseEntity<List<SystemStateResponse>> getAllSystemStates(){
+    	List<SystemStateResponse> items = service.getAllSystemStates();
+    	return ResponseEntity.ok(items);
+    }
 
     @PutMapping("/restart")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> restartSystem() {
         service.updateRestartTime();
         return ResponseEntity.ok().build();

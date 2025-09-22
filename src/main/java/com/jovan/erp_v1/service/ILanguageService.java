@@ -17,4 +17,5 @@ public interface ILanguageService {
     LanguageResponse findByCodeType(LanguageCodeType codeType);
     LanguageResponse findByNameType(LanguageNameType nameType);
 
+    LanguageResponse saveLanguage(LanguageRequest request);
 }
