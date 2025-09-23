@@ -32,7 +32,7 @@ public class RoleMapper {
 
         public RoleResponse toResponse(Role role) {
                 Set<PermissionResponse> permissionResponses = role.getPermissions().stream()
-                                .map(p -> new PermissionResponse(p.getId(), p.getPermissionType()))
+                                .map(p -> new PermissionResponse(p.getId(), p.getResourceType(),p.getActionType()))
                                 .collect(Collectors.toSet());
                 List<UserResponse> userResponses = role.getUsers().stream()
                                 .map(UserResponse::new) // koristim postojeci konstruktor

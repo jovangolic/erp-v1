@@ -14,12 +14,13 @@ public class PermissionMapper extends AbstractMapper<PermissionRequest> {
     	Objects.requireNonNull(request,"PermissionRequest must not be null");
         Permission entity = new Permission();
         entity.setId(request.getId());
-        entity.setPermissionType(request.getPermissionType());
+        entity.setActionType(request.getActionType());
+        entity.setResourceType(request.getResourceType());
         return entity;
     }
 
     public PermissionResponse toResponse(Permission entity) {
     	Objects.requireNonNull(entity,"Permission must not be null");
-        return new PermissionResponse(entity.getId(), entity.getPermissionType());
+        return new PermissionResponse(entity);
     }
 }

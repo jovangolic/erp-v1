@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jovan.erp_v1.enumeration.PermissionType;
+import com.jovan.erp_v1.enumeration.PermissionActionType;
+import com.jovan.erp_v1.enumeration.PermissionResourceType;
 import com.jovan.erp_v1.request.PermissionRequest;
 import com.jovan.erp_v1.response.PermissionResponse;
 import com.jovan.erp_v1.service.IPermissionService;
@@ -63,9 +64,40 @@ public class PermissionController {
         return ResponseEntity.ok(response);
     }
     
-    @GetMapping("/by-permission-type")
-    public ResponseEntity<PermissionResponse> findByPermissionType(@RequestParam("type") PermissionType type){
-    	PermissionResponse p = permissionService.findByPermissionType(type);
-    	return ResponseEntity.ok(p);
+    @GetMapping("/by-action-type")
+    public ResponseEntity<List<PermissionResponse>> findByActionType(@RequestParam("actionType") PermissionActionType actionType){
+    	List<PermissionResponse> items = permissionService.findByActionType(actionType);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @GetMapping("/by-resource-type")
+    public ResponseEntity<List<PermissionResponse>> findByResourceType(@RequestParam("resourceType") PermissionResourceType resourceType){
+    	List<PermissionResponse> items = permissionService.findByResourceType(resourceType);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @GetMapping("/action-type-and-resource-type")
+    public ResponseEntity<List<PermissionResponse>> findByActionTypeAndResourceType(@RequestParam("actionType") PermissionActionType actionType,
+    		@RequestParam("resourceType") PermissionResourceType resourceType){
+    	List<PermissionResponse> items = permissionService.findByActionTypeAndResourceType(actionType, resourceType);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @GetMapping("/exists/by-action-type")
+    public ResponseEntity<Boolean> existsByActionType(@RequestParam("actionType") PermissionActionType actionType){
+    	Boolean items = permissionService.existsByActionType(actionType);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @GetMapping("/exists/by-resource-type")
+    public ResponseEntity<Boolean> existsByResourceType(@RequestParam("resourceType") PermissionResourceType resourceType){
+    	Boolean items = permissionService.existsByResourceType(resourceType);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PostMapping("/save")
+    public ResponseEntity<PermissionResponse> savePermission(@Valid @RequestBody PermissionRequest request){
+    	PermissionResponse items = permissionService.savePermission(request);
+    	return ResponseEntity.ok(items);
     }
 }

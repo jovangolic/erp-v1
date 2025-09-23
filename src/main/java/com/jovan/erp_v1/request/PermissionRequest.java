@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.request;
 
-import com.jovan.erp_v1.enumeration.PermissionType;
+import com.jovan.erp_v1.enumeration.PermissionActionType;
+import com.jovan.erp_v1.enumeration.PermissionResourceType;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -14,5 +15,8 @@ public class PermissionRequest {
 
 	private Long id;
     @NotBlank
-    private PermissionType permissionType; // npr. "CREATE_ORDER"
+    private PermissionResourceType resourceType;
+    
+    @NotBlank
+    private PermissionActionType actionType;
 }
