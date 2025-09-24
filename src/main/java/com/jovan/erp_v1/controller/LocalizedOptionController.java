@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.jovan.erp_v1.enumeration.LanguageCodeType;
 import com.jovan.erp_v1.enumeration.LanguageNameType;
 import com.jovan.erp_v1.enumeration.OptionCategory;
 import com.jovan.erp_v1.request.LocalizedOptionRequest;
 import com.jovan.erp_v1.response.LocalizedOptionResponse;
+import com.jovan.erp_v1.save_as.GenericSaveAsRequest;
 import com.jovan.erp_v1.service.ILocalizedOptionService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -132,4 +132,16 @@ public class LocalizedOptionController {
     	return ResponseEntity.ok(items);
     }
     
+    @PostMapping("/save-as")
+    public ResponseEntity<LocalizedOptionResponse> saveAs(
+            @RequestBody GenericSaveAsRequest request) {
+        LocalizedOptionResponse item = localizedOptionService.saveAs(request.sourceId(), request.newLabel());
+        return ResponseEntity.ok(item);
+    }
+    
+    @PostMapping("/save-all")
+    public ResponseEntity<List<LocalizedOptionResponse>> saveAll(@RequestBody List<LocalizedOptionRequest> requests){
+    	List<LocalizedOptionResponse> items = localizedOptionService.saveAll(requests);
+    	return ResponseEntity.ok(items);
+    }
 }

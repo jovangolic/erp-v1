@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jovan.erp_v1.exception.LocalizedOptionErrorException;
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.OptionErrorException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.LocalizedOptionMapper;
 import com.jovan.erp_v1.model.Language;
 import com.jovan.erp_v1.model.LocalizedOption;
@@ -223,6 +224,47 @@ public class LocalizedOptionService implements ILocalizedOptionService {
 				.build();
 		LocalizedOption saved = localizedOptionRepository.save(lo);
 		return new LocalizedOptionResponse(saved);
+	}
+	
+	@Transactional
+	@Override
+	public LocalizedOptionResponse saveAs(Long sourceId, String newLabel) {
+		if(sourceId == null) {
+			throw new ValidationException("SourceId must not be null");
+		}
+		validateString(newLabel);
+		//1. pronalazenje postojeceg localized option
+		LocalizedOption lo = localizedOptionRepository.findById(sourceId).orElseThrow(() -> new ValidationException("LocalizedOption not found with id "+sourceId));
+		//2. pravljenje kopije (id se NE prenosi, jer se pravi novi red u bazi)
+		LocalizedOption copyLo = LocalizedOption.builder()
+				.option(lo.getOption())
+	            .language(lo.getLanguage())
+	            .localizedLabel(newLabel != null ? newLabel : lo.getLocalizedLabel())
+	            .build();
+		//3. snimanje nove instance
+		LocalizedOption saved = localizedOptionRepository.save(copyLo);
+		return new LocalizedOptionResponse(saved);
+	}
+
+	@Transactional
+	@Override
+	public List<LocalizedOptionResponse> saveAll(List<LocalizedOptionRequest> requests) {
+		if(requests == null || requests.isEmpty()) {
+			throw new ValidationException("LocalizedOption list must not be empty");
+		}
+		// Mapiranje request -> entity
+	    List<LocalizedOption> items = requests.stream()
+	    		.map(item -> LocalizedOption.builder()
+	    				.id(item.getId())
+	    				.option(fetchOption(item.getOptionId()))
+	    				.language(fetchLanguage(item.getLanguageId()))
+	    				.localizedLabel(item.getLocalizedLabel())
+	    				.build())
+	    		.toList();
+	    // Snimanje u bazi
+	    List<LocalizedOption> saved = localizedOptionRepository.saveAll(items);
+	    //Mapiranje u entitet
+		return saved.stream().map(localizedOptionMapper::toResponse).collect(Collectors.toList());
 	}
 	
 	private void validateOptionCategory(OptionCategory category) {

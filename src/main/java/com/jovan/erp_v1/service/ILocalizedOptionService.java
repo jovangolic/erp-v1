@@ -30,4 +30,8 @@ public interface ILocalizedOptionService {
     
     //save
     LocalizedOptionResponse saveLozalizedOptions(LocalizedOptionRequest request);
+    //save_as
+    LocalizedOptionResponse saveAs(Long sourceId, String newLabel);
+    //save_all
+    List<LocalizedOptionResponse> saveAll(List<LocalizedOptionRequest> requests);
 }
