@@ -21,6 +21,7 @@ import com.jovan.erp_v1.enumeration.DefectStatus;
 import com.jovan.erp_v1.enumeration.SeverityLevel;
 import com.jovan.erp_v1.request.DefectRequest;
 import com.jovan.erp_v1.response.DefectResponse;
+import com.jovan.erp_v1.save_as.DefectSaveAsRequest;
 import com.jovan.erp_v1.service.IDefectService;
 import com.jovan.erp_v1.statistics.defects.DefectConfirmedStatDTO;
 import com.jovan.erp_v1.statistics.defects.DefectMonthlyStatDTO;
@@ -336,4 +337,25 @@ public class DefectController {
 		Long items = defectService.countByCreatedAtBetween(start, end);
 		return ResponseEntity.ok(items);
 	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_FULL_ACCESS)
+	@PostMapping("/save")
+	public ResponseEntity<DefectResponse> saveDefects(@Valid @RequestBody DefectRequest request){
+		DefectResponse items = defectService.saveDefects(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.DEFECT_FULL_ACCESS)
+	@PostMapping("/save-as")
+    public ResponseEntity<DefectResponse> saveAs(@RequestBody DefectSaveAsRequest request) {
+        DefectResponse response = defectService.saveAs(request);
+        return ResponseEntity.ok(response);
+    }
+
+	@PreAuthorize(RoleGroups.DEFECT_FULL_ACCESS)
+    @PostMapping("/save-all")
+    public ResponseEntity<List<DefectResponse>> saveAll(@RequestBody List<DefectRequest> requests) {
+        List<DefectResponse> responses = defectService.saveAll(requests);
+        return ResponseEntity.ok(responses);
+    }
 }

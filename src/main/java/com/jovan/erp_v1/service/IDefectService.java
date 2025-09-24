@@ -7,6 +7,7 @@ import com.jovan.erp_v1.enumeration.DefectStatus;
 import com.jovan.erp_v1.enumeration.SeverityLevel;
 import com.jovan.erp_v1.request.DefectRequest;
 import com.jovan.erp_v1.response.DefectResponse;
+import com.jovan.erp_v1.save_as.DefectSaveAsRequest;
 import com.jovan.erp_v1.statistics.defects.DefectConfirmedStatDTO;
 import com.jovan.erp_v1.statistics.defects.DefectMonthlyStatDTO;
 import com.jovan.erp_v1.statistics.defects.DefectSeverityStatDTO;
@@ -82,4 +83,13 @@ public interface IDefectService {
 	);
 	
 	List<DefectResponse> searchByDateOnly(LocalDate dateOnly);
+	
+	//metode za save, save_as, save_all
+	DefectResponse saveDefects(DefectRequest request);
+	//DefectResponse saveAs(DefectSaveAsRequest request);
+	//List<DefectResponse> saveAll(List<DefectRequest> requests);
+	
+	//genericke metode za saveAs i saveAll
+	DefectResponse saveAs(DefectSaveAsRequest request);
+	List<DefectResponse> saveAll(List<DefectRequest> defects);
 }

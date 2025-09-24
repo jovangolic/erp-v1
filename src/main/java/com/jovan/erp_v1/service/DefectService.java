@@ -4,12 +4,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.enumeration.DefectStatus;
@@ -21,6 +26,9 @@ import com.jovan.erp_v1.model.Defect;
 import com.jovan.erp_v1.repository.DefectRepository;
 import com.jovan.erp_v1.request.DefectRequest;
 import com.jovan.erp_v1.response.DefectResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.DefectSaveAsRequest;
 import com.jovan.erp_v1.statistics.defects.DefectConfirmedStatDTO;
 import com.jovan.erp_v1.statistics.defects.DefectMonthlyStatDTO;
 import com.jovan.erp_v1.statistics.defects.DefectSeverityStatDTO;
@@ -33,10 +41,11 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class DefectService implements IDefectService {
+public class DefectService  implements IDefectService {
 
 	private final DefectRepository defectRepository;
 	private final DefectMapper defectMapper;
+	
 
 	@Transactional
 	@Override
@@ -600,6 +609,120 @@ public class DefectService implements IDefectService {
 				.toList();
 	}
 	
+	@Transactional
+	@Override
+	public DefectResponse saveDefects(DefectRequest request) {
+		Defect d = Defect.builder()
+				.id(request.id())
+				.code(request.code())
+				.name(request.name())
+				.description(request.description())
+				.severity(request.severity())
+				.status(request.status())
+				.confirmed(request.confirmed())
+				.build();
+		Defect saved = defectRepository.save(d);
+		return new DefectResponse(saved);
+	}
+	
+    private final AbstractSaveAllService<Defect, DefectResponse> saveAllHelper = new AbstractSaveAllService<>() {
+        @Override
+        protected JpaRepository<Defect, Long> getRepository() {
+            return defectRepository;
+        }
+
+        @Override
+        protected Function<Defect, DefectResponse> toResponse() {
+            return DefectResponse::new;
+        }
+    };
+
+    private final AbstractSaveAsService<Defect, DefectResponse> saveAsHelper = new AbstractSaveAsService<>() {
+        @Override
+        protected JpaRepository<Defect, Long> getRepository() {
+            return defectRepository;
+        }
+
+        @Override
+        protected DefectResponse toResponse(Defect entity) {
+            return new DefectResponse(entity);
+        }
+
+        @Override
+        protected Defect copyAndOverride(Defect source, Map<String, Object> overrides) {
+            return Defect.builder()
+                    .code((String) overrides.getOrDefault("code", source.getCode()))
+                    .name((String) overrides.getOrDefault("name", source.getName()))
+                    .description((String) overrides.getOrDefault("description", source.getDescription()))
+                    .severity(source.getSeverity())
+                    .status(source.getStatus())
+                    .confirmed(source.getConfirmed())
+                    .build();
+        }
+    };
+
+    @Override
+    @Transactional
+    public List<DefectResponse> saveAll(List<DefectRequest> requests) {
+        List<Defect> defects = requests.stream()
+                .map(req -> Defect.builder()
+                        .id(req.id())
+                        .code(req.code())
+                        .name(req.name())
+                        .description(req.description())
+                        .severity(req.severity())
+                        .status(req.status())
+                        .confirmed(req.confirmed())
+                        .build())
+                .collect(Collectors.toList());
+        return saveAllHelper.saveAll(defects);
+    }
+
+    @Override
+    @Transactional
+    public DefectResponse saveAs(DefectSaveAsRequest request) {
+        Map<String, Object> overrides = new HashMap<>();
+        if (request.code() != null) overrides.put("code", request.code());
+        if (request.name() != null) overrides.put("name", request.name());
+        if (request.description() != null) overrides.put("description", request.description());
+        return saveAsHelper.saveAs(request.sourceId(), overrides);
+    }
+
+	/*@Transactional
+	@Override
+	public DefectResponse saveAs(DefectSaveAsRequest request) {
+		if (request.sourceId() == null) {
+            throw new ValidationException("SourceId must not be null");
+        }
+		Map<String, Object> overrides = new HashMap<>();
+		if(request.code() != null) overrides.put("code", request.code());
+		if(request.name() != null) overrides.put("name", request.name());
+		if(request.description() != null) overrides.put("description", request.description());
+		//poziv apstraktne metode saveAs, da se ne pomisli,da je ovo rekurzivni poziv
+		return saveAs(request.sourceId(), overrides);
+	}
+
+	@Transactional
+	@Override
+	public List<DefectResponse> saveAll(List<DefectRequest> requests) {
+		
+		return null;
+	}
+
+	@Override
+	protected Defect copyAndOverride(Defect source, Map<String, Object> overrides) {
+		return Defect.builder()
+                .code((String) overrides.getOrDefault("code", source.getCode()))
+                .name((String) overrides.getOrDefault("name", source.getName()))
+                .description((String) overrides.getOrDefault("description", source.getDescription()))
+                .severity(source.getSeverity())
+                .status(source.getStatus())
+                .confirmed(source.getConfirmed())
+                .createdDate(LocalDateTime.now()) // reset kreiranja
+                .inspections(new ArrayList<>()) 
+                .build();
+	}*/
+	
 	/*private List<Long> findByRangeId(Long from, Long to) {
 		if(from == null || to == null) {
 			throw new ValidationException("IdFrom & idTo must not be null");
@@ -675,5 +798,7 @@ public class DefectService implements IDefectService {
 		Optional.ofNullable(newStatus)
 			.orElseThrow(() -> new ValidationException("DefectStatus newStatus must not be null"));
 	}
+
+	
 
 }

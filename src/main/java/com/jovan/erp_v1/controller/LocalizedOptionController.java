@@ -27,13 +27,13 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/localizedOptions")
+@RequestMapping("/localized-options")
 @PreAuthorize(RoleGroups.LOCALIZED_OPTION_FULL_ACCESS)
 public class LocalizedOptionController {
 
     private final ILocalizedOptionService localizedOptionService;
 
-    @PostMapping("/create/new-localizedOption")
+    @PostMapping("/create/new-localized-option")
     public ResponseEntity<LocalizedOptionResponse> create(@Valid @RequestBody LocalizedOptionRequest request) {
         return ResponseEntity.ok(localizedOptionService.create(request));
     }

@@ -24,6 +24,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -35,6 +36,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Defect {
 
 	@Id
@@ -56,15 +58,18 @@ public class Defect {
 	
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
+	@Builder.Default
 	private DefectStatus status = DefectStatus.NEW;
 	
 	@Column(nullable = false)
+	@Builder.Default
 	private Boolean confirmed = false;
 	
 	@Column(nullable = false)
 	private LocalDateTime createdDate;
 	
 	@OneToMany(mappedBy = "defect", cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
 	private List<InspectionDefect> inspections = new ArrayList<>();
 	
 	@CreatedDate
