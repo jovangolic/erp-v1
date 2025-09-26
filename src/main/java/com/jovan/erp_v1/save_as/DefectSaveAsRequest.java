@@ -11,5 +11,4 @@ public record DefectSaveAsRequest(
 	    String name,
 	    String description
 		) {
-
 }
