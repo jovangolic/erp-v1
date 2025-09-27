@@ -19,7 +19,7 @@ import com.jovan.erp_v1.model.Vehicle;
 public interface TransportOrderRepository extends JpaRepository<TransportOrder, Long> {
 
     Optional<TransportOrder> findByVehicle_Model(String model);
-    Optional<TransportOrder> findByDriver_Name(String name);
+    Optional<TransportOrder> findByDriver_FirstNameContainingIgnoreCaseAndDriver_LastNameContainingIgnoreCase(String firstName, String lastName);
     Optional<TransportOrder> findByVehicleId(Long vehicleId);
     Optional<TransportOrder> findByDriverId(Long driversId);
     List<TransportOrder> findByStatus(TransportStatus status);
@@ -48,8 +48,8 @@ public interface TransportOrderRepository extends JpaRepository<TransportOrder, 
     List<TransportOrder> findByVehicle_Out_Of_Service();
     @Query("SELECT to FROM TransportOrder to WHERE to.vehicle.status = 'RESERVED'")
     List<TransportOrder> findByVehicle_Reserved();
-    @Query("SELECT to FROM TransportOrder to WHERE to.vehicle.model = :vehicleModel AND to.driver.name = :driverName")
-    List<TransportOrder> findByVehicleAndDriver(@Param("vehicleModel") String vehicleModel,@Param("driverName") String driverName);
+    @Query("SELECT to FROM TransportOrder to WHERE to.vehicle.model = :vehicleModel AND to.driver.firstName = :driverFirstName AND to.driver.lastName = :driverLastName")
+    List<TransportOrder> findByVehicleAndDriver(@Param("vehicleModel") String vehicleModel,@Param("driverFirstName") String driverFirstName, @Param("driverLastName") String driverLastName);
     @Query("SELECT to FROM TransportOrder to WHERE to.outboundDelivery.status  ='PENDING'")
     List<TransportOrder> findByOutboundDelivery_Pending();
     @Query("SELECT to FROM TransportOrder to WHERE to.outboundDelivery.status  ='IN_TRANSIT'")

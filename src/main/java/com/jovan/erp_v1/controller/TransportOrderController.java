@@ -86,8 +86,9 @@ public class TransportOrderController {
 
     @PreAuthorize(RoleGroups.TRANSPORT_ORDER_READ_ACCESS)
     @GetMapping("/driver-name")
-    public ResponseEntity<TransportOrderResponse> findByDriver_Name(@RequestParam("name") String name) {
-        TransportOrderResponse response = transportOrderService.findByDriver_Name(name);
+    public ResponseEntity<TransportOrderResponse> findByDriver_FirstNameContainingIgnoreCaseAndDriver_LastNameContainingIgnoreCase(@RequestParam("firstName") String firstName,
+    		@RequestParam("lastName") String lastName) {
+        TransportOrderResponse response = transportOrderService.findByDriver_FirstNameContainingIgnoreCaseAndDriver_LastNameContainingIgnoreCase(firstName, lastName);
         return ResponseEntity.ok(response);
     }
 
@@ -217,8 +218,9 @@ public class TransportOrderController {
     
     @PreAuthorize(RoleGroups.TRANSPORT_ORDER_READ_ACCESS)
     @GetMapping("/search/vehicle-model-and-driver-name")
-    public ResponseEntity<List<TransportOrderResponse>> findByVehicleAndDriver(@RequestParam("vehicleModel") String vehicleModel,@RequestParam("driverName") String driverName){
-    	List<TransportOrderResponse> responses = transportOrderService.findByVehicleAndDriver(vehicleModel, driverName);
+    public ResponseEntity<List<TransportOrderResponse>> findByVehicleAndDriver(@RequestParam("vehicleModel") String vehicleModel,
+    		@RequestParam("driverFirstName") String driverFirstName,@RequestParam("driverLastName") String driverLastName){
+    	List<TransportOrderResponse> responses = transportOrderService.findByVehicleAndDriver(vehicleModel,driverFirstName,  driverLastName);
     	return ResponseEntity.ok(responses);
     }
     

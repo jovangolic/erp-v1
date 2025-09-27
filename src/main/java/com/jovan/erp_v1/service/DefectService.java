@@ -799,6 +799,4 @@ public class DefectService  implements IDefectService {
 			.orElseThrow(() -> new ValidationException("DefectStatus newStatus must not be null"));
 	}
 
-	
-
 }

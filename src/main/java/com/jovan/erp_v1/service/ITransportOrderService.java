@@ -18,7 +18,7 @@ public interface ITransportOrderService {
     TransportOrderResponse findOne(Long id);
     List<TransportOrderResponse> findAll();
     TransportOrderResponse findByVehicle_Model(String model);
-    TransportOrderResponse findByDriver_Name(String name);
+    TransportOrderResponse findByDriver_FirstNameContainingIgnoreCaseAndDriver_LastNameContainingIgnoreCase(String firstName, String lastName);
     TransportOrderResponse findByVehicleId(Long vehicleId);
     TransportOrderResponse findByDriverId(Long driversId);
     List<TransportOrderResponse> findByStatus(TransportStatus status);
@@ -38,7 +38,7 @@ public interface ITransportOrderService {
     List<TransportOrderResponse> findByVehicle_Under_Maintenance();
     List<TransportOrderResponse> findByVehicle_Out_Of_Service();
     List<TransportOrderResponse> findByVehicle_Reserved();
-    List<TransportOrderResponse> findByVehicleAndDriver( String vehicleModel, String driverName);
+    List<TransportOrderResponse> findByVehicleAndDriver( String vehicleModel, String driverFirstName, String driverLastName);
     List<TransportOrderResponse> findByOutboundDelivery_Pending();
     List<TransportOrderResponse> findByOutboundDelivery_In_Transit();
     List<TransportOrderResponse> findByOutboundDelivery_Delivered();

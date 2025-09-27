@@ -26,7 +26,7 @@ import com.jovan.erp_v1.model.OutboundDelivery;
 import com.jovan.erp_v1.model.TransportOrder;
 import com.jovan.erp_v1.model.Vehicle;
 import com.jovan.erp_v1.repository.BuyerRepository;
-import com.jovan.erp_v1.repository.DriversRepository;
+import com.jovan.erp_v1.repository.DriverRepository;
 import com.jovan.erp_v1.repository.OutboundDeliveryRepository;
 import com.jovan.erp_v1.repository.TransportOrderRepository;
 import com.jovan.erp_v1.repository.VehicleRepository;
@@ -43,7 +43,7 @@ public class TransportOrderService implements ITransportOrderService {
     private final TransportOrderRepository transportOrderRepository;
     private final TransportOrderMapper transportOrderMapper;
     private final VehicleRepository vehicleRepository;
-    private final DriversRepository driversRepository;
+    private final DriverRepository driversRepository;
     private final OutboundDeliveryRepository outRepo;
     private final BuyerRepository buyerRepository;
 
@@ -114,10 +114,11 @@ public class TransportOrderService implements ITransportOrderService {
     }
 
     @Override
-    public TransportOrderResponse findByDriver_Name(String name) {
-    	validateString(name);
-        TransportOrder to = transportOrderRepository.findByDriver_Name(name)
-                .orElseThrow(() -> new DriverErrorException("Driver's name not found"));
+    public TransportOrderResponse findByDriver_FirstNameContainingIgnoreCaseAndDriver_LastNameContainingIgnoreCase(String firstName, String lastName) {
+    	validateString(firstName);
+    	validateString(lastName);
+        TransportOrder to = transportOrderRepository.findByDriver_FirstNameContainingIgnoreCaseAndDriver_LastNameContainingIgnoreCase(firstName, lastName)
+                .orElseThrow(() -> new DriverErrorException("Driver's full-name not found"));
         return new TransportOrderResponse(to);
     }
 
@@ -303,13 +304,14 @@ public class TransportOrderService implements ITransportOrderService {
 	}
 
 	@Override
-	public List<TransportOrderResponse> findByVehicleAndDriver(String vehicleModel, String driverName) {
+	public List<TransportOrderResponse> findByVehicleAndDriver(String vehicleModel, String driverFirstName, String driverLastName) {
 		validateString(vehicleModel);
-		validateString(driverName);
-		List<TransportOrder> items = transportOrderRepository.findByVehicleAndDriver(vehicleModel, driverName);
+		validateString(driverFirstName);
+		validateString(driverLastName);
+		List<TransportOrder> items = transportOrderRepository.findByVehicleAndDriver(vehicleModel,driverFirstName, driverLastName);
 		if(items.isEmpty()) {
-			String msg = String.format("TransportOrder for vehicle model %s and driver name %s is not found",
-					vehicleModel,driverName);
+			String msg = String.format("TransportOrder for vehicle model %s and driver first-name %s and driver last-name %s, is not found",
+					vehicleModel,driverFirstName, driverLastName);
 			throw new NoDataFoundException(msg);
 		}
 		return items.stream().map(transportOrderMapper::toResponse).collect(Collectors.toList());
