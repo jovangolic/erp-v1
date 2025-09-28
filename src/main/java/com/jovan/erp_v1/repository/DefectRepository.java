@@ -76,8 +76,9 @@ public interface DefectRepository extends JpaRepository<Defect, Long> {
 	
 	@Query("SELECT d FROM Defect d " +
 		       "WHERE d.createdDate >= :startOfDay AND d.createdDate <= :endOfDay")
-	List<Defect> findByCreatedDateOnly(@Param("startOfDay") LocalDateTime startOfDay,
-		                                   @Param("endOfDay") LocalDateTime endOfDay);
+	List<Defect> findByCreatedDateOnly(
+			@Param("startOfDay") LocalDateTime startOfDay,
+		    @Param("endOfDay") LocalDateTime endOfDay);
 	
 	@Query("SELECT d FROM Defect d " +
 	           "WHERE (:id IS NULL OR d.id = :id) " +

@@ -26,6 +26,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ *Entity class for driver's trip from point a to point b, currenty holding start-end location and start-end date and time
+ */
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Data
