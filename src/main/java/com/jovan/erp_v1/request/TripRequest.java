@@ -14,7 +14,8 @@ public record TripRequest(
         @NotNull LocalDateTime startTime,
         LocalDateTime endTime,
         @NotNull TripStatus status,
-        @NotNull Long driverId
+        @NotNull Long driverId,
+        Boolean confirmed
 		) {
 
 }

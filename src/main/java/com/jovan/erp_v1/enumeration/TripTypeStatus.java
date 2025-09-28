@@ -1,0 +1,12 @@
+package com.jovan.erp_v1.enumeration;
+
+
+public enum TripTypeStatus {
+
+	ALL,
+	ACTIVE,
+	NEW,
+    CONFIRMED,
+    CLOSED,
+    CANCELLED
+}

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.jovan.erp_v1.enumeration.DriverStatus;
 import com.jovan.erp_v1.enumeration.TripStatus;
+import com.jovan.erp_v1.enumeration.TripTypeStatus;
 
 /**
  *Generic request object for general-search method
@@ -21,6 +22,7 @@ public record TripSearchRequest(
         LocalDateTime endTimeAfter,
         LocalDateTime endTimeBefore,
         TripStatus tripStatus,
+        TripTypeStatus typeStatus,
         Long driverId,
         Long driverIdFrom,
         Long driverIdTo,

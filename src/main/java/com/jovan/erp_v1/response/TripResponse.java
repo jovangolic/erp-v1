@@ -20,6 +20,7 @@ public class TripResponse {
     private LocalDateTime endTime;
     private TripStatus status;
     private DriverResponse driverResponse;
+    private Boolean confirmed;
 	
 	public TripResponse(Trip t) {
 		this.id = t.getId();
@@ -29,5 +30,6 @@ public class TripResponse {
 		this.endTime = t.getEndTime();
 		this.status = t.getStatus();
 		this.driverResponse = t.getDriver() != null ? new DriverResponse(t.getDriver()) : null;
+		this.confirmed = t.getConfirmed();
 	}
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.jovan.erp_v1.enumeration.DriverStatus;
 import com.jovan.erp_v1.enumeration.TripStatus;
+import com.jovan.erp_v1.enumeration.TripTypeStatus;
 import com.jovan.erp_v1.model.Trip;
 import com.jovan.erp_v1.request.TripSearchRequest;
 
@@ -58,6 +59,7 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 	            req.endTimeAfter(),
 	            req.endTimeBefore(),
 	            req.tripStatus(),
+	            req.typeStatus(),
 	            req.driverId(),
 	            req.driverIdFrom(),
 	            req.driverIdTo(),
@@ -83,6 +85,7 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 	    AND (:endTimeAfter IS NULL OR t.endTime >= :endTimeAfter)
 	    AND (:endTimeBefore IS NULL OR t.endTime <= :endTimeBefore)
 	    AND (:tripStatus IS NULL OR t.status = :tripStatus)
+	    AND (:typeStatus IS NULL OR t.typeStatus = :typeStatus)
 	    AND (:driverId IS NULL OR t.driver.id = :driverId)
 	    AND (:driverIdFrom IS NULL OR t.driver.id >= :driverIdFrom)
 	    AND (:driverIdTo IS NULL OR t.driver.id <= :driverIdTo)
@@ -105,6 +108,7 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 	        @Param("endTimeAfter") LocalDateTime endTimeAfter, 
 	        @Param("endTimeBefore") LocalDateTime endTimeBefore,
 	        @Param("tripStatus") TripStatus tripStatus, 
+	        @Param("typeStatus") TripTypeStatus typeStatus,
 	        @Param("driverId") Long driverId,
 	        @Param("driverIdFrom") Long driverIdFrom, 
 	        @Param("driverIdTo") Long driverIdTo,
@@ -117,4 +121,11 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 	
 	@Query("SELECT t FROM Trip t WHERE t.startTime >= :startOfDay AND t.startTime <= :endOfDay")
 	List<Trip> findByStartTimeOnly(@Param("startOfDay") LocalDateTime startOfDay,@Param("endOfDay") LocalDateTime endOfDay);
+	
+	//Metoda za vozaca, da vidi samo svoje voznje
+	@Query("""
+		    SELECT t FROM Trip t
+		    WHERE t.driver.id = :driverId
+		    """)
+	List<Trip> findByDriverIdSecure(@Param("driverId") Long driverId);
 }

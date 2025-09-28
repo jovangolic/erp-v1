@@ -323,4 +323,10 @@ public class RoleGroups {
 	public static final String TRANSACTION_AUDIT_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','ACCOUNTANT','FINANCIAL_MANAGER','AUDITOR','SECURITY_AUDITOR')";
 	
 	public static final String GOTO_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN')";
+	
+	public static final String TRIP_FULL_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','LOGISTICS_MANAGER','TRANSPORT_PLANNER')";
+	
+	public static final String TRIP_READ_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','LOGISTICS_MANAGER','TRANSPORT_PLANNER','DISPATCHER')";
+	
+	public static final String TRIP_DRIVER_READ_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','DRIVER'";
 }

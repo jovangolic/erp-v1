@@ -235,7 +235,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	    	Map.entry("/stockTransferItems", BASIC_WRITE_METHODS),
         	    	Map.entry("/transportOrders", BASIC_WRITE_METHODS),
         	    	Map.entry("/trackingInfos", BASIC_WRITE_METHODS),
-        	    	Map.entry("/vehicles", BASIC_WRITE_METHODS)
+        	    	Map.entry("/vehicles", BASIC_WRITE_METHODS),
+        	    	Map.entry("/trips", BASIC_WRITE_METHODS)
         	    	)),
         	    Map.entry("TRANSPORT_PLANNER", Map.ofEntries(
         	    	Map.entry("/route", BASIC_WRITE_METHODS),
@@ -244,7 +245,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	    	Map.entry("/stockTransferItems", BASIC_WRITE_METHODS),
         	    	Map.entry("/trackingInfos", BASIC_WRITE_METHODS),
         	    	Map.entry("/transportOrders", BASIC_WRITE_METHODS),
-        	    	Map.entry("/vehicles", BASIC_WRITE_METHODS))),
+        	    	Map.entry("/vehicles", BASIC_WRITE_METHODS),
+        	    	Map.entry("/trips", BASIC_WRITE_METHODS))),
         	    Map.entry("DISPATCHER", Map.ofEntries(
         	    	Map.entry("/route", BASIC_WRITE_METHODS),
         	    	Map.entry("/transportOrders", BASIC_WRITE_METHODS))),
@@ -515,7 +517,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
             	    Map.entry("/routes", BASIC_READ_METHODS),
             	    Map.entry("/shipments", BASIC_READ_METHODS),
             	    Map.entry("/trackingInfos", BASIC_READ_METHODS),
-            	    Map.entry("/vehicles", BASIC_READ_METHODS))),
+            	    Map.entry("/vehicles", BASIC_READ_METHODS),
+            	    Map.entry("/trips", BASIC_READ_METHODS))),
             	Map.entry("SALES_MANAGER", Map.ofEntries(
             		Map.entry("/salesOrders", BASIC_READ_METHODS),
             		Map.entry("/batches", BASIC_READ_METHODS),
@@ -528,7 +531,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
             	    Map.entry("/shifts", BASIC_READ_METHODS))),
             	Map.entry("DRIVER", Map.ofEntries(
                 	Map.entry("/transportOrders", BASIC_READ_METHODS),
-                	Map.entry("/vehicles", BASIC_READ_METHODS))),
+                	Map.entry("/vehicles", BASIC_READ_METHODS),
+                	Map.entry("/trips", BASIC_READ_METHODS))),
             	Map.entry("MECHANIC", Map.ofEntries(
             		Map.entry("/vehicles", BASIC_READ_METHODS))),
             	Map.entry("PRODUCTION_MANAGER", Map.ofEntries(

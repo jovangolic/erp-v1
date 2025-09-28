@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import com.jovan.erp_v1.enumeration.TripStatus;
 import com.jovan.erp_v1.request.TripRequest;
 import com.jovan.erp_v1.request.TripSearchRequest;
 import com.jovan.erp_v1.response.TripResponse;
+import com.jovan.erp_v1.save_as.TripSaveAsRequest;
 
 public interface ITripService {
 
@@ -38,12 +40,17 @@ public interface ITripService {
 	List<TripResponse> findByDriver_Status(DriverStatus status);
 	
 	List<TripResponse> findByStatusIn( List<TripStatus> statuses);
-	List<TripResponse> findByStartTimeOnly( LocalDateTime startOfDay, LocalDateTime endOfDay);
+	List<TripResponse> searchByDateOnly(LocalDate dateOnly);
+	List<TripResponse> findMyTrips(Long driverId);
 	
 	List<TripResponse> generalSearch(TripSearchRequest req);
 	
+	TripResponse cancelTrip(Long id);
+	TripResponse closeTrip(Long id);
+	TripResponse confirmTrip(Long id);
+	
 	//save, save-as, saveAll
 	TripResponse saveTrip(TripRequest request);
-	TripResponse saveAs();
+	TripResponse saveAs(TripSaveAsRequest request);
 	List<TripResponse> saveAll(List<TripRequest> requests);
 }

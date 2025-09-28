@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.jovan.erp_v1.enumeration.TripStatus;
+import com.jovan.erp_v1.enumeration.TripTypeStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,10 +58,19 @@ public class Trip {
     @Column(nullable = false, length = 20)
     @Builder.Default
     private TripStatus status = TripStatus.PLANNED;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private TripTypeStatus typeStatus = TripTypeStatus.NEW;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id", nullable = false)
     private Driver driver;
+    
+    @Column(nullable = false)
+	@Builder.Default
+	private Boolean confirmed = false;
     
     @CreatedDate
     @Column(name = "created_at", updatable = false)
