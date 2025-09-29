@@ -3,6 +3,7 @@ package com.jovan.erp_v1.response;
 import java.time.LocalDateTime;
 
 import com.jovan.erp_v1.enumeration.TripStatus;
+import com.jovan.erp_v1.enumeration.TripTypeStatus;
 import com.jovan.erp_v1.model.Trip;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class TripResponse {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private TripStatus status;
+    private TripTypeStatus typeStatus;
     private DriverResponse driverResponse;
     private Boolean confirmed;
 	
@@ -29,6 +31,7 @@ public class TripResponse {
 		this.startTime = t.getStartTime();
 		this.endTime = t.getEndTime();
 		this.status = t.getStatus();
+		this.typeStatus = t.getTypeStatus();
 		this.driverResponse = t.getDriver() != null ? new DriverResponse(t.getDriver()) : null;
 		this.confirmed = t.getConfirmed();
 	}

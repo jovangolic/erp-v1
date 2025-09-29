@@ -11,6 +11,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ import com.jovan.erp_v1.model.Driver;
 import com.jovan.erp_v1.model.Trip;
 import com.jovan.erp_v1.repository.DriverRepository;
 import com.jovan.erp_v1.repository.TripRepository;
+import com.jovan.erp_v1.repository.specification.TripSpecification;
 import com.jovan.erp_v1.request.TripRequest;
 import com.jovan.erp_v1.request.TripSearchRequest;
 import com.jovan.erp_v1.response.TripResponse;
@@ -50,6 +53,7 @@ public class TripService implements ITripService {
 		validateString(request.endLocation());
 		DateValidator.validateNotNull(request.endTime(), "End-time");
 		validateTripStatus(request.status());
+		validateTripTypeStatus(request.typeStatus());
 		Driver d = validateDriverId(request.driverId());
 		Trip t = tripMapper.toEntity(request, d);
 		Trip saved = tripRepository.save(t);
@@ -66,6 +70,7 @@ public class TripService implements ITripService {
 		validateStringsNotEmpty("start-location, end-location", request.startLocation(), request.endLocation());
 		DateValidator.validateNotNull(request.endTime(), "End-time");
 		validateTripStatus(request.status());
+		validateTripTypeStatus(request.typeStatus());
 		Driver d = t.getDriver();
 		if(request.driverId() != null && (d == null || !request.driverId().equals(d.getId()))) {
 			d = validateDriverId(request.driverId());
@@ -266,11 +271,11 @@ public class TripService implements ITripService {
 	}
 
 	@Override
-	public List<TripResponse> findbyStatusAndDriverFirstNameContainingIgnoreCaseAndDriverLastNameContainingIgnoreCase(
+	public List<TripResponse> findByStatusAndDriverFirstNameContainingIgnoreCaseAndDriverLastNameContainingIgnoreCase(
 			TripStatus status, String firstName, String lastName) {
 		validateTripStatus(status);
 		validateStringsNotEmpty("First-name, Last-name", firstName,lastName);
-		List<Trip> items = tripRepository.findbyStatusAndDriverFirstNameContainingIgnoreCaseAndDriverLastNameContainingIgnoreCase(status, firstName, lastName);
+		List<Trip> items = tripRepository.findByStatusAndDriverFirstNameContainingIgnoreCaseAndDriverLastNameContainingIgnoreCase(status, firstName, lastName);
 		if(items.isEmpty()) {
 			String msg = String.format("No Trip for driver's first-name %s, last-name %s and trip-status %s is found", 
 					firstName,lastName,status);
@@ -341,8 +346,14 @@ public class TripService implements ITripService {
 
 	@Override
 	public List<TripResponse> generalSearch(TripSearchRequest req) {
-		// TODO Auto-generated method stub
-		return null;
+		Specification<Trip> spec = TripSpecification.fromRequest(req);
+        List<Trip> trips = tripRepository.findAll(spec);
+        if (trips.isEmpty()) {
+            throw new NoDataFoundException("No trips found for given search criteria");
+        }
+        return trips.stream()
+                    .map(tripMapper::toResponse)
+                    .toList();
 	}
 	
 	@Transactional
@@ -459,6 +470,29 @@ public class TripService implements ITripService {
 		return new TripResponse(t);
 	}
 	
+	@Transactional
+	@Override
+	public TripResponse changeStatus(Long id, TripTypeStatus newStatus) {
+		validateTripTypeStatus(newStatus);
+		Trip t = tripRepository.findById(id).orElseThrow(() -> new ValidationException("Trip not found with id "+id));
+		if(t.getTypeStatus() == TripTypeStatus.CLOSED) {
+			throw new ValidationException("Closed trips cannot change status");
+		}
+		if(newStatus == TripTypeStatus.CONFIRMED) {
+			if(t.getTypeStatus() != TripTypeStatus.NEW) {
+				throw new ValidationException("Only NEW trips can be confirmed");
+			}
+			t.setConfirmed(true);
+		}
+		t.setTypeStatus(newStatus);
+		return new TripResponse(tripRepository.save(t));
+	}
+
+	private void validateTripTypeStatus(TripTypeStatus newStatus) {
+		Optional.ofNullable(newStatus)
+			.orElseThrow(() -> new ValidationException("TripTypeStatus newStatus must not be null"));
+	}
+	
 	private void validateTripStatusList(List<TripStatus> statuses) {
 		if(statuses == null || statuses.isEmpty()) {
 			throw new ValidationException("TripStatus list must not be null nor empty");
@@ -499,5 +533,5 @@ public class TripService implements ITripService {
 		Optional.ofNullable(status)
 			.orElseThrow(() -> new ValidationException("TripStatus status must not be null"));
 	}
-
+	
 }

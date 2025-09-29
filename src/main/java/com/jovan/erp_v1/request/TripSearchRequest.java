@@ -32,5 +32,4 @@ public record TripSearchRequest(
         DriverStatus driverStatus,
         Boolean confirmed
 		) {
-
 }

@@ -180,11 +180,11 @@ public class TripController {
 	
 	@PreAuthorize(RoleGroups.TRIP_READ_ACCESS)
 	@GetMapping("/trip-status-and-driver-first-last-name")
-	public ResponseEntity<List<TripResponse>> findbyStatusAndDriverFirstNameContainingIgnoreCaseAndDriverLastNameContainingIgnoreCase(
+	public ResponseEntity<List<TripResponse>> findByStatusAndDriverFirstNameContainingIgnoreCaseAndDriverLastNameContainingIgnoreCase(
 			@RequestParam("status") TripStatus status,
 			@RequestParam("firstName") String firstName,
 			@RequestParam("lastName") String lastName){
-		List<TripResponse> items = tripService.findbyStatusAndDriverFirstNameContainingIgnoreCaseAndDriverLastNameContainingIgnoreCase(status, firstName, lastName);
+		List<TripResponse> items = tripService.findByStatusAndDriverFirstNameContainingIgnoreCaseAndDriverLastNameContainingIgnoreCase(status, firstName, lastName);
 		return ResponseEntity.ok(items);
 	}
 	
@@ -225,9 +225,10 @@ public class TripController {
 	}
 	
 	@PreAuthorize(RoleGroups.TRIP_FULL_ACCESS)
-	@PostMapping("/general-search")
-    public ResponseEntity<List<TripResponse>> searchTrips(@RequestBody TripSearchRequest request) {
-        return ResponseEntity.ok(tripService.generalSearch(request));
+	@GetMapping("/general-search")
+	public ResponseEntity<List<TripResponse>> generalSearch(@RequestBody TripSearchRequest req) {
+        List<TripResponse> trips = tripService.generalSearch(req);
+        return ResponseEntity.ok(trips);
     }
 	
 	@PreAuthorize(RoleGroups.TRIP_FULL_ACCESS)

@@ -27,6 +27,7 @@ public class TripMapper extends AbstractMapper<TripRequest> {
 		t.setEndLocation(request.endLocation());
 		t.setEndTime(request.endTime());
 		t.setStatus(request.status());
+		t.setTypeStatus(request.typeStatus());
 		t.setDriver(d);
 		return t;
 	}
@@ -40,6 +41,7 @@ public class TripMapper extends AbstractMapper<TripRequest> {
 		t.setEndLocation(request.endLocation());
 		t.setEndTime(request.endTime());
 		t.setStatus(request.status());
+		t.setTypeStatus(request.typeStatus());
 		t.setDriver(d);
 		return t;
 	}

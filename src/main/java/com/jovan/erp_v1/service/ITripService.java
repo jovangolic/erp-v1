@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.jovan.erp_v1.enumeration.DriverStatus;
 import com.jovan.erp_v1.enumeration.TripStatus;
+import com.jovan.erp_v1.enumeration.TripTypeStatus;
 import com.jovan.erp_v1.request.TripRequest;
 import com.jovan.erp_v1.request.TripSearchRequest;
 import com.jovan.erp_v1.response.TripResponse;
@@ -34,7 +35,7 @@ public interface ITripService {
 	
 	List<TripResponse> findByStatus(TripStatus status);
 	List<TripResponse> findByDriverId(Long driverId);
-	List<TripResponse> findbyStatusAndDriverFirstNameContainingIgnoreCaseAndDriverLastNameContainingIgnoreCase(TripStatus status, String firstName, String lastName);
+	List<TripResponse> findByStatusAndDriverFirstNameContainingIgnoreCaseAndDriverLastNameContainingIgnoreCase(TripStatus status, String firstName, String lastName);
 	List<TripResponse> findByDriverFirstNameContainingIgnoreCaseAndDriverLastNameContainingIgnoreCase(String firstName, String lastName);
 	List<TripResponse> findByDriverPhoneLikeIgnoreCase(String phone);
 	List<TripResponse> findByDriver_Status(DriverStatus status);
@@ -42,6 +43,7 @@ public interface ITripService {
 	List<TripResponse> findByStatusIn( List<TripStatus> statuses);
 	List<TripResponse> searchByDateOnly(LocalDate dateOnly);
 	List<TripResponse> findMyTrips(Long driverId);
+	TripResponse changeStatus(Long id, TripTypeStatus newStatus);
 	
 	List<TripResponse> generalSearch(TripSearchRequest req);
 	

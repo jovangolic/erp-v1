@@ -3,6 +3,7 @@ package com.jovan.erp_v1.request;
 import java.time.LocalDateTime;
 
 import com.jovan.erp_v1.enumeration.TripStatus;
+import com.jovan.erp_v1.enumeration.TripTypeStatus;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +15,7 @@ public record TripRequest(
         @NotNull LocalDateTime startTime,
         LocalDateTime endTime,
         @NotNull TripStatus status,
+        @NotNull TripTypeStatus typeStatus,
         @NotNull Long driverId,
         Boolean confirmed
 		) {
