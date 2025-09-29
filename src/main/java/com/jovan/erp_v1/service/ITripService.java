@@ -1,9 +1,9 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
 import com.jovan.erp_v1.enumeration.DriverStatus;
 import com.jovan.erp_v1.enumeration.TripStatus;
 import com.jovan.erp_v1.enumeration.TripTypeStatus;
@@ -55,4 +55,11 @@ public interface ITripService {
 	TripResponse saveTrip(TripRequest request);
 	TripResponse saveAs(TripSaveAsRequest request);
 	List<TripResponse> saveAll(List<TripRequest> requests);
+	
+	//nove metode za praveljenje driver izvestaja
+	Long countByDriver_Id(Long driverId);
+	Long countByDriver_IdAndStatus(Long driverId, TripStatus status);
+	//prosecno trajanje u satima
+	BigDecimal calculateAverageDuration( Long driverId);
+	BigDecimal calculateTotalRevenue( Long driverId);
 }

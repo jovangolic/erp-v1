@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -487,6 +488,34 @@ public class TripService implements ITripService {
 		t.setTypeStatus(newStatus);
 		return new TripResponse(tripRepository.save(t));
 	}
+	
+	//metode za generisanje vozacevog izvestaja
+	@Override
+	public Long countByDriver_Id(Long driverId) {
+		validateDriverId(driverId);
+		return tripRepository.countByDriver_Id(driverId);
+	}
+
+	@Override
+	public Long countByDriver_IdAndStatus(Long driverId, TripStatus status) {
+		validateDriverId(driverId);
+		validateTripStatus(status);
+		return tripRepository.countByDriver_IdAndStatus(driverId, status);
+	}
+
+	@Override
+	public BigDecimal calculateAverageDuration(Long driverId) {
+	    validateDriverId(driverId);
+	    return Optional.ofNullable(tripRepository.calculateAverageDuration(driverId))
+	                   .orElse(BigDecimal.ZERO);
+	}
+
+	@Override
+	public BigDecimal calculateTotalRevenue(Long driverId) {
+	    validateDriverId(driverId);
+	    return Optional.ofNullable(tripRepository.calculateTotalRevenue(driverId))
+	                   .orElse(BigDecimal.ZERO);
+	}
 
 	private void validateTripTypeStatus(TripTypeStatus newStatus) {
 		Optional.ofNullable(newStatus)
@@ -533,5 +562,5 @@ public class TripService implements ITripService {
 		Optional.ofNullable(status)
 			.orElseThrow(() -> new ValidationException("TripStatus status must not be null"));
 	}
-	
+
 }

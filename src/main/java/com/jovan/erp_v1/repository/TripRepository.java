@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -52,4 +53,22 @@ public interface TripRepository extends JpaRepository<Trip, Long>, JpaSpecificat
 		    WHERE t.driver.id = :driverId
 		    """)
 	List<Trip> findByDriverIdSecure(@Param("driverId") Long driverId);
+	
+	//nove metode za praveljenje driver izvestaja
+	Long countByDriver_Id(Long driverId);
+    Long countByDriver_IdAndStatus(Long driverId, TripStatus status);
+    //prosecno trajanje u satima
+    @Query(value = """
+        SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (t.end_time - t.start_time)) / 3600), 0)
+        FROM trip t
+        WHERE t.driver_id = :driverId
+    """, nativeQuery = true)
+    BigDecimal calculateAverageDuration(@Param("driverId") Long driverId);
+    //ukupan prihod
+    @Query("""
+        SELECT COALESCE(SUM(t.fare), 0)
+        FROM Trip t
+        WHERE t.driver.id = :driverId
+    """)
+    BigDecimal calculateTotalRevenue(@Param("driverId") Long driverId);
 }

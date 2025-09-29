@@ -236,7 +236,9 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	    	Map.entry("/transportOrders", BASIC_WRITE_METHODS),
         	    	Map.entry("/trackingInfos", BASIC_WRITE_METHODS),
         	    	Map.entry("/vehicles", BASIC_WRITE_METHODS),
-        	    	Map.entry("/trips", BASIC_WRITE_METHODS)
+        	    	Map.entry("/trips", BASIC_WRITE_METHODS),
+        	    	Map.entry("/drivers", BASIC_WRITE_METHODS),
+        	    	Map.entry("/driver-report", BASIC_WRITE_METHODS)
         	    	)),
         	    Map.entry("TRANSPORT_PLANNER", Map.ofEntries(
         	    	Map.entry("/route", BASIC_WRITE_METHODS),
@@ -246,7 +248,9 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         	    	Map.entry("/trackingInfos", BASIC_WRITE_METHODS),
         	    	Map.entry("/transportOrders", BASIC_WRITE_METHODS),
         	    	Map.entry("/vehicles", BASIC_WRITE_METHODS),
-        	    	Map.entry("/trips", BASIC_WRITE_METHODS))),
+        	    	Map.entry("/trips", BASIC_WRITE_METHODS),
+        	    	Map.entry("/drivers", BASIC_WRITE_METHODS),
+        	    	Map.entry("/driver-report", BASIC_WRITE_METHODS))),
         	    Map.entry("DISPATCHER", Map.ofEntries(
         	    	Map.entry("/route", BASIC_WRITE_METHODS),
         	    	Map.entry("/transportOrders", BASIC_WRITE_METHODS))),
@@ -518,7 +522,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
             	    Map.entry("/shipments", BASIC_READ_METHODS),
             	    Map.entry("/trackingInfos", BASIC_READ_METHODS),
             	    Map.entry("/vehicles", BASIC_READ_METHODS),
-            	    Map.entry("/trips", BASIC_READ_METHODS))),
+            	    Map.entry("/trips", BASIC_READ_METHODS),
+            	    Map.entry("/drivers", BASIC_READ_METHODS))),
             	Map.entry("SALES_MANAGER", Map.ofEntries(
             		Map.entry("/salesOrders", BASIC_READ_METHODS),
             		Map.entry("/batches", BASIC_READ_METHODS),

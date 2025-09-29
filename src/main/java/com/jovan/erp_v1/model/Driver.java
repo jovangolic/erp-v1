@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Driver {
-
+ 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -52,3 +52,4 @@ public class Driver {
     @Builder.Default
     private List<Trip> trips = new ArrayList<>();
 }
+

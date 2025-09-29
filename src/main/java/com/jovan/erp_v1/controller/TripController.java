@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.DriverStatus;
 import com.jovan.erp_v1.enumeration.TripStatus;
+import com.jovan.erp_v1.enumeration.TripTypeStatus;
 import com.jovan.erp_v1.model.CustomUserDetails;
 import com.jovan.erp_v1.request.TripRequest;
 import com.jovan.erp_v1.request.TripSearchRequest;
@@ -197,14 +198,14 @@ public class TripController {
 	}
 	
 	@PreAuthorize(RoleGroups.TRIP_READ_ACCESS)
-	@GetMapping("search/driver-phone")
+	@GetMapping("/search/driver-phone")
 	public ResponseEntity<List<TripResponse>> findByDriverPhoneLikeIgnoreCase(@RequestParam("phone") String phone){
 		List<TripResponse> items = tripService.findByDriverPhoneLikeIgnoreCase(phone);
 		return ResponseEntity.ok(items);
 	}
 	
 	@PreAuthorize(RoleGroups.TRIP_READ_ACCESS)
-	@GetMapping("search/driver-status")
+	@GetMapping("/search/driver-status")
 	public ResponseEntity<List<TripResponse>> findByDriver_Status(@RequestParam("status") DriverStatus status){
 		List<TripResponse> items = tripService.findByDriver_Status(status);
 		return ResponseEntity.ok(items);
@@ -224,7 +225,7 @@ public class TripController {
 		return ResponseEntity.ok(items);
 	}
 	
-	@PreAuthorize(RoleGroups.TRIP_FULL_ACCESS)
+	@PreAuthorize(RoleGroups.TRIP_READ_ACCESS)
 	@GetMapping("/general-search")
 	public ResponseEntity<List<TripResponse>> generalSearch(@RequestBody TripSearchRequest req) {
         List<TripResponse> trips = tripService.generalSearch(req);
@@ -249,6 +250,13 @@ public class TripController {
 	@PostMapping("/{id}/confirm")
 	public ResponseEntity<TripResponse> confirmTrip(@PathVariable Long id){
 		TripResponse items = tripService.confirmTrip(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.TRIP_FULL_ACCESS)
+	@PostMapping("/{id}/status/{status}")
+	public ResponseEntity<TripResponse> changeStatus(@PathVariable Long id,@PathVariable TripTypeStatus newStatus){
+		TripResponse items = tripService.changeStatus(id, newStatus);
 		return ResponseEntity.ok(items);
 	}
 	
