@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedBy;
@@ -71,6 +72,9 @@ public class Trip {
     @Column(nullable = false)
 	@Builder.Default
 	private Boolean confirmed = false;
+    
+    @Column
+    private BigDecimal fare;
     
     @CreatedDate
     @Column(name = "created_at", updatable = false)

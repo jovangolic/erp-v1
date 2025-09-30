@@ -4,14 +4,17 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
+import com.jovan.erp_v1.enumeration.DriverStatus;
 import com.jovan.erp_v1.enumeration.TripStatus;
 import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.model.Driver;
@@ -25,6 +28,7 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -56,6 +60,47 @@ public class DriverReportService {
                 avgDuration,
                 totalRevenue
         );
+	}
+	
+	public List<DriverReportResponse> generateAdvancedDriverReport(LocalDate startDate,
+	        LocalDate endDate,List<TripStatus> tripStatuses,List<Long> driverGroupIds,List<DriverStatus> driverStatuses,Boolean confirmed) {
+		List<Driver> drivers = driverRepository.findAll((root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (driverStatuses != null && !driverStatuses.isEmpty()) {
+                predicates.add(root.get("status").in(driverStatuses));
+            }
+            if (confirmed != null) {
+                predicates.add(cb.equal(root.get("confirmed"), confirmed));
+            }
+            if (driverGroupIds != null && !driverGroupIds.isEmpty()) {
+                predicates.add(root.get("groupId").in(driverGroupIds)); // ako postoji groupId
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        });
+        return drivers.stream().map(driver -> {
+            Long totalTrips = tripRepository.countByDriver_IdAndDateBetween(driver.getId(), startDate, endDate);
+            Long completedTrips = tripRepository.countByDriver_IdAndStatusInAndDateBetween(driver.getId(),
+                    List.of(TripStatus.COMPLETED), startDate, endDate);
+            Long cancelledTrips = tripRepository.countByDriver_IdAndStatusInAndDateBetween(driver.getId(),
+                    List.of(TripStatus.CANCELLED), startDate, endDate);
+            Long activeTrips = tripRepository.countByDriver_IdAndStatusInAndDateBetween(driver.getId(),
+                    List.of(TripStatus.IN_PROGRESS), startDate, endDate);
+
+            BigDecimal avgDuration = tripRepository.calculateAverageDuration(driver.getId(), startDate, endDate);
+            BigDecimal totalRevenue = tripRepository.calculateTotalRevenue(driver.getId(), startDate, endDate);
+
+            return new DriverReportResponse(
+                    driver.getId(),
+                    driver.getFirstName() + " " + driver.getLastName(),
+                    driver.getPhone(),
+                    totalTrips,
+                    completedTrips,
+                    cancelledTrips,
+                    activeTrips,
+                    avgDuration,
+                    totalRevenue
+            );
+        }).toList();
 	}
 	
 	//za generisanje PDF izvestaja

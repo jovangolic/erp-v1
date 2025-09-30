@@ -2,7 +2,10 @@ package com.jovan.erp_v1.controller;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -10,8 +13,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.DriverStatus;
+import com.jovan.erp_v1.enumeration.TripStatus;
 import com.jovan.erp_v1.response.DriverReportResponse;
 import com.jovan.erp_v1.service.DriverReportService;
 import com.jovan.erp_v1.util.RoleGroups;
@@ -30,6 +36,20 @@ public class DriverReportController {
     public ResponseEntity<DriverReportResponse> getDriverReport(@PathVariable Long driverId) {
         return ResponseEntity.ok(driverReportService.generateDriverReport(driverId));
     }
+	
+	@GetMapping("/drivers-report")
+	public ResponseEntity<List<DriverReportResponse>> generateAdvancedDriverReport(
+	        @RequestParam(value="startDate", required=false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+	        @RequestParam(value="endDate", required=false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+	        @RequestParam(value="tripStatuses", required=false) List<TripStatus> tripStatuses,
+	        @RequestParam(value="driverGroupIds", required=false) List<Long> driverGroupIds,
+	        @RequestParam(value="driverStatuses", required=false) List<DriverStatus> driverStatuses,
+	        @RequestParam(value="confirmed", required=false) Boolean confirmed) {
+	    List<DriverReportResponse> items = driverReportService.generateAdvancedDriverReport(
+	            startDate, endDate, tripStatuses, driverGroupIds, driverStatuses, confirmed
+	    );
+	    return ResponseEntity.ok(items);
+	}
 	
 	@GetMapping("/{driverId}/report/excel")
 	public ResponseEntity<byte[]> downloadDriverReportExcel(@PathVariable Long driverId) throws IOException {

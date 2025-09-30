@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.jovan.erp_v1.enumeration.TripStatus;
@@ -23,6 +24,7 @@ public class TripResponse {
     private TripTypeStatus typeStatus;
     private DriverResponse driverResponse;
     private Boolean confirmed;
+    private BigDecimal fare;
 	
 	public TripResponse(Trip t) {
 		this.id = t.getId();
@@ -34,5 +36,6 @@ public class TripResponse {
 		this.typeStatus = t.getTypeStatus();
 		this.driverResponse = t.getDriver() != null ? new DriverResponse(t.getDriver()) : null;
 		this.confirmed = t.getConfirmed();
+		this.fare = t.getFare();
 	}
 }
