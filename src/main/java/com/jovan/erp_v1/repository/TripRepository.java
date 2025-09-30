@@ -74,14 +74,22 @@ public interface TripRepository extends JpaRepository<Trip, Long>, JpaSpecificat
 	Long countByDriver_IdAndStatus(Long driverId, TripStatus status);
 
 	@Query("""
-			SELECT t FROM Trip t
+			SELECT COUNT(t) FROM Trip t
 			WHERE t.driver.id = :driverId
-			AND
+			AND t.startTime >= :startDate
+			AND t.endTime <= :endDate
 			""")
 	Long countByDriver_IdAndDateBetween(@Param("driverId") Long driverId, @Param("startDate") LocalDate startDate,
 			@Param("endDate") LocalDate endDate);
 
-	Long countByDriver_IdAndStatusInAndDateBetween(Long driverId, List<TripStatus> status, LocalDate startDate,
+	@Query("""
+			SELECT COUNT(t) FROM Trip t
+			WHERE t.driver.id = :driverId
+			AND t.status IN :statuses
+			AND t.startTime >= :startDate
+			AND t.endTime <= :endDate
+			""")
+	Long countByDriver_IdAndStatusInAndDateBetween(Long driverId, List<TripStatus> statusES, LocalDate startDate,
 			LocalDate endDate);
 
 	@Query(value = """
