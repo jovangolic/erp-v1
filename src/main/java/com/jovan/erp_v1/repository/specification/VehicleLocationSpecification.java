@@ -14,17 +14,24 @@ import jakarta.persistence.criteria.Join;
 public class VehicleLocationSpecification {
 	
 	public static Specification<VehicleLocation> fromRequest(VehicleLocationSearchRequest req) {
-		return Specification.where(hasId(req.id()))
-				.and(hasVehicleId(req.vehicleId()))
-				.and(hasVehicleRangeId(req.vehicleIdFrom(), req.vehicleIdTo()))
-				.and(hasLatitude(req.latitude()))
-				.and(hasLongitude(req.longitude()))
-				
-				.and(hasRecordedAtBetween(req.recordedAtFrom(), req.recordedAtTo()));
+	    return Specification.where(hasId(req.id()))
+	            .and(hasIdRange(req.idFrom(), req.idTo()))
+	            .and(hasVehicleId(req.vehicleId()))
+	            .and(hasVehicleRangeId(req.vehicleIdFrom(), req.vehicleIdTo()))
+	            .and(hasLatitude(req.latitude()))
+	            .and(hasLongitude(req.longitude()))
+	            .and(hasRecordedAtBetween(req.recordedAtFrom(), req.recordedAtTo()));
 	}
 	
 	public static Specification<VehicleLocation> hasId(Long id) {
 		return (root, query, cb) -> id == null ? null : cb.equal(root.get("id"), id);
+	}
+	
+	public static Specification<VehicleLocation> hasIdRange(Long idFrom, Long idTo){
+		return(root, query, cb) -> {
+			if(idFrom == null || idTo == null) return null;
+			return cb.between(root.get("id"), idFrom, idTo);
+		};
 	}
 	
 	public static Specification<VehicleLocation> hasVehicleId(Long vehicleId) {

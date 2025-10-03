@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 
 public record VehicleLocationSearchRequest(
 		Long id,
+		Long idFrom,
+		Long idTo,
 		Long vehicleId,
 		Long vehicleIdFrom,
 		Long vehicleIdTo,
