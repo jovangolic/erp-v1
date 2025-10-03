@@ -2,6 +2,7 @@ package com.jovan.erp_v1.response;
 
 import com.jovan.erp_v1.enumeration.VehicleFuel;
 import com.jovan.erp_v1.enumeration.VehicleStatus;
+import com.jovan.erp_v1.enumeration.VehicleTypeStatus;
 import com.jovan.erp_v1.model.Vehicle;
 
 import lombok.AllArgsConstructor;
@@ -18,6 +19,8 @@ public class VehicleResponse {
     private String model;
     private VehicleStatus status;
     private VehicleFuel fuel;
+    private VehicleTypeStatus typeStatus;
+    private Boolean confirmed;
 
     public VehicleResponse(Vehicle ve) {
         this.id = ve.getId();
@@ -25,5 +28,7 @@ public class VehicleResponse {
         this.model = ve.getModel();
         this.status = ve.getStatus();
         this.fuel = ve.getFuel();
+        this.typeStatus = ve.getTypeStatus();
+        this.confirmed = ve.getConfirmed();
     }
 }

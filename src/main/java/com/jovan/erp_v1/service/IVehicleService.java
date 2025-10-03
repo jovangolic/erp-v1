@@ -6,6 +6,7 @@ import com.jovan.erp_v1.enumeration.VehicleFuel;
 import com.jovan.erp_v1.enumeration.VehicleStatus;
 import com.jovan.erp_v1.request.VehicleRequest;
 import com.jovan.erp_v1.response.VehicleResponse;
+import com.jovan.erp_v1.search_request.VehicleSearchRequest;
 
 public interface IVehicleService {
 
@@ -24,4 +25,6 @@ public interface IVehicleService {
     
     List<VehicleResponse> findByFuel(VehicleFuel fuel);
     List<VehicleResponse> findByModelContainingIgnoreCaseAndFuel(String model, VehicleFuel fuel);
+    
+    List<VehicleResponse> generalSearch(VehicleSearchRequest request);
 }

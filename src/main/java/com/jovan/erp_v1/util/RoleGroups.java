@@ -331,4 +331,8 @@ public class RoleGroups {
 	public static final String TRIP_DRIVER_READ_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','DRIVER'";
 	
 	public static final String DRIVER_REPORT_FULL_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','LOGISTICS_MANAGER','TRANSPORT_PLANNER')";
+	
+	public static final String VEHICLE_LOCATION_FULL_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','LOGISTICS_MANAGER','TRANSPORT_PLANNER')";
+	
+	public static final String VEHICLE_lOCATION_READ_ACCESS = "hasAnyRole('SUPERADMIN','ADMIN','LOGISTICS_MANAGER','TRANSPORT_PLANNER','DISPATCHER','DRIVER')";
 }

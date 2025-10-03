@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,8 +16,10 @@ import com.jovan.erp_v1.exception.VehicleErrorException;
 import com.jovan.erp_v1.mapper.VehicleMapper;
 import com.jovan.erp_v1.model.Vehicle;
 import com.jovan.erp_v1.repository.VehicleRepository;
+import com.jovan.erp_v1.repository.specification.VehicleSpecification;
 import com.jovan.erp_v1.request.VehicleRequest;
 import com.jovan.erp_v1.response.VehicleResponse;
+import com.jovan.erp_v1.search_request.VehicleSearchRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -196,6 +199,16 @@ public class VehicleService implements IVehicleService {
 		}
 		return items.stream().map(vehicleMapper::toResponse).collect(Collectors.toList());
 	}
+	
+	@Override
+	public List<VehicleResponse> generalSearch(VehicleSearchRequest request) {
+		Specification<Vehicle> vehicles = VehicleSpecification.fromRequest(request);
+		List<Vehicle> items = vehicleRepository.findAll(vehicles);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Vehicles found for given search criteria");
+		}
+		return items.stream().map(vehicleMapper::toResponse).collect(Collectors.toList());
+	}
     
     private void validateString(String str) {
     	if(str == null || str.trim().isEmpty()) {
@@ -212,5 +225,6 @@ public class VehicleService implements IVehicleService {
     	Optional.ofNullable(fuel)
     		.orElseThrow(() -> new ValidationException("VehicleFuel fuel must nor be null"));
     }
+
 
 }
