@@ -16,10 +16,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.AccountStatus;
 import com.jovan.erp_v1.enumeration.AccountType;
 import com.jovan.erp_v1.request.AccountRequest;
 import com.jovan.erp_v1.response.AccountResponse;
 import com.jovan.erp_v1.response.AccountWithTransactionsResponse;
+import com.jovan.erp_v1.save_as.AccountSaveAsRequest;
+import com.jovan.erp_v1.search_request.AccountSearchRequest;
 import com.jovan.erp_v1.service.IAccountService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -144,4 +147,75 @@ public class AccountController {
         return ResponseEntity.ok(response);
     }
 
+    //nove metode
+    
+    @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<AccountResponse> confirmAccount(Long id){
+    	AccountResponse items = accountService.confirmAccount(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<AccountResponse> cancelAccount(Long id){
+    	AccountResponse items = accountService.cancelAccount(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
+    @PostMapping("/{id}/close")
+    public ResponseEntity<AccountResponse> closeAccount(Long id){
+    	AccountResponse items = accountService.closeAccount(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
+    @PostMapping("/{id}/status/{status}")
+    public ResponseEntity<AccountResponse> changeStatus(@PathVariable Long id,@PathVariable AccountStatus status){
+    	AccountResponse items = accountService.changeStatus(id, status);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
+    @GetMapping("/track-source/{id}")
+    public ResponseEntity<AccountResponse> trackAccountSourceTransactions(@PathVariable Long id){
+    	AccountResponse items = accountService.trackAccountSourceTransactions(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
+    @GetMapping("/track-target/{id}")
+    public ResponseEntity<AccountResponse> trackAccountTargetTransactions(@PathVariable Long id){
+    	AccountResponse items = accountService.trackAccountTargetTransactions(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
+    @PostMapping("/general-search")
+    public ResponseEntity<List<AccountResponse>> generalSearch(@Valid @RequestBody AccountSearchRequest request){
+    	List<AccountResponse> items = accountService.generalSearch(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
+    @PostMapping("/save")
+    public ResponseEntity<AccountResponse> saveAccount(@Valid @RequestBody AccountRequest request){
+    	AccountResponse items = accountService.saveAccount(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
+    @PostMapping("/save-as")
+    public ResponseEntity<AccountResponse> saveAs(@Valid @RequestBody AccountSaveAsRequest request){
+    	AccountResponse items = accountService.saveAs(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
+    @PostMapping("/save-all")
+    public ResponseEntity<List<AccountResponse>> saveAll(@Valid @RequestBody List<AccountRequest> request){
+    	List<AccountResponse> items = accountService.saveAll(request);
+    	return ResponseEntity.ok(items);
+    }
 }

@@ -281,7 +281,7 @@ public class DefectService  implements IDefectService {
 		    throw new ValidationException("Only NEW or CONFIRMED defects can be cancelled");
 		}
 		defect.setStatus(DefectStatus.CANCELLED);
-		return new DefectResponse(defect);
+		return new DefectResponse(defectRepository.save(defect));
 	}
 	
 	//genericka metoda za dodavanje novih defekt-statusa

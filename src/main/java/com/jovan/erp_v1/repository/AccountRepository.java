@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.jovan.erp_v1.model.Account;
@@ -11,7 +14,7 @@ import com.jovan.erp_v1.enumeration.AccountType;
 import java.math.BigDecimal;
 
 @Repository
-public interface AccountRepository extends JpaRepository<Account, Long> {
+public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpecificationExecutor<Account> {
 
     List<Account> findByType(AccountType type);
 
@@ -27,4 +30,11 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     List<Account> findByBalanceLessThan(BigDecimal amount);
     
     boolean existsByAccountNumber(String accountNumber);
+    
+    //nove metode
+    @Query("SELECT a FROM Account a LEFT JOIN FETCH a.sourceTransactions WHERE a.id = :id")
+    List<Account> trackAccountSourceTransactions(@Param("id") Long id);
+    
+    @Query("SELECT a FROM Account a LEFT JOIN FETCH a.targetTransactions WHERE a.id = :id")
+    List<Account> trackAccountTargetTransactions(@Param("id") Long id);
 }

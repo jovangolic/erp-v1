@@ -2,11 +2,13 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.util.List;
-
+import com.jovan.erp_v1.enumeration.AccountStatus;
 import com.jovan.erp_v1.enumeration.AccountType;
 import com.jovan.erp_v1.request.AccountRequest;
 import com.jovan.erp_v1.response.AccountResponse;
 import com.jovan.erp_v1.response.AccountWithTransactionsResponse;
+import com.jovan.erp_v1.save_as.AccountSaveAsRequest;
+import com.jovan.erp_v1.search_request.AccountSearchRequest;
 
 public interface IAccountService {
 
@@ -28,4 +30,16 @@ public interface IAccountService {
     
     // Detailed verzije
     AccountWithTransactionsResponse findOneWithTransactions(Long id);
+    
+    //nove metode
+    AccountResponse confirmAccount(Long id);
+    AccountResponse cancelAccount(Long id);
+    AccountResponse closeAccount(Long id);
+    AccountResponse changeStatus(Long id, AccountStatus status);
+    AccountResponse trackAccountSourceTransactions( Long id);
+    AccountResponse trackAccountTargetTransactions( Long id);
+    List<AccountResponse> generalSearch(AccountSearchRequest request);
+    AccountResponse saveAccount(AccountRequest request);
+    AccountResponse saveAs(AccountSaveAsRequest request);
+    List<AccountResponse> saveAll(List<AccountRequest> request);
 }

@@ -4,11 +4,12 @@ import java.math.BigDecimal;
 
 import org.springframework.data.jpa.domain.Specification;
 
+import com.jovan.erp_v1.enumeration.AccountStatus;
 import com.jovan.erp_v1.enumeration.AccountType;
 import com.jovan.erp_v1.model.Account;
 import com.jovan.erp_v1.search_request.AccountSearchRequest;
 
-public interface AccountSpecification {
+public class AccountSpecification {
 
 	public static Specification<Account> fromRequest(AccountSearchRequest req){
 		return Specification.where(hasId(req.id())
@@ -17,6 +18,8 @@ public interface AccountSpecification {
 				.and(hasAccountName(req.accountName()))
 				.and(hasBalance(req.balance()))
 				.and(hasBalanceRange(req.balanceFrom(), req.balanceTo()))
+				.and(hasAccountStatus(req.status()))
+				.and(hasConfirmed(req.confirmed()))
 				.and(hasAccountType(req.type())));
 	}
 	
@@ -29,6 +32,14 @@ public interface AccountSpecification {
 			if(idFrom == null || idTo == null) return null;
 			return(cb.between(root.get("id"),idFrom, idTo));
 		};
+	}
+	
+	public static Specification<Account> hasAccountStatus(AccountStatus status){
+		return(root,query,cb) -> status == null ? null : cb.equal(root.get("status"), status);
+	}
+	
+	public static Specification<Account> hasConfirmed(Boolean confirmed){
+		return(root,query,cb) -> confirmed == null ? null : cb.equal(root.get("confirmed"), confirmed);
 	}
 	
 	public static Specification<Account> hasAccountType(AccountType type){
