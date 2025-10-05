@@ -38,6 +38,7 @@ public interface IAccountService {
     AccountResponse changeStatus(Long id, AccountStatus status);
     AccountResponse trackAccountSourceTransactions( Long id);
     AccountResponse trackAccountTargetTransactions( Long id);
+    AccountResponse trackAll(Long id);
     List<AccountResponse> generalSearch(AccountSearchRequest request);
     AccountResponse saveAccount(AccountRequest request);
     AccountResponse saveAs(AccountSaveAsRequest request);

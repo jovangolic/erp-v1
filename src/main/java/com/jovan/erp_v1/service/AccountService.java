@@ -261,23 +261,23 @@ public class AccountService implements IAccountService {
     @Transactional(readOnly = true)
 	@Override
 	public AccountResponse trackAccountSourceTransactions(Long id) {
-    	List<Account> items = accountRepository.trackAccountSourceTransactions(id);
-    	if(items.isEmpty()) {
-    		throw new NoDataFoundException("Source-account with id " + id + " not found");
-    	}
-    	Account source = items.get(0);
-		return new AccountResponse(source);
+    	Account items = accountRepository.trackAccountSourceTransactions(id).orElseThrow(() -> new ValidationException("Source-account with id " + id + " not found"));
+		return new AccountResponse(items);
 	}
 
     @Transactional(readOnly = true)
 	@Override
 	public AccountResponse trackAccountTargetTransactions(Long id) {
-		List<Account> items = accountRepository.trackAccountTargetTransactions(id);
-		if(items.isEmpty()) {
-			throw new NoDataFoundException("Target-accont with id " + id +" not found");
-		}
-		Account target = items.get(0);
-		return new AccountResponse(target);
+    	Account items = accountRepository.trackAccountSourceTransactions(id).orElseThrow(() -> new ValidationException("Target-account with id " + id + " not found"));
+		return new AccountResponse(items);
+	}
+    
+    @Transactional(readOnly = true)
+    @Override
+	public AccountResponse trackAll(Long id) {
+    	Account account = accountRepository.trackAccountWithAllTransactions(id)
+                .orElseThrow(() -> new ValidationException("Account not found for id: " + id));
+        return new AccountResponse(account);
 	}
 
 	@Override

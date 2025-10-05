@@ -52,6 +52,11 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long>, JpaSpec
     
     Long countByModelContainingIgnoreCase(String model);
     
-    @Query("SELECT v FROM Vehicle v WHERE v.id = :id")
+    @Query("SELECT DISTINCT v FROM Vehicle v WHERE v.id = :id")
     Optional<Vehicle> trackVehicle(@Param("id") Long id);
+    
+    //nove metode
+    //prikaz samo akticnih vozila koji ima makar jednu zabelezenu lokaciju. Tu se u upitu koristi klucna rec INNER JOIN FETCH
+    @Query("SELECT v FROM Vehicle v INNER JOIN FETCH v.locations WHERE v.id = :id")
+    Optional<Vehicle> findVehicleWithExistingLocations(@Param("id") Long id);
 }

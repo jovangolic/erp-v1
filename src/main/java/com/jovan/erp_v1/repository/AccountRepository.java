@@ -32,9 +32,17 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
     boolean existsByAccountNumber(String accountNumber);
     
     //nove metode
-    @Query("SELECT a FROM Account a LEFT JOIN FETCH a.sourceTransactions WHERE a.id = :id")
-    List<Account> trackAccountSourceTransactions(@Param("id") Long id);
+    @Query("SELECT DISTINCT a FROM Account a LEFT JOIN FETCH a.sourceTransactions WHERE a.id = :id")
+    Optional<Account> trackAccountSourceTransactions(@Param("id") Long id);
     
-    @Query("SELECT a FROM Account a LEFT JOIN FETCH a.targetTransactions WHERE a.id = :id")
-    List<Account> trackAccountTargetTransactions(@Param("id") Long id);
+    @Query("SELECT DISTINCT a FROM Account a LEFT JOIN FETCH a.targetTransactions WHERE a.id = :id")
+    Optional<Account> trackAccountTargetTransactions(@Param("id") Long id);
+    
+    @Query("""
+    	    SELECT DISTINCT a FROM Account a 
+    	    LEFT JOIN FETCH a.sourceTransactions 
+    	    LEFT JOIN FETCH a.targetTransactions 
+    	    WHERE a.id = :id
+    	""")
+    Optional<Account> trackAccountWithAllTransactions(@Param("id") Long id);
 }

@@ -38,21 +38,21 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime paymentDate;
 
-    @Column
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private PaymentMethod method;
 
-    @Column
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
-    @Column
+    @Column(nullable = false, unique = true)
     private String referenceNumber;
 
     @ManyToOne

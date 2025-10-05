@@ -191,6 +191,13 @@ public class AccountController {
     	return ResponseEntity.ok(items);
     }
     
+    @PreAuthorize(RoleGroups.ACCOUNT_READ_ACCESS)
+    @GetMapping("/track-all/{id}")
+    public ResponseEntity<AccountResponse> trackAll(@PathVariable Long id){
+    	AccountResponse items = accountService.trackAll(id);
+    	return ResponseEntity.ok(items);
+    }
+     
     @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
     @PostMapping("/general-search")
     public ResponseEntity<List<AccountResponse>> generalSearch(@Valid @RequestBody AccountSearchRequest request){
