@@ -57,6 +57,6 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long>, JpaSpec
     
     //nove metode
     //prikaz samo akticnih vozila koji ima makar jednu zabelezenu lokaciju. Tu se u upitu koristi klucna rec INNER JOIN FETCH
-    @Query("SELECT v FROM Vehicle v INNER JOIN FETCH v.locations WHERE v.id = :id")
+    @Query("SELECT v FROM Vehicle v INNER JOIN FETCH v.vehicleLocations WHERE v.id = :id")
     Optional<Vehicle> findVehicleWithExistingLocations(@Param("id") Long id);
 }

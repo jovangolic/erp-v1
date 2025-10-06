@@ -5,9 +5,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
-import com.jovan.erp_v1.model.Payment;
+import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.request.PaymentRequest;
 import com.jovan.erp_v1.response.PaymentResponse;
+import com.jovan.erp_v1.response.TransactionResponse;
 
 public interface IPaymentService {
 
@@ -48,4 +49,6 @@ public interface IPaymentService {
   	 List<PaymentResponse> findByRelatedSales_SalesDescriptionContainingIgnoreCaseAndBuyer_Id(String description, Long buyerId);
   	 Long countByBuyer_Id(Long buyerId);
 	
+  	 //metoda za placanje master-card karticom
+  	TransactionResponse processMasterCardPayment(String accountNumber, BigDecimal amount, String currency, String token, User user);
 }

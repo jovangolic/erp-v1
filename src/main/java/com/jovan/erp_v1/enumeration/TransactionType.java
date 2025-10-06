@@ -8,5 +8,6 @@ public enum TransactionType {
     PAYMENT,
     REFUND,
     CASH,
-    DEBIT
+    DEBIT,
+    CARD_PAYMENT
 }

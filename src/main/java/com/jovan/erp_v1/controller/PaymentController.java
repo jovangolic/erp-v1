@@ -1,11 +1,15 @@
 package com.jovan.erp_v1.controller;
 
 import java.math.BigDecimal;
+import java.nio.file.AccessDeniedException;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,9 +22,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
+import com.jovan.erp_v1.exception.UserNotFoundException;
+import com.jovan.erp_v1.master_card.request.MasterCardPGSPaymentRequest;
+import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.request.PaymentRequest;
 import com.jovan.erp_v1.response.PaymentResponse;
+import com.jovan.erp_v1.response.TransactionResponse;
 import com.jovan.erp_v1.service.IPaymentService;
+import com.jovan.erp_v1.service.IUserService;
 import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
@@ -34,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 public class PaymentController {
 
 	private final IPaymentService paymentService;
+	private final IUserService userService;
 	
 	@PreAuthorize(RoleGroups.PAYMENT_FULL_ACCESS)
 	@PostMapping("/create/new-payment")
@@ -233,4 +243,27 @@ public class PaymentController {
 		return ResponseEntity.ok(responses);
 	}
 	
+	//metoda za placanje master_card karticom
+	
+	@PostMapping("/master-card")
+	public ResponseEntity<TransactionResponse> payWithMasterCard(@Valid @RequestBody MasterCardPGSPaymentRequest req, Principal principal) throws Exception{
+		User user = loadAuthenticatedUser(principal);
+		TransactionResponse resp = paymentService.processMasterCardPayment(req.getMerchantId(), req.getAmount(), req.getCurrency(), req.getPaymentToken(), user);
+        return ResponseEntity.ok(resp);
+	}
+	
+	//method for user authentication
+	private User loadAuthenticatedUser(Principal principal) throws AccessDeniedException {
+		//for using SecurityContextHolder, if principal isn't forward
+		/*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String username = auth.getName();
+		User user = userService.findByUsername(username)
+		        .orElseThrow(() -> new UserNotFoundException("User not authenticated."));*/
+        if (principal == null) {
+            throw new AccessDeniedException("User not authenticated.");
+        }
+        String username = principal.getName();
+        return userService.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+    }
 }

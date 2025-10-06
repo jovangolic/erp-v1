@@ -12,20 +12,30 @@ import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
+import com.jovan.erp_v1.enumeration.TransactionType;
 import com.jovan.erp_v1.exception.BuyerNotFoundException;
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.PaymentNotFoundException;
 import com.jovan.erp_v1.exception.SalesNotFoundException;
 import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.PaymentMapper;
+import com.jovan.erp_v1.master_card.request.MasterCardPGSPaymentRequest;
+import com.jovan.erp_v1.master_card.response.MasterCardPGSPaymentResponse;
+import com.jovan.erp_v1.model.Account;
 import com.jovan.erp_v1.model.Buyer;
+import com.jovan.erp_v1.model.MasterCardPayGSClient;
 import com.jovan.erp_v1.model.Payment;
 import com.jovan.erp_v1.model.Sales;
+import com.jovan.erp_v1.model.Transaction;
+import com.jovan.erp_v1.model.User;
+import com.jovan.erp_v1.repository.AccountRepository;
 import com.jovan.erp_v1.repository.BuyerRepository;
 import com.jovan.erp_v1.repository.PaymentRepository;
 import com.jovan.erp_v1.repository.SalesRepository;
+import com.jovan.erp_v1.repository.TransactionRepository;
 import com.jovan.erp_v1.request.PaymentRequest;
 import com.jovan.erp_v1.response.PaymentResponse;
+import com.jovan.erp_v1.response.TransactionResponse;
 import com.jovan.erp_v1.util.DateValidator;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +52,10 @@ public class PaymentService implements IPaymentService {
 	private final BuyerRepository buyerRepository;
 	private final SalesRepository salesRepository;
 	private static final Logger logger = LoggerFactory.getLogger(PaymentService.class);
+	
+	private final AccountRepository accountRepository;
+	private final TransactionRepository transactionRepository;
+	private final MasterCardPayGSClient masterCardPayGSClient;
 
 	@Transactional
 	@Override
@@ -423,6 +437,36 @@ public class PaymentService implements IPaymentService {
 	public Long countByBuyer_Id(Long buyerId) {
 		fetchBuyer(buyerId);
 		return paymentRepository.countByBuyer_Id(buyerId);
+	}
+	
+	@Transactional
+	@Override
+    public TransactionResponse processMasterCardPayment(String accountNumber, BigDecimal amount, String currency, String token, User user) {
+		Account account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() -> new ValidationException("Account not found"));
+		//pozivanje eksternog API-ja
+		try {
+			MasterCardPGSPaymentResponse mResponse = masterCardPayGSClient.processPayment(
+					new MasterCardPGSPaymentRequest(account.getAccountNumber(), amount, currency, token));
+			if(!mResponse.isSuccessful()) {
+				throw new ValidationException("Paying has failed: " + mResponse.getErrorMessage());
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		//knjizenje
+		account.setBalance(account.getBalance().subtract(amount));
+		accountRepository.save(account);
+		Transaction tx = Transaction.builder()
+			.amount(amount)
+			.transactionType(TransactionType.CARD_PAYMENT)
+			.sourceAccount(account)
+			.paymentMethod(PaymentMethod.MASTER_CARD)
+			.user(user)
+			.transactionDate(LocalDateTime.now())
+			.build();
+		Transaction saved = transactionRepository.save(tx);
+		return new TransactionResponse(saved);
 	}
 	
 	private void validateString(String str) {
