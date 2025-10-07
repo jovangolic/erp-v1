@@ -8,7 +8,7 @@ import org.springframework.data.jpa.domain.Specification;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.model.BalanceSheet;
-import com.jovan.erp_v1.search_request.BalanceSheetSearchRequest;
+import com.jovan.erp_v1.search_request.BalanceSheetGeneralSearchRequest;
 
 public class BalanceSheetSpecification {
 
@@ -54,7 +54,7 @@ public class BalanceSheetSpecification {
             amount == null ? null : cb.greaterThan(root.get("totalLiabilities"), amount);
     }
     
-    public static Specification<BalanceSheet> fromRequest(BalanceSheetSearchRequest req){
+    public static Specification<BalanceSheet> fromRequest(BalanceSheetGeneralSearchRequest req){
     	return Specification.where(hasId(req.id()))
     			.and(hasRangeId(req.idFrom(), req.idTo()))
     			.and(hasFiscalYearId(req.fiscalYearId()))
@@ -116,11 +116,11 @@ public class BalanceSheetSpecification {
     }
     
     public static Specification<BalanceSheet> hasEndDateBefore(LocalDate db){
-    	return(root, query,cb) -> db == null ? null : cb.lessThanOrEqualTo(root.get("fiscalYear").get("endDate"), db);
+    	return(root, query,cb) -> db == null ? null : cb.lessThan(root.get("fiscalYear").get("endDate"), db);
     }
     
     public static Specification<BalanceSheet> hasEndDateAfter(LocalDate da){
-    	return(root, query,cb) -> da == null ? null : cb.greaterThanOrEqualTo(root.get("fiscalYear").get("endDate"), da);
+    	return(root, query,cb) -> da == null ? null : cb.greaterThan(root.get("fiscalYear").get("endDate"), da);
     }
     
     public static Specification<BalanceSheet> hasEndDate(LocalDate d){
@@ -128,11 +128,11 @@ public class BalanceSheetSpecification {
     }
     
     public static Specification<BalanceSheet> hasStartDateBefore(LocalDate db){
-    	return(root, query,cb) -> db == null ? null : cb.lessThanOrEqualTo(root.get("fiscalYear").get("startDate"), db);
+    	return(root, query,cb) -> db == null ? null : cb.lessThan(root.get("fiscalYear").get("startDate"), db);
     }
     
     public static Specification<BalanceSheet> hasStartDateAfter(LocalDate da){
-    	return(root, query,cb) -> da == null ? null : cb.greaterThanOrEqualTo(root.get("fiscalYear").get("startDate"), da);
+    	return(root, query,cb) -> da == null ? null : cb.greaterThan(root.get("fiscalYear").get("startDate"), da);
     }
     
     public static Specification<BalanceSheet> hasStartDate(LocalDate d){
@@ -140,11 +140,11 @@ public class BalanceSheetSpecification {
     }
     
     public static Specification<BalanceSheet> hasTotalEquityLess(BigDecimal ls){
-    	return(root,query,cb) -> ls == null ? null : cb.lessThanOrEqualTo(root.get("totalEquity"), ls);
+    	return(root,query,cb) -> ls == null ? null : cb.lessThan(root.get("totalEquity"), ls);
     }
     
     public static Specification<BalanceSheet> hasTotalEquityGreater(BigDecimal gt){
-    	return(root,query,cb) -> gt == null ? null : cb.greaterThanOrEqualTo(root.get("totalEquity"), gt);
+    	return(root,query,cb) -> gt == null ? null : cb.greaterThan(root.get("totalEquity"), gt);
     }
     
     public static Specification<BalanceSheet> hasTotalEquity(BigDecimal eq){
@@ -167,11 +167,11 @@ public class BalanceSheetSpecification {
     }
     
     public static Specification<BalanceSheet> hasTotalLiabilitiesGreater(BigDecimal gt){
-    	return(root,query,cb) -> gt == null ? null : cb.greaterThanOrEqualTo(root.get("totalLiabilities"), gt);
+    	return(root,query,cb) -> gt == null ? null : cb.greaterThan(root.get("totalLiabilities"), gt);
     }
     
     public static Specification<BalanceSheet> hasTotalLiabilitiesLess(BigDecimal ls){
-    	return(root,query,cb) -> ls == null ? null : cb.lessThanOrEqualTo(root.get("totalLiabilities"), ls);
+    	return(root,query,cb) -> ls == null ? null : cb.lessThan(root.get("totalLiabilities"), ls);
     }
     
     public static Specification<BalanceSheet> hasTotalLiabilities(BigDecimal t){
@@ -194,11 +194,11 @@ public class BalanceSheetSpecification {
     }
     
     public static Specification<BalanceSheet> hasTotalAssetsGreater(BigDecimal gt){
-    	return(root,query,cb) -> gt == null ? null : cb.greaterThanOrEqualTo(root.get("totalAssets"), gt);
+    	return(root,query,cb) -> gt == null ? null : cb.greaterThan(root.get("totalAssets"), gt);
     }
     
     public static Specification<BalanceSheet> hasTotalAssetsLess(BigDecimal ls){
-    	return(root,query,cb) -> ls == null ? null : cb.lessThanOrEqualTo(root.get("totalAssets"), ls);
+    	return(root,query,cb) -> ls == null ? null : cb.lessThan(root.get("totalAssets"), ls);
     }
     
     public static Specification<BalanceSheet> hasTotalAssetsRange(BigDecimal from, BigDecimal to){
@@ -221,11 +221,11 @@ public class BalanceSheetSpecification {
     }
     
     public static Specification<BalanceSheet> hasDateBefore(LocalDate db){
-    	return(root, query,cb) -> db == null ? null : cb.lessThanOrEqualTo(root.get("date"), db);
+    	return(root, query,cb) -> db == null ? null : cb.lessThan(root.get("date"), db);
     }
     
     public static Specification<BalanceSheet> hasDateAfter(LocalDate da){
-    	return(root, query,cb) -> da == null ? null : cb.greaterThanOrEqualTo(root.get("date"), da);
+    	return(root, query,cb) -> da == null ? null : cb.greaterThan(root.get("date"), da);
     }
     
     public static Specification<BalanceSheet> hasDate(LocalDate d){

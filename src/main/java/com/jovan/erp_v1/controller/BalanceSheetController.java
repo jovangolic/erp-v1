@@ -17,11 +17,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.BalanceSheetStatus;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.request.BalanceSheetRequest;
 import com.jovan.erp_v1.request.BalanceSheetSearchRequest;
 import com.jovan.erp_v1.response.BalanceSheetResponse;
+import com.jovan.erp_v1.save_as.BalanceSheetSaveAsRequest;
+import com.jovan.erp_v1.search_request.BalanceSheetGeneralSearchRequest;
 import com.jovan.erp_v1.service.IBalanceSheetService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -227,4 +230,67 @@ public class BalanceSheetController {
     	return ResponseEntity.ok(item);
     }
    
+    //nove metode
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_READ_ACCESS)
+    @GetMapping("/track/{id}")
+    public ResponseEntity<BalanceSheetResponse> trackBalanceSheet(@PathVariable Long id){
+    	BalanceSheetResponse items = balanceSheetService.trackBalanceSheet(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_FULL_ACCESS)
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<BalanceSheetResponse> confirmBalanceSheet(@PathVariable Long id){
+    	BalanceSheetResponse items = balanceSheetService.confirmBalanceSheet(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_FULL_ACCESS)
+    @PostMapping("/{id}/close")
+    public ResponseEntity<BalanceSheetResponse> closeBalanceSheet(@PathVariable Long id){
+    	BalanceSheetResponse items = balanceSheetService.closeBalanceSheet(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_FULL_ACCESS)
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<BalanceSheetResponse> cancelBalanceSheet(@PathVariable Long id){
+    	BalanceSheetResponse items = balanceSheetService.cancelBalanceSheet(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_FULL_ACCESS)
+    @PostMapping("/{id}/status/{status}")
+    public ResponseEntity<BalanceSheetResponse> changeStatus(@PathVariable Long id,@PathVariable BalanceSheetStatus status){
+    	BalanceSheetResponse items = balanceSheetService.changeStatus(id, status);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_FULL_ACCESS)
+    @PostMapping("/save")
+    public ResponseEntity<BalanceSheetResponse> saveBalanceSheet(@Valid @RequestBody BalanceSheetRequest request){
+    	BalanceSheetResponse items = balanceSheetService.saveBalanceSheet(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_FULL_ACCESS)
+    @PostMapping("/save-as")
+    public ResponseEntity<BalanceSheetResponse> saveAs(@Valid @RequestBody BalanceSheetSaveAsRequest request){
+    	BalanceSheetResponse items = balanceSheetService.saveAs(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_FULL_ACCESS)
+    @PostMapping("/save-all")
+    public ResponseEntity<List<BalanceSheetResponse>> saveAll(@RequestBody List<BalanceSheetRequest> requests){
+    	List<BalanceSheetResponse> items = balanceSheetService.saveAll(requests);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BALANCE_SHEET_FULL_ACCESS)
+    @PostMapping("/general-search")
+    public ResponseEntity<List<BalanceSheetResponse>> generalSearch(@Valid @RequestBody BalanceSheetGeneralSearchRequest req){
+    	List<BalanceSheetResponse> items = balanceSheetService.generalSearch(req);
+    	return ResponseEntity.ok(items);
+    }
 }

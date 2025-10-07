@@ -40,4 +40,8 @@ public interface BalanceSheetRepository extends JpaRepository<BalanceSheet, Long
     @Query("SELECT b FROM BalanceSheet b WHERE b.totalAssets > b.totalLiabilities")
     List<BalanceSheet> findSolventBalanceSheets();
     BalanceSheet findFirstByOrderByDateDesc();
+    
+    //nove metode
+    @Query("SELECT b FROM BalanceSheet b WHERE b.id = :id")
+    Optional<BalanceSheet> trackBalanceSheet(@Param("id") Long id);
 }

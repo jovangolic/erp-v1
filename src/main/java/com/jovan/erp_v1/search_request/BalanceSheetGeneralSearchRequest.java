@@ -8,7 +8,7 @@ import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 
 import jakarta.validation.constraints.NotNull;
 
-public record BalanceSheetSearchRequest(
+public record BalanceSheetGeneralSearchRequest(
 		@NotNull Long id,
 		@NotNull Long idFrom,
 		@NotNull Long idTo,

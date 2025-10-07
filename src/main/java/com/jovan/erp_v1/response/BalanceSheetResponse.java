@@ -3,6 +3,7 @@ package com.jovan.erp_v1.response;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import com.jovan.erp_v1.enumeration.BalanceSheetStatus;
 import com.jovan.erp_v1.model.BalanceSheet;
 
 import lombok.AllArgsConstructor;
@@ -20,6 +21,8 @@ public class BalanceSheetResponse {
     private BigDecimal totalLiabilities;
     private BigDecimal totalEquity;
     private FiscalYearResponse fiscalYear;
+    private Boolean confirmed;
+    private BalanceSheetStatus status;
 
     public BalanceSheetResponse(BalanceSheet sheet) {
         this.id = sheet.getId();
@@ -28,5 +31,7 @@ public class BalanceSheetResponse {
         this.totalLiabilities = sheet.getTotalLiabilities();
         this.totalEquity = sheet.getTotalEquity();
         this.fiscalYear = sheet.getFiscalYear() != null ? new FiscalYearResponse(sheet.getFiscalYear()) : null;
+        this.confirmed = sheet.getConfirmed();
+        this.status = sheet.getStatus();
     }
 }

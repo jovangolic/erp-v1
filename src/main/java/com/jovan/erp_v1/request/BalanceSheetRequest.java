@@ -3,6 +3,8 @@ package com.jovan.erp_v1.request;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import com.jovan.erp_v1.enumeration.BalanceSheetStatus;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -12,5 +14,7 @@ public record BalanceSheetRequest(
                 @NotNull @Positive BigDecimal totalAssets,
                 @NotNull @Positive BigDecimal totalLiabilities,
                 @NotNull @Positive BigDecimal totalEquity,
-                Long fiscalYearId) {
+                @NotNull Long fiscalYearId,
+                @NotNull Boolean confirmed,
+                @NotNull BalanceSheetStatus status) {
 }

@@ -3,11 +3,15 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+
+import com.jovan.erp_v1.enumeration.BalanceSheetStatus;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.request.BalanceSheetRequest;
 import com.jovan.erp_v1.request.BalanceSheetSearchRequest;
 import com.jovan.erp_v1.response.BalanceSheetResponse;
+import com.jovan.erp_v1.save_as.BalanceSheetSaveAsRequest;
+import com.jovan.erp_v1.search_request.BalanceSheetGeneralSearchRequest;
 
 public interface IBalanceSheetService {
 
@@ -37,4 +41,16 @@ public interface IBalanceSheetService {
     List<BalanceSheetResponse> findSolventBalanceSheets();
     BalanceSheetResponse findFirstByOrderByDateDesc();
     List<BalanceSheetResponse> searchBalanceSheets(BalanceSheetSearchRequest request);
+    
+    //nove metode
+    BalanceSheetResponse trackBalanceSheet( Long id);
+    BalanceSheetResponse confirmBalanceSheet( Long id);
+    BalanceSheetResponse closeBalanceSheet( Long id);
+    BalanceSheetResponse cancelBalanceSheet( Long id);
+    BalanceSheetResponse changeStatus( Long id, BalanceSheetStatus status);
+    BalanceSheetResponse saveBalanceSheet(BalanceSheetRequest request);
+    BalanceSheetResponse saveAs(BalanceSheetSaveAsRequest request);
+    List<BalanceSheetResponse> saveAll(List<BalanceSheetRequest> requests);
+    List<BalanceSheetResponse> generalSearch(BalanceSheetGeneralSearchRequest req);
+    
 }
