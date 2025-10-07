@@ -287,7 +287,7 @@ public class BalanceSheetService implements IBalanceSheetService {
 	        spec = spec.and(BalanceSheetSpecification.hasFiscalYearId(fiscalYearId));
 	    }
 	    if (startDate != null || endDate != null) {
-	        spec = spec.and(BalanceSheetSpecification.dateBetween(startDate, endDate));
+	        spec = spec.and(BalanceSheetSpecification.hasDateBetween(startDate, endDate));
 	    }
 	    if (minAssets != null) {
 	        spec = spec.and(BalanceSheetSpecification.assetsGreaterThan(minAssets));
@@ -303,7 +303,7 @@ public class BalanceSheetService implements IBalanceSheetService {
             spec = spec.and(BalanceSheetSpecification.hasFiscalYearId(request.fiscalYearId()));
         }
         if (request.startDate() != null || request.endDate() != null) {
-            spec = spec.and(BalanceSheetSpecification.dateBetween(request.startDate(), request.endDate()));
+            spec = spec.and(BalanceSheetSpecification.hasDateBetween(request.startDate(), request.endDate()));
         }
         if (request.minAssets() != null) {
             spec = spec.and(BalanceSheetSpecification.assetsGreaterThan(request.minAssets()));

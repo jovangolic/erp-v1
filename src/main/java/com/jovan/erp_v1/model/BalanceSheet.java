@@ -10,11 +10,14 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.jovan.erp_v1.enumeration.BalanceSheetStatus;
 import com.jovan.erp_v1.exception.ValidationException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,6 +27,7 @@ import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -32,27 +36,37 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Builder
 public class BalanceSheet {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate date;
 
-    @Column
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAssets;
 
-    @Column
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalLiabilities;
 
-    @Column
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalEquity;
 
     @ManyToOne
     @JoinColumn(name = "fiscal_year_id")
     private FiscalYear fiscalYear;
+    
+    @Column(nullable = false)
+	@Builder.Default
+	private Boolean confirmed = false;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private BalanceSheetStatus status = BalanceSheetStatus.NEW;
     
     public BigDecimal calcualteTotalEquity() {
     	if(this.totalAssets == null || this.totalLiabilities == null) {
