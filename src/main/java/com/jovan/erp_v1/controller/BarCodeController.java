@@ -19,9 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.BarCodeStatus;
 import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.request.BarCodeRequest;
 import com.jovan.erp_v1.response.BarCodeResponse;
+import com.jovan.erp_v1.save_as.BarCodeSaveAsRequest;
+import com.jovan.erp_v1.search_request.BarCodeSearchRequest;
 import com.jovan.erp_v1.service.IBarcodeService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -52,8 +55,8 @@ public class BarCodeController {
 	        now,          // backend postavlja vreme skeniranja
 	        scannedById,  // backend postavlja scannedById (Long)
 	        request.goodsId(),
-	        null,
-	        null
+	        BarCodeStatus.ACTIVE,
+	        false
 	    );
 	    BarCodeResponse response = barcodeService.createBarCode(enrichedRequest);
 	    return ResponseEntity.ok(response);
@@ -75,7 +78,8 @@ public class BarCodeController {
 	        now,
 	        scannedById,
 	        request.goodsId(),
-	        null,null
+	        BarCodeStatus.CONFIRMED, 
+	        true 
 	    );
 	    BarCodeResponse response = barcodeService.updateBarCode(id, enrichedRequest);
 	    return ResponseEntity.ok(response);
@@ -145,5 +149,69 @@ public class BarCodeController {
 			@RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to){
 		List<BarCodeResponse> responses = barcodeService.findByScannedAtBetween(from, to);
 		return ResponseEntity.ok(responses);
+	}
+	
+	//nove metode
+	@PreAuthorize(RoleGroups.BAR_CODE_READ_ACCESS)
+	@GetMapping("/track/{id}")
+	public ResponseEntity<BarCodeResponse> trackBarCode(@PathVariable Long id){
+		BarCodeResponse items = barcodeService.trackBarCode(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BAR_CODE_FULL_ACCESS)
+	@PostMapping("/{id}/confirm")
+	public ResponseEntity<BarCodeResponse> confirmBarCode(@PathVariable Long id){
+		BarCodeResponse items = barcodeService.confirmBarCode(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BAR_CODE_FULL_ACCESS)
+	@PostMapping("/{id}/close")
+	public ResponseEntity<BarCodeResponse> closeBarCode(@PathVariable Long id){
+		BarCodeResponse items = barcodeService.closeBarCode(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BAR_CODE_FULL_ACCESS)
+	@PostMapping("/{id}/cancel")
+	public ResponseEntity<BarCodeResponse> cancelBarCode(@PathVariable Long id){
+		BarCodeResponse items = barcodeService.cancelBarCode(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BAR_CODE_FULL_ACCESS)
+	@PostMapping("/{id}/status/{status}")
+	public ResponseEntity<BarCodeResponse> changeStatus(@PathVariable Long id,@PathVariable BarCodeStatus status){
+		BarCodeResponse items = barcodeService.changeStatus(id, status);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BAR_CODE_FULL_ACCESS)
+	@PostMapping("/save")
+	public ResponseEntity<BarCodeResponse> saveBarCode(@Valid @RequestBody BarCodeRequest request){
+		BarCodeResponse items = barcodeService.saveBarCode(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BAR_CODE_FULL_ACCESS)
+	@PostMapping("/save-as")
+	public ResponseEntity<BarCodeResponse> saveAs(@Valid @RequestBody BarCodeSaveAsRequest request){
+		BarCodeResponse items = barcodeService.saveAs(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BAR_CODE_FULL_ACCESS)
+	@PostMapping("/save-all")
+	public ResponseEntity<List<BarCodeResponse>> saveAll(@Valid @RequestBody List<BarCodeRequest> request){
+		List<BarCodeResponse> items = barcodeService.saveAll(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BAR_CODE_FULL_ACCESS)
+	@PostMapping("/general-search")
+	public ResponseEntity<List<BarCodeResponse>> generalSearch(@Valid @RequestBody BarCodeSearchRequest request){
+		List<BarCodeResponse> items = barcodeService.generalSearch(request);
+		return ResponseEntity.ok(items);
 	}
 }

@@ -30,6 +30,8 @@ public class BarCodeMapper extends AbstractMapper<BarCodeRequest> {
 		        .scannedAt(LocalDateTime.now())
 		        .scannedBy(scannedBy)
 		        .goods(goods)
+		        .status(request.status())
+		        .confirmed(false)
 		        .build();
 	}
 	
@@ -48,6 +50,8 @@ public class BarCodeMapper extends AbstractMapper<BarCodeRequest> {
         code.setCode(request.code());
         code.setScannedAt(request.scannedAt() != null ? request.scannedAt() : LocalDateTime.now());
         code.setScannedBy(scannedBy);
+        code.setStatus(request.status());
+        code.setConfirmed(request.confirmed());
         return code;
 	}
 	

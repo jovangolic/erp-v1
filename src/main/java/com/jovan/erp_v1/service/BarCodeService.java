@@ -51,6 +51,7 @@ public class BarCodeService implements IBarcodeService {
 	@Override
 	public BarCodeResponse createBarCode(BarCodeRequest request) {
 		validateUniqueCode(request.code());
+		validateBarCodeStatus(request.status());
 		DateValidator.validateNotNull(request.scannedAt(), "Datum i vreme ne smeju biti null");
 		Goods goods = validateGoodsId(request.goodsId());
 		User scannedBy = validateScannedById(request.scannedById());
@@ -68,6 +69,7 @@ public class BarCodeService implements IBarcodeService {
 		BarCode barCode = barCodeRepository.findById(id)
 				.orElseThrow(() -> new BarCodeNotFoundException("Bar-code not found with id: " + id));
 		validateUniqueCode(request.code());
+		validateBarCodeStatus(request.status());
 		DateValidator.validateNotNull(request.scannedAt(), "Datum i vreme ne smeju biti null");
 		User scannedBy = barCode.getScannedBy();
 		if (request.scannedById() != null &&

@@ -11,10 +11,14 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.jovan.erp_v1.enumeration.BatchStatus;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,6 +26,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -30,6 +35,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Batch {
 
 	@Id
@@ -46,13 +52,23 @@ public class Batch {
     @Column(nullable = false)
     private Integer quantityProduced;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate productionDate;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate expiryDate;
+    
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean confirmed = false;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private BatchStatus status = BatchStatus.NEW;
 
     @OneToMany(mappedBy = "batch", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Inspection> inspections = new ArrayList<>();
     
     @CreatedDate
