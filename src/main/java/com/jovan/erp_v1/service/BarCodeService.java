@@ -2,11 +2,18 @@ package com.jovan.erp_v1.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
+import com.jovan.erp_v1.enumeration.BarCodeStatus;
 import com.jovan.erp_v1.exception.BarCodeNotFoundException;
 import com.jovan.erp_v1.exception.GoodsNotFoundException;
 import com.jovan.erp_v1.exception.NoDataFoundException;
@@ -18,8 +25,13 @@ import com.jovan.erp_v1.model.User;
 import com.jovan.erp_v1.repository.BarCodeRepository;
 import com.jovan.erp_v1.repository.GoodsRepository;
 import com.jovan.erp_v1.repository.UserRepository;
+import com.jovan.erp_v1.repository.specification.BarCodeSpecification;
 import com.jovan.erp_v1.request.BarCodeRequest;
 import com.jovan.erp_v1.response.BarCodeResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.BarCodeSaveAsRequest;
+import com.jovan.erp_v1.search_request.BarCodeSearchRequest;
 import com.jovan.erp_v1.util.DateValidator;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +63,7 @@ public class BarCodeService implements IBarcodeService {
 	@Override
 	public BarCodeResponse updateBarCode(Long id, BarCodeRequest request) {
 		if (!request.id().equals(id)) {
-			throw new IllegalArgumentException("ID in path and body do not match");
+			throw new ValidationException("ID in path and body do not match");
 		}
 		BarCode barCode = barCodeRepository.findById(id)
 				.orElseThrow(() -> new BarCodeNotFoundException("Bar-code not found with id: " + id));
@@ -174,6 +186,147 @@ public class BarCodeService implements IBarcodeService {
 				.collect(Collectors.toList());
 	}
 	
+	@Transactional(readOnly = true)
+	@Override
+	public BarCodeResponse trackBarCode(Long id) {
+		BarCode bc = barCodeRepository.findById(id).orElseThrow(() -> new ValidationException("BarCode not found with id "+id));
+		return new BarCodeResponse(bc);
+	}
+
+	@Transactional
+	@Override
+	public BarCodeResponse confirmBarCode(Long id) {
+		BarCode bc = barCodeRepository.findById(id).orElseThrow(() -> new ValidationException("BarCode not found with id "+id));
+		bc.setConfirmed(true);
+		bc.setStatus(BarCodeStatus.CONFIRMED);
+		return new BarCodeResponse(barCodeRepository.save(bc));
+	}
+
+	@Transactional
+	@Override
+	public BarCodeResponse closeBarCode(Long id) {
+		BarCode bc = barCodeRepository.findById(id).orElseThrow(() -> new ValidationException("BarCode not found with id "+id));
+		if(bc.getStatus() != BarCodeStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED bar-codes can be closed");
+		}
+		bc.setStatus(BarCodeStatus.CLOSED);
+		return new BarCodeResponse(barCodeRepository.save(bc));
+	}
+
+	@Transactional
+	@Override
+	public BarCodeResponse cancelBarCode(Long id) {
+		BarCode bc = barCodeRepository.findById(id).orElseThrow(() -> new ValidationException("BarCode not found with id "+id));
+		if(bc.getStatus() != BarCodeStatus.NEW && bc.getStatus() != BarCodeStatus.CONFIRMED) {
+			throw new ValidationException("Only NEW or CONFIRMED bar-codes can be cancelled");
+		}
+		bc.setStatus(BarCodeStatus.CLOSED);
+		return new BarCodeResponse(barCodeRepository.save(bc));
+	}
+
+	@Transactional
+	@Override
+	public BarCodeResponse changeStatus(Long id, BarCodeStatus status) {
+		BarCode bc = barCodeRepository.findById(id).orElseThrow(() -> new ValidationException("BarCode not found with id "+id));
+		validateBarCodeStatus(status);
+		if(bc.getStatus() == BarCodeStatus.CLOSED) {
+			throw new ValidationException("Closed bar-codes cannot change status");
+		}
+		if(status == BarCodeStatus.CONFIRMED) {
+			if(bc.getStatus() != BarCodeStatus.NEW) {
+				throw new ValidationException("Only NEW bar-codes can be confirmed");
+			}
+			bc.setConfirmed(true);
+		}
+		bc.setStatus(status);
+		return new BarCodeResponse(barCodeRepository.save(bc));
+	}
+
+	@Transactional
+	@Override
+	public BarCodeResponse saveBarCode(BarCodeRequest request) {
+		BarCode bc = BarCode.builder()
+				.code(request.code())
+				.scannedBy(validateScannedById(request.scannedById()))
+				.goods(validateGoodsId(request.goodsId()))
+				.status(request.status())
+				.confirmed(request.confirmed())
+				.build();
+		BarCode saved = barCodeRepository.save(bc);
+		return new BarCodeResponse(saved);
+	}
+	
+	private final AbstractSaveAsService<BarCode, BarCodeResponse> saveAsHelper = new AbstractSaveAsService<BarCode, BarCodeResponse>() {
+		
+		@Override
+		protected BarCodeResponse toResponse(BarCode entity) {
+			return new BarCodeResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<BarCode, Long> getRepository() {
+			return barCodeRepository;
+		}
+		
+		@Override
+		protected BarCode copyAndOverride(BarCode source, Map<String, Object> overrides) {
+			return BarCode.builder()
+					.code((String) overrides.getOrDefault("code", source.getCode()))
+					.scannedBy(validateScannedById(source.getScannedBy().getId()))
+					.goods(validateGoodsId(source.getGoods().getId()))
+					.status(source.getStatus())
+					.confirmed(source.getConfirmed())
+					.build();
+		}
+	};
+	
+	private final AbstractSaveAllService<BarCode, BarCodeResponse> saveAllHelper = new AbstractSaveAllService<BarCode, BarCodeResponse>() {
+		
+		@Override
+		protected Function<BarCode, BarCodeResponse> toResponse() {
+			return BarCodeResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<BarCode, Long> getRepository() {
+			return barCodeRepository;
+		}
+	};
+
+	@Transactional
+	@Override
+	public BarCodeResponse saveAs(BarCodeSaveAsRequest request) {
+		Map<String, Object> overrides = new HashMap<>();
+		if(request.code() != null) overrides.put("Code", request.code());
+		return saveAsHelper.saveAs(request.sourceId(), overrides);
+	}
+
+	@Transactional
+	@Override
+	public List<BarCodeResponse> saveAll(List<BarCodeRequest> request) {
+		List<BarCode> items = request.stream()
+				.map(req -> BarCode.builder()
+						.id(req.id())
+						.code(req.code())
+						.scannedBy(validateScannedById(req.scannedById()))
+						.goods(validateGoodsId(req.goodsId()))
+						.status(req.status())
+						.confirmed(req.confirmed())
+						.build())
+				.collect(Collectors.toList());
+		return saveAllHelper.saveAll(items);
+	}
+
+	@Override
+	public List<BarCodeResponse> generalSearch(BarCodeSearchRequest request) {
+		Specification<BarCode> spec = BarCodeSpecification.fromRequest(request);
+		List<BarCode> items = barCodeRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No BarCodes found for given criteria");
+		}
+		return items.stream().map(barCodeMapper::toResponse).collect(Collectors.toList());		
+	}
+	
 	private void validateString(String str) {
         if (str == null || str.trim().isEmpty()) {
             throw new IllegalArgumentException("Naziv robe ne sme biti null ili prazan");
@@ -208,6 +361,9 @@ public class BarCodeService implements IBarcodeService {
 		}
 		return userRepository.findById(scannedById).orElseThrow(() -> new ValidationException("User not found with id "+scannedById));
 	}
-
 	
+	private void validateBarCodeStatus(BarCodeStatus status) {
+		Optional.ofNullable(status)
+			.orElseThrow(() -> new ValidationException("BarCodeStatus status must not be null"));
+	}
 }

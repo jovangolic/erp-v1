@@ -2,6 +2,7 @@ package com.jovan.erp_v1.response;
 
 import java.time.LocalDateTime;
 
+import com.jovan.erp_v1.enumeration.BarCodeStatus;
 import com.jovan.erp_v1.model.BarCode;
 
 import lombok.AllArgsConstructor;
@@ -20,6 +21,8 @@ public class BarCodeResponse {
 	private LocalDateTime scannedAt;
 	private UserResponse scannedBy;
 	private BasicGoodsForBarCodeResponse basicGoodsForBarCodeResponse;
+	private BarCodeStatus status;
+	private Boolean confirmed;
 	
 	public BarCodeResponse(BarCode code) {
 		this.id = code.getId();
@@ -27,5 +30,7 @@ public class BarCodeResponse {
 		this.scannedAt = code.getScannedAt();
 		this.scannedBy = code.getScannedBy() != null ? new UserResponse(code.getScannedBy()) : null;
 		this.basicGoodsForBarCodeResponse = code.getGoods() != null ? new BasicGoodsForBarCodeResponse(code.getGoods()) : null;
+		this.status = code.getStatus();
+		this.confirmed = code.getConfirmed();
 	}
 }

@@ -44,14 +44,16 @@ public class BarCodeController {
 	    LocalDateTime now = LocalDateTime.now();
 	    String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
 	    Long scannedById = userRepository.findByUsername(currentUsername)
-	            .orElseThrow(() -> new UsernameNotFoundException("Korisnik nije pronađen: " + currentUsername))
+	            .orElseThrow(() -> new UsernameNotFoundException("Korisnik nije pronadjen: " + currentUsername))
 	            .getId();
 	    BarCodeRequest enrichedRequest = new BarCodeRequest(
 	        null,
 	        request.code(),
 	        now,          // backend postavlja vreme skeniranja
 	        scannedById,  // backend postavlja scannedById (Long)
-	        request.goodsId()
+	        request.goodsId(),
+	        null,
+	        null
 	    );
 	    BarCodeResponse response = barcodeService.createBarCode(enrichedRequest);
 	    return ResponseEntity.ok(response);
@@ -65,14 +67,15 @@ public class BarCodeController {
 	    LocalDateTime now = LocalDateTime.now();
 	    String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
 	    Long scannedById = userRepository.findByUsername(currentUsername)
-	            .orElseThrow(() -> new UsernameNotFoundException("Korisnik nije pronađen: " + currentUsername))
+	            .orElseThrow(() -> new UsernameNotFoundException("Korisnik nije pronadjen: " + currentUsername))
 	            .getId();
 	    BarCodeRequest enrichedRequest = new BarCodeRequest(
 	        id,
 	        request.code(),
 	        now,
 	        scannedById,
-	        request.goodsId()
+	        request.goodsId(),
+	        null,null
 	    );
 	    BarCodeResponse response = barcodeService.updateBarCode(id, enrichedRequest);
 	    return ResponseEntity.ok(response);

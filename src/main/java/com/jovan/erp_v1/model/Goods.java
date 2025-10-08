@@ -10,8 +10,6 @@ import com.jovan.erp_v1.enumeration.UnitMeasure;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
-import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -51,11 +49,11 @@ public abstract class Goods {
     private UnitMeasure unitMeasure;
 
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(nullable = false)
     private SupplierType supplierType;
 
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(nullable = false)
     private StorageType storageType;
 
     /*
