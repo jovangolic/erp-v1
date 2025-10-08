@@ -49,10 +49,11 @@ public class Inspection {
 	@Column(unique = true, nullable = false)
 	private String code;
 	
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private InspectionType type;
 	
-	@Column
+	@Column(nullable = false)
 	private LocalDateTime inspectionDate;
 	
 	@ManyToOne

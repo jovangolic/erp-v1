@@ -22,6 +22,7 @@ public class TripSpecification {
                 .and(hasEndLocation(req.endLocation()))
                 .and(hasStartTime(req.startTime()))
                 .and(hasEndTime(req.endTime()))
+                .and(hasTimeRange(req.startTime(), req.endTime()))
                 .and(hasStartTimeAfter(req.startTimeAfter()))
                 .and(hasStartTimeBefore(req.startTimeBefore()))
                 .and(hasEndTimeAfter(req.endTimeAfter()))
@@ -47,6 +48,21 @@ public class TripSpecification {
             return cb.between(root.get("id"), idFrom, idTo);
         };
     }
+    
+    public static Specification<Trip> hasTimeRange(LocalDateTime min, LocalDateTime max){
+    	return(root, query, cb) -> {
+    		if(min != null && max != null) {
+    			return cb.between(root.get("startTime"), min, max);
+    		}
+    		else if(min != null) {
+    			return cb.greaterThanOrEqualTo(root.get("startTime"), min);
+    		}
+    		else if(max != null) {
+    			return cb.greaterThanOrEqualTo(root.get("startTime"), max);
+    		}
+    		return null;
+    	};
+    }
 
     public static Specification<Trip> hasStartLocation(String startLocation) {
         return (root, query, cb) -> startLocation == null ? null :
@@ -67,19 +83,19 @@ public class TripSpecification {
     }
 
     public static Specification<Trip> hasStartTimeAfter(LocalDateTime startTimeAfter) {
-        return (root, query, cb) -> startTimeAfter == null ? null : cb.greaterThanOrEqualTo(root.get("startTime"), startTimeAfter);
+        return (root, query, cb) -> startTimeAfter == null ? null : cb.greaterThan(root.get("startTime"), startTimeAfter);
     }
 
     public static Specification<Trip> hasStartTimeBefore(LocalDateTime startTimeBefore) {
-        return (root, query, cb) -> startTimeBefore == null ? null : cb.lessThanOrEqualTo(root.get("startTime"), startTimeBefore);
+        return (root, query, cb) -> startTimeBefore == null ? null : cb.lessThan(root.get("startTime"), startTimeBefore);
     }
 
     public static Specification<Trip> hasEndTimeAfter(LocalDateTime endTimeAfter) {
-        return (root, query, cb) -> endTimeAfter == null ? null : cb.greaterThanOrEqualTo(root.get("endTime"), endTimeAfter);
+        return (root, query, cb) -> endTimeAfter == null ? null : cb.greaterThan(root.get("endTime"), endTimeAfter);
     }
 
     public static Specification<Trip> hasEndTimeBefore(LocalDateTime endTimeBefore) {
-        return (root, query, cb) -> endTimeBefore == null ? null : cb.lessThanOrEqualTo(root.get("endTime"), endTimeBefore);
+        return (root, query, cb) -> endTimeBefore == null ? null : cb.lessThan(root.get("endTime"), endTimeBefore);
     }
 
     public static Specification<Trip> hasTripStatus(TripStatus tripStatus) {

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -16,10 +17,13 @@ import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.Batch;
+import com.jovan.erp_v1.statistics.batch.BatchConfirmedStatDTO;
+import com.jovan.erp_v1.statistics.batch.BatchMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.batch.BatchStatusStatDTO;
 
 
 @Repository
-public interface BatchRepository extends JpaRepository<Batch, Long> {
+public interface BatchRepository extends JpaRepository<Batch, Long>, JpaSpecificationExecutor<Batch> {
 
 	boolean existsByCode(String code);
 	List<Batch> findByCodeContainingIgnoreCase(String code);
@@ -99,4 +103,24 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
     List<Batch> findByRowCountAndStorageId(@Param("rows") Integer rows,@Param("storageId") Long storageId);
 	@Query("SELECT b FROM Batch b WHERE  b.product.shelf.cols = :cols AND b.product.storage.id = :storageId")
     List<Batch> findByColsAndStorageId(@Param("cols") Integer cols,@Param("storageId") Long storageId);
+	
+	//nove metode
+	@Query("SELECT b FROM Batch b LEFT JOIN FETCH b.inspections WHERE b.id = :id")
+	List<Batch> trackBatch(@Param("id") Long id);
+	
+	@Query("SELECT new com.jovan.erp_v1.statistics.batch.BatchStatusStatDTO(b.status, COUNT(b)) " +
+		       "FROM Batch b GROUP BY b.status")
+	List<BatchStatusStatDTO> countBatchesByStatus();
+	@Query("SELECT new com.jovan.erp_v1.statistics.batch.BatchConfirmedStatDTO(b.confirmed, COUNT(b)) "+
+			"FROM Batch b GROUP BY b.confirmed")
+	List<BatchConfirmedStatDTO> countBatchesByConfirmed();
+	
+	@Query("SELECT new com.jovan.erp_v1.statistics.batch.BatchMonthlyStatDTO(" +
+		       "CAST(FUNCTION('YEAR', b.productionDate) AS integer), "+
+				"CAST(FUNCTION('MONTH', b.productionDate) AS integer), "+
+		       	"COUNT(b)) "+
+				"FROM Batch b "+
+		       	"GROUP BY FUNCTION('YEAR', b.productionDate), FUNCTION('MONTH', b.productionDate) "+
+				"GROUP BY FUNCTION('YEAR', b.productionDate), FUNCTION('MONTH', b.productionDate)")
+	List<BatchMonthlyStatDTO> countBatchesByYearAndMonth();
 }

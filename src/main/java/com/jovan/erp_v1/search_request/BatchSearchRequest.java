@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.search_request;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import com.jovan.erp_v1.enumeration.BatchStatus;
 import com.jovan.erp_v1.enumeration.GoodsType;
@@ -39,7 +40,16 @@ public record BatchSearchRequest(
 		@NotNull Integer quantityProduced,
 		@NotNull Integer quantityProducedMin,
 		@NotNull Integer quantityProducedMax,
-		
+		@NotNull LocalDate productionDate,
+		@NotNull LocalDate productionDateBefore,
+		@NotNull LocalDate productionDateAfter,
+		@NotNull LocalDate productionDateStart,
+		@NotNull LocalDate productionDateEnd,
+		@NotNull LocalDate expiryDate,
+		@NotNull LocalDate expiryDateBefore,
+		@NotNull LocalDate expiryDateAfter,
+		@NotNull LocalDate expiryDateStart,
+		@NotNull LocalDate expiryDateEnd,
 		@NotNull BatchStatus status,
 		@NotNull Boolean confirmed
 		) {

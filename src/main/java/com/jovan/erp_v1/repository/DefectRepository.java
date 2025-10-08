@@ -17,6 +17,7 @@ import com.jovan.erp_v1.statistics.defects.DefectSeverityStatDTO;
 import com.jovan.erp_v1.statistics.defects.DefectStatusSeverityStatDTO;
 import com.jovan.erp_v1.statistics.defects.DefectStatusStatDTO;
 
+
 @Repository
 public interface DefectRepository extends JpaRepository<Defect, Long> {
 

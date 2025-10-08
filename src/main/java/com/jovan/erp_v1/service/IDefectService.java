@@ -14,6 +14,7 @@ import com.jovan.erp_v1.statistics.defects.DefectSeverityStatDTO;
 import com.jovan.erp_v1.statistics.defects.DefectStatusSeverityStatDTO;
 import com.jovan.erp_v1.statistics.defects.DefectStatusStatDTO;
 
+
 public interface IDefectService {
 
 	DefectResponse create(DefectRequest request);

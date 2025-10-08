@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.jovan.erp_v1.enumeration.BatchStatus;
 import com.jovan.erp_v1.model.Batch;
 
 import lombok.AllArgsConstructor;
@@ -22,6 +23,9 @@ public class BatchResponse {
 	private LocalDate productionDate;
 	private LocalDate expiryDate;
 	private List<InspectionResponse> inspections;
+	private BatchStatus status;
+	private Boolean confirmed;
+	
 	
 	public BatchResponse(Batch b) {
 		this.id = b.getId();
@@ -33,5 +37,7 @@ public class BatchResponse {
 		this.inspections = b.getInspections().stream()
 				.map(InspectionResponse::new)
 				.collect(Collectors.toList());
+		this.confirmed = b.getConfirmed();
+		this.status = b.getStatus();
 	}
 }

@@ -1,6 +1,9 @@
 package com.jovan.erp_v1.request;
 
 import java.time.LocalDate;
+
+import com.jovan.erp_v1.enumeration.BatchStatus;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -13,6 +16,8 @@ public record BatchRequest(
 		@PositiveOrZero(message = "Quantity produced must be zero or greater")
 		Integer quantityProduced,
 		@NotNull(message = "Production-Date is required") LocalDate productionDate,
-		@NotNull LocalDate expiryDate
+		@NotNull LocalDate expiryDate,
+		@NotNull BatchStatus status,
+		@NotNull Boolean confirmed
 		) {
 }

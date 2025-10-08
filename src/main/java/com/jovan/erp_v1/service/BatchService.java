@@ -3,13 +3,19 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jovan.erp_v1.enumeration.BatchStatus;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
@@ -28,8 +34,16 @@ import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.ShelfRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.repository.SupplyRepository;
+import com.jovan.erp_v1.repository.specification.BatchSpecification;
 import com.jovan.erp_v1.request.BatchRequest;
 import com.jovan.erp_v1.response.BatchResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.BatchSaveAsRequest;
+import com.jovan.erp_v1.search_request.BatchSearchRequest;
+import com.jovan.erp_v1.statistics.batch.BatchConfirmedStatDTO;
+import com.jovan.erp_v1.statistics.batch.BatchMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.batch.BatchStatusStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -755,6 +769,197 @@ public class BatchService implements IBatchService {
 			throw new NoDataFoundException(msg);
 		}
 		return items.stream().map(batchMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	@Override
+	public BatchResponse trackBatch(Long id) {
+		List<Batch> items = batchRepository.trackBatch(id);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Batch with id " + id + " not found");
+		}
+		Batch br = items.get(0);
+		return new BatchResponse(br);
+	}
+
+	@Override
+	public List<BatchStatusStatDTO> countBatchesByStatus() {
+		List<BatchStatusStatDTO> items = batchRepository.countBatchesByStatus();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No status count for batch, found");
+		}
+		return items.stream()
+				.map(item -> {
+					BatchStatus status = item.status();
+					Long count = item.count();
+					return new BatchStatusStatDTO(status, count);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<BatchConfirmedStatDTO> countBatchesByConfirmed() {
+		List<BatchConfirmedStatDTO> items = batchRepository.countBatchesByConfirmed();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No confirmed count for batch, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Boolean confirmed = item.confirmed();
+				    Long count = item.count();
+				    return new BatchConfirmedStatDTO(confirmed, count);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<BatchMonthlyStatDTO> countBatchesByYearAndMonth() {
+		List<BatchMonthlyStatDTO> items = batchRepository.countBatchesByYearAndMonth();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No batch count for year and month, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Integer year = item.getYear();
+					Integer month = item.getMonth();
+					Long count = item.getCount();
+					return new BatchMonthlyStatDTO(year, month, count);
+				})
+				.toList();
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public BatchResponse confirmBatch(Long id) {
+		Batch b = batchRepository.findById(id).orElseThrow(() -> new ValidationException("Batch not found with id "+id));
+		b.setConfirmed(true);
+		b.setStatus(BatchStatus.CONFIRMED);
+		b.getInspections().stream()
+			.filter(ins -> ins.calculateQuantityAccepted() > 0)
+			.filter(ins -> ins.calculateQuantityInspected() > 0)
+			.filter(ins -> ins.calculateQuantityRejected() > 0);
+			
+		batchRepository.save(b);
+		return new BatchResponse(b);
+	}
+
+	@Transactional
+	@Override
+	public BatchResponse closeBatch(Long id) {
+		Batch b = batchRepository.findById(id).orElseThrow(() -> new ValidationException("Batch not found with id "+id));
+		return null;
+	}
+
+	@Transactional
+	@Override
+	public BatchResponse cancelBatch(Long id) {
+		Batch b = batchRepository.findById(id).orElseThrow(() -> new ValidationException("Batch not found with id "+id));
+		return null;
+	}
+
+	@Transactional
+	@Override
+	public BatchResponse changeStatus(Long id, BatchStatus status) {
+		Batch b = batchRepository.findById(id).orElseThrow(() -> new ValidationException("Batch not found with id "+id));
+		validateBatchStatus(status);
+		return null;
+	}
+
+	@Transactional
+	@Override
+	public BatchResponse saveBatch(BatchRequest request) {
+		Batch b = Batch.builder()
+				.id(request.id())
+				.code(request.code())
+				.product(validateProductId(request.productId()))
+				.quantityProduced(request.quantityProduced())
+				.expiryDate(request.expiryDate())
+				.confirmed(request.confirmed())
+				.status(request.status())
+				.build();
+		Batch saved = batchRepository.save(b);
+		return new BatchResponse(saved);
+	}
+	
+	private final AbstractSaveAsService<Batch, BatchResponse> saveAsHelper = new AbstractSaveAsService<Batch, BatchResponse>() {
+		
+		@Override
+		protected BatchResponse toResponse(Batch entity) {
+			return new BatchResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<Batch, Long> getRepository() {
+			return batchRepository;
+		}
+		
+		@Override
+		protected Batch copyAndOverride(Batch source, Map<String, Object> overrides) {
+			return Batch.builder()
+					.code((String) overrides.getOrDefault("Code", source.getCode()))
+					.product(validateProductId(source.getProduct().getId()))
+					.quantityProduced((Integer) overrides.getOrDefault("Auantity-produced", source.getQuantityProduced()))
+					.expiryDate(source.getExpiryDate())
+					.productionDate(LocalDate.now())
+					.build();
+		}
+	};
+	
+	private final AbstractSaveAllService<Batch, BatchResponse> saveAllHelper = new AbstractSaveAllService<Batch, BatchResponse>() {
+		
+		@Override
+		protected Function<Batch, BatchResponse> toResponse() {
+			return BatchResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<Batch, Long> getRepository() {
+			return batchRepository;
+		}
+	};
+
+	@Transactional
+	@Override
+	public BatchResponse saveAs(BatchSaveAsRequest request) {
+		Map<String, Object> overrides = new HashMap<String, Object>();
+		if(request.code() != null) overrides.put("Code", request.code());
+		if(request.productId() != null) overrides.put("Product-ID", validateProductId(request.productId()));
+		if(request.quantityProduced() != null) overrides.put("Quantity-produced", request.quantityProduced());
+		if(request.expiryDate() != null) overrides.put("Expiry-date", request.expiryDate());
+		if(request.productionDate() != null) overrides.put("Production-date", LocalDate.now());
+		return saveAsHelper.saveAs(request.sourceId(), overrides);
+	}
+
+	@Transactional
+	@Override
+	public List<BatchResponse> saveAll(List<BatchRequest> requests) {
+		List<Batch> items = requests.stream()
+				.map(req -> Batch.builder()
+						.id(req.id())
+						.code(req.code())
+						.product(validateProductId(req.productId()))
+						.quantityProduced(req.quantityProduced())
+						.productionDate(LocalDate.now())
+						.expiryDate(req.expiryDate())
+						.confirmed(req.confirmed())
+						.status(req.status())
+						.build())
+				.collect(Collectors.toList());
+		return saveAllHelper.saveAll(items);
+	}
+
+	@Override
+	public List<BatchResponse> generalSearch(BatchSearchRequest request) {
+		Specification<Batch> spec = BatchSpecification.fromRequest(request);
+		List<Batch> items = batchRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Batches for given criteria, found");
+		}
+		return items.stream().map(batchMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	private void validateBatchStatus(BatchStatus status) {
+		Optional.ofNullable(status)
+			.orElseThrow(() -> new ValidationException("BatchStatus status must not be null"));
 	}
 	
 	private void validateInteger(Integer num) {

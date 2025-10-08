@@ -1,7 +1,7 @@
 package com.jovan.erp_v1.repository.specification;
 
-
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import org.springframework.data.jpa.domain.Specification;
 
@@ -36,8 +36,19 @@ public class BatchSpecification {
 				.and(hasShelfId(req.shelfId()))
 				.and(hasShelfIdRange(req.shelfIdFrom(), req.shelfIdTo()))
 				.and(hasCurrentQuantity(req.currentQuantity()))
-				
+				.and(hasQuantityProduced(req.quantityProduced()))
+				.and(hasQuantityProducedLess(req.quantityProducedMin()))
+				.and(hasQuantityProducedGreater(req.quantityProducedMax()))
+				.and(hasQuantityProducedRange(req.quantityProducedMin(), req.quantityProducedMax()))
 				.and(hasConfirmed(req.confirmed()))
+				.and(hasProductionDate(req.productionDate()))
+				.and(hasProductionDateBefore(req.productionDateBefore()))
+				.and(hasProductionDateAfter(req.productionDateAfter()))
+				.and(hasProductionDateRange(req.productionDateStart(), req.productionDateEnd()))
+				.and(hasExpiryDate(req.expiryDate()))
+				.and(hasExpiryDateBefore(req.expiryDateBefore()))
+				.and(hasExpiryDateAfter(req.expiryDateAfter()))
+				.and(hasExpiryDateRange(req.expiryDateStart(), req.expiryDateEnd()))
 				.and(hasStatus(req.status()));
 	}
 	
@@ -50,6 +61,87 @@ public class BatchSpecification {
 			if(from == null || to == null) return null;
 			return cb.between(root.get("id"), from, to);
 		};
+	}
+	
+	public static Specification<Batch> hasExpiryDateRange(LocalDate min, LocalDate max){
+		return(root, query, cb) -> {
+			if(min != null && max != null) {
+				return cb.between(root.get("expiryDate"), min, max);
+			}
+			else if(min != null) {
+				return cb.greaterThanOrEqualTo(root.get("expiryDate"), min);
+			}
+			else if(max != null) {
+				return cb.lessThanOrEqualTo(root.get("expiryDate"), max);
+			}
+			return null;
+		};
+	}
+	
+	public static Specification<Batch> hasExpiryDateAfter(LocalDate ld){
+		return(root, query, cb) -> ld == null ? null : cb.greaterThan(root.get("expiryDate"), ld);
+	}
+	
+	public static Specification<Batch> hasExpiryDateBefore(LocalDate ld){
+		return(root, query, cb) -> ld == null ? null : cb.lessThan(root.get("expiryDate"), ld);
+	}
+	
+	public static Specification<Batch> hasExpiryDate(LocalDate ld){
+		return(root, query, cb) -> ld == null ? null : cb.equal(root.get("expiryDate"), ld);
+	}
+
+	public static Specification<Batch> hasProductionDateRange(LocalDate min, LocalDate max){
+		return(root, query, cb) -> {
+			if(min != null && max != null) {
+				return cb.between(root.get("productionDate"), min, max);
+			}
+			else if(min != null) {
+				return cb.greaterThanOrEqualTo(root.get("productionDate"), min);
+			}
+			else if(max != null) {
+				return cb.lessThanOrEqualTo(root.get("productionDate"), max);
+			}
+			return null;
+		};
+	}
+	
+	public static Specification<Batch> hasProductionDateAfter(LocalDate ld){
+		return(root, query, cb) -> ld == null ? null : cb.greaterThan(root.get("productionDate"), ld);
+	}
+	
+	public static Specification<Batch> hasProductionDateBefore(LocalDate ld){
+		return(root, query, cb) -> ld == null ? null : cb.lessThan(root.get("productionDate"), ld);
+	}
+	
+	public static Specification<Batch> hasProductionDate(LocalDate ld){
+		return(root, query, cb) -> ld == null ? null : cb.equal(root.get("productionDate"), ld);
+	}
+	
+	public static Specification<Batch> hasQuantityProducedRange(Integer min, Integer max){
+		return(root, query, cb) -> {
+			if(min != null && max != null) {
+				return cb.between(root.get("quantityProduced"), min, max);
+			}
+			else if(min != null) {
+				return cb.greaterThanOrEqualTo(root.get("quantityProduced"), min);
+			}
+			else if(max != null) {
+				return cb.lessThanOrEqualTo(root.get("quantityProduced"), max);
+			}
+			return null;
+		};
+	}
+	
+	public static Specification<Batch> hasQuantityProducedGreater(Integer qp){
+		return(root, query, cb) -> qp == null ? null : cb.greaterThan(root.get("quantityProduced"), qp);
+	}
+	
+	public static Specification<Batch> hasQuantityProducedLess(Integer qp){
+		return(root, query, cb) -> qp == null ? null : cb.lessThan(root.get("quantityProduced"), qp);
+	}
+	
+	public static Specification<Batch> hasQuantityProduced(Integer qp){
+		return(root, query, cb) -> qp == null ? null : cb.equal(root.get("quantityProduced"), qp);
 	}
 	
 	public static Specification<Batch> hasStatus(BatchStatus status){

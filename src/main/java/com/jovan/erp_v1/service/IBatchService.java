@@ -3,6 +3,8 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+
+import com.jovan.erp_v1.enumeration.BatchStatus;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
@@ -10,6 +12,11 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.BatchRequest;
 import com.jovan.erp_v1.response.BatchResponse;
+import com.jovan.erp_v1.save_as.BatchSaveAsRequest;
+import com.jovan.erp_v1.search_request.BatchSearchRequest;
+import com.jovan.erp_v1.statistics.batch.BatchConfirmedStatDTO;
+import com.jovan.erp_v1.statistics.batch.BatchMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.batch.BatchStatusStatDTO;
 
 public interface IBatchService {
 
@@ -84,4 +91,18 @@ public interface IBatchService {
     BatchResponse findByRowCountAndColsAndStorageId( Integer rows, Integer cols, Long storageId);
     List<BatchResponse> findByRowCountAndStorageId( Integer rows, Long storageId);
     List<BatchResponse> findByColsAndStorageId( Integer cols, Long storageId);
+    
+    //nove metode
+    BatchResponse trackBatch(Long id);
+    List<BatchStatusStatDTO> countBatchesByStatus();
+    List<BatchConfirmedStatDTO> countBatchesByConfirmed();
+    List<BatchMonthlyStatDTO> countBatchesByYearAndMonth();
+    BatchResponse confirmBatch(Long id);
+    BatchResponse closeBatch(Long id);
+    BatchResponse cancelBatch(Long id);
+    BatchResponse changeStatus(Long id, BatchStatus status);
+    BatchResponse saveBatch(BatchRequest request);
+    BatchResponse  saveAs(BatchSaveAsRequest request);
+    List<BatchResponse> saveAll(List<BatchRequest> requests);
+    List<BatchResponse> generalSearch(BatchSearchRequest request);
 }
