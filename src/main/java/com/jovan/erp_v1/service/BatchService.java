@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.BatchStatus;
 import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.InspectionStatus;
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
@@ -772,6 +773,7 @@ public class BatchService implements IBatchService {
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public BatchResponse trackBatch(Long id) {
 		List<Batch> items = batchRepository.trackBatch(id);
 		if(items.isEmpty()) {
@@ -827,41 +829,65 @@ public class BatchService implements IBatchService {
 				.toList();
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional
 	@Override
 	public BatchResponse confirmBatch(Long id) {
-		Batch b = batchRepository.findById(id).orElseThrow(() -> new ValidationException("Batch not found with id "+id));
-		b.setConfirmed(true);
-		b.setStatus(BatchStatus.CONFIRMED);
-		b.getInspections().stream()
-			.filter(ins -> ins.calculateQuantityAccepted() > 0)
-			.filter(ins -> ins.calculateQuantityInspected() > 0)
-			.filter(ins -> ins.calculateQuantityRejected() > 0);
-			
-		batchRepository.save(b);
-		return new BatchResponse(b);
+		Batch batch = batchRepository.findById(id)
+		        .orElseThrow(() -> new ValidationException("Batch not found with id " + id));
+		boolean hasInvalidInspections = batch.getInspections().stream()
+		        .anyMatch(ins -> !ins.isConsistent());
+		if (hasInvalidInspections) {
+		     throw new ValidationException("Cannot confirm batch with inconsistent inspections.");
+		}
+		batch.setConfirmed(true);
+		batch.setStatus(BatchStatus.CONFIRMED);
+		batch.getInspections().forEach(ins -> {
+		        ins.setConfirmed(true);
+		        ins.setStatus(InspectionStatus.CONFIRMED);
+		});
+		batchRepository.save(batch);
+		return new BatchResponse(batch);
 	}
 
 	@Transactional
 	@Override
 	public BatchResponse closeBatch(Long id) {
 		Batch b = batchRepository.findById(id).orElseThrow(() -> new ValidationException("Batch not found with id "+id));
-		return null;
+		if(b.getStatus() != BatchStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED batches can be closed");
+		}
+		b.setStatus(BatchStatus.CLOSED);
+		return new BatchResponse(batchRepository.save(b));
 	}
 
 	@Transactional
 	@Override
 	public BatchResponse cancelBatch(Long id) {
 		Batch b = batchRepository.findById(id).orElseThrow(() -> new ValidationException("Batch not found with id "+id));
-		return null;
+		if(b.getStatus() != BatchStatus.NEW && b.getStatus() != BatchStatus.CONFIRMED) {
+			throw new ValidationException("Only NEW or CONFIRMED batches can be cancelled");
+		}
+		b.setStatus(BatchStatus.CLOSED);
+		return new BatchResponse(batchRepository.save(b));
 	}
+	
 
 	@Transactional
 	@Override
 	public BatchResponse changeStatus(Long id, BatchStatus status) {
 		Batch b = batchRepository.findById(id).orElseThrow(() -> new ValidationException("Batch not found with id "+id));
 		validateBatchStatus(status);
-		return null;
+		if(b.getStatus() == BatchStatus.CLOSED) {
+			throw new ValidationException("Closed batches cannot change status");
+		}
+		if(status == BatchStatus.CONFIRMED) {
+			if(b.getStatus() != BatchStatus.NEW) {
+				throw new ValidationException("Only NEW batches can be confirmed");
+			}
+			b.setConfirmed(true);
+			b.getInspections().forEach(ins -> ins.setConfirmed(true));;
+		}
+		return new BatchResponse(batchRepository.save(b));
 	}
 
 	@Transactional

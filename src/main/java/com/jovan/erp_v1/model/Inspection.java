@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.jovan.erp_v1.enumeration.InspectionResult;
+import com.jovan.erp_v1.enumeration.InspectionStatus;
 import com.jovan.erp_v1.enumeration.InspectionType;
 import com.jovan.erp_v1.exception.ValidationException;
 
@@ -29,6 +30,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -39,6 +41,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @NoArgsConstructor
+@Builder
 @AllArgsConstructor
 public class Inspection {
 
@@ -87,10 +90,20 @@ public class Inspection {
 	@JoinColumn(name = "quality_check_id")
 	private QualityCheck qualityCheck;
 	
+	@Column(nullable = false)
+	@Builder.Default
+	private Boolean confirmed = false;
+	
+	@Column(nullable = false)
+	@Builder.Default
+	private InspectionStatus status = InspectionStatus.NEW;
+	
 	@OneToMany(mappedBy = "inspection", cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
 	private List<InspectionDefect> defects = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "inspection", cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
 	private List<TestMeasurement> measurements = new ArrayList<>();
 	
 	@CreatedDate

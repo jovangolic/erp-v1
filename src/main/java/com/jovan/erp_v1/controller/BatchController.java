@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.BatchStatus;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
@@ -24,7 +25,12 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.BatchRequest;
 import com.jovan.erp_v1.response.BatchResponse;
+import com.jovan.erp_v1.save_as.BatchSaveAsRequest;
+import com.jovan.erp_v1.search_request.BatchSearchRequest;
 import com.jovan.erp_v1.service.IBatchService;
+import com.jovan.erp_v1.statistics.batch.BatchConfirmedStatDTO;
+import com.jovan.erp_v1.statistics.batch.BatchMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.batch.BatchStatusStatDTO;
 import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
@@ -502,4 +508,89 @@ public class BatchController {
     	return ResponseEntity.ok(items);
     }
     
+	//nove metode
+	
+	@PreAuthorize(RoleGroups.BATCH_READ_ACCESS)
+	@GetMapping("/count/batches-status")
+	public ResponseEntity<List<BatchStatusStatDTO>> countBatchesByStatus(){
+		List<BatchStatusStatDTO> items = batchService.countBatchesByStatus();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BATCH_READ_ACCESS)
+	@GetMapping("/count/batches-confirmed")
+	public ResponseEntity<List<BatchConfirmedStatDTO>> countBatchesByConfirmed(){
+		List<BatchConfirmedStatDTO> items = batchService.countBatchesByConfirmed();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BATCH_READ_ACCESS)
+	@GetMapping("/count/batches-year-and-month")
+	public ResponseEntity<List<BatchMonthlyStatDTO>> countBatchesByYearAndMonth(){
+		List<BatchMonthlyStatDTO> items = batchService.countBatchesByYearAndMonth();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BATCH_READ_ACCESS)
+	@GetMapping("/track/{id}")
+	public ResponseEntity<BatchResponse> trackBatch(@PathVariable Long id){
+		BatchResponse items = batchService.trackBatch(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BATCH_FULL_ACCESS)
+	@PostMapping("/{id}/confirm")
+	public ResponseEntity<BatchResponse> confirmBatch(@PathVariable Long id){
+		BatchResponse items = batchService.confirmBatch(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BATCH_FULL_ACCESS)
+	@PostMapping("/{id}/close")
+	public ResponseEntity<BatchResponse> closeBatch(@PathVariable Long id){
+		BatchResponse items = batchService.closeBatch(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BATCH_FULL_ACCESS)
+	@PostMapping("/{id}/cancel")
+	public ResponseEntity<BatchResponse> cancelBatch(@PathVariable Long id){
+		BatchResponse items = batchService.cancelBatch(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BATCH_FULL_ACCESS)
+	@PostMapping("/{id}/status/{status}")
+	public ResponseEntity<BatchResponse> changeStatus(@PathVariable Long id,@PathVariable  BatchStatus status){
+		BatchResponse items = batchService.changeStatus(id, status);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BATCH_FULL_ACCESS)
+	@PostMapping("/save")
+	public ResponseEntity<BatchResponse> saveBatch(@Valid @RequestBody BatchRequest request){
+		BatchResponse items = batchService.saveBatch(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BATCH_FULL_ACCESS)
+	@PostMapping("/save-as")
+	public ResponseEntity<BatchResponse> saveAs(@Valid @RequestBody BatchSaveAsRequest request){
+		BatchResponse items = batchService.saveAs(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BATCH_FULL_ACCESS)
+	@PostMapping("/save-all")
+	public ResponseEntity<List<BatchResponse>> saveAll(@Valid @RequestBody List<BatchRequest> requests){
+		List<BatchResponse> items = batchService.saveAll(requests);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BATCH_FULL_ACCESS)
+	@PostMapping("/general-search")
+	public ResponseEntity<List<BatchResponse>> generalSearch(@Valid @RequestBody BatchSearchRequest request){
+		List<BatchResponse> items = batchService.generalSearch(request);
+		return ResponseEntity.ok(items);
+	}
 }

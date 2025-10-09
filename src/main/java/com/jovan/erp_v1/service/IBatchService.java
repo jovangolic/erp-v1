@@ -93,16 +93,16 @@ public interface IBatchService {
     List<BatchResponse> findByColsAndStorageId( Integer cols, Long storageId);
     
     //nove metode
-    BatchResponse trackBatch(Long id);
     List<BatchStatusStatDTO> countBatchesByStatus();
     List<BatchConfirmedStatDTO> countBatchesByConfirmed();
     List<BatchMonthlyStatDTO> countBatchesByYearAndMonth();
+    BatchResponse trackBatch(Long id);
     BatchResponse confirmBatch(Long id);
     BatchResponse closeBatch(Long id);
     BatchResponse cancelBatch(Long id);
     BatchResponse changeStatus(Long id, BatchStatus status);
     BatchResponse saveBatch(BatchRequest request);
-    BatchResponse  saveAs(BatchSaveAsRequest request);
+    BatchResponse saveAs(BatchSaveAsRequest request);
     List<BatchResponse> saveAll(List<BatchRequest> requests);
     List<BatchResponse> generalSearch(BatchSearchRequest request);
 }
