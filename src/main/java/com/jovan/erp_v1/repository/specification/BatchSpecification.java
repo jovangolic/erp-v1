@@ -58,8 +58,16 @@ public class BatchSpecification {
 	
 	public static Specification<Batch> hasIdRange(Long from, Long to){
 		return(root, query, cb) -> {
-			if(from == null || to == null) return null;
-			return cb.between(root.get("id"), from, to);
+			if(from != null && to != null) {
+				return cb.between(root.get("id"), from, to);
+			}
+			else if(from != null) {
+				cb.greaterThanOrEqualTo(root.get("id"), from);
+			}
+			else if(to != null) {
+				return cb.lessThanOrEqualTo(root.get("id"), to);
+			}
+			return null;
 		};
 	}
 	
@@ -158,8 +166,16 @@ public class BatchSpecification {
 	
 	public static Specification<Batch> hasShelfIdRange(Long from, Long to){
 		return(root, query, cb) -> {
-			if(from == null || to == null) return null;
-			return cb.between(root.get("product").get("shelf").get("id"), from, to);
+			if(from != null && to != null) {
+				return cb.between(root.get("product").get("shelf").get("id"), from, to);
+			}
+			else if(from != null) {
+				cb.greaterThanOrEqualTo(root.get("product").get("shelf").get("id"), from);
+			}
+			else if(to != null) {
+				return cb.lessThanOrEqualTo(root.get("product").get("shelf").get("id"), to);
+			}
+			return null;
 		};
 	}
 	
@@ -168,9 +184,17 @@ public class BatchSpecification {
 	}
 	
 	public static Specification<Batch> hasSupplyIdRange(Long from, Long to){
-		return(root, query, cb) ->{
-			if(from == null || to == null) return null;
-			return cb.between(root.get("product").get("supply").get("id"), from, to);
+		return(root, query, cb) -> {
+			if(from != null && to != null) {
+				return cb.between(root.get("product").get("supply").get("id"), from, to);
+			}
+			else if(from != null) {
+				cb.greaterThanOrEqualTo(root.get("product").get("supply").get("id"), from);
+			}
+			else if(to != null) {
+				return cb.lessThanOrEqualTo(root.get("product").get("supply").get("id"), to);
+			}
+			return null;
 		};
 	}
 	
@@ -180,8 +204,16 @@ public class BatchSpecification {
 	
 	public static Specification<Batch> hasStorageIdRange(Long from, Long to){
 		return(root, query, cb) -> {
-			if(from == null || to == null) return null;
-			return cb.between(root.get("product").get("storage").get("id"), from, to);
+			if(from != null && to != null) {
+				return cb.between(root.get("product").get("storage").get("id"), from, to);
+			}
+			else if(from != null) {
+				cb.greaterThanOrEqualTo(root.get("product").get("storage").get("id"), from);
+			}
+			else if(to != null) {
+				return cb.lessThanOrEqualTo(root.get("product").get("storage").get("id"), to);
+			}
+			return null;
 		};
 	}
 	
@@ -235,8 +267,16 @@ public class BatchSpecification {
 	
 	public static Specification<Batch> hasProductIdRange(Long from, Long to){
 		return(root, query, cb) -> {
-			if(from == null || to == null) return null;
-			return cb.between(root.get("product").get("id"), from, to);
+			if(from != null && to != null) {
+				return cb.between(root.get("product").get("id"), from, to);
+			}
+			else if(from != null) {
+				cb.greaterThanOrEqualTo(root.get("product").get("id"), from);
+			}
+			else if(to != null) {
+				return cb.lessThanOrEqualTo(root.get("product").get("id"), to);
+			}
+			return null;
 		};
 	}
 	

@@ -29,8 +29,16 @@ public class AccountSpecification {
 	
 	public static Specification<Account> hasAccountIdRange(Long idFrom, Long idTo){
 		return(root,query,cb) -> {
-			if(idFrom == null || idTo == null) return null;
-			return(cb.between(root.get("id"),idFrom, idTo));
+			if(idFrom != null && idTo != null) {
+				return cb.between(root.get("id"), idFrom, idTo);
+			}
+			else if(idFrom != null) {
+				return cb.greaterThanOrEqualTo(root.get("id"), idFrom);
+			}
+			else if(idTo != null) {
+				return cb.lessThanOrEqualTo(root.get("id"), idTo);
+			}
+			return null;
 		};
 	}
 	

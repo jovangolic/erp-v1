@@ -95,9 +95,17 @@ public class BalanceSheetSpecification {
     
     public static Specification<BalanceSheet> hasRangeId(Long from, Long to){
     	return(root,query,cb) -> {
-    		if(from == null || to == null) return null;
-    		return cb.between(root.get("id"), from, to);
-    	};
+    		if(from != null && to != null) {
+				return cb.between(root.get("id"), from, to);
+			}
+			else if(from != null) {
+				cb.greaterThanOrEqualTo(root.get("id"), from);
+			}
+			else if(to != null) {
+				return cb.lessThanOrEqualTo(root.get("id"), to);
+			}
+			return null;
+		};
     }
     
     public static Specification<BalanceSheet> hasFiscalDateRange(LocalDate st, LocalDate end){
@@ -246,8 +254,16 @@ public class BalanceSheetSpecification {
     
     public static Specification<BalanceSheet> hasYearRange(Integer from, Integer to){
     	return(root,query,cb) -> {
-    		if(from == null || to == null) return null;
-    		return cb.between(root.get("fiscalYear").get("year"), from, to);
+	    	if(from != null && to != null) {
+				return cb.between(root.get("fiscalYear").get("year"), from, to);
+			}
+			else if(from != null) {
+				cb.greaterThanOrEqualTo(root.get("fiscalYear").get("year"), from);
+			}
+			else if(to != null) {
+				return cb.lessThanOrEqualTo(root.get("fiscalYear").get("year"), to);
+			}
+			return null;
     	};
     }
     
@@ -255,10 +271,18 @@ public class BalanceSheetSpecification {
     	return(root,query,cb) -> year == null ? null : cb.equal(root.get("fiscalYear").get("year"), year);
     }
     
-    public static Specification<BalanceSheet> hasFiscalYearRangeId(Long fromId, Long toId){
+    public static Specification<BalanceSheet> hasFiscalYearRangeId(Long from, Long to){
     	return(root,query,cb) -> {
-    		if(fromId == null || toId == null) return null;
-    		return cb.between(root.get("fiscalYear").get("id"), fromId, toId);
+	    	if(from != null && to != null) {
+				return cb.between(root.get("fiscalYear").get("id"), from, to);
+			}
+			else if(from != null) {
+				cb.greaterThanOrEqualTo(root.get("fiscalYear").get("id"), from);
+			}
+			else if(to != null) {
+				return cb.lessThanOrEqualTo(root.get("fiscalYear").get("id"), to);
+			}
+			return null;
     	};
     }
 }
