@@ -289,7 +289,7 @@ public class BalanceSheetController {
     
     @PreAuthorize(RoleGroups.BALANCE_SHEET_FULL_ACCESS)
     @PostMapping("/general-search")
-    public ResponseEntity<List<BalanceSheetResponse>> generalSearch(@Valid @RequestBody BalanceSheetGeneralSearchRequest req){
+    public ResponseEntity<List<BalanceSheetResponse>> generalSearch(@RequestBody BalanceSheetGeneralSearchRequest req){
     	List<BalanceSheetResponse> items = balanceSheetService.generalSearch(req);
     	return ResponseEntity.ok(items);
     }

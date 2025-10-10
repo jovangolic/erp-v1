@@ -21,8 +21,6 @@ public class BillOfMaterialsSpecification {
 				.and(hasParentIdRange(req.productIdFrom(), req.productIdTo()))
 				.and(hasParentCurrentQuantity(req.parentCurrentQuantity()))
 				.and(hasParentCurrentQuantityRange(req.parentCurrentQuantityMin(), req.parentCurrentQuantityMax()))
-				.and(hasParentCurrentQuantityLess(req.parentCurrentQuantity()))
-				.and(hasParentCurrentQuantityGreater(req.parentCurrentQuantity()))
 				.and(hasProductName(req.productName()))
 				.and(hasProductUnitMeasure(req.productUnitMeasure()))
 				.and(hasProductSupplierType(req.productSupplierType()))
@@ -34,12 +32,10 @@ public class BillOfMaterialsSpecification {
 				.and(hasParentSupplyIdRange(req.parentSupplyIdFrom(), req.parentSupplyIdTo()))
 				.and(hasParentShelfId(req.parentShelfId()))
 				.and(hasParentShelfIdRange(req.parentShelfIdFrom(), req.parentShelfIdTo()))
-				.and(hasComponentId(req.componentId())
+				.and(hasComponentId(req.componentId()))
 				.and(hasComponentIdRange(req.componentIdFrom(), req.componentIdTo()))
 				.and(hasComponentCurrentQuantity(req.componentCurrentQuantity()))
 				.and(hasComponentCurrentQuantityRange(req.componentCurrentQuantityMin(), req.componentCurrentQuantityMax()))
-				.and(hasComponentCurrentQuantityLess(req.componentCurrentQuantityMin()))
-				.and(hasComponentCurrentQuantityGreater(req.componentCurrentQuantityMax()))
 				.and(hasComponentName(req.componentName()))
 				.and(hasComponentUnitMeasure(req.componentUnitMeasure()))
 				.and(hasComponentSupplierType(req.componentSupplierType()))
@@ -50,7 +46,7 @@ public class BillOfMaterialsSpecification {
 				.and(hasComponentSupplyId(req.componentSupplyId()))
 				.and(hasComponentSupplyIdRange(req.componentSupplyIdFrom(), req.componentSupplyIdTo()))
 				.and(hasComponentShelfId(req.componentShelfId()))
-				.and(hasComponentShelfIdRange(req.componentShelfIdFrom(), req.componentShelfIdTo())))
+				.and(hasComponentShelfIdRange(req.componentShelfIdFrom(), req.componentShelfIdTo()))
 				.and(hasQuantity(req.quantity()))
 				.and(hasQuantityRange(req.quantityMin(), req.quantityMax()))
 				.and(hasQuantityLess(req.quantityMin()))
@@ -139,14 +135,6 @@ public class BillOfMaterialsSpecification {
 	public static Specification<BillOfMaterials> hasComponentName(String name){
 		return(root, query, cb) -> name == null ? null : 
 			cb.like(cb.lower(root.get("component").get("name")), "%" + name.toLowerCase() + "%");
-	}
-	
-	public static Specification<BillOfMaterials> hasComponentCurrentQuantityGreater(BigDecimal bd){
-		return(root, query, cb) -> bd == null ? null : cb.lessThan(root.get("component").get("currentQuantity"), bd);
-	}
-	
-	public static Specification<BillOfMaterials> hasComponentCurrentQuantityLess(BigDecimal bd){
-		return(root, query, cb) -> bd == null ? null : cb.lessThan(root.get("component").get("currentQuantity"), bd);
 	}
 	
 	public static Specification<BillOfMaterials> hasComponentCurrentQuantityRange(BigDecimal min, BigDecimal max){
@@ -244,16 +232,6 @@ public class BillOfMaterialsSpecification {
 	public static Specification<BillOfMaterials> hasProductName(String name){
 		return(root, query, cb) -> name == null ? null : 
 			cb.like(cb.lower(root.get("parentProduct").get("name")), "%" + name.toLowerCase() + "%");
-	}
-	
-	public static Specification<BillOfMaterials> hasParentCurrentQuantityGreater(BigDecimal max){
-		return(root, query, cb) -> max == null ? null : 
-			cb.greaterThan(root.get("parentProduct").get("currentQuantity"), max);
-	}
-	
-	public static Specification<BillOfMaterials> hasParentCurrentQuantityLess(BigDecimal min){
-		return(root, query, cb) -> min == null ? null : 
-			cb.lessThan(root.get("parentProduct").get("currentQuantity"), min);
 	}
 	
 	public static Specification<BillOfMaterials> hasParentCurrentQuantityRange(BigDecimal min, BigDecimal max){

@@ -1,14 +1,19 @@
 package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jovan.erp_v1.enumeration.BillOfMaterialsStatus;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
@@ -31,6 +36,10 @@ import com.jovan.erp_v1.repository.SupplyRepository;
 import com.jovan.erp_v1.repository.specification.BillOfMaterialsSpecification;
 import com.jovan.erp_v1.request.BillOfMaterialsRequest;
 import com.jovan.erp_v1.response.BillOfMaterialsResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.BillOfMaterialsSaveAsRequest;
+import com.jovan.erp_v1.search_request.BillOfMaterialsSearchRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -594,6 +603,168 @@ public class BillOfMaterialsService implements IBillOfMaterialsService {
 		}
 		return items.stream().map(billOfMaterialsMapper::toResponse).collect(Collectors.toList());
 	}
+	
+	@Override
+	public List<BillOfMaterialsResponse> generalSearch(BillOfMaterialsSearchRequest request) {
+		Specification<BillOfMaterials> spec = BillOfMaterialsSpecification.fromRequest(request);
+		List<BillOfMaterials> items = billOfMaterialsRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No BillOfMaterials found for given criteria");
+		}
+		return items.stream().map(billOfMaterialsMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	@Transactional(readOnly = true)
+	@Override
+	public BillOfMaterialsResponse trackParentProduct(Long id) {
+		List<BillOfMaterials> items = billOfMaterialsRepository.trackParentProduct(id);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("BillOfMaterial with id " + id + "for parent-product, not found");
+		}
+		BillOfMaterials bom = items.get(0);
+		return new BillOfMaterialsResponse(bom);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public BillOfMaterialsResponse trackComponent(Long id) {
+		List<BillOfMaterials> items = billOfMaterialsRepository.trackComponent(id);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("BillOfMaterial with id " + id + "for component, not found");
+		}
+		BillOfMaterials bom = items.get(0);
+		return new BillOfMaterialsResponse(bom);
+	}
+
+	@Transactional
+	@Override
+	public BillOfMaterialsResponse confirmBOM(Long id) {
+		BillOfMaterials bom = billOfMaterialsRepository.findById(id).orElseThrow(() -> new ValidationException("BillOfMaterial not found with id "+id));
+		bom.setConfirmed(true);
+		bom.setStatus(BillOfMaterialsStatus.CONFIRMED);
+		return new BillOfMaterialsResponse(billOfMaterialsRepository.save(bom));
+	}
+
+	@Transactional
+	@Override
+	public BillOfMaterialsResponse cancelBOM(Long id) {
+		BillOfMaterials bom = billOfMaterialsRepository.findById(id).orElseThrow(() -> new ValidationException("BillOfMaterial not found with id "+id));
+		if(bom.getStatus() != BillOfMaterialsStatus.NEW && bom.getStatus() != BillOfMaterialsStatus.CONFIRMED) {
+			throw new ValidationException("Only NEW or CONFIRMED defects can be cancelled");
+		}
+		bom.setStatus(BillOfMaterialsStatus.CANCELLED);
+		return new BillOfMaterialsResponse(billOfMaterialsRepository.save(bom));
+	}
+
+	@Transactional
+	@Override
+	public BillOfMaterialsResponse closeBOM(Long id) {
+		BillOfMaterials bom = billOfMaterialsRepository.findById(id).orElseThrow(() -> new ValidationException("BillOfMaterial not found with id "+id));
+		if(bom.getStatus() != BillOfMaterialsStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED boms can be closed");
+		}
+		bom.setStatus(BillOfMaterialsStatus.CLOSED);;
+		return new BillOfMaterialsResponse(billOfMaterialsRepository.save(bom));
+	}
+
+	@Transactional
+	@Override
+	public BillOfMaterialsResponse changeStatus(Long id, BillOfMaterialsStatus status) {
+		BillOfMaterials bom = billOfMaterialsRepository.findById(id).orElseThrow(() -> new ValidationException("BillOfMaterial not found with id "+id));
+		validateBillOfMaterialsStatus(status);
+		if(bom.getStatus() == BillOfMaterialsStatus.CLOSED){
+			throw new ValidationException("Closed boms cannot change status");
+		}
+		if(status == BillOfMaterialsStatus.CONFIRMED) {
+			if(bom.getStatus() != BillOfMaterialsStatus.NEW) {
+				throw new ValidationException("Only NEW boms can be confirmed");
+			}
+			bom.setConfirmed(true);
+		}
+		bom.setStatus(status);
+		return new BillOfMaterialsResponse(billOfMaterialsRepository.save(bom));
+	}
+
+	@Transactional
+	@Override
+	public BillOfMaterialsResponse saveBOM(BillOfMaterialsRequest request) {
+		BillOfMaterials bom = BillOfMaterials.builder()
+				.id(request.id())
+				.parentProduct(validateParentProductId(request.parentProductId()))
+				.component(validateComponentId(request.componentId()))
+				.confirmed(request.confirmed())
+				.status(request.status())
+				.build();
+		BillOfMaterials saved = billOfMaterialsRepository.save(bom);
+		return new BillOfMaterialsResponse(saved);
+	}
+	
+	private final AbstractSaveAsService<BillOfMaterials, BillOfMaterialsResponse> saveAsHelper = new AbstractSaveAsService<BillOfMaterials, BillOfMaterialsResponse>() {
+		
+		@Override
+		protected BillOfMaterialsResponse toResponse(BillOfMaterials entity) {
+			return new BillOfMaterialsResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<BillOfMaterials, Long> getRepository() {
+			return billOfMaterialsRepository;
+		}
+		
+		@Override
+		protected BillOfMaterials copyAndOverride(BillOfMaterials source, Map<String, Object> overrides) {
+			return BillOfMaterials.builder()
+					.parentProduct(validateParentProductId(source.getParentProduct().getId()))
+					.component(validateComponentId(source.getComponent().getId()))
+					.quantity((BigDecimal) overrides.getOrDefault("Quantity", source.getQuantity()))
+					.status(source.getStatus())
+                    .confirmed(source.getConfirmed())
+					.build();
+		}
+	};
+	
+	private final AbstractSaveAllService<BillOfMaterials, BillOfMaterialsResponse> saveAllHelper = new AbstractSaveAllService<BillOfMaterials, BillOfMaterialsResponse>() {
+		
+		@Override
+		protected Function<BillOfMaterials, BillOfMaterialsResponse> toResponse() {
+			return BillOfMaterialsResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<BillOfMaterials, Long> getRepository() {
+			return billOfMaterialsRepository;
+		}
+	};
+
+	@Transactional
+	@Override
+	public BillOfMaterialsResponse saveAs(BillOfMaterialsSaveAsRequest request) {
+		Map<String, Object> overrides = new HashMap<String, Object>();
+		if(request.newParentProductId() != null) overrides.put("New parent product ID", request.newParentProductId());
+		if(request.newParentProductName() != null) overrides.put("New parent product name", request.newParentProductName());
+		if(request.newComponentId() != null) overrides.put("New component ID", request.newComponentId());
+		if(request.newComponentName() != null) overrides.put("new component name", request.newComponentName());
+		if(request.quantity() != null) overrides.put("Quantity", request.quantity());
+		if(request.confirmed() != null) overrides.put("Confirmed", request.confirmed());
+		if(request.status() != null) overrides.put("Status", request.status());
+		return saveAsHelper.saveAs(request.sourceId(), overrides);
+	}
+
+	@Transactional
+	@Override
+	public List<BillOfMaterialsResponse> saveAll(List<BillOfMaterialsRequest> requests) {
+		List<BillOfMaterials> items = requests.stream()
+				.map(req -> BillOfMaterials.builder()
+						.id(req.id())
+						.parentProduct(validateParentProductId(req.parentProductId()))
+						.component(validateComponentId(req.componentId()))
+						.quantity(req.quantity())
+						.confirmed(req.confirmed())
+						.status(req.status())
+						.build())
+				.collect(Collectors.toList());
+		return saveAllHelper.saveAll(items);
+	}
 
     private void validateRequest(BillOfMaterialsRequest request) {
         if(request == null) {
@@ -692,5 +863,10 @@ public class BillOfMaterialsService implements IBillOfMaterialsService {
         if (min.compareTo(max) > 0) {
             throw new IllegalArgumentException("Minimalna vrednost ne sme biti veća od maksimalne.");
         }
+    }
+    
+    private void validateBillOfMaterialsStatus(BillOfMaterialsStatus status) {
+    	Optional.ofNullable(status)
+    		.orElseThrow(() -> new ValidationException("BillOfMaterialsStatus status must not be null"));
     }
 }

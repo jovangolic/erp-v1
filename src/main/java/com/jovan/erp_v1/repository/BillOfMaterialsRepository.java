@@ -87,4 +87,9 @@ public interface BillOfMaterialsRepository extends JpaRepository<BillOfMaterials
     @Query("SELECT b FROM BillOfMaterials b ORDER BY b.quantity ASC")
     List<BillOfMaterials> findAllOrderByQuantityAsc();
     
+    //nove metode
+    @Query("SELECT bom FROM BillOfMaterials bom WHERE bom.parentProduct.id = :id")
+    List<BillOfMaterials> trackParentProduct(@Param("id") Long id);
+    @Query("SELECT bom FROM BillOfMaterials bom WHERE bom.component.id = :id")
+    List<BillOfMaterials> trackComponent(@Param("id") Long id);
 }

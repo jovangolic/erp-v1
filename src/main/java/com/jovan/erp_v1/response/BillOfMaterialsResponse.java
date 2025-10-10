@@ -2,6 +2,7 @@ package com.jovan.erp_v1.response;
 
 import java.math.BigDecimal;
 
+import com.jovan.erp_v1.enumeration.BillOfMaterialsStatus;
 import com.jovan.erp_v1.model.BillOfMaterials;
 
 import lombok.AllArgsConstructor;
@@ -17,11 +18,15 @@ public class BillOfMaterialsResponse {
     private BasicProductResponse parentProduct;
     private BasicProductResponse component;
     private BigDecimal quantity;
+    private Boolean confirmed;
+    private BillOfMaterialsStatus status;
 
     public BillOfMaterialsResponse(BillOfMaterials bom) {
         this.id = bom.getId();
         this.parentProduct = new BasicProductResponse(bom.getParentProduct());
         this.component = new BasicProductResponse(bom.getComponent());
         this.quantity = bom.getQuantity();
+        this.confirmed = bom.getConfirmed();
+        this.status = bom.getStatus();
     }
 }

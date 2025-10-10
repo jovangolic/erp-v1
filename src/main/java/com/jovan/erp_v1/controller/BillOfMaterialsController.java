@@ -15,12 +15,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.BillOfMaterialsStatus;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.BillOfMaterialsRequest;
 import com.jovan.erp_v1.response.BillOfMaterialsResponse;
+import com.jovan.erp_v1.save_as.BillOfMaterialsSaveAsRequest;
+import com.jovan.erp_v1.search_request.BillOfMaterialsSearchRequest;
 import com.jovan.erp_v1.service.IBillOfMaterialsService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -382,4 +385,75 @@ public class BillOfMaterialsController {
     	return ResponseEntity.ok(responses);	
     }
     
+    //nove metode
+    
+    @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_READ_ACCESS)
+    @GetMapping("/track-product/{id}")
+    public ResponseEntity<BillOfMaterialsResponse> trackParentProduct(@PathVariable Long id){
+    	BillOfMaterialsResponse items = billOfMaterialsService.trackParentProduct(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_READ_ACCESS)
+    @GetMapping("/track-component/{id}")
+    public ResponseEntity<BillOfMaterialsResponse> trackComponent(@PathVariable Long id){
+    	BillOfMaterialsResponse items = billOfMaterialsService.trackComponent(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_FULL_ACCESS)
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<BillOfMaterialsResponse> confirmBOM(@PathVariable Long id){
+    	BillOfMaterialsResponse items = billOfMaterialsService.confirmBOM(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_FULL_ACCESS)
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<BillOfMaterialsResponse> cancelBOM(@PathVariable Long id){
+    	BillOfMaterialsResponse items = billOfMaterialsService.cancelBOM(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_FULL_ACCESS)
+    @PostMapping("/{id}/close")
+    public ResponseEntity<BillOfMaterialsResponse> closeBOM(@PathVariable Long id){
+    	BillOfMaterialsResponse items = billOfMaterialsService.closeBOM(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_FULL_ACCESS)
+    @PostMapping("/{id}/status/{status}")
+    public ResponseEntity<BillOfMaterialsResponse> changeStatus(@PathVariable Long id,@PathVariable  BillOfMaterialsStatus status){
+    	BillOfMaterialsResponse items = billOfMaterialsService.changeStatus(id, status);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_FULL_ACCESS)
+    @PostMapping("/save")
+    public ResponseEntity<BillOfMaterialsResponse> saveBOM(@Valid @RequestBody BillOfMaterialsRequest request){
+    	BillOfMaterialsResponse items = billOfMaterialsService.saveBOM(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_FULL_ACCESS)
+    @PostMapping("/save-as")
+    public ResponseEntity<BillOfMaterialsResponse> saveAs(@Valid @RequestBody BillOfMaterialsSaveAsRequest request){
+    	BillOfMaterialsResponse items = billOfMaterialsService.saveAs(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_FULL_ACCESS)
+    @PostMapping("/save-all")
+    public ResponseEntity<List<BillOfMaterialsResponse>> saveAll(List<BillOfMaterialsRequest> requests){
+    	List<BillOfMaterialsResponse> items = billOfMaterialsService.saveAll(requests);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_FULL_ACCESS)
+    @PostMapping("/general-search")
+    public ResponseEntity<List<BillOfMaterialsResponse>> generalSearch(@RequestBody BillOfMaterialsSearchRequest request){
+    	List<BillOfMaterialsResponse> items = billOfMaterialsService.generalSearch(request);
+    	return ResponseEntity.ok(items);
+    }
 }

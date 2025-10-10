@@ -70,16 +70,10 @@ public class BalanceSheetSpecification {
     			.and(hasDateAfter(req.dateAfter()))
     			.and(hasTotalAssets(req.totalAssets()))
     			.and(hasTotalAssetsRange(req.totalAssetsFrom(), req.totalAssetsTo()))
-    			.and(hasTotalAssetsLess(req.totalAssetsLessThan()))
-    			.and(hasTotalAssetsGreater(req.totalAssetsGreater()))
     			.and(hasTotalLiabilities(req.totalLiabilities()))
     			.and(hasTotalLiabilitiesRange(req.totalLiabilitiesFrom(),req.totalLiabilitiesTo()))
-    			.and(hasTotalLiabilitiesLess(req.totalLiabilitiesLess()))
-    			.and(hasTotalLiabilitiesGreater(req.totalLiabilitiesGreater()))
     			.and(hasTotalEquity(req.totalEquity()))
     			.and(hasTotalEquityRange(req.totalEquityFrom(), req.totalEquityTo()))
-    			.and(hasTotalEquityLess(req.totalEquityLess()))
-    			.and(hasTotalEquityGreater(req.totalEquityGreater()))
     			.and(hasStartDateBefore(req.startDateBefore()))
     			.and(hasStartDateAfter(req.startDateAfter()))
     			.and(hasStartDate(req.startDate()))
@@ -147,14 +141,6 @@ public class BalanceSheetSpecification {
     	return(root,query,cb) -> d == null ? null : cb.equal(root.get("fiscalYear").get("startDate"), d);
     }
     
-    public static Specification<BalanceSheet> hasTotalEquityLess(BigDecimal ls){
-    	return(root,query,cb) -> ls == null ? null : cb.lessThan(root.get("totalEquity"), ls);
-    }
-    
-    public static Specification<BalanceSheet> hasTotalEquityGreater(BigDecimal gt){
-    	return(root,query,cb) -> gt == null ? null : cb.greaterThan(root.get("totalEquity"), gt);
-    }
-    
     public static Specification<BalanceSheet> hasTotalEquity(BigDecimal eq){
     	return(root,query,cb) -> eq == null ? null : cb.equal(root.get("totalEquity"), eq);
     }
@@ -174,14 +160,6 @@ public class BalanceSheetSpecification {
     	};
     }
     
-    public static Specification<BalanceSheet> hasTotalLiabilitiesGreater(BigDecimal gt){
-    	return(root,query,cb) -> gt == null ? null : cb.greaterThan(root.get("totalLiabilities"), gt);
-    }
-    
-    public static Specification<BalanceSheet> hasTotalLiabilitiesLess(BigDecimal ls){
-    	return(root,query,cb) -> ls == null ? null : cb.lessThan(root.get("totalLiabilities"), ls);
-    }
-    
     public static Specification<BalanceSheet> hasTotalLiabilities(BigDecimal t){
     	return(root,query,cb) -> t == null ? null : cb.equal(root.get("totalLiabilities"), t);
     }
@@ -199,14 +177,6 @@ public class BalanceSheetSpecification {
     		}
     		return null;
     	};
-    }
-    
-    public static Specification<BalanceSheet> hasTotalAssetsGreater(BigDecimal gt){
-    	return(root,query,cb) -> gt == null ? null : cb.greaterThan(root.get("totalAssets"), gt);
-    }
-    
-    public static Specification<BalanceSheet> hasTotalAssetsLess(BigDecimal ls){
-    	return(root,query,cb) -> ls == null ? null : cb.lessThan(root.get("totalAssets"), ls);
     }
     
     public static Specification<BalanceSheet> hasTotalAssetsRange(BigDecimal from, BigDecimal to){

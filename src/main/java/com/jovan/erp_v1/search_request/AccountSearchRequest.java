@@ -5,22 +5,18 @@ import java.math.BigDecimal;
 import com.jovan.erp_v1.enumeration.AccountStatus;
 import com.jovan.erp_v1.enumeration.AccountType;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-
 public record AccountSearchRequest(
-		@NotNull Long id,
-		@NotNull Long accountIdFrom,
-		@NotNull Long accountIdTo,
-		@NotBlank String accountNumber,
-		@NotBlank String accountName,
-		@NotNull AccountType type,
-		@NotNull AccountStatus status,
-		@NotNull @Positive BigDecimal balance,
-		@NotNull @Positive BigDecimal balanceFrom,
-		@NotNull @Positive BigDecimal balanceTo,
-		@NotNull Boolean confirmed
+		Long id,
+		Long accountIdFrom,
+		Long accountIdTo,
+		String accountNumber,
+		String accountName,
+		AccountType type,
+		AccountStatus status,
+		BigDecimal balance,
+		BigDecimal balanceFrom,
+		BigDecimal balanceTo,
+		Boolean confirmed
 		) {
 
 }

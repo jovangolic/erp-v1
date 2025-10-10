@@ -200,7 +200,7 @@ public class AccountController {
      
     @PreAuthorize(RoleGroups.ACCOUNT_FULL_ACCESS)
     @PostMapping("/general-search")
-    public ResponseEntity<List<AccountResponse>> generalSearch(@Valid @RequestBody AccountSearchRequest request){
+    public ResponseEntity<List<AccountResponse>> generalSearch(@RequestBody AccountSearchRequest request){
     	List<AccountResponse> items = accountService.generalSearch(request);
     	return ResponseEntity.ok(items);
     }

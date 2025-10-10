@@ -210,7 +210,7 @@ public class BarCodeController {
 	
 	@PreAuthorize(RoleGroups.BAR_CODE_FULL_ACCESS)
 	@PostMapping("/general-search")
-	public ResponseEntity<List<BarCodeResponse>> generalSearch(@Valid @RequestBody BarCodeSearchRequest request){
+	public ResponseEntity<List<BarCodeResponse>> generalSearch(@RequestBody BarCodeSearchRequest request){
 		List<BarCodeResponse> items = barcodeService.generalSearch(request);
 		return ResponseEntity.ok(items);
 	}

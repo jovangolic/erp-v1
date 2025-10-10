@@ -22,8 +22,6 @@ public class BatchSpecification {
 				.and(hasProductId(req.productId()))
 				.and(hasProductIdRange(req.productIdFrom(), req.productIdTo()))
 				.and(hasProductName(req.productName()))
-				.and(hasCurrentQuantityLess(req.currentQuantity()))
-				.and(hasCurrentQuantityGreater(req.currentQuantity()))
 				.and(hasCurrentQuantityRange(req.currentQuantityMin(), req.currentQuantityMax()))
 				.and(hasUnitMeasure(req.unitMeasure()))
 				.and(hasStorageType(req.storageType()))
@@ -37,8 +35,6 @@ public class BatchSpecification {
 				.and(hasShelfIdRange(req.shelfIdFrom(), req.shelfIdTo()))
 				.and(hasCurrentQuantity(req.currentQuantity()))
 				.and(hasQuantityProduced(req.quantityProduced()))
-				.and(hasQuantityProducedLess(req.quantityProducedMin()))
-				.and(hasQuantityProducedGreater(req.quantityProducedMax()))
 				.and(hasQuantityProducedRange(req.quantityProducedMin(), req.quantityProducedMax()))
 				.and(hasConfirmed(req.confirmed()))
 				.and(hasProductionDate(req.productionDate()))
@@ -138,14 +134,6 @@ public class BatchSpecification {
 			}
 			return null;
 		};
-	}
-	
-	public static Specification<Batch> hasQuantityProducedGreater(Integer qp){
-		return(root, query, cb) -> qp == null ? null : cb.greaterThan(root.get("quantityProduced"), qp);
-	}
-	
-	public static Specification<Batch> hasQuantityProducedLess(Integer qp){
-		return(root, query, cb) -> qp == null ? null : cb.lessThan(root.get("quantityProduced"), qp);
 	}
 	
 	public static Specification<Batch> hasQuantityProduced(Integer qp){
@@ -252,13 +240,6 @@ public class BatchSpecification {
 		};
 	}
 	
-	public static Specification<Batch> hasCurrentQuantityGreater(BigDecimal cq){
-		return(root, query, cb) -> cq == null ? null : cb.greaterThan(root.get("product").get("currentQuantity"), cq);
-	}
-	
-	public static Specification<Batch> hasCurrentQuantityLess(BigDecimal cq){
-		return(root, query, cb) -> cq == null ? null : cb.lessThan(root.get("product").get("currentQuantity"), cq);
-	}
 	
 	public static Specification<Batch> hasProductName(String name){
 		return(root, query, cb) -> name == null ? null :

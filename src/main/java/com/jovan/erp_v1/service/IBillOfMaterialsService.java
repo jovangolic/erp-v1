@@ -2,12 +2,16 @@ package com.jovan.erp_v1.service;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import com.jovan.erp_v1.enumeration.BillOfMaterialsStatus;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.BillOfMaterialsRequest;
 import com.jovan.erp_v1.response.BillOfMaterialsResponse;
+import com.jovan.erp_v1.save_as.BillOfMaterialsSaveAsRequest;
+import com.jovan.erp_v1.search_request.BillOfMaterialsSearchRequest;
 
 public interface IBillOfMaterialsService {
 
@@ -61,4 +65,16 @@ public interface IBillOfMaterialsService {
     List<BillOfMaterialsResponse> findByComponentStorageAndUnitMeasure( Long storageId, UnitMeasure unitMeasure);
     List<BillOfMaterialsResponse> findAllOrderByQuantityDesc();
     List<BillOfMaterialsResponse> findAllOrderByQuantityAsc();
+    
+    //nove metode
+    BillOfMaterialsResponse trackParentProduct( Long id);
+    BillOfMaterialsResponse trackComponent( Long id);
+    BillOfMaterialsResponse confirmBOM( Long id);
+    BillOfMaterialsResponse cancelBOM( Long id);
+    BillOfMaterialsResponse closeBOM( Long id);
+    BillOfMaterialsResponse changeStatus( Long id, BillOfMaterialsStatus status);
+    BillOfMaterialsResponse saveBOM(BillOfMaterialsRequest request);
+    BillOfMaterialsResponse saveAs(BillOfMaterialsSaveAsRequest request);
+    List<BillOfMaterialsResponse> saveAll(List<BillOfMaterialsRequest> requests);
+    List<BillOfMaterialsResponse> generalSearch(BillOfMaterialsSearchRequest request);
 }

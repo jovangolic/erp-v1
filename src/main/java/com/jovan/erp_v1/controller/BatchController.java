@@ -589,7 +589,7 @@ public class BatchController {
 	
 	@PreAuthorize(RoleGroups.BATCH_FULL_ACCESS)
 	@PostMapping("/general-search")
-	public ResponseEntity<List<BatchResponse>> generalSearch(@Valid @RequestBody BatchSearchRequest request){
+	public ResponseEntity<List<BatchResponse>> generalSearch(@RequestBody BatchSearchRequest request){
 		List<BatchResponse> items = batchService.generalSearch(request);
 		return ResponseEntity.ok(items);
 	}
