@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import com.jovan.erp_v1.model.Buyer;
 
 @Repository
-public interface BuyerRepository extends JpaRepository<Buyer, Long> {
+public interface BuyerRepository extends JpaRepository<Buyer, Long>, JpaSpecificationExecutor<Buyer> {
 
 	List<Buyer> findByCompanyName(String companyName);
 	Optional<Buyer> findByPib(String pib);
@@ -34,4 +35,8 @@ public interface BuyerRepository extends JpaRepository<Buyer, Long> {
 		       "(:companyName IS NULL OR LOWER(b.companyName) LIKE LOWER(CONCAT('%', :companyName, '%'))) AND " +
 		       "(:email IS NULL OR LOWER(b.email) LIKE LOWER(CONCAT('%', :email, '%')))")
 	List<Buyer> searchBuyers(@Param("companyName") String companyName,@Param("email") String email);
+	
+	//nove metode
+	@Query("SELECT b FROM Buyer b WHERE b.id = :id")
+	Optional<Buyer> trackBuyer(@Param("id")Long id);
 }

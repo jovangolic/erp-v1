@@ -72,7 +72,7 @@ public class BillOfMaterialsService implements IBillOfMaterialsService {
     @Override
     public BillOfMaterialsResponse update(Long id, BillOfMaterialsRequest request) {
     	if (!request.id().equals(id)) {
-			throw new IllegalArgumentException("ID in path and body do not match");
+			throw new ValidationException("ID in path and body do not match");
 		}
         BillOfMaterials bom = billOfMaterialsRepository.findById(id)
                 .orElseThrow(() -> new BillOfMaterialsErrorException("BillOfMaterials not found with id: " + id));

@@ -1,5 +1,6 @@
 package com.jovan.erp_v1.response;
 
+import com.jovan.erp_v1.enumeration.BuyerStatus;
 import com.jovan.erp_v1.model.Buyer;
 
 import lombok.AllArgsConstructor;
@@ -18,6 +19,9 @@ public class BuyerResponse {
 	private String contactPerson;
 	private String email;
 	private String phoneNumber;
+	private BuyerStatus status;
+	private Boolean confirmed;
+	
 	
 	public BuyerResponse(Buyer buyer) {
 		this.id = buyer.getId();
@@ -27,5 +31,7 @@ public class BuyerResponse {
 		this.contactPerson = buyer.getContactPerson();
 		this.email = buyer.getEmail();
 		this.phoneNumber = buyer.getPhoneNumber();
+		this.status = buyer.getStatus();
+		this.confirmed = buyer.getConfirmed();
 	}
 }

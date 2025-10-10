@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.BuyerStatus;
 import com.jovan.erp_v1.repository.BuyerRepository;
 import com.jovan.erp_v1.request.BuyerRequest;
 import com.jovan.erp_v1.response.BuyerResponse;
+import com.jovan.erp_v1.save_as.BuyerSaveAsRequest;
+import com.jovan.erp_v1.search_request.BuyerSearchRequest;
 import com.jovan.erp_v1.service.IBuyerService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -156,4 +159,67 @@ public class BuyerController {
 		return ResponseEntity.ok(results);
 	}
 	
-}
+	//nove metode
+	@PreAuthorize(RoleGroups.BUYER_READ_ACCESS)
+	@GetMapping("/track/{id}")
+	public ResponseEntity<BuyerResponse> trackBuyer(@PathVariable Long id){
+		BuyerResponse items = buyerService.trackBuyer(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BUYER_FULL_ACCESS)
+	@PostMapping("/{id}/confirm")
+	public ResponseEntity<BuyerResponse> confirmBuyer(@PathVariable Long id){
+		BuyerResponse items = buyerService.confirmBuyer(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BUYER_FULL_ACCESS)
+	@PostMapping("/{id}/close")
+	public ResponseEntity<BuyerResponse> closeBuyer(@PathVariable Long id){
+		BuyerResponse items = buyerService.closeBuyer(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BUYER_FULL_ACCESS)
+	@PostMapping("/{id}/ancel")
+	public ResponseEntity<BuyerResponse> cancelBuyer(@PathVariable Long id){
+		BuyerResponse items = buyerService.cancelBuyer(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BUYER_FULL_ACCESS)
+	@PostMapping("/{id}/status/{status}")
+	public ResponseEntity<BuyerResponse> changeStatus(@PathVariable Long id,@PathVariable  BuyerStatus status){
+		BuyerResponse items = buyerService.changeStatus(id, status);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BUYER_FULL_ACCESS)
+	@PostMapping("/save")
+	public ResponseEntity<BuyerResponse> saveBuyer(@Valid @RequestBody BuyerRequest request){
+		BuyerResponse items = buyerService.saveBuyer(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BUYER_FULL_ACCESS)
+	@PostMapping("/save-as")
+	public ResponseEntity<BuyerResponse> saveAs(@Valid @RequestBody BuyerSaveAsRequest request){
+		BuyerResponse items = buyerService.saveAs(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BUYER_FULL_ACCESS)
+	@PostMapping("/save-all")
+	public ResponseEntity<List<BuyerResponse>> saveAll(@Valid @RequestBody List<BuyerRequest> requests){
+		List<BuyerResponse> items = buyerService.saveAll(requests);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.BUYER_FULL_ACCESS)
+	@PostMapping("/general-search")
+	public ResponseEntity<List<BuyerResponse>> generalSearch(@RequestBody BuyerSearchRequest request){
+		List<BuyerResponse> items = buyerService.generalSearch(request);
+		return ResponseEntity.ok(items);
+	}
+ }

@@ -1,7 +1,10 @@
 package com.jovan.erp_v1.request;
 
+import com.jovan.erp_v1.enumeration.BuyerStatus;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record BuyerRequest(
 		
@@ -16,5 +19,7 @@ public record BuyerRequest(
 		@NotBlank
 		String email, 
 		@NotBlank
-		String phoneNumber) {
+		String phoneNumber,
+		@NotNull BuyerStatus status,
+		@NotNull Boolean confirmed) {
 }
