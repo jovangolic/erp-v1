@@ -182,7 +182,7 @@ public class BuyerController {
 	}
 	
 	@PreAuthorize(RoleGroups.BUYER_FULL_ACCESS)
-	@PostMapping("/{id}/ancel")
+	@PostMapping("/{id}/cancel")
 	public ResponseEntity<BuyerResponse> cancelBuyer(@PathVariable Long id){
 		BuyerResponse items = buyerService.cancelBuyer(id);
 		return ResponseEntity.ok(items);
