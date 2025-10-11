@@ -3,8 +3,15 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+
+import com.jovan.erp_v1.enumeration.CapacityPlanningStatus;
 import com.jovan.erp_v1.request.CapacityPlanningRequest;
 import com.jovan.erp_v1.response.CapacityPlanningResponse;
+import com.jovan.erp_v1.save_as.CapacityPlanningSaveAsRequest;
+import com.jovan.erp_v1.search_request.CapacityPlanningSearchRequest;
+import com.jovan.erp_v1.statistics.capacity_planning.CapacityPlanningAvailableCapacityStatDTO;
+import com.jovan.erp_v1.statistics.capacity_planning.CapacityPlanningMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.capacity_planning.CapacityPlanningPlannedLoadStatDTO;
 
 public interface ICapacityPlanningService {
 
@@ -33,4 +40,18 @@ public interface ICapacityPlanningService {
     List<CapacityPlanningResponse> findAllOrderByUtilizationDesc();
     List<CapacityPlanningResponse> findWhereLoadExceedsCapacity();
     List<CapacityPlanningResponse> findByUtilizationGreaterThan(BigDecimal threshold);
+    
+    //nove metode
+    List<CapacityPlanningPlannedLoadStatDTO> countCapacityPlanningByPlannedLoad();
+    List<CapacityPlanningAvailableCapacityStatDTO> countCapacityPlanningByAvailableCapacity();
+    List<CapacityPlanningMonthlyStatDTO> countCapacityPlanningsByYearAndMonth();
+    CapacityPlanningResponse trackCapacityPlanning(Long id);
+    CapacityPlanningResponse confirmCapacityPlanning(Long id);
+    CapacityPlanningResponse closeCapacityPlanning(Long id);
+    CapacityPlanningResponse cancelCapacityPlanning(Long id);
+    CapacityPlanningResponse changeStatus(Long id, CapacityPlanningStatus status);
+    CapacityPlanningResponse saveCapacityPlanning(CapacityPlanningRequest request);
+    CapacityPlanningResponse saveAs(CapacityPlanningSaveAsRequest request);
+    List<CapacityPlanningResponse> saveAll(List<CapacityPlanningRequest> requests);
+    List<CapacityPlanningResponse> generalSearch(CapacityPlanningSearchRequest request);
 }

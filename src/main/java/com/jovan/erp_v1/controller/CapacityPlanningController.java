@@ -17,9 +17,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.CapacityPlanningStatus;
 import com.jovan.erp_v1.request.CapacityPlanningRequest;
 import com.jovan.erp_v1.response.CapacityPlanningResponse;
+import com.jovan.erp_v1.save_as.CapacityPlanningSaveAsRequest;
+import com.jovan.erp_v1.search_request.CapacityPlanningSearchRequest;
 import com.jovan.erp_v1.service.ICapacityPlanningService;
+import com.jovan.erp_v1.statistics.capacity_planning.CapacityPlanningAvailableCapacityStatDTO;
+import com.jovan.erp_v1.statistics.capacity_planning.CapacityPlanningMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.capacity_planning.CapacityPlanningPlannedLoadStatDTO;
 import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
@@ -225,4 +231,88 @@ public class CapacityPlanningController {
         return ResponseEntity.ok(responses);
     }
 
+    //nove metode
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
+    @GetMapping("/count/by-planned-load")
+    public ResponseEntity<List<CapacityPlanningPlannedLoadStatDTO>> countCapacityPlanningByPlannedLoad(){
+    	List<CapacityPlanningPlannedLoadStatDTO> items = capacityPlanningService.countCapacityPlanningByPlannedLoad();
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
+    @GetMapping("/count/by-available-capacity")
+    public ResponseEntity<List<CapacityPlanningAvailableCapacityStatDTO>> countCapacityPlanningByAvailableCapacity(){
+    	List<CapacityPlanningAvailableCapacityStatDTO> items = capacityPlanningService.countCapacityPlanningByAvailableCapacity();
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
+    @GetMapping("/count/by-year-and-month")
+    public ResponseEntity<List<CapacityPlanningMonthlyStatDTO>> countCapacityPlanningsByYearAndMonth(){
+    	List<CapacityPlanningMonthlyStatDTO> items = capacityPlanningService.countCapacityPlanningsByYearAndMonth();
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
+    @GetMapping("/track/{id}")
+    public ResponseEntity<CapacityPlanningResponse> trackCapacityPlanning(Long id){
+    	CapacityPlanningResponse items = capacityPlanningService.trackCapacityPlanning(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_FULL_ACCESS)
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<CapacityPlanningResponse> confirmCapacityPlanning(Long id){
+    	CapacityPlanningResponse items = capacityPlanningService.confirmCapacityPlanning(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_FULL_ACCESS)
+    @PostMapping("/{id}/close")
+    public ResponseEntity<CapacityPlanningResponse> closeCapacityPlanning(Long id){
+    	CapacityPlanningResponse items = capacityPlanningService.closeCapacityPlanning(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_FULL_ACCESS)
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<CapacityPlanningResponse> cancelCapacityPlanning(Long id){
+    	CapacityPlanningResponse items = capacityPlanningService.cancelCapacityPlanning(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_FULL_ACCESS)
+    @PostMapping("/{id}/status/{status}")
+    public ResponseEntity<CapacityPlanningResponse> changeStatus(Long id, CapacityPlanningStatus status){
+    	CapacityPlanningResponse items = capacityPlanningService.changeStatus(id, status);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_FULL_ACCESS)
+    @PostMapping("/save")
+    public ResponseEntity<CapacityPlanningResponse> saveCapacityPlanning(CapacityPlanningRequest request){
+    	CapacityPlanningResponse items = capacityPlanningService.saveCapacityPlanning(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_FULL_ACCESS)
+    @PostMapping("/save-as")
+    public ResponseEntity<CapacityPlanningResponse> saveAs(CapacityPlanningSaveAsRequest request){
+    	CapacityPlanningResponse items = capacityPlanningService.saveAs(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_FULL_ACCESS)
+    @PostMapping("/save-all")
+    public ResponseEntity<List<CapacityPlanningResponse>> saveAll(List<CapacityPlanningRequest> requests){
+    	List<CapacityPlanningResponse> items = capacityPlanningService.saveAll(requests);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_FULL_ACCESS)
+    @PostMapping("/general-search")
+    public ResponseEntity<List<CapacityPlanningResponse>> generalSearch(CapacityPlanningSearchRequest request){
+    	List<CapacityPlanningResponse> items = capacityPlanningService.generalSearch(request);
+    	return ResponseEntity.ok(items);
+    }
 }

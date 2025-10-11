@@ -3,12 +3,19 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jovan.erp_v1.enumeration.CapacityPlanningStatus;
 import com.jovan.erp_v1.exception.CapacityPlanningErrorException;
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ValidationException;
@@ -18,8 +25,16 @@ import com.jovan.erp_v1.model.CapacityPlanning;
 import com.jovan.erp_v1.model.WorkCenter;
 import com.jovan.erp_v1.repository.CapacityPlanningRepository;
 import com.jovan.erp_v1.repository.WorkCenterRepository;
+import com.jovan.erp_v1.repository.specification.CapacityPlanningSpecification;
 import com.jovan.erp_v1.request.CapacityPlanningRequest;
 import com.jovan.erp_v1.response.CapacityPlanningResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.CapacityPlanningSaveAsRequest;
+import com.jovan.erp_v1.search_request.CapacityPlanningSearchRequest;
+import com.jovan.erp_v1.statistics.capacity_planning.CapacityPlanningAvailableCapacityStatDTO;
+import com.jovan.erp_v1.statistics.capacity_planning.CapacityPlanningMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.capacity_planning.CapacityPlanningPlannedLoadStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 import lombok.RequiredArgsConstructor;
 
@@ -336,6 +351,197 @@ public class CapacityPlanningService implements ICapacityPlanningService {
                 .collect(Collectors.toList());
     }
     
+    @Override
+	public List<CapacityPlanningPlannedLoadStatDTO> countCapacityPlanningByPlannedLoad() {
+    	List<CapacityPlanningPlannedLoadStatDTO> items = capacityPlanningRepository.countCapacityPlanningByPlannedLoad();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("No CapacityPlanning found for planned-load");
+    	}
+		return items.stream()
+				.map(item -> {
+					BigDecimal plannedLoad = item.plannedLoad();
+					Long count = item.count();
+					return new CapacityPlanningPlannedLoadStatDTO(plannedLoad, count);
+				})
+				.toList();
+    }
+
+	@Override
+	public List<CapacityPlanningAvailableCapacityStatDTO> countCapacityPlanningByAvailableCapacity() {
+		List<CapacityPlanningAvailableCapacityStatDTO> items = capacityPlanningRepository.countCapacityPlanningByAvailableCapacity();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No CapacityPlanning found for available-capacity");
+		}
+		return items.stream()
+				.map(item -> {
+					BigDecimal available = item.available();
+					Long count = item.count();
+					return new CapacityPlanningAvailableCapacityStatDTO(available, count);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<CapacityPlanningMonthlyStatDTO> countCapacityPlanningsByYearAndMonth() {
+		List<CapacityPlanningMonthlyStatDTO> items = capacityPlanningRepository.countCapacityPlanningsByYearAndMonth();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No CapacityPlanning found for year and month");
+		}
+		return items.stream()
+				.map(item -> {
+					Integer year = item.getYear();
+					Integer month = item.getMonth();
+					Long count = item.getCount();
+					return new CapacityPlanningMonthlyStatDTO(year, month, count);
+				})
+				.toList();
+	}
+
+	@Transactional(readOnly =  true)
+	@Override
+	public CapacityPlanningResponse trackCapacityPlanning(Long id) {
+		CapacityPlanning cp = capacityPlanningRepository.findById(id).orElseThrow(() -> new ValidationException("No CapacityPlanning found with id "+id));
+		return new CapacityPlanningResponse(cp);
+	}
+
+	@Transactional
+	@Override
+	public CapacityPlanningResponse confirmCapacityPlanning(Long id) {
+		CapacityPlanning cp = capacityPlanningRepository.findById(id).orElseThrow(() -> new ValidationException("No CapacityPlanning found with id "+id));
+		cp.setConfirmed(true);
+		cp.setStatus(CapacityPlanningStatus.CONFIRMED);
+		return new CapacityPlanningResponse(capacityPlanningRepository.save(cp));
+	}
+
+	@Transactional
+	@Override
+	public CapacityPlanningResponse closeCapacityPlanning(Long id) {
+		CapacityPlanning cp = capacityPlanningRepository.findById(id).orElseThrow(() -> new ValidationException("No CapacityPlanning found with id "+id));
+		if(cp.getStatus() != CapacityPlanningStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED capacity-planning can be closed");
+		}
+		cp.setStatus(CapacityPlanningStatus.CLOSED);
+		return new CapacityPlanningResponse(capacityPlanningRepository.save(cp));
+	}
+
+	@Transactional
+	@Override
+	public CapacityPlanningResponse cancelCapacityPlanning(Long id) {
+		CapacityPlanning cp = capacityPlanningRepository.findById(id).orElseThrow(() -> new ValidationException("No CapacityPlanning found with id "+id));
+		if(cp.getStatus() != CapacityPlanningStatus.NEW && cp.getStatus() != CapacityPlanningStatus.CONFIRMED) {
+			throw new ValidationException("Only NEW or CONFIRMED capacity-planning can be cancelled");
+		}
+		cp.setStatus(CapacityPlanningStatus.CANCELLED);
+		return new CapacityPlanningResponse(capacityPlanningRepository.save(cp));
+	}
+	
+
+	@Transactional
+	@Override
+	public CapacityPlanningResponse changeStatus(Long id, CapacityPlanningStatus status) {
+		CapacityPlanning cp = capacityPlanningRepository.findById(id).orElseThrow(() -> new ValidationException("No CapacityPlanning found with id "+id));
+		validateCapacityPlanningStatus(status);
+		if(cp.getStatus() == CapacityPlanningStatus.CLOSED) {
+			throw new ValidationException("Closed capacity-planning cannot change status");
+		}
+		if(status == CapacityPlanningStatus.CONFIRMED) {
+			if(cp.getStatus() != CapacityPlanningStatus.NEW) {
+				throw new ValidationException("Only NEW capacity-planning can be confirmed");
+			}
+			cp.setConfirmed(true);
+		}
+		cp.setStatus(status);
+		return new CapacityPlanningResponse(capacityPlanningRepository.save(cp));
+	}
+
+	@Transactional
+	@Override
+	public CapacityPlanningResponse saveCapacityPlanning(CapacityPlanningRequest request) {
+		CapacityPlanning cp = CapacityPlanning.builder()
+				.id(request.id())
+				.availableCapacity(request.availableCapacity())
+				.workCenter(validateWorkCenterId(request.workCenterId()))
+				.plannedLoad(request.plannedLoad())
+				.confirmed(request.confirmed())
+				.status(request.status())
+				.build();
+		CapacityPlanning saved = capacityPlanningRepository.save(cp);
+		return new CapacityPlanningResponse(saved);
+	}
+	
+	private final AbstractSaveAsService<CapacityPlanning, CapacityPlanningResponse> saveAsHelper = new AbstractSaveAsService<CapacityPlanning, CapacityPlanningResponse>() {
+		
+		@Override
+		protected CapacityPlanningResponse toResponse(CapacityPlanning entity) {
+			return new CapacityPlanningResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<CapacityPlanning, Long> getRepository() {
+			return capacityPlanningRepository;
+		}
+		
+		@Override
+		protected CapacityPlanning copyAndOverride(CapacityPlanning source, Map<String, Object> overrides) {
+			return CapacityPlanning.builder()
+					.workCenter(validateWorkCenterId(source.getWorkCenter().getId()))
+					.date(LocalDate.now())
+					.availableCapacity((BigDecimal) overrides.getOrDefault("Available-capacity", source.getAvailableCapacity()))
+					.plannedLoad((BigDecimal) overrides.getOrDefault("Planned-load", source.getPlannedLoad()))
+					.build();
+		}
+	};
+	
+	private final AbstractSaveAllService<CapacityPlanning, CapacityPlanningResponse> saveAllHelper = new AbstractSaveAllService<CapacityPlanning, CapacityPlanningResponse>() {
+		
+		@Override
+		protected Function<CapacityPlanning, CapacityPlanningResponse> toResponse() {
+			return CapacityPlanningResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<CapacityPlanning, Long> getRepository() {
+			return capacityPlanningRepository;
+		}
+	};
+
+	@Transactional
+	@Override
+	public CapacityPlanningResponse saveAs(CapacityPlanningSaveAsRequest request) {
+		Map<String, Object> overrides = new HashMap<String, Object>();
+		if(request.workCenterId() != null) overrides.put("Work-center ID", request.workCenterId());
+		if(request.availableCapacity() != null) overrides.put("Available-capacity", request.availableCapacity());
+		if(request.plannedLoad() != null) overrides.put("Planned-load", request.plannedLoad());
+		return saveAsHelper.saveAs(request.sourceId(), overrides);
+	}
+	
+	@Transactional
+	@Override
+	public List<CapacityPlanningResponse> saveAll(List<CapacityPlanningRequest> requests) {
+		List<CapacityPlanning> items = requests.stream()
+				.map(req -> CapacityPlanning.builder()
+						.id(req.id())
+						.workCenter(validateWorkCenterId(req.workCenterId()))
+						.availableCapacity(req.availableCapacity())
+						.plannedLoad(req.plannedLoad())
+						.date(LocalDate.now()) 
+						.confirmed(req.confirmed())
+						.status(req.status())
+						.build())
+				.toList();
+		return saveAllHelper.saveAll(items);
+	}
+
+	@Override
+	public List<CapacityPlanningResponse> generalSearch(CapacityPlanningSearchRequest request) {
+		Specification<CapacityPlanning> spec = CapacityPlanningSpecification.fromRequest(request);
+		List<CapacityPlanning> items = capacityPlanningRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No CapacityPlanning found for given criteria");
+		}
+		return items.stream().map(capacityPlanningMapper::toResponse).collect(Collectors.toList());
+	}
+    
     private void validateBigDecimal(BigDecimal num) {
         if (num == null || num.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Mora biti pozitivan broj");
@@ -381,10 +587,11 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     }
     
     
-    private void validateWorkCenterId(Long workCenterId) {
+    private WorkCenter validateWorkCenterId(Long workCenterId) {
     	if(workCenterId == null) {
     		throw new WorkCenterErrorException("WorkCenter ID "+workCenterId+" ne postoji");
     	}
+    	return workCenterRepository.findById(workCenterId).orElseThrow(() -> new ValidationException("WorkCenter not found with id "+workCenterId));
     }
     
     private void validateAvailableCapacity(BigDecimal availableCapacity) {
@@ -405,4 +612,8 @@ public class CapacityPlanningService implements ICapacityPlanningService {
         }
     }
 
+    private void validateCapacityPlanningStatus(CapacityPlanningStatus status) {
+    	Optional.ofNullable(status)
+    		.orElseThrow(()-> new ValidationException("CapacityPlanningStatus status must not be null"));
+    }
 }

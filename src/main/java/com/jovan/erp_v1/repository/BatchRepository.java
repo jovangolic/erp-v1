@@ -120,6 +120,7 @@ public interface BatchRepository extends JpaRepository<Batch, Long>, JpaSpecific
 				"CAST(FUNCTION('MONTH', b.productionDate) AS integer), "+
 		       	"COUNT(b)) "+
 				"FROM Batch b "+
-		       	"GROUP BY FUNCTION('YEAR', b.productionDate), FUNCTION('MONTH', b.productionDate) ")
+		       	"GROUP BY FUNCTION('YEAR', b.productionDate), FUNCTION('MONTH', b.productionDate) "+
+				"ORDER BY FUNCTION('YEAR', b.productionDate), FUNCTION('MONTH', b.productionDate)")
 	List<BatchMonthlyStatDTO> countBatchesByYearAndMonth();
 }
