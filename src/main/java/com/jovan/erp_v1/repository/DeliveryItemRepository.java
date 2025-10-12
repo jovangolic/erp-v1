@@ -3,8 +3,10 @@ package com.jovan.erp_v1.repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -18,7 +20,7 @@ import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.DeliveryItem;
 
 @Repository
-public interface DeliveryItemRepository extends JpaRepository<DeliveryItem, Long> {
+public interface DeliveryItemRepository extends JpaRepository<DeliveryItem, Long>, JpaSpecificationExecutor<DeliveryItem> {
 
     List<DeliveryItem> findByInboundDeliveryId(Long inboundId);
     List<DeliveryItem> findByOutboundDeliveryId(Long outboundId);
@@ -120,4 +122,14 @@ public interface DeliveryItemRepository extends JpaRepository<DeliveryItem, Long
     List<DeliveryItem> findByOutboundDelivery_BuyerPhoneNumberLikeIgnoreCase(@Param("phoneNumber") String phoneNumber);
     @Query("SELECT di FROM DeliveryItem di WHERE LOWER(di.outboundDelivery.buyer.contactPerson) LIKE LOWER(CONCAT('%', :contactPerson, '%'))")
     List<DeliveryItem> findByOutboundDelivery_BuyerContactPersonContainingIgnoreCase(@Param("phoneNumber") String contactPerson);
+    
+    //nove metode
+    @Query("SELECT di FROM DeliveryItem di WHERE di.id = :id")
+    Optional<DeliveryItem> trackDeliveryItem(@Param("id") Long id);
+    @Query("SELECT di FROM DeliveryItem di WHERE di.product.id = :productId")
+    List<DeliveryItem> trackByProduct(@Param("productId") Long productId);
+    @Query("SELECT di FROM DeliveryItem di WHERE di.inboundDelivery.id = :deliveryId")
+    List<DeliveryItem> trackByInboundDelivery(@Param("deliveryId") Long deliveryId);
+    @Query("SELECT di FROM DeliveryItem di WHERE di.outboundDelivery.id = :deliveryId")
+    List<DeliveryItem> trackByOutboundDelivery(@Param("deliveryId") Long deliveryId);
 }

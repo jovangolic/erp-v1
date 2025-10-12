@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jovan.erp_v1.enumeration.DeliveryItemStatus;
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageStatus;
@@ -26,6 +27,8 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.DeliveryItemRequest;
 import com.jovan.erp_v1.response.DeliveryItemResponse;
+import com.jovan.erp_v1.save_as.DeliveryItemSaveAsRequest;
+import com.jovan.erp_v1.search_request.DeliveryItemSearchRequest;
 import com.jovan.erp_v1.service.IDeliveryItemService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -443,4 +446,89 @@ public class DeliveryItemController {
     	return ResponseEntity.ok(responses);
     }
     
+    //nove metode
+    
+    @PreAuthorize(RoleGroups.READ_DELIVERY_ACCESS)
+    @GetMapping("/track-delivery-item/{id}")
+    public ResponseEntity<DeliveryItemResponse> trackDeliveryItem(@PathVariable Long id){
+    	DeliveryItemResponse items = deliveryItemService.trackDeliveryItem(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.READ_DELIVERY_ACCESS)
+    @GetMapping("/track-product/{id}")
+    public ResponseEntity<DeliveryItemResponse> trackByProduct(@PathVariable Long productId){
+    	DeliveryItemResponse items = deliveryItemService.trackByProduct(productId);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.READ_DELIVERY_ACCESS)
+    @GetMapping("/track-inbound-delivery/{id}")
+    public ResponseEntity<DeliveryItemResponse> trackByInboundDelivery(@PathVariable Long deliveryId){
+    	DeliveryItemResponse items = deliveryItemService.trackByInboundDelivery(deliveryId);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.READ_DELIVERY_ACCESS)
+    @GetMapping("/track-outbound-delivery/{id}")
+    public ResponseEntity<DeliveryItemResponse> trackByOutboundDelivery(@PathVariable Long deliveryId){
+    	DeliveryItemResponse items = deliveryItemService.trackByOutboundDelivery(deliveryId);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FULL_DELIVERY_ACCESS)
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<DeliveryItemResponse> confirmDeliveryItem(@PathVariable Long id){
+    	DeliveryItemResponse items = deliveryItemService.confirmDeliveryItem(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FULL_DELIVERY_ACCESS)
+    @PostMapping("/{id}/close")
+    public ResponseEntity<DeliveryItemResponse> closeDeliveryItem(@PathVariable Long id){
+    	DeliveryItemResponse items = deliveryItemService.closeDeliveryItem(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FULL_DELIVERY_ACCESS)
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<DeliveryItemResponse> cancelDelvieryItem(@PathVariable Long id){
+    	DeliveryItemResponse items = deliveryItemService.cancelDelvieryItem(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FULL_DELIVERY_ACCESS)
+    @PostMapping("/{id}/status/{status}")
+    public ResponseEntity<DeliveryItemResponse> changeStatus(@PathVariable Long id,@PathVariable  DeliveryItemStatus status){
+    	DeliveryItemResponse items = deliveryItemService.changeStatus(id, status);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FULL_DELIVERY_ACCESS)
+    @PostMapping("/save")
+    public ResponseEntity<DeliveryItemResponse> saveDeliveryItem(@Valid @RequestBody DeliveryItemRequest request){
+    	DeliveryItemResponse items = deliveryItemService.saveDeliveryItem(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FULL_DELIVERY_ACCESS)
+    @PostMapping("/save-as")
+    public ResponseEntity<DeliveryItemResponse> saveAs(@Valid @RequestBody DeliveryItemSaveAsRequest request){
+    	DeliveryItemResponse items = deliveryItemService.saveAs(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FULL_DELIVERY_ACCESS)
+    @PostMapping("/save-all")
+    public ResponseEntity<List<DeliveryItemResponse>> saveAll(@Valid @RequestBody List<DeliveryItemRequest> requests){
+    	List<DeliveryItemResponse> items = deliveryItemService.saveAll(requests);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FULL_DELIVERY_ACCESS)
+    @PostMapping("/general-search")
+    public ResponseEntity<List<DeliveryItemResponse>> generalSearch(@RequestBody DeliveryItemSearchRequest request){
+    	List<DeliveryItemResponse> items = deliveryItemService.generalSearch(request);
+    	return ResponseEntity.ok(items);
+    }
 }

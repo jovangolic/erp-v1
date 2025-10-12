@@ -2,7 +2,6 @@ package com.jovan.erp_v1.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import com.jovan.erp_v1.model.ShiftReport;
 import com.jovan.erp_v1.request.ShiftReportRequest;
 import com.jovan.erp_v1.response.ShiftReportResponse;
 public interface IShiftReportService {

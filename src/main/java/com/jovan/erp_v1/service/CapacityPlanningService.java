@@ -352,6 +352,26 @@ public class CapacityPlanningService implements ICapacityPlanningService {
     }
     
     @Override
+	public BigDecimal getTotalAvailableCapacity() {
+		return capacityPlanningRepository.getTotalAvailableCapacity();
+	}
+
+	@Override
+	public BigDecimal getTotalPlannedLoad() {
+		return capacityPlanningRepository.getTotalPlannedLoad();
+	}
+
+	@Override
+	public BigDecimal getTotalRemainingCapacity() {
+		return capacityPlanningRepository.getTotalRemainingCapacity();
+	}
+
+	@Override
+	public BigDecimal getAverageRemainingCapacity() {
+		return capacityPlanningRepository.getAverageRemainingCapacity();
+	}
+    
+    @Override
 	public List<CapacityPlanningPlannedLoadStatDTO> countCapacityPlanningByPlannedLoad() {
     	List<CapacityPlanningPlannedLoadStatDTO> items = capacityPlanningRepository.countCapacityPlanningByPlannedLoad();
     	if(items.isEmpty()) {

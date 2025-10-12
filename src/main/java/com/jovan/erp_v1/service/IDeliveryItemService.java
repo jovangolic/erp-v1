@@ -3,6 +3,8 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+
+import com.jovan.erp_v1.enumeration.DeliveryItemStatus;
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageStatus;
@@ -11,7 +13,9 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.DeliveryItemRequest;
 import com.jovan.erp_v1.response.DeliveryItemResponse;
-
+import com.jovan.erp_v1.save_as.DeliveryItemSaveAsRequest;
+import com.jovan.erp_v1.search_request.DeliveryItemSearchRequest;
+ 
 public interface IDeliveryItemService {
 
     DeliveryItemResponse create(DeliveryItemRequest request);
@@ -72,4 +76,19 @@ public interface IDeliveryItemService {
     List<DeliveryItemResponse> findByOutboundDelivery_BuyerEmailLikeIgnoreCase( String buyerEmail);
     List<DeliveryItemResponse> findByOutboundDelivery_BuyerPhoneNumberLikeIgnoreCase( String phoneNumber);
     List<DeliveryItemResponse> findByOutboundDelivery_BuyerContactPersonContainingIgnoreCase( String contactPerson);
+    
+    
+    //nove metode
+    DeliveryItemResponse trackDeliveryItem(Long id);
+    DeliveryItemResponse trackByProduct( Long productId);
+    DeliveryItemResponse trackByInboundDelivery( Long deliveryId);
+    DeliveryItemResponse trackByOutboundDelivery( Long deliveryId);
+    DeliveryItemResponse confirmDeliveryItem(Long id);
+    DeliveryItemResponse closeDeliveryItem(Long id);
+    DeliveryItemResponse cancelDelvieryItem(Long id);
+    DeliveryItemResponse changeStatus(Long id, DeliveryItemStatus status);
+    DeliveryItemResponse saveDeliveryItem(DeliveryItemRequest request);
+    DeliveryItemResponse saveAs(DeliveryItemSaveAsRequest request);
+    List<DeliveryItemResponse> saveAll(List<DeliveryItemRequest> requests);
+    List<DeliveryItemResponse> generalSearch(DeliveryItemSearchRequest request);
 }

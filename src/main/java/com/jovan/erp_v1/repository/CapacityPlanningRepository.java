@@ -64,4 +64,15 @@ public interface CapacityPlanningRepository extends JpaRepository<CapacityPlanni
 		       "GROUP BY FUNCTION('YEAR', cp.date), FUNCTION('MONTH', cp.date) "+
 			   "ORDER BY FUNCTION('YEAR', cp.date), FUNCTION('MONTH', cp.date)")
     List<CapacityPlanningMonthlyStatDTO> countCapacityPlanningsByYearAndMonth();
+    
+    @Query("SELECT SUM(cp.availableCapacity) FROM CapacityPlanning cp")
+    BigDecimal getTotalAvailableCapacity();
+    @Query("SELECT SUM(cp.plannedLoad) FROM CapacityPlanning cp")
+    BigDecimal getTotalPlannedLoad();
+    @Query("SELECT SUM(cp.remainingCapacity) FROM CapacityPlanning cp")
+    BigDecimal getTotalRemainingCapacity();
+    @Query("SELECT AVG(cp.remainingCapacity) FROM CapacityPlanning cp")
+    BigDecimal getAverageRemainingCapacity();
+    
+    
 }

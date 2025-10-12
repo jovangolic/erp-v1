@@ -39,7 +39,7 @@ public class InboundDelivery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate deliveryDate;
 
     @ManyToOne
@@ -47,6 +47,7 @@ public class InboundDelivery {
     private Supply supply; 
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private DeliveryStatus status;
 
     @OneToMany(mappedBy = "inboundDelivery", cascade = CascadeType.ALL)

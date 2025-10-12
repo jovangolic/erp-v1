@@ -233,6 +233,34 @@ public class CapacityPlanningController {
 
     //nove metode
     @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
+    @GetMapping("/total-available-capacity")
+    public ResponseEntity<BigDecimal> getTotalAvailableCapacity(){
+    	BigDecimal items = capacityPlanningService.getTotalAvailableCapacity();
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
+    @GetMapping("/total-planned-load")
+    public ResponseEntity<BigDecimal> getTotalPlannedLoad(){
+    	BigDecimal items = capacityPlanningService.getTotalPlannedLoad();
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
+    @GetMapping("/total-remaining-capacity")
+    public ResponseEntity<BigDecimal> getTotalRemainingCapacity(){
+    	BigDecimal items = capacityPlanningService.getTotalRemainingCapacity();
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
+    @GetMapping("/average-remaining-capacity")
+    public ResponseEntity<BigDecimal> getAverageRemainingCapacity(){
+    	BigDecimal items = capacityPlanningService.getAverageRemainingCapacity();
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CAPACITY_PLANNING_READ_ACCESS)
     @GetMapping("/count/by-planned-load")
     public ResponseEntity<List<CapacityPlanningPlannedLoadStatDTO>> countCapacityPlanningByPlannedLoad(){
     	List<CapacityPlanningPlannedLoadStatDTO> items = capacityPlanningService.countCapacityPlanningByPlannedLoad();

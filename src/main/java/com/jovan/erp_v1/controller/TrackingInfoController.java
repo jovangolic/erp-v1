@@ -37,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 @PreAuthorize(RoleGroups.TRACKING_INFO_READ_ACCESS)
 public class TrackingInfoController {
 
-    private ITrackingInfoService trackingInfoService;
+    private final ITrackingInfoService trackingInfoService;
 
     @PreAuthorize(RoleGroups.TRACKING_INFO_FULL_ACCESS)
     @PostMapping("/create/new-trackingInfo")

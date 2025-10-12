@@ -3,14 +3,20 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jovan.erp_v1.enumeration.DeliveryItemStatus;
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageStatus;
@@ -41,8 +47,13 @@ import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.ShelfRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.repository.SupplyRepository;
+import com.jovan.erp_v1.repository.specification.DeliveryItemSpecification;
 import com.jovan.erp_v1.request.DeliveryItemRequest;
 import com.jovan.erp_v1.response.DeliveryItemResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.DeliveryItemSaveAsRequest;
+import com.jovan.erp_v1.search_request.DeliveryItemSearchRequest;
 import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -677,6 +688,189 @@ public class DeliveryItemService implements IDeliveryItemService {
 		}
 		return items.stream().map(DeliveryItemResponse::new).collect(Collectors.toList());
 	}
+	
+	@Transactional(readOnly = true)
+	@Override
+	public DeliveryItemResponse trackDeliveryItem(Long id) {
+		DeliveryItem item = deliveryItemRepository.trackDeliveryItem(id).orElseThrow(() -> new ValidationException("DeliveryItem not found with id "+id));
+		return new DeliveryItemResponse(item);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public DeliveryItemResponse trackByProduct(Long productId) {
+		List<DeliveryItem> items = deliveryItemRepository.trackByProduct(productId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("DeliveryItem with product id "+productId+" not found");
+		}
+		DeliveryItem di = items.get(0);
+		return new DeliveryItemResponse(di);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public DeliveryItemResponse trackByInboundDelivery(Long deliveryId) {
+		List<DeliveryItem> items = deliveryItemRepository.trackByInboundDelivery(deliveryId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("DeliveryItem with inbounde-delivery ID "+deliveryId+" not found");
+		}
+		DeliveryItem di = items.get(0);
+		return new DeliveryItemResponse(di);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public DeliveryItemResponse trackByOutboundDelivery(Long deliveryId) {
+		List<DeliveryItem> items = deliveryItemRepository.trackByOutboundDelivery(deliveryId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("DeliveryItem with outbound-delivery ID "+deliveryId+" not found");
+		}
+		DeliveryItem di = items.get(0);
+		return new DeliveryItemResponse(di);
+	}
+
+	@Transactional
+	@Override
+	public DeliveryItemResponse confirmDeliveryItem(Long id) {
+		DeliveryItem item = deliveryItemRepository.findById(id).orElseThrow(() -> new ValidationException("DeliveryItem not found with id"+id));
+		item.setConfirmed(true);
+		item.setStatus(DeliveryItemStatus.CONFIRMED);
+		return new DeliveryItemResponse(deliveryItemRepository.save(item));
+	}
+
+	@Transactional
+	@Override
+	public DeliveryItemResponse closeDeliveryItem(Long id) {
+		DeliveryItem item = deliveryItemRepository.findById(id).orElseThrow(() -> new ValidationException("DeliveryItem not found with id"+id));
+		if(item.getStatus() != DeliveryItemStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED delivery-items can be closed");
+		}
+		item.setStatus(DeliveryItemStatus.CLOSED);
+		return new DeliveryItemResponse(deliveryItemRepository.save(item));
+	}
+
+	@Transactional
+	@Override
+	public DeliveryItemResponse cancelDelvieryItem(Long id) {
+		DeliveryItem item = deliveryItemRepository.findById(id).orElseThrow(() -> new ValidationException("DeliveryItem not found with id"+id));
+		if(item.getStatus() != DeliveryItemStatus.NEW && item.getStatus() != DeliveryItemStatus.CONFIRMED) {
+			throw new ValidationException("Only NEW or CONFIRMED delivery-items can be cancelled");
+		}
+		item.setStatus(DeliveryItemStatus.CANCELLED);
+		return new DeliveryItemResponse(deliveryItemRepository.save(item));
+	}
+
+	@Transactional
+	@Override
+	public DeliveryItemResponse changeStatus(Long id, DeliveryItemStatus status) {
+		DeliveryItem item = deliveryItemRepository.findById(id).orElseThrow(() -> new ValidationException("DeliveryItem not found with id"+id));
+		validateDeliveryItemStatus(status);
+		if(item.getStatus() == DeliveryItemStatus.CLOSED) {
+			throw new ValidationException("Closed delivery-items cannot change status");
+		}
+		if(status == DeliveryItemStatus.CONFIRMED) {
+			if(item.getStatus() != DeliveryItemStatus.NEW) {
+				throw new ValidationException("Only NEW delivery-items can be confirmed");
+			}
+			item.setConfirmed(true);
+		}
+		item.setStatus(status);
+		return new DeliveryItemResponse(deliveryItemRepository.save(item));
+	}
+
+	@Transactional
+	@Override
+	public DeliveryItemResponse saveDeliveryItem(DeliveryItemRequest request) {
+		DeliveryItem item = DeliveryItem.builder()
+				.id(request.id())
+				.quantity(request.quantity())
+				.product(validateProductId(request.productId()))
+				.inboundDelivery(validateInboundDelivery(request.inboundDeliveryId()))
+				.outboundDelivery(validateOutboundDelivery(request.outboundDeliveryId()))
+				.confirmed(request.confirmed())
+				.status(request.status())
+				.build();
+		DeliveryItem saved = deliveryItemRepository.save(item);
+		return new DeliveryItemResponse(saved);
+	}
+	
+	private final AbstractSaveAsService<DeliveryItem, DeliveryItemResponse> saveAsHelper = new AbstractSaveAsService<DeliveryItem, DeliveryItemResponse>() {
+		
+		@Override
+		protected DeliveryItemResponse toResponse(DeliveryItem entity) {
+			return new DeliveryItemResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<DeliveryItem, Long> getRepository() {
+			return deliveryItemRepository;
+		}
+		
+		@Override
+		protected DeliveryItem copyAndOverride(DeliveryItem source, Map<String, Object> overrides) {
+			return DeliveryItem.builder()
+					.quantity((BigDecimal) overrides.getOrDefault("Quantity", source.getQuantity()))
+					.product(validateProductId(source.getProduct().getId()))
+					.inboundDelivery(validateInboundDelivery(source.getInboundDelivery().getId()))
+					.outboundDelivery(validateOutboundDelivery(source.getOutboundDelivery().getId()))
+					.status(source.getStatus())
+					.confirmed(source.getConfirmed())
+					.build();
+		}
+	};
+	
+	private final AbstractSaveAllService<DeliveryItem, DeliveryItemResponse> saveAllHelper = new AbstractSaveAllService<DeliveryItem, DeliveryItemResponse>() {
+		
+		@Override
+		protected Function<DeliveryItem, DeliveryItemResponse> toResponse() {
+			return DeliveryItemResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<DeliveryItem, Long> getRepository() {
+			return deliveryItemRepository;
+		}
+	};
+
+	@Transactional
+	@Override
+	public DeliveryItemResponse saveAs(DeliveryItemSaveAsRequest request) {
+		Map<String, Object> overrides = new HashMap<>();
+		if(request.quantity() != null) overrides.put("Quantity", request.quantity());
+		if(request.productId() != null) overrides.put("Product-ID", request.productId());
+		if(request.inboundDeliveryId() != null) overrides.put("Inbound-delivery ID", request.inboundDeliveryId());
+		if(request.outboundDeliveryId() != null) overrides.put("Outbound-delivery ID", request.outboundDeliveryId());
+		if(request.status() != null) overrides.put("Status", request.status());
+		if(request.confirmed() != null) overrides.put("Confirmed", request.confirmed());
+		return saveAsHelper.saveAs(request.sourceId(), overrides);
+	}
+
+	@Transactional
+	@Override
+	public List<DeliveryItemResponse> saveAll(List<DeliveryItemRequest> requests) {
+		List<DeliveryItem> items = requests.stream()
+				.map(req -> DeliveryItem.builder()
+						.id(req.id())
+						.quantity(req.quantity())
+						.product(validateProductId(req.productId()))
+						.inboundDelivery(validateInboundDelivery(req.inboundDeliveryId()))
+						.outboundDelivery(validateOutboundDelivery(req.outboundDeliveryId()))
+						.confirmed(req.confirmed())
+						.status(req.status())
+						.build())
+				.toList();
+		return saveAllHelper.saveAll(items);
+	}
+	
+	@Override
+	public List<DeliveryItemResponse> generalSearch(DeliveryItemSearchRequest request) {
+		Specification<DeliveryItem> spec = DeliveryItemSpecification.fromRequest(request);
+		List<DeliveryItem> items = deliveryItemRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No DeliveryItems found for given criteria");
+		}
+		return items.stream().map(DeliveryItemResponse::new).collect(Collectors.toList());
+	}
     
     private void validateBigDecimalNonNegative(BigDecimal num) {
 		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
@@ -802,5 +996,9 @@ public class DeliveryItemService implements IDeliveryItemService {
             throw new IllegalArgumentException("Mora biti pozitivan broj");
         }
     }
-
+    
+    private void validateDeliveryItemStatus(DeliveryItemStatus status) {
+    	Optional.ofNullable(status)
+    		.orElseThrow(() -> new ValidationException("DeliveryItemStatus status must not be null"));
+    }
 }

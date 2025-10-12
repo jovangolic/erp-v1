@@ -388,7 +388,7 @@ public class BillOfMaterialsController {
     //nove metode
     
     @PreAuthorize(RoleGroups.BILL_OF_MATERIAL_READ_ACCESS)
-    @GetMapping("/track-product/{id}")
+    @GetMapping("/track-parent-product/{id}")
     public ResponseEntity<BillOfMaterialsResponse> trackParentProduct(@PathVariable Long id){
     	BillOfMaterialsResponse items = billOfMaterialsService.trackParentProduct(id);
     	return ResponseEntity.ok(items);

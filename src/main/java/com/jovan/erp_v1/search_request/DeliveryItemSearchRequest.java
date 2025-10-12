@@ -1,0 +1,67 @@
+package com.jovan.erp_v1.search_request;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import com.jovan.erp_v1.enumeration.DeliveryItemStatus;
+import com.jovan.erp_v1.enumeration.DeliveryStatus;
+import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.StorageType;
+import com.jovan.erp_v1.enumeration.SupplierType;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
+
+public record DeliveryItemSearchRequest(
+		Long id,
+		Long idFrom,
+		Long idTo,
+		Long productId,
+		Long productIdFrom,
+		Long productIdTo,
+		BigDecimal currentQuantity,
+		BigDecimal currentQuantityMin,
+		BigDecimal currentQuantityMax,
+		String productName,
+		UnitMeasure unitMeasure,
+		SupplierType supplierType,
+		StorageType storageType,
+		GoodsType goodsType,
+		Long productStorageId,
+		Long productStorageIdFrom,
+		Long productStorageIdTo,
+		Long productSupplyId,
+		Long productSupplyIdFrom,
+		Long productSupplyIdTo,
+		Long productShelfId,
+		Long productShelfIdFrom,
+		Long productShelfIdTo,
+		Long inboundDeliveryId,
+		Long inboundDeliveryIdFrom,
+		Long inboundDeliveryIdTo,
+		LocalDate inboundDeliveryDate,
+		LocalDate inboundDeliveryDateAfter,
+		LocalDate inboundDeliveryDateBefore,
+		LocalDate inboundDeliveryDateStart,
+		LocalDate inboundDeliveryDateEnd,
+		Long inboundSupplyId,
+		Long inboundSupplyIdFrom,
+		Long inboundSupplyIdTo,
+		DeliveryStatus inboundDeliveryStatus,
+		Long outboundDeliveryId,
+		Long outboundDeliveryIdFrom,
+		Long outboundDeliveryIdTo,
+		LocalDate outboundDeliveryDate,
+		LocalDate outboundDeliveryDateBefore,
+		LocalDate outboundDeliveryDateAfter,
+		LocalDate outboundDeliveryDateStart,
+		LocalDate outboundDeliveryDateEnd,
+		Long buyerId,
+		Long buyerIdFrom,
+		Long buyerIdTo,
+		DeliveryStatus outboundStatus,
+		BigDecimal quantity,
+		BigDecimal quantityMin,
+		BigDecimal quantityMax,
+		DeliveryItemStatus status,
+		Boolean confirmed
+		) {
+}

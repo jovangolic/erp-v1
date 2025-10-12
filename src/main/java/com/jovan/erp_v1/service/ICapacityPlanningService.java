@@ -3,7 +3,6 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-
 import com.jovan.erp_v1.enumeration.CapacityPlanningStatus;
 import com.jovan.erp_v1.request.CapacityPlanningRequest;
 import com.jovan.erp_v1.response.CapacityPlanningResponse;
@@ -42,6 +41,10 @@ public interface ICapacityPlanningService {
     List<CapacityPlanningResponse> findByUtilizationGreaterThan(BigDecimal threshold);
     
     //nove metode
+    BigDecimal getTotalAvailableCapacity();
+    BigDecimal getTotalPlannedLoad();
+    BigDecimal getTotalRemainingCapacity();
+    BigDecimal getAverageRemainingCapacity();
     List<CapacityPlanningPlannedLoadStatDTO> countCapacityPlanningByPlannedLoad();
     List<CapacityPlanningAvailableCapacityStatDTO> countCapacityPlanningByAvailableCapacity();
     List<CapacityPlanningMonthlyStatDTO> countCapacityPlanningsByYearAndMonth();

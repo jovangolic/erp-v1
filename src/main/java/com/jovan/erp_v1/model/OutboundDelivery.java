@@ -39,14 +39,14 @@ public class OutboundDelivery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate deliveryDate;
 
     @ManyToOne
     @JoinColumn(name = "buyer_id")
     private Buyer buyer;
 
-    @Column
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private DeliveryStatus status;
 

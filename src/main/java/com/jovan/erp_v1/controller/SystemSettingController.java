@@ -35,7 +35,7 @@ import lombok.RequiredArgsConstructor;
 @PreAuthorize(RoleGroups.SYSTEM_SETTING_FULL_ACCESS)
 public class SystemSettingController {
 
-    private ISystemSetting settings;
+    private final ISystemSetting settings;
 
     @PostMapping("/create-setting")
     public ResponseEntity<SystemSettingResponse> create(@Valid @RequestBody SystemSettingCreateRequest request) {
