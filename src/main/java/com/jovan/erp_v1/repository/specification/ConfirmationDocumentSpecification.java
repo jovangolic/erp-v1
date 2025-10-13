@@ -138,6 +138,32 @@ public class ConfirmationDocumentSpecification {
 		return(root, query, cb) -> id == null ? null : cb.equal(root.get("shift").get("id"), id);
 	}
 	
+	public static Specification<ConfirmationDocument> hasFullName(String fullName) {
+	    return (root, query, cb) -> {
+	        if (fullName == null || fullName.isBlank()) {
+	            return null;
+	        }
+	        // Pretvori u mala slova i podeli po razmaku
+	        String[] parts = fullName.trim().toLowerCase().split("\\s+");
+	        // Ako je samo jedno ime ili prezime
+	        if (parts.length == 1) {
+	            String namePart = "%" + parts[0] + "%";
+	            return cb.or(
+	                cb.like(cb.lower(root.get("createdBy").get("firstName")), namePart),
+	                cb.like(cb.lower(root.get("createdBy").get("lastName")), namePart)
+	            );
+	        }
+	        // Ako je uneto i ime i prezime (ili više delova)
+	        String firstName = "%" + parts[0] + "%";
+	        String lastName = "%" + parts[parts.length - 1] + "%";
+
+	        return cb.and(
+	            cb.like(cb.lower(root.get("createdBy").get("firstName")), firstName),
+	            cb.like(cb.lower(root.get("createdBy").get("lastName")), lastName)
+	        );
+	    };
+	}
+	
 	public static Specification<ConfirmationDocument> hasFullName(String first, String last){
 		return(root, query, cb) -> {
 			if((first == null || first.isBlank()) && (last == null || last.isBlank())) return null;

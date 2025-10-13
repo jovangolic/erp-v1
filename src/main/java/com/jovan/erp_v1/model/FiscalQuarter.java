@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
+import com.jovan.erp_v1.enumeration.FiscalQuarterTypeStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,6 +23,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -30,6 +32,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class FiscalQuarter {
 
     @Id
@@ -37,17 +40,27 @@ public class FiscalQuarter {
     private Long id;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private FiscalQuarterStatus quarterStatus;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate startDate;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate endDate;
 
     @ManyToOne
     @JoinColumn(name = "fiscal_year_id")
     private FiscalYear fiscalYear;
+    
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private FiscalQuarterTypeStatus status = FiscalQuarterTypeStatus.NEW;
+    
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean confirmed = false;
     
     @CreatedDate
     @Column(name = "created_at", updatable = false)

@@ -39,20 +39,20 @@ public class FiscalYear {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private Integer year;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate startDate;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate endDate;
 
-    @Column
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private FiscalYearStatus yearStatus;
 
-    @Column
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private FiscalQuarterStatus quarterStatus;
 

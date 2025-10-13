@@ -2,7 +2,10 @@ package com.jovan.erp_v1.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -11,7 +14,7 @@ import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 
 @Repository
-public interface FiscalQuarterRepository extends JpaRepository<FiscalQuarter, Long> {
+public interface FiscalQuarterRepository extends JpaRepository<FiscalQuarter, Long>, JpaSpecificationExecutor<FiscalQuarter> {
 
 	List<FiscalQuarter> findByFiscalYear_Year(Integer year);
 	List<FiscalQuarter> findByFiscalYear_YearStatus(FiscalYearStatus yearStatus);
@@ -53,4 +56,8 @@ public interface FiscalQuarterRepository extends JpaRepository<FiscalQuarter, Lo
     List<FiscalQuarter> findByFiscalYear_YearAndQuarterStatus(Integer year, FiscalQuarterStatus status);
     @Query("SELECT fq FROM FiscalQuarter fq WHERE fq.fiscalYear.year BETWEEN :start AND :end")
     List<FiscalQuarter> findByFiscalYearBetweenYears(@Param("start") Integer start, @Param("end") Integer end);
+    
+    //nove metode
+    @Query("SELECT fq FROM FiscalQuarter fq WHERE fq.id = :id")
+    Optional<FiscalQuarter> trackFiscalQuarter(@Param("id") Long id);
 }

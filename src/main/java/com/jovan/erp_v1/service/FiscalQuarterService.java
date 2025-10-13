@@ -2,13 +2,20 @@ package com.jovan.erp_v1.service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
+import com.jovan.erp_v1.enumeration.FiscalQuarterTypeStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.exception.FiscalQuarterErrorException;
 import com.jovan.erp_v1.exception.NoDataFoundException;
@@ -18,8 +25,13 @@ import com.jovan.erp_v1.model.FiscalQuarter;
 import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.repository.FiscalQuarterRepository;
 import com.jovan.erp_v1.repository.FiscalYearRepository;
+import com.jovan.erp_v1.repository.specification.FiscalQuarterSpecification;
 import com.jovan.erp_v1.request.FiscalQuarterRequest;
 import com.jovan.erp_v1.response.FiscalQuarterResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.FiscalQuarterSaveAsRequest;
+import com.jovan.erp_v1.search_request.FiscalQuarterSearchRequest;
 import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -437,6 +449,153 @@ public class FiscalQuarterService implements IFiscalQuarterService {
 		return items.stream().map(fiscalQuarterMapper::toResponse).collect(Collectors.toList());
 	}
 	
+	@Transactional(readOnly = true)
+	@Override
+	public FiscalQuarterResponse trackFiscalQuarter(Long id) {
+		FiscalQuarter fq = fiscalQuarterRepository.findById(id).orElseThrow(() -> new ValidationException("FiscalQuarter not found with id "+id));
+		return new FiscalQuarterResponse(fq);
+	}
+
+	@Transactional
+	@Override
+	public FiscalQuarterResponse confirmFiscalQuarter(Long id) {
+		FiscalQuarter fq = fiscalQuarterRepository.findById(id).orElseThrow(() -> new ValidationException("FiscalQuarter not found with id "+id));
+		fq.setConfirmed(true);
+		fq.setStatus(FiscalQuarterTypeStatus.CONFIRMED);
+		return new FiscalQuarterResponse(fiscalQuarterRepository.save(fq));
+	}
+
+	@Transactional
+	@Override
+	public FiscalQuarterResponse cancelFiscalQuarter(Long id) {
+		FiscalQuarter fq = fiscalQuarterRepository.findById(id).orElseThrow(() -> new ValidationException("FiscalQuarter not found with id "+id));
+		if(fq.getStatus() != FiscalQuarterTypeStatus.CONFIRMED && fq.getStatus() != FiscalQuarterTypeStatus.NEW) {
+			throw new ValidationException("Only NEW or CONFIRMED fiscal-quarter can be cancelled");
+		}
+		fq.setStatus(FiscalQuarterTypeStatus.CANCELLED);
+		return new FiscalQuarterResponse(fiscalQuarterRepository.save(fq)); 
+	}
+
+	@Transactional
+	@Override
+	public FiscalQuarterResponse closeFiscalQuarter(Long id) {
+		FiscalQuarter fq = fiscalQuarterRepository.findById(id).orElseThrow(() -> new ValidationException("FiscalQuarter not found with id "+id));
+		if(fq.getStatus() != FiscalQuarterTypeStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED fiscal-quarter can be closed");
+		}
+		fq.setStatus(FiscalQuarterTypeStatus.CLOSED);		
+		return new FiscalQuarterResponse(fiscalQuarterRepository.save(fq));
+	}
+	
+
+	@Transactional
+	@Override
+	public FiscalQuarterResponse changeStatus(Long id, FiscalQuarterTypeStatus status) {
+		FiscalQuarter fq = fiscalQuarterRepository.findById(id).orElseThrow(() -> new ValidationException("FiscalQuarter not found with id "+id));
+		validateFiscalQuarterTypeStatus(status);
+		if(fq.getStatus() == FiscalQuarterTypeStatus.CLOSED) {
+			throw new ValidationException("Closed fiscal-quarter  cannot change status");
+		}
+		if(status == FiscalQuarterTypeStatus.CONFIRMED) {
+			if(fq.getStatus() != FiscalQuarterTypeStatus.NEW) {
+				throw new ValidationException("Only NEW fiscal-quarter can be confirmed");
+			}
+			fq.setConfirmed(true);
+		}
+		fq.setStatus(status);
+		return new FiscalQuarterResponse(fiscalQuarterRepository.save(fq));
+	}
+
+	@Transactional
+	@Override
+	public FiscalQuarterResponse saveFiscalQuarter(FiscalQuarterRequest request) {
+		FiscalQuarter items = FiscalQuarter.builder()
+				.id(request.id())
+				.endDate(request.endDate())
+				.fiscalYear(validateFiscalYearId(request.fiscalYearId()))
+				.confirmed(request.confirmed())
+				.status(request.status())
+				.quarterStatus(request.quarterStatus())
+				.build();
+		FiscalQuarter saved = fiscalQuarterRepository.save(items);
+		return new FiscalQuarterResponse(saved);
+	}
+	
+	private final AbstractSaveAsService<FiscalQuarter, FiscalQuarterResponse> saveAsHelper = new AbstractSaveAsService<FiscalQuarter, FiscalQuarterResponse>() {
+		
+		@Override
+		protected FiscalQuarterResponse toResponse(FiscalQuarter entity) {
+			return new FiscalQuarterResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<FiscalQuarter, Long> getRepository() {
+			return fiscalQuarterRepository;
+		}
+		
+		@Override
+		protected FiscalQuarter copyAndOverride(FiscalQuarter source, Map<String, Object> overrides) {
+			return FiscalQuarter.builder()
+					.endDate(source.getEndDate())
+					.fiscalYear(validateFiscalYearId(source.getFiscalYear().getId()))
+					.confirmed(source.getConfirmed())
+					.status(source.getStatus())
+					.quarterStatus(source.getQuarterStatus())
+					.build();
+		}
+	};
+	
+	private final AbstractSaveAllService<FiscalQuarter, FiscalQuarterResponse> saveAllHelper = new AbstractSaveAllService<FiscalQuarter, FiscalQuarterResponse>() {
+		
+		@Override
+		protected Function<FiscalQuarter, FiscalQuarterResponse> toResponse() {
+			return FiscalQuarterResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<FiscalQuarter, Long> getRepository() {
+			return fiscalQuarterRepository;
+		}
+	};
+
+	@Transactional
+	@Override
+	public FiscalQuarterResponse saveAs(FiscalQuarterSaveAsRequest request) {
+		Map<String, Object> overrides = new HashMap<>();
+		if(request.endDate() != null) overrides.put("End-date", request.endDate());
+		if(request.fiscalYearId() != null) overrides.put("Fiscal-year ID", validateFiscalYearId(request.fiscalYearId()));
+		if(request.quarterStatus() != null) overrides.put("Quarter-status", request.quarterStatus());
+		if(request.confirmed() != null) overrides.put("Confirmed", request.confirmed());
+		if(request.status() != null) overrides.put("Status", request.status());
+		return saveAsHelper.saveAs(request.sourceId(), overrides);
+	}
+
+	@Transactional
+	@Override
+	public List<FiscalQuarterResponse> saveAll(List<FiscalQuarterRequest> requests) {
+		List<FiscalQuarter> items = requests.stream()
+				.map(req -> FiscalQuarter.builder()
+						.id(req.id())
+						.endDate(req.endDate())
+						.fiscalYear(validateFiscalYearId(req.fiscalYearId()))
+						.status(req.status())
+						.confirmed(req.confirmed())
+						.quarterStatus(req.quarterStatus())
+						.build())
+				.toList();
+		return saveAllHelper.saveAll(items);
+	}
+
+	@Override
+	public List<FiscalQuarterResponse> generalSearch(FiscalQuarterSearchRequest request) {
+		Specification<FiscalQuarter> spec = FiscalQuarterSpecification.fromRequest(request);
+		List<FiscalQuarter> items = fiscalQuarterRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No FiscalQuarter found for given criteria");
+		}
+		return items.stream().map(fiscalQuarterMapper::toResponse).collect(Collectors.toList());
+	}
+	
 	private FiscalYear validateFiscalYearId(Long fiscalYearId) {
 		if(fiscalYearId == null) {
 			throw new IllegalArgumentException("ID za fiskalnu godinu "+fiscalYearId+" ne postoji");
@@ -476,5 +635,9 @@ public class FiscalQuarterService implements IFiscalQuarterService {
 	        throw new ValidationException("Min value must not be greater than max value.");
 	    }
 	}
-
+	
+	private void validateFiscalQuarterTypeStatus(FiscalQuarterTypeStatus status) {
+		Optional.ofNullable(status)
+			.orElseThrow(() -> new ValidationException("FiscalQuarterTypeStatus status must not be null"));
+	}
 }
