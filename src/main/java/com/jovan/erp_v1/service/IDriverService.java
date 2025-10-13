@@ -7,6 +7,7 @@ import com.jovan.erp_v1.enumeration.DriverStatus;
 import com.jovan.erp_v1.request.DriverRequest;
 import com.jovan.erp_v1.response.DriverResponse;
 import com.jovan.erp_v1.save_as.DriverSaveAsRequest;
+import com.jovan.erp_v1.search_request.DriverSearchRequest;
 
 public interface IDriverService {
 
@@ -22,14 +23,12 @@ public interface IDriverService {
     List<DriverResponse> findByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndStatus(String firstName, String lastName, DriverStatus status);
     
     DriverResponse trackDriver(Long id);
-    List<DriverResponse> generalSearch( Long id,  Long idFrom,  Long idTo, String firstName, String lastName,
-    		String phone, DriverStatus status, Boolean confirmed);
     Boolean existsByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCase(String firstName, String lastName);
     DriverResponse confirmDriver(Long id);
     DriverResponse closeDriver(Long id);
     DriverResponse cancelDriver(Long id);
     DriverResponse changeStatus(Long id, DriverStatus newStatus);
-    
+    List<DriverResponse> generalSearch(DriverSearchRequest request);
     DriverResponse saveDriver(DriverRequest request);
     DriverResponse saveAs(DriverSaveAsRequest request);
     List<DriverResponse> saveAll(List<DriverRequest> requests);

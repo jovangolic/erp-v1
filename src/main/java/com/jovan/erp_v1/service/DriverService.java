@@ -1,6 +1,6 @@
 package com.jovan.erp_v1.service;
 
-import java.util.Collections;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,11 +20,13 @@ import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.DriverMapper;
 import com.jovan.erp_v1.model.Driver;
 import com.jovan.erp_v1.repository.DriverRepository;
+import com.jovan.erp_v1.repository.specification.DriverSpecification;
 import com.jovan.erp_v1.request.DriverRequest;
 import com.jovan.erp_v1.response.DriverResponse;
 import com.jovan.erp_v1.save_as.AbstractSaveAllService;
 import com.jovan.erp_v1.save_as.AbstractSaveAsService;
 import com.jovan.erp_v1.save_as.DriverSaveAsRequest;
+import com.jovan.erp_v1.search_request.DriverSearchRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -120,37 +123,15 @@ public class DriverService implements IDriverService {
 		}
 		return items.stream().map(driverMapper::toRespone).collect(Collectors.toList());
 	}
-
+	
 	@Override
-	public List<DriverResponse> generalSearch(Long id, Long idFrom, Long idTo, String firstName, String lastName,
-			String phone, DriverStatus status, Boolean confirmed) {
-		if (id != null) {
-	        validateDriverId(id);
-	        return driversRepository.findById(id)
-	                .map(driverMapper::toRespone)
-	                .map(Collections::singletonList)
-	                .orElseThrow(() -> new NoDataFoundException("Driver not found with id " + id));
-	    }
-	    if (idFrom != null || idTo != null) {
-	        if (idFrom == null || idTo == null) {
-	            throw new ValidationException("Both idFrom and idTo must be provided for range search");
-	        }
-	        if (idFrom > idTo) {
-	            throw new ValidationException("idFrom must not be greater than idTo");
-	        }
-	    }
-	    if(firstName != null) validateString(firstName);
-	    if(lastName != null) validateString(lastName);
-	    if(phone != null) validateString(phone);
-	    if(status != null) validateDriverStatus(status);
-	    if(idFrom == null && idTo == null && (firstName == null || firstName.trim().isEmpty()) 
-	    		&& (lastName == null || lastName.trim().isEmpty()) && (phone == null || phone.trim().isEmpty())
-	    		&& (status == null && confirmed == null)) {
-	    	return driversRepository.findAll().stream()
-	    			.map(driverMapper::toRespone)
-	    			.collect(Collectors.toList());
-	    }
-		return generalSearch(id, idFrom, idTo, firstName, lastName, phone,status, confirmed);
+	public List<DriverResponse> generalSearch(DriverSearchRequest request) {
+		Specification<Driver> spec = DriverSpecification.fromRequest(request);
+		List<Driver> items = driversRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Driver found for given criteria");
+		}
+		return items.stream().map(driverMapper::toRespone).collect(Collectors.toList());
 	}
 	
 	@Transactional
@@ -166,6 +147,7 @@ public class DriverService implements IDriverService {
 				throw new ValidationException("Only NEW defects can be confirmed");
 			}
 			d.setConfirmed(true);
+			d.getTrips().stream().forEach(dr -> dr.setConfirmed(true));
 		}
 		d.setStatus(newStatus);
 		return new DriverResponse(driversRepository.save(d));
@@ -177,6 +159,8 @@ public class DriverService implements IDriverService {
 		Driver d = driversRepository.findById(id).orElseThrow(() -> new ValidationException("Driver ID must not be null"));
 		d.setConfirmed(true);
 		d.setStatus(DriverStatus.CONFIRMED);
+		d.getTrips().stream()
+			.forEach(dr -> dr.setConfirmed(true));
 		driversRepository.save(d);
 		return new DriverResponse(d);
 	}
@@ -347,5 +331,4 @@ public class DriverService implements IDriverService {
 	        }
 	    }
 	}
-
 }

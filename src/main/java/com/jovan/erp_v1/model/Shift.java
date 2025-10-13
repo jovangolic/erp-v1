@@ -15,6 +15,7 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -32,13 +33,14 @@ public class Shift {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-	@Column
+	@Column(nullable = false)
     private LocalDateTime startTime;
 	
-	@Column
+	@Column(nullable = false)
     private LocalDateTime endTime;
 
     @ManyToOne
+    @JoinColumn(name = "shift_supervisor_id")
     private User shiftSupervisor;
 
     @OneToMany(mappedBy = "shift")

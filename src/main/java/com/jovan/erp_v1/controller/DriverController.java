@@ -18,6 +18,7 @@ import com.jovan.erp_v1.enumeration.DriverStatus;
 import com.jovan.erp_v1.request.DriverRequest;
 import com.jovan.erp_v1.response.DriverResponse;
 import com.jovan.erp_v1.save_as.DriverSaveAsRequest;
+import com.jovan.erp_v1.search_request.DriverSearchRequest;
 import com.jovan.erp_v1.service.IDriverService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -89,19 +90,10 @@ public class DriverController {
     	return ResponseEntity.ok(items);
     }
     
-    @PreAuthorize(RoleGroups.DRIVER_READ_ACCESS)
-    @GetMapping("/general-search")
-    public ResponseEntity<List<DriverResponse>> generalSearch(
-    		@RequestParam(required = false) Long id,
-	        @RequestParam(required = false) Long idFrom,
-	        @RequestParam(required = false) Long idTo,
-	        @RequestParam(required = false) String firstName,
-	        @RequestParam(required = false) String lastName,
-	        @RequestParam(required = false) String phone,
-	        @RequestParam(required = false) DriverStatus status,
-	        @RequestParam(required = false) Boolean confirmed
-    		){
-    	List<DriverResponse> items = driverService.generalSearch(id, idFrom, idTo, firstName, lastName, phone, status, confirmed);
+    @PreAuthorize(RoleGroups.DRIVER_FULL_ACCESS)
+    @PostMapping("/general-search")
+    public ResponseEntity<List<DriverResponse>> generalSearch(@RequestBody DriverSearchRequest request){
+    	List<DriverResponse> items = driverService.generalSearch(request);
     	return ResponseEntity.ok(items);
     }
     
