@@ -31,7 +31,7 @@ public class EventLog {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column
+	@Column(nullable = false)
 	private LocalDateTime timestamp;
 	@Column
     private String description;
