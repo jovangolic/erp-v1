@@ -2,11 +2,17 @@ package com.jovan.erp_v1.request;
 
 import java.time.LocalDateTime;
 
+import com.jovan.erp_v1.enumeration.ConfirmationDocumentStatus;
+
+import jakarta.validation.constraints.NotNull;
+
 public record ConfirmationDocumentRequest(
-        Long id,
+        @NotNull Long id,
         String filePath,
-        LocalDateTime createdAt,
-        Long userId,
-        Long shiftId) {
+        @NotNull LocalDateTime createdAt,
+        @NotNull Long userId,
+        @NotNull Long shiftId,
+        @NotNull ConfirmationDocumentStatus status,
+        @NotNull Boolean confirmed) {
 
 }

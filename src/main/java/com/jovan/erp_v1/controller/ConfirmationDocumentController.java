@@ -31,9 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.jovan.erp_v1.dto.GoodsDispatchDTO;
+import com.jovan.erp_v1.enumeration.ConfirmationDocumentStatus;
 import com.jovan.erp_v1.model.ConfirmationDocument;
 import com.jovan.erp_v1.request.ConfirmationDocumentRequest;
 import com.jovan.erp_v1.response.ConfirmationDocumentResponse;
+import com.jovan.erp_v1.save_as.ConfirmationDocumentSaveAsRequest;
+import com.jovan.erp_v1.search_request.ConfirmationDocumentSearchRequest;
 import com.jovan.erp_v1.service.IConfirmationDocumentService;
 import com.jovan.erp_v1.service.PdfGeneratorService;
 import com.jovan.erp_v1.util.RoleGroups;
@@ -154,7 +157,9 @@ public class ConfirmationDocumentController {
                 path.toString(), // Putanja do fajla
                 LocalDateTime.now(), // Vreme kreiranja
                 dto.getEmployeeId(), // ID korisnika iz DTO
-                dto.getShiftId() // ID smene iz DTO
+                dto.getShiftId(), // ID smene iz DTO
+                null,
+                null
         );
         confirmationDocumentService.saveDocument(request);
         // 4. Vrati PDF korisniku za preuzimanje
@@ -175,4 +180,67 @@ public class ConfirmationDocumentController {
         return ResponseEntity.ok(doc);
     }
     
+    //nove metode
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_ACCESS)
+    @GetMapping("/track-confirmation-doc/{id}")
+    public ResponseEntity<ConfirmationDocumentResponse> trackConfirmationDoc(@PathVariable Long id){
+    	ConfirmationDocumentResponse items = confirmationDocumentService.trackConfirmationDoc(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<ConfirmationDocumentResponse> confirmConfDoc(@PathVariable Long id){
+    	ConfirmationDocumentResponse items = confirmationDocumentService.confirmConfDoc(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<ConfirmationDocumentResponse> cancelConfirmationDoc(@PathVariable Long id){
+    	ConfirmationDocumentResponse items = confirmationDocumentService.cancelConfirmationDoc(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
+    @PostMapping("/{id}/close")
+    public ResponseEntity<ConfirmationDocumentResponse> closeConfirmationDoc(@PathVariable Long id){
+    	ConfirmationDocumentResponse items = confirmationDocumentService.closeConfirmationDoc(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
+    @PostMapping("/{id}/status/{status}")
+    public ResponseEntity<ConfirmationDocumentResponse> changeStatus(@PathVariable Long id,@PathVariable ConfirmationDocumentStatus status){
+    	ConfirmationDocumentResponse items = confirmationDocumentService.changeStatus(id, status);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
+    @PostMapping("/save")
+    public ResponseEntity<ConfirmationDocumentResponse> saveConfirmationDoc(@Valid @RequestBody ConfirmationDocumentRequest request){
+    	ConfirmationDocumentResponse items = confirmationDocumentService.saveConfirmationDoc(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
+    @PostMapping("/save-as")
+    public ResponseEntity<ConfirmationDocumentResponse> saveAs(@Valid @RequestBody ConfirmationDocumentSaveAsRequest request){
+    	ConfirmationDocumentResponse items = confirmationDocumentService.saveAs(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
+    @PostMapping("/save-all")
+    public ResponseEntity<List<ConfirmationDocumentResponse>> saveAll(@Valid @RequestBody List<ConfirmationDocumentRequest> requests){
+    	List<ConfirmationDocumentResponse> items = confirmationDocumentService.saveAll(requests);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.CONFIRMATION_DOCUMENT_FULL_ACCESS)
+    @PostMapping("/general-search")
+    public ResponseEntity<List<ConfirmationDocumentResponse>> generalSearch(@RequestBody ConfirmationDocumentSearchRequest request){
+    	List<ConfirmationDocumentResponse> items = confirmationDocumentService.generalSearch(request);
+    	return ResponseEntity.ok(items);
+    }
 }

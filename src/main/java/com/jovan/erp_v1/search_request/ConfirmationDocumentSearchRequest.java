@@ -2,6 +2,8 @@ package com.jovan.erp_v1.search_request;
 
 import java.time.LocalDateTime;
 
+import com.jovan.erp_v1.enumeration.ConfirmationDocumentStatus;
+
 public record ConfirmationDocumentSearchRequest(
 		Long id,
 		Long idFrom,
@@ -27,6 +29,8 @@ public record ConfirmationDocumentSearchRequest(
 		LocalDateTime endTimeAfter,
 		Long shiftSupervisorId,
 		Long shiftSupervisorIdFrom,
-		Long shiftSupervisorIdTo
+		Long shiftSupervisorIdTo,
+		ConfirmationDocumentStatus status,
+		Boolean confirmed
 		) {
 }

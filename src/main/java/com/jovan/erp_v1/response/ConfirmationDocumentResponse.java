@@ -17,22 +17,18 @@ public class ConfirmationDocumentResponse {
     private Long id;
     private String filePath;
     private LocalDateTime createdAt;
-    private Long userId;
-    private String username;
-    private Long shiftId;
-    private String shiftName;
+    private UserResponse userResponse;
+    private ShiftBasicResponse shiftBasicResponse;
 
     public ConfirmationDocumentResponse(ConfirmationDocument doc) {
         this.id = doc.getId();
         this.filePath = doc.getFilePath();
         this.createdAt = doc.getCreatedAt();
-        this.userId = doc.getCreatedBy().getId();
-        this.username = doc.getCreatedBy().getUsername();
-        this.shiftId = doc.getShift().getId();
-        // Kreiranje "naziva" smene kao string, npr. "08:00 - 16:00"
-        this.shiftName = formatShiftName(doc.getShift().getStartTime(), doc.getShift().getEndTime());
+        this.userResponse = doc.getCreatedBy() != null ? new UserResponse(doc.getCreatedBy()) : null;
+        this.shiftBasicResponse = doc.getShift() != null ? new ShiftBasicResponse(doc.getShift()) : null;
     }
 
+ // Kreiranje "naziva" smene kao string, npr. "08:00 - 16:00"
     private String formatShiftName(LocalDateTime start, LocalDateTime end) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         return start.format(formatter) + " - " + end.format(formatter);

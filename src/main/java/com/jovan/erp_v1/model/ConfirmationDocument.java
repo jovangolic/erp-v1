@@ -8,9 +8,13 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.jovan.erp_v1.enumeration.ConfirmationDocumentStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,6 +50,15 @@ public class ConfirmationDocument {
     @ManyToOne
     @JoinColumn(name="shift_id")
     private Shift shift;
+    
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ConfirmationDocumentStatus status = ConfirmationDocumentStatus.NEW;
+    
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean confirmed = false;
     
     @CreatedDate
     @Column(name = "created_at_date", updatable = false)
