@@ -20,10 +20,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
+import com.jovan.erp_v1.enumeration.InboundDeliveryStatus;
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.request.InboundDeliveryRequest;
 import com.jovan.erp_v1.response.InboundDeliveryResponse;
+import com.jovan.erp_v1.save_as.InboundDeliverySaveAsRequest;
+import com.jovan.erp_v1.search_request.InboundDeliverySearchRequest;
 import com.jovan.erp_v1.service.InterfejsInboundDeliveryService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -343,5 +346,68 @@ public class InboundDeliveryController {
      */
 
     // primer za deleteAllByIds -> [1,2,3,4]
+    
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_READ_ACCESS)
+    @GetMapping("/track/{id}")
+    public ResponseEntity<InboundDeliveryResponse> trackInboundDelivery(Long id){
+    	InboundDeliveryResponse items = inboundDeliveryService.trackInboundDelivery(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<InboundDeliveryResponse> confirmInboundDelivery(Long id){
+    	InboundDeliveryResponse items = inboundDeliveryService.confirmInboundDelivery(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<InboundDeliveryResponse> cancelInboundDelivery(Long id){
+    	InboundDeliveryResponse items = inboundDeliveryService.cancelInboundDelivery(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
+    @PostMapping("/{id}/close")
+    public ResponseEntity<InboundDeliveryResponse> closeInboundDelivery(Long id){
+    	InboundDeliveryResponse items = inboundDeliveryService.closeInboundDelivery(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
+    @PostMapping("/{id}/status/{status}")
+    public ResponseEntity<InboundDeliveryResponse> changeStatus(Long id, InboundDeliveryStatus status){
+    	InboundDeliveryResponse items = inboundDeliveryService.changeStatus(id, status);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
+    @PostMapping("/save")
+    public ResponseEntity<InboundDeliveryResponse> saveInboundDelivery(InboundDeliveryRequest request){
+    	InboundDeliveryResponse items = inboundDeliveryService.saveInboundDelivery(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
+    @PostMapping("/save-as")
+    public ResponseEntity<InboundDeliveryResponse> saveAs(InboundDeliverySaveAsRequest request){
+    	InboundDeliveryResponse items = inboundDeliveryService.saveAs(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
+    @PostMapping("/save-all")
+    public ResponseEntity<List<InboundDeliveryResponse>> saveAll(List<InboundDeliveryRequest> request){
+    	List<InboundDeliveryResponse> items = inboundDeliveryService.saveAll(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INBOUND_DELIVERY_FULL_ACCESS)
+    @PostMapping("/general-search")
+    public ResponseEntity<List<InboundDeliveryResponse>> generalSearch(InboundDeliverySearchRequest request){
+    	List<InboundDeliveryResponse> items = inboundDeliveryService.generalSearch(request);
+    	return ResponseEntity.ok(items);
+    }
 }
 

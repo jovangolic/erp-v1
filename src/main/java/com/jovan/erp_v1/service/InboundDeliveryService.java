@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -13,9 +14,12 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
+import com.jovan.erp_v1.enumeration.InboundDeliveryStatus;
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.exception.InboundDeliveryErrorException;
@@ -35,9 +39,14 @@ import com.jovan.erp_v1.repository.InboundDeliveryRepository;
 import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.repository.SupplyRepository;
+import com.jovan.erp_v1.repository.specification.InboundDeliverySpecification;
 import com.jovan.erp_v1.request.DeliveryItemInboundRequest;
 import com.jovan.erp_v1.request.InboundDeliveryRequest;
 import com.jovan.erp_v1.response.InboundDeliveryResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.InboundDeliverySaveAsRequest;
+import com.jovan.erp_v1.search_request.InboundDeliverySearchRequest;
 import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -521,11 +530,165 @@ public class InboundDeliveryService implements InterfejsInboundDeliveryService {
 		}
 		return items.stream().map(inboundDeliveryMapper::toResponse).collect(Collectors.toList());
 	}
+	
+	@Transactional(readOnly = true)
+	@Override
+	public InboundDeliveryResponse trackInboundDelivery(Long id) {
+		List<InboundDelivery> items = inboundDeliveryRepository.trackInboundDelivery(id);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("InboundDelivery with id "+id+" not found");
+		}
+		InboundDelivery saved = items.get(0);
+		return new InboundDeliveryResponse(inboundDeliveryRepository.save(saved));
+	}
+
+	@Transactional
+	@Override
+	public InboundDeliveryResponse confirmInboundDelivery(Long id) {
+		InboundDelivery items = inboundDeliveryRepository.findById(id).orElseThrow(() -> new ValidationException("InboundDelivery not found with id "+id));
+		items.setConfirmed(true);
+		items.setInboundStatus(InboundDeliveryStatus.CONFIRMED);
+		items.getItems().stream().forEach(i -> i.setConfirmed(true));
+		return new InboundDeliveryResponse(inboundDeliveryRepository.save(items));
+	}
+
+	@Transactional
+	@Override
+	public InboundDeliveryResponse cancelInboundDelivery(Long id) {
+		InboundDelivery items = inboundDeliveryRepository.findById(id).orElseThrow(() -> new ValidationException("InboundDelivery not found with id "+id));
+		if(items.getInboundStatus() != InboundDeliveryStatus.NEW && items.getInboundStatus() != InboundDeliveryStatus.CONFIRMED) {
+			throw new ValidationException("Only NEW or CONFIRMED inboundDeliveries can be cancelled");
+		}
+		items.setInboundStatus(InboundDeliveryStatus.CANCELLED);
+		return new InboundDeliveryResponse(inboundDeliveryRepository.save(items));
+	}
+
+	@Transactional
+	@Override
+	public InboundDeliveryResponse closeInboundDelivery(Long id) {
+		InboundDelivery items = inboundDeliveryRepository.findById(id).orElseThrow(() -> new ValidationException("InboundDelivery not found with id "+id));
+		if(items.getInboundStatus() != InboundDeliveryStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED inboundDeliveries can be closed");
+		}
+		items.setInboundStatus(InboundDeliveryStatus.CLOSED);
+		return new InboundDeliveryResponse(inboundDeliveryRepository.save(items));
+	}
+
+	@Transactional
+	@Override
+	public InboundDeliveryResponse changeStatus(Long id, InboundDeliveryStatus status) {
+		InboundDelivery items = inboundDeliveryRepository.findById(id).orElseThrow(() -> new ValidationException("InboundDelivery not found with id "+id));
+		validateInboundDeliveryStatus(status);
+		if(items.getInboundStatus() == InboundDeliveryStatus.CLOSED) {		
+			throw new ValidationException("Closed inboundDeliveries cannot change status");
+		}
+		if(status == InboundDeliveryStatus.CONFIRMED) {
+			if(items.getInboundStatus() != InboundDeliveryStatus.NEW) {
+				throw new ValidationException("Only NEW inboundDeliveries can be confirmed");
+			}
+			items.setConfirmed(true);
+			items.getItems().forEach(i -> i.setConfirmed(true));
+		}
+		items.setInboundStatus(status);
+		return new InboundDeliveryResponse(inboundDeliveryRepository.save(items));
+	}
+
+	@Transactional
+	@Override
+	public InboundDeliveryResponse saveInboundDelivery(InboundDeliveryRequest request) {
+		InboundDelivery ind = InboundDelivery.builder()
+				.id(request.id())
+				.deliveryDate(request.deliveryDate())
+				.supply(validateSupplyId(request.supplyId()))
+				.status(request.status())
+				.items(mapInboundDeliveryItems(request.itemRequest(), validateInboundDeliveryId(request.id())))
+				.build();
+		InboundDelivery saved = inboundDeliveryRepository.save(ind);
+		return new InboundDeliveryResponse(saved); 
+	}
+	
+	private final AbstractSaveAsService<InboundDelivery, InboundDeliveryResponse> saveAsHelper = new AbstractSaveAsService<InboundDelivery, InboundDeliveryResponse>() {
+		
+		@Override
+		protected InboundDeliveryResponse toResponse(InboundDelivery entity) {
+			return new InboundDeliveryResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<InboundDelivery, Long> getRepository() {
+			return inboundDeliveryRepository;
+		}
+		
+		@Override
+		protected InboundDelivery copyAndOverride(InboundDelivery source, Map<String, Object> overrides) {
+			return InboundDelivery.builder()
+					.supply(validateSupplyId(source.getSupply().getId()))
+					.status(source.getStatus())
+					.confirmed(source.getConfirmed())
+					.inboundStatus(source.getInboundStatus())
+					.build();
+		}
+	};
+	
+	private final AbstractSaveAllService<InboundDelivery, InboundDeliveryResponse> saveAllHelper = new AbstractSaveAllService<InboundDelivery, InboundDeliveryResponse>() {
+		
+		@Override
+		protected Function<InboundDelivery, InboundDeliveryResponse> toResponse() {
+			return InboundDeliveryResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<InboundDelivery, Long> getRepository() {
+			return inboundDeliveryRepository;
+		}
+	};
+
+	@Transactional
+	@Override
+	public InboundDeliveryResponse saveAs(InboundDeliverySaveAsRequest request) {
+		Map<String, Object> overrides = new HashMap<String, Object>();
+		if(request.supplyId() != null) overrides.put("Supply-ID", request.supplyId());
+		if(request.status() != null) overrides.put("Status", request.status());
+		if(request.confirmed() != null) overrides.put("Confirmed", request.confirmed());
+		if(request.inboundStatus() != null) overrides.put("Inbound-Status", request.inboundStatus());
+		return saveAsHelper.saveAs(request.sourceId(), overrides);
+	}
+
+	@Transactional
+	@Override
+	public List<InboundDeliveryResponse> saveAll(List<InboundDeliveryRequest> request) {
+		List<InboundDelivery> items = request.stream()
+				.map(req -> InboundDelivery.builder()
+						.id(req.id())
+						.supply(validateSupplyId(req.supplyId()))
+						.status(req.status())
+						.items(mapInboundDeliveryItems(req.itemRequest(), validateInboundDeliveryId(req.id())))
+						.build())
+				.toList();
+		return saveAllHelper.saveAll(items);
+	}
+
+	@Override
+	public List<InboundDeliveryResponse> generalSearch(InboundDeliverySearchRequest request) {
+		Specification<InboundDelivery> spec = InboundDeliverySpecification.fromRequest(request);
+		List<InboundDelivery> items = inboundDeliveryRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InboundDelivery for given criteria found");
+		}
+		return items.stream().map(InboundDeliveryResponse::new).collect(Collectors.toList());
+	}
     
     private void validateDeliveryStatus(DeliveryStatus status) {
     	if(status == null) {
     		throw new ValidationException("Status za DeliveryStatus nije pronadjen");
     	}
+    }
+    
+    private InboundDelivery validateInboundDeliveryId(Long id) {
+    	if(id == null) {
+    		throw new ValidationException("InboundDelivery ID must not be null");
+    	}
+    	return inboundDeliveryRepository.findById(id).orElseThrow(() -> new ValidationException("InboundDelivery no tfound with id "+id));
     }
     
     private Supply validateSupplyId(Long supplyId) {
@@ -638,4 +801,13 @@ public class InboundDeliveryService implements InterfejsInboundDeliveryService {
 		}
 		return storageRepository.findById(storageId).orElseThrow(() -> new ValidationException("Storage not found with id "+storageId));
 	}
+	
+	private void validateInboundDeliveryStatus(InboundDeliveryStatus status) {
+		Optional.ofNullable(status)
+			.orElseThrow(() -> new ValidationException("InboundDeliveryStatus status must not be null"));
+	}
+
 }
+
+
+	

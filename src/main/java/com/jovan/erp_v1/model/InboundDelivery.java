@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
+import com.jovan.erp_v1.enumeration.InboundDeliveryStatus;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,6 +26,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -33,6 +35,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class InboundDelivery {
 
     @Id
@@ -49,6 +52,15 @@ public class InboundDelivery {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DeliveryStatus status;
+    
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean confirmed = false;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private InboundDeliveryStatus inboundStatus = InboundDeliveryStatus.NEW;
 
     @OneToMany(mappedBy = "inboundDelivery", cascade = CascadeType.ALL)
     private List<DeliveryItem> items;

@@ -21,6 +21,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -29,6 +30,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Supply {
 
 	@Id
@@ -42,10 +44,10 @@ public class Supply {
 	@JoinColumn(name="storage_id")
 	private Storage storage;
 
-	@Column
+	@Column(precision = 10, scale = 2)
 	private BigDecimal quantity;
 
-	@Column
+	@Column(nullable = false)
 	private LocalDateTime updates;
 	
 	@CreatedDate

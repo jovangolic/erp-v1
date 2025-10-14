@@ -3,14 +3,14 @@ package com.jovan.erp_v1.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.exception.GoodsNotFoundException;
+import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.mapper.ProductMapper;
 import com.jovan.erp_v1.mapper.RawMaterialMapper;
 import com.jovan.erp_v1.model.Goods;
@@ -19,7 +19,9 @@ import com.jovan.erp_v1.model.RawMaterial;
 import com.jovan.erp_v1.repository.GoodsRepository;
 import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.RawMaterialRepository;
+import com.jovan.erp_v1.repository.specification.GoodsSpecification;
 import com.jovan.erp_v1.response.GoodsResponse;
+import com.jovan.erp_v1.search_request.GoodsSearchRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -126,6 +128,23 @@ public class GoodsService implements IGoodsService {
                 .orElseThrow(() -> new GoodsNotFoundException("No goods found for barcode: " + barCode));
         return mapGoodsToResponse(goods);
     }
+    
+    @Override
+    public List<GoodsResponse> findByStorageId(Long storageId) {
+        return goodsRepository.findByStorageId(storageId).stream()
+                .map(GoodsResponse::new)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+	public List<GoodsResponse> generalSearch(GoodsSearchRequest request) {
+		Specification<Goods> spec = GoodsSpecification.fromRequest(request);
+		List<Goods> items = goodsRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Goods for given criteria found");
+		}
+		return items.stream().map(GoodsResponse::new).collect(Collectors.toList());
+	}
 
     private List<GoodsResponse> mergeResults(List<GoodsResponse> list1, List<GoodsResponse> list2) {
         List<GoodsResponse> combined = new ArrayList<>();
@@ -151,12 +170,4 @@ public class GoodsService implements IGoodsService {
             throw new IllegalStateException("Unknown Goods subtype: " + goods.getClass().getSimpleName());
         }
     }
-
-    @Override
-    public List<GoodsResponse> findByStorageId(Long storageId) {
-        return goodsRepository.findByStorageId(storageId).stream()
-                .map(GoodsResponse::new)
-                .collect(Collectors.toList());
-    }
-
 }

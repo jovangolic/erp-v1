@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
+import com.jovan.erp_v1.enumeration.InboundDeliveryStatus;
 import com.jovan.erp_v1.model.InboundDelivery;
 
 import lombok.AllArgsConstructor;
@@ -21,6 +22,8 @@ public class InboundDeliveryResponse {
     private Long supplyId;
     private DeliveryStatus status;
     private List<DeliveryItemResponse> items;
+    private Boolean confirmed;
+    private InboundDeliveryStatus inboundStatus;
 
     public InboundDeliveryResponse(InboundDelivery inbound) {
         this.id = inbound.getId();
@@ -30,5 +33,7 @@ public class InboundDeliveryResponse {
         this.items = inbound.getItems().stream()
                 .map(DeliveryItemResponse::new)
                 .collect(Collectors.toList());
+        this.confirmed = inbound.getConfirmed();
+        this.inboundStatus = inbound.getInboundStatus();
     }
 }

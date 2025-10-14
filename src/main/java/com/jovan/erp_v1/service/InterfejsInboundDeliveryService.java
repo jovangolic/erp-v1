@@ -5,10 +5,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
+import com.jovan.erp_v1.enumeration.InboundDeliveryStatus;
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.request.InboundDeliveryRequest;
 import com.jovan.erp_v1.response.InboundDeliveryResponse;
+import com.jovan.erp_v1.save_as.InboundDeliverySaveAsRequest;
+import com.jovan.erp_v1.search_request.InboundDeliverySearchRequest;
 
 public interface InterfejsInboundDeliveryService {
 
@@ -53,4 +56,15 @@ public interface InterfejsInboundDeliveryService {
     List<InboundDeliveryResponse> findBySupply_UpdatesAfter(LocalDateTime updates);
     List<InboundDeliveryResponse> findBySupply_UpdatesBefore(LocalDateTime updates);
     List<InboundDeliveryResponse> findBySupply_UpdatesBetween(LocalDateTime updatesFrom, LocalDateTime updatesTo);
+    
+    //nove metode
+    InboundDeliveryResponse trackInboundDelivery(Long id);
+    InboundDeliveryResponse confirmInboundDelivery(Long id);
+    InboundDeliveryResponse cancelInboundDelivery(Long id);
+    InboundDeliveryResponse closeInboundDelivery(Long id);
+    InboundDeliveryResponse changeStatus(Long id, InboundDeliveryStatus status);
+    InboundDeliveryResponse saveInboundDelivery(InboundDeliveryRequest request);
+    InboundDeliveryResponse saveAs(InboundDeliverySaveAsRequest request);
+    List<InboundDeliveryResponse> saveAll(List<InboundDeliveryRequest> request);
+    List<InboundDeliveryResponse> generalSearch(InboundDeliverySearchRequest request);
 }

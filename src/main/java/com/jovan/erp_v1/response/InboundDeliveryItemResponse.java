@@ -2,6 +2,7 @@ package com.jovan.erp_v1.response;
 
 import java.time.LocalDate;
 import com.jovan.erp_v1.enumeration.DeliveryStatus;
+import com.jovan.erp_v1.enumeration.InboundDeliveryStatus;
 import com.jovan.erp_v1.model.InboundDelivery;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,11 +17,15 @@ public class InboundDeliveryItemResponse {
     private LocalDate deliveryDate;
     private Long supplyId;
     private DeliveryStatus status;
+    private Boolean confirmed;
+    private InboundDeliveryStatus inboundStatus;
     
     public InboundDeliveryItemResponse(InboundDelivery inbound) {
         this.id = inbound.getId();
         this.deliveryDate = inbound.getDeliveryDate();
         this.supplyId = inbound.getSupply().getId();
         this.status = inbound.getStatus();
+        this.confirmed = inbound.getConfirmed();
+        this.inboundStatus = inbound.getInboundStatus();
     }
 }

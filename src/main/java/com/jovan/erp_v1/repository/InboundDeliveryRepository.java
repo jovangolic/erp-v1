@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -18,20 +19,17 @@ import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.model.InboundDelivery;
 
 @Repository
-public interface InboundDeliveryRepository extends JpaRepository<InboundDelivery, Long> {
+public interface InboundDeliveryRepository extends JpaRepository<InboundDelivery, Long>, JpaSpecificationExecutor<InboundDelivery> {
 
     @EntityGraph(attributePaths = { "supply", "items", "items.product" })
     Optional<InboundDelivery> findById(Long id);
-
     @EntityGraph(attributePaths = { "supply", "items", "items.product" })
     List<InboundDelivery> findAll();
-
     @EntityGraph(attributePaths = { "supply", "items", "items.product" })
     List<InboundDelivery> findByStatus(DeliveryStatus status);
 
     @EntityGraph(attributePaths = { "supply", "items", "items.product" })
     List<InboundDelivery> findBySupplyId(Long supplyId);
-
     @EntityGraph(attributePaths = { "supply", "items", "items.product" })
     //nove metode
     List<InboundDelivery> findByDeliveryDateBetween(LocalDate from, LocalDate to);
@@ -89,4 +87,8 @@ public interface InboundDeliveryRepository extends JpaRepository<InboundDelivery
     List<InboundDelivery> findBySupply_UpdatesAfter(LocalDateTime updates);
     List<InboundDelivery> findBySupply_UpdatesBefore(LocalDateTime updates);
     List<InboundDelivery> findBySupply_UpdatesBetween(LocalDateTime updatesFrom, LocalDateTime updatesTo);
+    
+    //nove metode
+    @Query("SELECT d FROM InboundDelivery d LEFT JOIN FETCH d.items WHERE d.id = :id")
+    List<InboundDelivery> trackInboundDelivery(@Param("id") Long id);
 }

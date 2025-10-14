@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +18,7 @@ import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.response.GoodsResponse;
+import com.jovan.erp_v1.search_request.GoodsSearchRequest;
 import com.jovan.erp_v1.service.IGoodsService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -108,5 +110,12 @@ public class GoodsController {
 	public ResponseEntity<GoodsResponse> findSingleByBarCode(@RequestParam("barCode") String barCode) {
 		GoodsResponse response = goodsService.findSingleByBarCode(barCode);
 		return ResponseEntity.ok(response);
+	}
+	
+	@PreAuthorize(RoleGroups.GOODS_FULL_ACCESS)
+	@PostMapping("/general-search")
+	public ResponseEntity<List<GoodsResponse>> generalSearch(@RequestBody GoodsSearchRequest request){
+		List<GoodsResponse> items = goodsService.generalSearch(request);
+		return ResponseEntity.ok(items);
 	}
 }
