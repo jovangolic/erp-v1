@@ -10,6 +10,8 @@ import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.model.BalanceSheet;
 import com.jovan.erp_v1.search_request.BalanceSheetGeneralSearchRequest;
 
+import jakarta.persistence.criteria.Predicate;
+
 public class BalanceSheetSpecification {
 
 	public static Specification<BalanceSheet> hasFiscalYearId(Long fiscalYearId){
@@ -80,6 +82,7 @@ public class BalanceSheetSpecification {
     			.and(hasEndDateBefore(req.endDateBefore()))
     			.and(hasEndDateAfter(req.endDateAfter()))
     			.and(hasEndDate(req.endDate()))
+    			.and(hasFiscalYearDate(req.startDate(), req.endDate()))
     			.and(hasFiscalDateRange(req.startDate(), req.endDate()));
     }
     
@@ -127,6 +130,20 @@ public class BalanceSheetSpecification {
     
     public static Specification<BalanceSheet> hasEndDate(LocalDate d){
     	return(root,query,cb) -> d == null ? null : cb.equal(root.get("fiscalYear").get("endDate"), d);
+    }
+    
+    public static Specification<BalanceSheet> hasFiscalYearDate(LocalDate start, LocalDate end){
+    	return(root, query, cb) -> {
+    		if(start == null && end == null) return null;
+    		Predicate predicate = cb.conjunction();
+    		if(start != null) {
+				predicate = cb.and(predicate,cb.greaterThanOrEqualTo(root.get("fiscalYear").get("startDate"), start));
+			}
+			if(end != null) {
+				predicate = cb.and(predicate, cb.lessThanOrEqualTo(root.get("fiscalYear").get("endDate"), end));
+			}
+			return predicate;
+    	};
     }
     
     public static Specification<BalanceSheet> hasStartDateBefore(LocalDate db){

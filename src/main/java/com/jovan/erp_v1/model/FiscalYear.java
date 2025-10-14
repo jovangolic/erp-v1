@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
+import com.jovan.erp_v1.enumeration.FiscalYearTypeStatus;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,6 +26,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -33,6 +35,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class FiscalYear {
 
     @Id
@@ -55,8 +58,18 @@ public class FiscalYear {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private FiscalQuarterStatus quarterStatus;
+    
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean confirmed = false;
+    
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private FiscalYearTypeStatus status = FiscalYearTypeStatus.NEW;
 
     @OneToMany(mappedBy = "fiscalYear", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<FiscalQuarter> quarters = new ArrayList<>();
     
     @CreatedDate

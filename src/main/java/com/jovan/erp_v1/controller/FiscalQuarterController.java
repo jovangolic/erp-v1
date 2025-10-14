@@ -17,9 +17,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
+import com.jovan.erp_v1.enumeration.FiscalQuarterTypeStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.request.FiscalQuarterRequest;
 import com.jovan.erp_v1.response.FiscalQuarterResponse;
+import com.jovan.erp_v1.save_as.FiscalQuarterSaveAsRequest;
+import com.jovan.erp_v1.search_request.FiscalQuarterSearchRequest;
 import com.jovan.erp_v1.service.IFiscalQuarterService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -276,5 +279,70 @@ public class FiscalQuarterController {
     public ResponseEntity<List<FiscalQuarterResponse>> findByFiscalYearBetweenYears(@RequestParam("start") Integer start,@RequestParam("end")  Integer end){
     	List<FiscalQuarterResponse> responses = fiscalQuarterService.findByFiscalYearBetweenYears(start, end);
     	return ResponseEntity.ok(responses);
+    }
+    
+    //nove metode
+    
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_READ_ACCESS)
+    @GetMapping("/track/{id}")
+    public ResponseEntity<FiscalQuarterResponse> trackFiscalQuarter(@PathVariable Long id){
+    	FiscalQuarterResponse items = fiscalQuarterService.trackFiscalQuarter(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_FULL_ACCESS)
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<FiscalQuarterResponse> confirmFiscalQuarter(@PathVariable Long id){
+    	FiscalQuarterResponse items = fiscalQuarterService.confirmFiscalQuarter(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_FULL_ACCESS)
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<FiscalQuarterResponse> cancelFiscalQuarter(@PathVariable Long id){
+    	FiscalQuarterResponse items = fiscalQuarterService.cancelFiscalQuarter(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_FULL_ACCESS)
+    @PostMapping("/{id}/close")
+    public ResponseEntity<FiscalQuarterResponse> closeFiscalQuarter(@PathVariable Long id){
+    	FiscalQuarterResponse items = fiscalQuarterService.closeFiscalQuarter(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_FULL_ACCESS)
+    @PostMapping("/{id}/status/{status}")
+    public ResponseEntity<FiscalQuarterResponse> changeStatus(@PathVariable Long id,@PathVariable  FiscalQuarterTypeStatus status){
+    	FiscalQuarterResponse items = fiscalQuarterService.changeStatus(id, status);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_FULL_ACCESS)
+    @PostMapping("/save")
+    public ResponseEntity<FiscalQuarterResponse> saveFiscalQuarter(@Valid @RequestBody FiscalQuarterRequest request){
+    	FiscalQuarterResponse items = fiscalQuarterService.saveFiscalQuarter(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_FULL_ACCESS)
+    @PostMapping("/save-as")
+    public ResponseEntity<FiscalQuarterResponse> saveAs(@Valid @RequestBody FiscalQuarterSaveAsRequest request){
+    	FiscalQuarterResponse items = fiscalQuarterService.saveAs(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_FULL_ACCESS)
+    @PostMapping("/save-all")
+    public ResponseEntity<List<FiscalQuarterResponse>> saveAll(@Valid @RequestBody List<FiscalQuarterRequest> requests) {
+    	List<FiscalQuarterResponse> items = fiscalQuarterService.saveAll(requests);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_QUARTER_FULL_ACCESS)
+    @PostMapping("/general-search")
+    public ResponseEntity<List<FiscalQuarterResponse>> generalSearch(@RequestBody FiscalQuarterSearchRequest request){
+    	List<FiscalQuarterResponse> items = fiscalQuarterService.generalSearch(request);
+    	return ResponseEntity.ok(items);
     }
 }

@@ -171,10 +171,10 @@ public class ConfirmationDocumentSpecification {
 			Predicate firstNamePredicate = null;
 			Predicate lastNamePredicate = null;
 			if(first != null && !first.isBlank()) {
-				firstNamePredicate = cb.like(cb.lower(root.get("createdBy").get("firstName")), "%" + first.toLowerCase() + "%");
+				firstNamePredicate = cb.like(cb.lower(root.get("createdBy").get("firstName")), "%" + first.toLowerCase().trim() + "%");
 			}
 			if(last != null && !last.isBlank()) {
-				lastNamePredicate = cb.like(cb.lower(root.get("createdBy").get("lastName")), "%" + last.toLowerCase() + "%");
+				lastNamePredicate = cb.like(cb.lower(root.get("createdBy").get("lastName")), "%" + last.toLowerCase().trim() + "%");
 			}
 			// Kombinacija oba uslova – ako postoje oba, koristi se AND
 			if(firstNamePredicate != null && lastNamePredicate != null) {

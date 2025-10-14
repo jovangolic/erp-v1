@@ -80,7 +80,9 @@ public class FiscalYearMapper extends AbstractMapper<FiscalYearRequest> {
                 fiscalYear.getEndDate(),
                 fiscalYear.getYearStatus(),
                 fiscalYear.getQuarterStatus(),
-                fiscalQuarterMapper.toResponseList(fiscalYear.getQuarters()));
+                fiscalQuarterMapper.toResponseList(fiscalYear.getQuarters()),
+                fiscalYear.getStatus(),
+                fiscalYear.getConfirmed());
     }
 
     public List<FiscalYearResponse> toResponseList(List<FiscalYear> years) {

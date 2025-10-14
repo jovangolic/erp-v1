@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
+import com.jovan.erp_v1.enumeration.FiscalYearTypeStatus;
 import com.jovan.erp_v1.model.FiscalYear;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,8 @@ public class FiscalYearResponse {
     private FiscalYearStatus yearStatus;
     private FiscalQuarterStatus quarterStatus;
     private List<FiscalQuarterResponse> quarters;
+    private FiscalYearTypeStatus status;
+    private Boolean confirmed;
 
     public FiscalYearResponse(FiscalYear year) {
         this.id = year.getId();
@@ -33,11 +36,13 @@ public class FiscalYearResponse {
         this.quarters = year.getQuarters().stream()
                 .map(FiscalQuarterResponse::new)
                 .collect(Collectors.toList());
+        this.status = year.getStatus();
+        this.confirmed = year.getConfirmed();
     }
 
     public FiscalYearResponse(Long id, Integer year, LocalDate startDate, LocalDate endDate,
             FiscalYearStatus yearStatus, FiscalQuarterStatus quarterStatus,
-            List<FiscalQuarterResponse> quarters) {
+            List<FiscalQuarterResponse> quarters, FiscalYearTypeStatus status,Boolean confirmed) {
         this.id = id;
         this.year = year;
         this.startDate = startDate;
@@ -45,5 +50,7 @@ public class FiscalYearResponse {
         this.yearStatus = yearStatus;
         this.quarterStatus = quarterStatus;
         this.quarters = quarters;
+        this.status = status;
+        this.confirmed = confirmed;
     }
 }

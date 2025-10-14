@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
+import com.jovan.erp_v1.enumeration.FiscalYearTypeStatus;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -16,5 +17,7 @@ public record FiscalYearRequest(
                 @NotNull LocalDate endDate,
                 @NotNull FiscalYearStatus yearStatus,
                 @NotNull FiscalQuarterStatus quarterStatus,
-                @NotNull List<FiscalQuarterRequest> quarters) {
+                @NotNull List<FiscalQuarterRequest> quarters,
+                @NotNull Boolean confirmed,
+                @NotNull FiscalYearTypeStatus status) {
 }

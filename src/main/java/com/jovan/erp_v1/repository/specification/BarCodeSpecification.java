@@ -1,6 +1,8 @@
 package com.jovan.erp_v1.repository.specification;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.jpa.domain.Specification;
 
@@ -11,6 +13,8 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.BarCode;
 import com.jovan.erp_v1.search_request.BarCodeSearchRequest;
+
+import jakarta.persistence.criteria.Predicate;
 
 public class BarCodeSpecification {
 
@@ -24,8 +28,7 @@ public class BarCodeSpecification {
 				.and(hasScannedRange(req.scannedAtStart(), req.scannedAtEnd()))
 				.and(hasUserId(req.userId()))
 				.and(hasUserIdRange(req.userIdFrom(), req.userIdTo()))
-				.and(hasUserFirstName(req.firstName()))
-				.and(hasUserLastName(req.lastName()))
+				.and(hasUserFullName(req.firstName(), req.lastName()))
 				.and(hasGoodsId(req.goodsId()))
 				.and(hasGoodsIdRange(req.goodsIdFrom(), req.goodsIdTo()))
 				.and(hasGoodsName(req.goodsName()))
@@ -171,14 +174,18 @@ public class BarCodeSpecification {
 		return(root,query,cb) -> id == null ? null : cb.equal(root.get("scannedBy").get("id"), id);
 	}
 	
-	public static Specification<BarCode> hasUserLastName(String lastName){
-		return(root,query,cb) -> lastName == null ? null :
-			cb.like(cb.lower(root.get("scannedBy").get("lastName")), "%" + lastName.toLowerCase() + "%");
-	}
-	
-	public static Specification<BarCode> hasUserFirstName(String firstName){
-		return(root,query,cb) -> firstName == null ? null :
-			cb.like(cb.lower(root.get("scannedBy").get("firstName")), "%" + firstName.toLowerCase() + "%");
+	public static Specification<BarCode> hasUserFullName(String first, String last){
+		return(root, query, cb) -> {
+			if((first == null || first.isBlank()) && (last == null || last.isBlank())) return null;
+			List<Predicate> predicates = new ArrayList<Predicate>();
+			if(first != null && !first.isBlank()) {
+				predicates.add(cb.like(cb.lower(root.get("scannedBy").get("firstName")), "%" + first.toLowerCase().trim() + "%"));
+			}
+			if(last != null && !last.isBlank()) {
+				predicates.add(cb.like(cb.lower(root.get("scannedBy").get("lastName")), "%" + last.toLowerCase().trim() + "%"));
+			}
+			return cb.and(predicates.toArray(new Predicate[0]));
+		};
 	}
 	
 	public static Specification<BarCode> hasUserIdRange(Long from, Long to){

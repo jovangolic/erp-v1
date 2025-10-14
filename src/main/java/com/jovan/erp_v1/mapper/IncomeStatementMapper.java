@@ -59,7 +59,9 @@ public class IncomeStatementMapper extends AbstractMapper<IncomeStatementRequest
                 fiscalYear.getQuarterStatus(),
                 fiscalYear.getQuarters().stream()
                         .map(FiscalQuarterResponse::new)
-                        .collect(Collectors.toList()));
+                        .collect(Collectors.toList()),
+                        fiscalYear.getStatus(),
+                        fiscalYear.getConfirmed());
 
         return new IncomeStatementResponse(
                 incomeStatement.getId(),
