@@ -12,6 +12,8 @@ import org.springframework.stereotype.Repository;
 
 import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.statistics.fiscal_year.FiscalYearMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.fiscal_year.FiscalYearQuarterStatDTO;
+import com.jovan.erp_v1.statistics.fiscal_year.FiscalYearStatusStatDTO;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 
@@ -77,5 +79,13 @@ public interface FiscalYearRepository extends JpaRepository<FiscalYear, Long>, J
     		ORDER BY FUNCTION('YEAR' , f.startDate), FUNCTION('MONTH' , f.startDate)
     		""")
     List<FiscalYearMonthlyStatDTO> countFiscalYearsByYearAndMonth();
+    
+    @Query("SELECT new com.jovan.erp_v1.statistics.fiscal_year.FiscalYearStatusStatDTO(f.yearStatus, COUNT(f))"
+    		+ "FROM f FiscalYear GROUP BY f.yearStatus")
+    List<FiscalYearStatusStatDTO> countByFiscalYearStatus();
+    
+    @Query("SELECT new com.jovan.erp_v1.statistics.fiscal_year.FiscalYearQuarterStatDTO(f.quarterStatus, COUNT(f))"
+    		+ "FROM f FiscalYear GROUP BY f.quarterStatus")
+    List<FiscalYearQuarterStatDTO> countByFiscalYearQuarterStatus();
 }
 

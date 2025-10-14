@@ -19,37 +19,41 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Entity
 @Data
 @AllArgsConstructor
+@Builder
 public class Storage {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column
+	@Column(nullable = false)
 	private String name;
 
-	@Column
+	@Column(nullable = false)
 	private String location;
 
-	@Column
+	@Column(precision = 10, scale = 2)
 	private BigDecimal capacity;
 
 	@Enumerated(EnumType.STRING)
-	@Column
+	@Column(nullable = false)
 	private StorageType type;
 	
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private StorageStatus status;
 	
-	@Column
+	@Column(nullable = false)
+	@Builder.Default
 	private BigDecimal usedCapacity = BigDecimal.ZERO;
 	
-	@Column
+	@Column(nullable = false)
 	private Boolean hasShelvesFor;
 
 	@OneToMany(mappedBy = "storage", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -68,6 +72,7 @@ public class Storage {
 	private List<StockTransfer> incomingTransfers;
 
 	@OneToMany(mappedBy = "storage", cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
 	private List<Material> materials = new ArrayList<>();
 
 	@OneToMany(mappedBy = "fromStorage")

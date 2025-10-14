@@ -18,9 +18,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
+import com.jovan.erp_v1.enumeration.FiscalYearTypeStatus;
 import com.jovan.erp_v1.request.FiscalYearRequest;
 import com.jovan.erp_v1.response.FiscalYearResponse;
+import com.jovan.erp_v1.save_as.FiscalYearSaveAsRequest;
+import com.jovan.erp_v1.search_request.FiscalYearSearchRequest;
 import com.jovan.erp_v1.service.IFiscalYearService;
+import com.jovan.erp_v1.statistics.fiscal_year.FiscalYearMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.fiscal_year.FiscalYearQuarterStatDTO;
+import com.jovan.erp_v1.statistics.fiscal_year.FiscalYearStatusStatDTO;
 import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
@@ -159,4 +165,89 @@ public class FiscalYearController {
         return ResponseEntity.ok(responses);
     }
 
+    //nove metode
+    
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
+    @GetMapping("/count/by-year-and-month")
+    public ResponseEntity<List<FiscalYearMonthlyStatDTO>> countFiscalYearsByYearAndMonth(){
+    	List<FiscalYearMonthlyStatDTO> items = fiscalYearService.countFiscalYearsByYearAndMonth();
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
+    @GetMapping("/count/by-status")
+    public ResponseEntity<List<FiscalYearStatusStatDTO>> countByFiscalYearStatus(){
+    	List<FiscalYearStatusStatDTO> items = fiscalYearService.countByFiscalYearStatus();
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
+    @GetMapping("/count/by-quarter-status")
+    public ResponseEntity<List<FiscalYearQuarterStatDTO>> countByFiscalYearQuarterStatus(){
+    	List<FiscalYearQuarterStatDTO> items = fiscalYearService.countByFiscalYearQuarterStatus();
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_READ_ACCESS)
+    @GetMapping("/track/{id}")
+    public ResponseEntity<FiscalYearResponse> trackFiscalYear(@PathVariable Long id){
+    	FiscalYearResponse items = fiscalYearService.trackFiscalYear(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_FULL_ACCESS)
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<FiscalYearResponse> confirmFiscalYear(@PathVariable Long id){
+    	FiscalYearResponse items = fiscalYearService.confirmFiscalYear(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_FULL_ACCESS)
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<FiscalYearResponse> cancelFiscalYear(@PathVariable Long id){
+    	FiscalYearResponse items = fiscalYearService.cancelFiscalYear(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_FULL_ACCESS)
+    @PostMapping("/{id}/close")
+    public ResponseEntity<FiscalYearResponse> closeFiscalYear(@PathVariable Long id){
+    	FiscalYearResponse items = fiscalYearService.closeFiscalYear(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_FULL_ACCESS)
+    @PostMapping("/{id}/status/{status}")
+    public ResponseEntity<FiscalYearResponse> changeStatus(@PathVariable Long id,@PathVariable  FiscalYearTypeStatus status){
+    	FiscalYearResponse items = fiscalYearService.changeStatus(id, status);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_FULL_ACCESS)
+    @PostMapping("/save")
+    public ResponseEntity<FiscalYearResponse> saveFiscalYear(@Valid @RequestBody FiscalYearRequest request){
+    	FiscalYearResponse items = fiscalYearService.saveFiscalYear(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_FULL_ACCESS)
+    @PostMapping("/save-as")
+    public ResponseEntity<FiscalYearResponse> saveAs(@Valid @RequestBody FiscalYearSaveAsRequest req){
+    	FiscalYearResponse items = fiscalYearService.saveAs(req);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_FULL_ACCESS)
+    @PostMapping("/save-all")
+    public ResponseEntity<List<FiscalYearResponse>> saveAll(@Valid @RequestBody List<FiscalYearRequest> request){
+    	List<FiscalYearResponse> items = fiscalYearService.saveAll(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.FISCAL_YEAR_FULL_ACCESS)
+    @PostMapping("/general-search")
+    public ResponseEntity<List<FiscalYearResponse>> generalSearch(@RequestBody FiscalYearSearchRequest req){
+    	List<FiscalYearResponse> items = fiscalYearService.generalSearch(req);
+    	return ResponseEntity.ok(items);
+    }
 }

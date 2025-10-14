@@ -2,22 +2,38 @@ package com.jovan.erp_v1.service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
+import com.jovan.erp_v1.enumeration.FiscalYearTypeStatus;
 import com.jovan.erp_v1.exception.FiscalYearErrorException;
 import com.jovan.erp_v1.exception.NoDataFoundException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.FiscalYearMapper;
 import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.repository.FiscalYearRepository;
+import com.jovan.erp_v1.repository.specification.FiscalYearSpecification;
 import com.jovan.erp_v1.request.FiscalQuarterRequest;
 import com.jovan.erp_v1.request.FiscalYearRequest;
 import com.jovan.erp_v1.response.FiscalYearResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.FiscalYearSaveAsRequest;
+import com.jovan.erp_v1.search_request.FiscalYearSearchRequest;
+import com.jovan.erp_v1.statistics.fiscal_year.FiscalYearMonthlyStatDTO;
+import com.jovan.erp_v1.statistics.fiscal_year.FiscalYearQuarterStatDTO;
+import com.jovan.erp_v1.statistics.fiscal_year.FiscalYearStatusStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -215,6 +231,206 @@ public class FiscalYearService implements IFiscalYearService {
                 .collect(Collectors.toList());
     }
     
+    @Transactional(readOnly = true)
+    @Override
+	public FiscalYearResponse trackFiscalYear(Long id) {
+		List<FiscalYear> items = fiscalYearRepository.trackFiscalYear(id);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("FiscalYear with id "+id+" not found");
+		}
+		FiscalYear saved = items.get(0);
+		return new FiscalYearResponse(fiscalYearRepository.save(saved));
+	}
+
+    @Transactional
+	@Override
+	public FiscalYearResponse confirmFiscalYear(Long id) {
+    	FiscalYear year = fiscalYearRepository.findById(id).orElseThrow(() -> new ValidationException("FiscalYear not found with id "+id));
+    	year.setConfirmed(true);
+    	year.setStatus(FiscalYearTypeStatus.CONFIRMED);
+    	year.getQuarters().stream()
+    		.forEach(y -> y.setConfirmed(true));
+		return new FiscalYearResponse(fiscalYearRepository.save(year));
+	}
+
+    @Transactional
+	@Override
+	public FiscalYearResponse cancelFiscalYear(Long id) {
+    	FiscalYear year = fiscalYearRepository.findById(id).orElseThrow(() -> new ValidationException("FiscalYear not found with id "+id));
+    	if(year.getStatus() != FiscalYearTypeStatus.CONFIRMED && year.getStatus() != FiscalYearTypeStatus.NEW) {
+    		throw new ValidationException("Only NEW or CONFIRMED fiscal-year can be cancelled");
+    	}
+    	year.setStatus(FiscalYearTypeStatus.CANCELLED);
+		return new FiscalYearResponse(fiscalYearRepository.save(year));
+	}
+
+    @Transactional
+	@Override
+	public FiscalYearResponse closeFiscalYear(Long id) {
+    	FiscalYear year = fiscalYearRepository.findById(id).orElseThrow(() -> new ValidationException("FiscalYear not found with id "+id));
+    	if(year.getStatus() != FiscalYearTypeStatus.CONFIRMED) {
+    		throw new ValidationException("Only CONFIRMED fiscal-year can be closed");
+    	}
+    	year.setStatus(FiscalYearTypeStatus.CLOSED);
+		return new FiscalYearResponse(fiscalYearRepository.save(year));
+	}
+
+    @Transactional
+	@Override
+	public FiscalYearResponse changeStatus(Long id, FiscalYearTypeStatus status) {
+    	FiscalYear year = fiscalYearRepository.findById(id).orElseThrow(() -> new ValidationException("FiscalYear not found with id "+id));
+    	validateFiscalYearTypeStatus(status);
+    	if(year.getStatus() == FiscalYearTypeStatus.CLOSED) {
+    		throw new ValidationException("Closed fiscal-year cannot change status");
+    	}
+    	if(status == FiscalYearTypeStatus.CONFIRMED) {
+    		if(year.getStatus() != FiscalYearTypeStatus.NEW) {
+    			throw new ValidationException("Only NEW fiscal-year can be confirmed");
+    		}
+    		year.setConfirmed(true);
+    		year.getQuarters().forEach(y -> y.setConfirmed(true));
+    	}
+    	year.setStatus(status);
+		return new FiscalYearResponse(fiscalYearRepository.save(year));
+	}
+
+    @Transactional
+	@Override
+	public List<FiscalYearMonthlyStatDTO> countFiscalYearsByYearAndMonth() {
+    	List<FiscalYearMonthlyStatDTO> items = fiscalYearRepository.countFiscalYearsByYearAndMonth();
+    	if(items.isEmpty()) {
+    		throw new NoDataFoundException("No FiscalYear found for given year and month");
+    	}
+		return items.stream()
+				.map(item -> {
+					Integer year = item.getYear();
+					Integer month = item.getMonth();
+					Long count = item.getCount();
+					return new FiscalYearMonthlyStatDTO(year,month,count);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<FiscalYearStatusStatDTO> countByFiscalYearStatus() {
+		List<FiscalYearStatusStatDTO> items = fiscalYearRepository.countByFiscalYearStatus();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No FiscalYear four given status found");
+		}
+		return items.stream()
+				.map(item -> {
+					FiscalYearStatus yearStatus = item.yearStatus();
+					Long count = item.count();
+					return new FiscalYearStatusStatDTO(yearStatus, count);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<FiscalYearQuarterStatDTO> countByFiscalYearQuarterStatus() {
+		List<FiscalYearQuarterStatDTO> items = fiscalYearRepository.countByFiscalYearQuarterStatus();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No FiscalYear for given quearter-status, found");
+		}
+		return items.stream()
+				.map(item -> {
+					FiscalQuarterStatus quarterStatus = item.quarterStatus();
+					Long count = item.count();
+					return new FiscalYearQuarterStatDTO(quarterStatus, count);
+				})
+				.toList();
+	}
+
+	@Transactional
+	@Override
+	public FiscalYearResponse saveFiscalYear(FiscalYearRequest request) {
+		FiscalYear fy = FiscalYear.builder()
+				.id(request.id())
+				.year(request.year())
+				.endDate(request.endDate())
+				.yearStatus(request.yearStatus())
+				.quarterStatus(request.quarterStatus())
+				.status(request.status())
+				.confirmed(request.confirmed())
+				.build();
+		FiscalYear saved = fiscalYearRepository.save(fy);
+		return new FiscalYearResponse(saved);
+	}
+	
+	private final AbstractSaveAsService<FiscalYear, FiscalYearResponse> saveAsHelper = new AbstractSaveAsService<FiscalYear, FiscalYearResponse>() {
+		
+		@Override
+		protected FiscalYearResponse toResponse(FiscalYear entity) {
+			return new FiscalYearResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<FiscalYear, Long> getRepository() {
+			return fiscalYearRepository;
+		}
+		
+		@Override
+		protected FiscalYear copyAndOverride(FiscalYear source, Map<String, Object> overrides) {
+			return FiscalYear.builder()
+					.endDate(source.getEndDate())
+					.year((Integer) overrides.getOrDefault("Year", source.getYear()))
+					.yearStatus(source.getYearStatus())
+					.quarterStatus(source.getQuarterStatus())
+					.build();
+		}
+	};
+	
+	private final AbstractSaveAllService<FiscalYear, FiscalYearResponse> saveAllHelper = new AbstractSaveAllService<FiscalYear, FiscalYearResponse>() {
+		
+		@Override
+		protected Function<FiscalYear, FiscalYearResponse> toResponse() {
+			return FiscalYearResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<FiscalYear, Long> getRepository() {
+			return fiscalYearRepository;
+		}
+	};
+
+	@Transactional
+	@Override
+	public FiscalYearResponse saveAs(FiscalYearSaveAsRequest req) {
+		Map<String, Object> overrides = new HashMap<String, Object>();
+		if(req.endDate() != null) overrides.put("End-date", req.endDate());
+		if(req.year() != null) overrides.put("Year", req.year());
+		if(req.yearStatus() != null) overrides.put("Year-status", req.yearStatus());
+		if(req.quarterStatus() != null) overrides.put("Quarter-status", req.quarterStatus());
+		return saveAsHelper.saveAs(req.sourceId(), overrides);
+	}
+
+	@Transactional
+	@Override
+	public List<FiscalYearResponse> saveAll(List<FiscalYearRequest> request) {
+		List<FiscalYear> items = request.stream()
+				.map(req -> FiscalYear.builder()
+						.id(req.id())
+						.endDate(req.endDate())
+						.year(req.year())
+						.yearStatus(req.yearStatus())
+						.quarterStatus(req.quarterStatus())
+						.confirmed(req.confirmed())
+						.status(req.status())
+						.build())
+				.collect(Collectors.toList());
+		return saveAllHelper.saveAll(items);
+	}
+
+	@Override
+	public List<FiscalYearResponse> generalSearch(FiscalYearSearchRequest req) {
+		Specification<FiscalYear> spec = FiscalYearSpecification.fromRequest(req);
+		List<FiscalYear> items = fiscalYearRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No FiscalYer found for given criteria");
+		}
+		return items.stream().map(fiscalYearMapper::toResponse).collect(Collectors.toList());
+	}
+    
     private void validateFiscalYearStatus(FiscalYearStatus yearStatus) {
     	if(yearStatus == null) {
     		throw new IllegalArgumentException("yearStatus za FiscalYearStatus ne sme biti null");
@@ -254,5 +470,10 @@ public class FiscalYearService implements IFiscalYearService {
     			}
     		}
     	}
+    }
+
+    private void validateFiscalYearTypeStatus(FiscalYearTypeStatus status) {
+    	Optional.ofNullable(status)
+    		.orElseThrow(() -> new ValidationException("FiscalYearTypeStatus status must not be null"));
     }
 }
