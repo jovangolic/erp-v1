@@ -56,28 +56,28 @@ public class ProcurementController {
 	}
 	
 	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
-	@GetMapping("/procurement/{id}")
+	@GetMapping("/find-one/{id}")
 	public ResponseEntity<ProcurementResponse> getByProcurementId(@PathVariable Long id){
 		ProcurementResponse response = procurementService.getByProcurementId(id);
 		return ResponseEntity.ok(response);
 	}
 	
 	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
-	@GetMapping("/all-procurement")
+	@GetMapping("/find-all")
 	public ResponseEntity<List<ProcurementResponse>> getAllProcurement(){
 		List<ProcurementResponse> responses = procurementService.getAllProcurement();
 		return ResponseEntity.ok(responses);		
 	}
 	
 	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
-	@GetMapping("/procurement/total-cost")
+	@GetMapping("/total-cost")
 	public ResponseEntity<List<ProcurementResponse>> getByTotalCost(@RequestParam("totalCost") BigDecimal totalCost){
 		List<ProcurementResponse> responses = procurementService.getByTotalCost(totalCost);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
-	@GetMapping("/procurement/date-between")
+	@GetMapping("/date-between")
 	public ResponseEntity<List<ProcurementResponse>> getByDateBetween(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
 			@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate){
 		List<ProcurementResponse> responses = procurementService.getByDateBetween(startDate, endDate);
@@ -85,7 +85,7 @@ public class ProcurementController {
 	}
 	
 	@PreAuthorize(RoleGroups.PROCUREMENT_READ_ACCESS)
-	@GetMapping("/procurement/cost/min-max")
+	@GetMapping("/total-cost-range")
 	public ResponseEntity<List<ProcurementResponse>> getByTotalCostBetween(@RequestParam("min") BigDecimal min,@RequestParam("max") BigDecimal max){
 		List<ProcurementResponse> responses = procurementService.getByTotalCostBetween(min, max);
 		return ResponseEntity.ok(responses);

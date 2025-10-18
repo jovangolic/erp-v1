@@ -61,7 +61,7 @@ public class ProductController {
 	}
 	
 	@PreAuthorize(RoleGroups.PRODUCT_READ_ACCESS)
-	@GetMapping("/product/{id}")
+	@GetMapping("/find-one/{id}")
 	public ResponseEntity<ProductResponse> getOneProduct(@PathVariable Long id){
 		ProductResponse response = productService.findById(id);
 		return ResponseEntity.ok(response);
@@ -125,7 +125,7 @@ public class ProductController {
 	
 	//nove metode
 	@PreAuthorize(RoleGroups.PRODUCT_READ_ACCESS)
-	@GetMapping("/by-unitMeasure")
+	@GetMapping("/by-unit-measure")
 	public ResponseEntity<List<ProductResponse>> findByUnitMeasure(@RequestParam("unitMeasure") UnitMeasure unitMeasure){
 		List<ProductResponse> responses = productService.findByUnitMeasure(unitMeasure);
 		return ResponseEntity.ok(responses);
@@ -168,7 +168,7 @@ public class ProductController {
 	}
 	
 	@PreAuthorize(RoleGroups.PRODUCT_READ_ACCESS)
-	@GetMapping("/storage/{storageId}")
+	@GetMapping("/supply/storage/{storageId}")
 	public ResponseEntity<List<ProductResponse>> findBySupplyStorageId(@PathVariable Long storageId){
 		List<ProductResponse> responses = productService.findBySupplyStorageId(storageId);
 		return ResponseEntity.ok(responses);
