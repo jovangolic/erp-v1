@@ -34,9 +34,9 @@ public class SecuritySettingController {
         return ResponseEntity.ok(setting);
     }
 
-    @PutMapping
-    public ResponseEntity<SecuritySettingResponse> updateSetting(@RequestBody SecuritySettingRequest request) {
-        SecuritySettingResponse updated = securitySettingService.updateSetting(request);
+    @PutMapping("/update/{id}")
+    public ResponseEntity<SecuritySettingResponse> updateSetting(@PathVariable Long id, @RequestBody SecuritySettingRequest request) {
+        SecuritySettingResponse updated = securitySettingService.updateSetting(id,request);
         return ResponseEntity.ok(updated);
     }
 

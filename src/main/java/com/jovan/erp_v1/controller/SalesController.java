@@ -66,14 +66,14 @@ public class SalesController {
 	}
 
 	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
-	@GetMapping("/sale/total-price")
+	@GetMapping("/total-price")
 	public ResponseEntity<List<SalesResponse>> getByTotalPrice(@RequestParam("totalPrice") BigDecimal totalPrice) {
 		List<SalesResponse> responses = salesService.getByTotalPrice(totalPrice);
 		return ResponseEntity.ok(responses);
 	}
 
 	@PreAuthorize(RoleGroups.SALES_READ_ACCESS)
-	@GetMapping("sale/{salesId}")
+	@GetMapping("find-one/{salesId}")
 	public ResponseEntity<SalesResponse> findBySalesId(@PathVariable Long salesId) {
 		SalesResponse id = salesService.getBySalesId(salesId);
 		return ResponseEntity.ok(id);

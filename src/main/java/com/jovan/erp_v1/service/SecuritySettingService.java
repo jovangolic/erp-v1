@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.SecuritySettingErrorException;
+import com.jovan.erp_v1.exception.ValidationException;
 import com.jovan.erp_v1.mapper.SecuritySettingMapper;
 import com.jovan.erp_v1.model.SecuritySetting;
 import com.jovan.erp_v1.repository.SecuritySettingRepository;
@@ -30,7 +31,10 @@ public class SecuritySettingService implements ISecuritySettingService {
     }
 
     @Override
-    public SecuritySettingResponse updateSetting(SecuritySettingRequest request) {
+    public SecuritySettingResponse updateSetting(Long id, SecuritySettingRequest request) {
+    	if (!request.id().equals(id)) {
+			throw new ValidationException("ID in path and body do not match");
+		}
         SecuritySetting setting = settingRepository.findBySettingName(request.settingName())
                 .orElseThrow(() -> new SecuritySettingErrorException(
                         "Setting not found with name: " + request.settingName()));

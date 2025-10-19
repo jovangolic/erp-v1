@@ -64,35 +64,35 @@ public class StorageController {
 	}
 
 	@PreAuthorize(RoleGroups.STORAGE_READ_ACCESS)
-	@GetMapping("/storage/{storageId}")
+	@GetMapping("/find-one/{storageId}")
 	public ResponseEntity<StorageResponse> getByStorageId(@PathVariable Long storageId) {
 		StorageResponse response = storageService.getByStorageId(storageId);
 		return ResponseEntity.ok(response);
 	}
 
 	@PreAuthorize(RoleGroups.STORAGE_READ_ACCESS)
-	@GetMapping("/storage/by-name")
+	@GetMapping("/by-name")
 	public ResponseEntity<List<StorageResponse>> getByStorageName(@RequestParam("name") String name) {
 		List<StorageResponse> responses = storageService.getByName(name);
 		return ResponseEntity.ok(responses);
 	}
 
 	@PreAuthorize(RoleGroups.STORAGE_READ_ACCESS)
-	@GetMapping("/storage/by-location")
+	@GetMapping("/by-location")
 	public ResponseEntity<List<StorageResponse>> getByStorageLocation(@RequestParam("location") String location) {
 		List<StorageResponse> responses = storageService.getByLocation(location);
 		return ResponseEntity.ok(responses);
 	}
 
 	@PreAuthorize(RoleGroups.STORAGE_READ_ACCESS)
-	@GetMapping("/storage/by-capacity")
+	@GetMapping("/by-capacity")
 	public ResponseEntity<List<StorageResponse>> getByStorageCapacity(@RequestParam("capacity") BigDecimal capacity) {
 		List<StorageResponse> responses = storageService.getByCapacity(capacity);
 		return ResponseEntity.ok(responses);
 	}
 
 	@PreAuthorize(RoleGroups.STORAGE_READ_ACCESS)
-	@GetMapping("/storage/by-name-and-location")
+	@GetMapping("/by-name-and-location")
 	public ResponseEntity<List<StorageResponse>> getStorageByNameAndLocation(@RequestParam("name") String name,
 			@RequestParam("location") String location) {
 		List<StorageResponse> responses = storageService.getByNameAndLocation(name, location);
@@ -100,7 +100,7 @@ public class StorageController {
 	}
 
 	@PreAuthorize(RoleGroups.STORAGE_READ_ACCESS)
-	@GetMapping("/storage/by-type-and-capacity")
+	@GetMapping("/by-type-and-capacity")
 	public ResponseEntity<List<StorageResponse>> getByTypeAndCapacityGreaterThan(@RequestParam("type") StorageType type,
 			@RequestParam("capacity") BigDecimal capacity) {
 		List<StorageResponse> responses = storageService.getByTypeAndCapacityGreaterThan(type, capacity);
@@ -108,21 +108,21 @@ public class StorageController {
 	}
 
 	@PreAuthorize(RoleGroups.STORAGE_READ_ACCESS)
-	@GetMapping("/storage/by-minCount")
+	@GetMapping("/by-minCount")
 	public ResponseEntity<List<StorageResponse>> getStoragesWithMinGoods(@RequestParam("minCount") Integer minCount) {
 		List<StorageResponse> responses = storageService.getStoragesWithMinGoods(minCount);
 		return ResponseEntity.ok(responses);
 	}
 
 	@PreAuthorize(RoleGroups.STORAGE_READ_ACCESS)
-	@GetMapping("/storage/ignore-case")
+	@GetMapping("/ignore-case")
 	public ResponseEntity<List<StorageResponse>> getByNameContainingIgnoreCase(@RequestParam("name") String name) {
 		List<StorageResponse> responses = storageService.getByNameContainingIgnoreCase(name);
 		return ResponseEntity.ok(responses);
 	}
 
 	@PreAuthorize(RoleGroups.STORAGE_READ_ACCESS)
-	@GetMapping("/get-all-storages")
+	@GetMapping("/find-all")
 	public ResponseEntity<List<StorageResponse>> getAllStorage() {
 		List<StorageResponse> responses = storageService.getAllStorage();
 		return ResponseEntity.ok(responses);

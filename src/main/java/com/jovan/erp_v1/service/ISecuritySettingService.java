@@ -9,7 +9,7 @@ public interface ISecuritySettingService {
 
     SecuritySettingResponse getByName(String name);
 
-    SecuritySettingResponse updateSetting(SecuritySettingRequest request);
+    SecuritySettingResponse updateSetting(Long id, SecuritySettingRequest request);
 
     List<SecuritySettingResponse> getAllSettings();
     
