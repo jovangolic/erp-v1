@@ -106,7 +106,7 @@ public class SupplyService implements ISupplyService {
 	}
 
 	@Override
-	public SupplyResponse getBySupplyId(Long supplyId) {
+	public SupplyResponse findOne(Long supplyId) {
 		Supply supply = supplyRepository.findById(supplyId)
 				.orElseThrow(() -> new SupplyNotFoundException("Supply with id: " + supplyId + " not found"));
 		return supplyMapper.toResponse(supply);

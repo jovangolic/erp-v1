@@ -24,7 +24,7 @@ public interface ISupplyService {
 	SupplyResponse createSupply(SupplyRequest request);
 	SupplyResponse updateSupply(Long id, SupplyRequest request);
 	void deleteSupply(Long id);
-	SupplyResponse getBySupplyId(Long supplyId);
+	SupplyResponse findOne(Long supplyId);
 	List<SupplyResponse> getAllSupply();
 	List<SupplyResponse> getBySuppliesByGoodsName(String name);
 	List<SupplyResponse> getBySuppliesWithMinQuantity(BigDecimal minQuantity);

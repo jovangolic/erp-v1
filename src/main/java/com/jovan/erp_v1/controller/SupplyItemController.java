@@ -64,14 +64,14 @@ public class SupplyItemController {
 	}
 	
 	@PreAuthorize(RoleGroups.SUPPLY_ITEM_READ_ACCESS)
-	@GetMapping("/supplyItem/{id}")
+	@GetMapping("/find-one/{id}")
 	public ResponseEntity<SupplyItemResponse> getOne(@PathVariable Long id){
 		SupplyItemResponse response = supplyItemService.getOneById(id);
 		return ResponseEntity.ok(response);
 	}
 	
 	@PreAuthorize(RoleGroups.SUPPLY_ITEM_READ_ACCESS)
-	@GetMapping("/get-all-supplies-items")
+	@GetMapping("/find-all")
 	public ResponseEntity<List<SupplyItemResponse>> getAllSuppliesItems(){
 		List<SupplyItemResponse> responses = supplyItemService.getAllSupplyItem();
 		return ResponseEntity.ok(responses);

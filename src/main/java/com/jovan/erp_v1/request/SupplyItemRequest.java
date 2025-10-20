@@ -11,7 +11,7 @@ public record SupplyItemRequest(
 		@NotNull(message = "ID nabavke je obavezan")
 		Long procurementId,
 
-		@NotNull(message = "ID dobavljača je obavezan")
+		@NotNull(message = "ID dobavljaca je obavezan")
 		Long vendorId,
 
 		@NotNull(message = "Cena je obavezna")

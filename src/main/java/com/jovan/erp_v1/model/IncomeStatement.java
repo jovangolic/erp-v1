@@ -10,17 +10,21 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.jovan.erp_v1.enumeration.IncomeStatementStatus;
 import com.jovan.erp_v1.exception.ValidationException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -29,30 +33,40 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Builder
 public class IncomeStatement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate periodStart;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate periodEnd;
 
-    @Column
+    @Column(precision = 10, scale = 2)
     private BigDecimal totalRevenue;
 
-    @Column
+    @Column(precision = 10, scale = 2)
     private BigDecimal totalExpenses;
 
-    @Column
+    @Column(precision = 10, scale = 2)
     private BigDecimal netProfit;
 
     @ManyToOne
     @JoinColumn(name = "fiscal_year_id")
     private FiscalYear fiscalYear;
+    
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private IncomeStatementStatus status = IncomeStatementStatus.NEW;
+    
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean confirmed = false;
     
     public BigDecimal calculateNetProfit() {
     	if(this.totalRevenue == null || this.totalExpenses == null) {

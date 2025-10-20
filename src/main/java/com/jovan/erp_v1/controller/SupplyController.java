@@ -69,28 +69,28 @@ public class SupplyController {
 	}
 
 	@PreAuthorize(RoleGroups.SUPPLY_READ_ACCESS)
-	@GetMapping("/supply/{supplyId}")
-	public ResponseEntity<SupplyResponse> getBySupplyId(@PathVariable Long supplyId) {
-		SupplyResponse response = supplyService.getBySupplyId(supplyId);
+	@GetMapping("/findOne/{id}")
+	public ResponseEntity<SupplyResponse> findOne(@PathVariable Long id) {
+		SupplyResponse response = supplyService.findOne(id);
 		return ResponseEntity.ok(response);
 	}
 
 	@PreAuthorize(RoleGroups.SUPPLY_READ_ACCESS)
-	@GetMapping("/get-all-supplies")
+	@GetMapping("/find-all")
 	public ResponseEntity<List<SupplyResponse>> getAllSupplies() {
 		List<SupplyResponse> responses = supplyService.getAllSupply();
 		return ResponseEntity.ok(responses);
 	}
 
 	@PreAuthorize(RoleGroups.SUPPLY_READ_ACCESS)
-	@GetMapping("/supply/by-goods-name")
+	@GetMapping("/by-goods-name")
 	public ResponseEntity<List<SupplyResponse>> getBySuppliesByGoodsName(@RequestParam("name") String name) {
 		List<SupplyResponse> responses = supplyService.getBySuppliesByGoodsName(name);
 		return ResponseEntity.ok(responses);
 	}
 
 	@PreAuthorize(RoleGroups.SUPPLY_READ_ACCESS)
-	@GetMapping("/supply/by-minQuantity")
+	@GetMapping("/by-minQuantity")
 	public ResponseEntity<List<SupplyResponse>> getBySuppliesWithMinQuantity(
 			@RequestParam("minQuantity") BigDecimal minQuantity) {
 		List<SupplyResponse> responses = supplyService.getBySuppliesWithMinQuantity(minQuantity);
@@ -98,7 +98,7 @@ public class SupplyController {
 	}
 
 	@PreAuthorize(RoleGroups.SUPPLY_READ_ACCESS)
-	@GetMapping("/supply/storageId/{storageId}")
+	@GetMapping("/storageId/{storageId}")
 	public ResponseEntity<List<SupplyResponse>> getBySuppliesByStorageId(@PathVariable Long storageId) {
 		List<SupplyResponse> responses = supplyService.getBySuppliesByStorageId(storageId);
 		return ResponseEntity.ok(responses);

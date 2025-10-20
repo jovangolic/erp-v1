@@ -3,8 +3,10 @@ package com.jovan.erp_v1.repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -14,7 +16,7 @@ import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.model.IncomeStatement;
 
 @Repository
-public interface IncomeStatementRepository extends JpaRepository<IncomeStatement, Long> {
+public interface IncomeStatementRepository extends JpaRepository<IncomeStatement, Long>, JpaSpecificationExecutor<IncomeStatement> {
 
     List<IncomeStatement> findByTotalRevenue(BigDecimal totalRevenue);
     List<IncomeStatement> findByTotalExpenses(BigDecimal totalExpenses);
@@ -73,4 +75,9 @@ public interface IncomeStatementRepository extends JpaRepository<IncomeStatement
     BigDecimal sumNetProfit(@Param("start") LocalDate start, @Param("end") LocalDate end);
     @Query("SELECT SUM(i.netProfit) FROM IncomeStatement i WHERE i.fiscalYear.yearStatus = :yearStatus")
     BigDecimal sumNetProfitByYearStatus(@Param("yearStatus") FiscalYearStatus yearStatus);
+    
+    //nove metode
+    
+    @Query("SELECT is FROM IncomeStatement is WHERE is.id = :id")
+    Optional<IncomeStatement> trackIncomeStatement(@Param("id") Long id);
 }
