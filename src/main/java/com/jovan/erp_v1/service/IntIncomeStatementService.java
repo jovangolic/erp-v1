@@ -6,8 +6,11 @@ import java.util.List;
 import com.jovan.erp_v1.dto.MonthlyNetProfitDTO;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
+import com.jovan.erp_v1.enumeration.IncomeStatementStatus;
 import com.jovan.erp_v1.request.IncomeStatementRequest;
 import com.jovan.erp_v1.response.IncomeStatementResponse;
+import com.jovan.erp_v1.save_as.IncomeStatementSaveAsRequest;
+import com.jovan.erp_v1.search_request.IncomeStatementSearchRequest;
 
 public interface IntIncomeStatementService {
 
@@ -50,4 +53,15 @@ public interface IntIncomeStatementService {
     BigDecimal sumTotalExpenses( LocalDate start,  LocalDate end);
     BigDecimal sumNetProfit( LocalDate start,  LocalDate end);
     BigDecimal sumNetProfitByYearStatus( FiscalYearStatus yearStatus);
+    
+    //nove metode
+    IncomeStatementResponse trackIncomeStatement(Long id);
+    IncomeStatementResponse confirmIncomeStatement(Long id);
+    IncomeStatementResponse cancelIncomeStatement(Long id);
+    IncomeStatementResponse closeIncomeStatement(Long id);
+    IncomeStatementResponse changeStatus(Long id, IncomeStatementStatus status);
+    IncomeStatementResponse saveIncomeStatement(IncomeStatementRequest request);
+    IncomeStatementResponse saveAs(IncomeStatementSaveAsRequest request);
+    List<IncomeStatementResponse> saveAll(List<IncomeStatementRequest> requests);
+    List<IncomeStatementResponse> generalSearch(IncomeStatementSearchRequest request);
 }

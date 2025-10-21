@@ -4,15 +4,22 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.dto.MonthlyNetProfitDTO;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
+import com.jovan.erp_v1.enumeration.IncomeStatementStatus;
 import com.jovan.erp_v1.exception.IncomeStatementErrorException;
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ValidationException;
@@ -21,8 +28,13 @@ import com.jovan.erp_v1.model.FiscalYear;
 import com.jovan.erp_v1.model.IncomeStatement;
 import com.jovan.erp_v1.repository.FiscalYearRepository;
 import com.jovan.erp_v1.repository.IncomeStatementRepository;
+import com.jovan.erp_v1.repository.specification.IncomeStatementSpecification;
 import com.jovan.erp_v1.request.IncomeStatementRequest;
 import com.jovan.erp_v1.response.IncomeStatementResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.IncomeStatementSaveAsRequest;
+import com.jovan.erp_v1.search_request.IncomeStatementSearchRequest;
 import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -453,6 +465,215 @@ public class IncomeStatementService implements IntIncomeStatementService {
 		return incomeStatementRepository.sumNetProfitByYearStatus(yearStatus);
 	}
 	
+	@Transactional(readOnly = true)
+	@Override
+	public IncomeStatementResponse trackIncomeStatement(Long id) {
+		IncomeStatement is = incomeStatementRepository.findById(id).orElseThrow(() -> new ValidationException("IncomeStatement not found with id "+id));
+		return new IncomeStatementResponse(is);
+	}
+
+	@Transactional
+	@Override
+	public IncomeStatementResponse confirmIncomeStatement(Long id) {
+		IncomeStatement is = incomeStatementRepository.findById(id).orElseThrow(() -> new ValidationException("IncomeStatement not found with id "+id));
+		is.setConfirmed(true);
+		is.setStatus(IncomeStatementStatus.CONFIRMED);
+		return new IncomeStatementResponse(incomeStatementRepository.save(is));
+	}
+
+	@Transactional
+	@Override
+	public IncomeStatementResponse cancelIncomeStatement(Long id) {
+		IncomeStatement is = incomeStatementRepository.findById(id).orElseThrow(() -> new ValidationException("IncomeStatement not found with id "+id));
+		if(is.getStatus() != IncomeStatementStatus.NEW && is.getStatus() != IncomeStatementStatus.CONFIRMED) {
+			throw new ValidationException("Only NEW or CONFIRMED incomeStatements can be cancelled");
+		}
+		is.setStatus(IncomeStatementStatus.CANCELLED);
+		return new IncomeStatementResponse(incomeStatementRepository.save(is));
+	}
+
+	@Transactional
+	@Override
+	public IncomeStatementResponse closeIncomeStatement(Long id) {
+		IncomeStatement is = incomeStatementRepository.findById(id).orElseThrow(() -> new ValidationException("IncomeStatement not found with id "+id));
+		if(is.getStatus() != IncomeStatementStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED incomeStatements can be closed");
+		}
+		is.setStatus(IncomeStatementStatus.CLOSED);
+		return new IncomeStatementResponse(incomeStatementRepository.save(is));
+	}
+
+	@Transactional
+	@Override
+	public IncomeStatementResponse changeStatus(Long id, IncomeStatementStatus status) {
+		IncomeStatement is = incomeStatementRepository.findById(id).orElseThrow(() -> new ValidationException("IncomeStatement not found with id "+id));
+		validateIncomeStatementStatus(status);
+		if(is.getStatus() == IncomeStatementStatus.CLOSED) {
+			throw new ValidationException("Closed incomeStatements cannot change status");
+		}
+		if(status == IncomeStatementStatus.CONFIRMED) {
+			if(is.getStatus() != IncomeStatementStatus.NEW) {
+				throw new ValidationException("Only NEW incomeStatements can be confirmed");
+			}
+			is.setConfirmed(true);
+		}
+		is.setStatus(status);
+		return new IncomeStatementResponse(incomeStatementRepository.save(is));
+	}
+
+	@Transactional
+	@Override
+	public IncomeStatementResponse saveIncomeStatement(IncomeStatementRequest request) {
+		FiscalYear fy = validateFiscalYear(request.fiscalYearId());
+		//provera da li periodStart i periodEnd spadaju u opseg godine
+		if(request.periodStart().isBefore(fy.getStartDate()) || request.periodEnd().isAfter(fy.getEndDate())) {
+			throw new ValidationException("Income statement period must fall within the fiscal year period");
+		}
+		if (request.periodEnd().isBefore(request.periodStart())) {
+            throw new ValidationException("Period end cannot be before start date");
+        }
+		if(request.totalRevenue() == null || request.totalExpenses() == null) {
+			throw new ValidationException("Total revenue and expenses must not be null");
+		}
+		if(request.totalRevenue().compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Total revenue canot be negative");
+		}
+		if(request.totalExpenses().compareTo(request.totalRevenue()) > 0) {
+			throw new ValidationException("Expenses cannot exceed revenue");
+		}
+		BigDecimal expectedProfit = request.totalRevenue().subtract(request.totalExpenses());
+		if(request.netProfit() == null || expectedProfit.compareTo(request.netProfit()) != 0) {
+			throw new ValidationException("Net profit must equal revenue minus expenses");
+		}
+		IncomeStatement is = IncomeStatement.builder()
+				.id(request.id())
+				.periodStart(request.periodStart())
+				.periodEnd(request.periodEnd())
+				.totalRevenue(request.totalRevenue())
+				.totalExpenses(request.totalExpenses())
+				.netProfit(request.netProfit())
+				.fiscalYear(validateFiscalYear(request.fiscalYearId()))
+				.confirmed(request.confirmed())
+				.status(request.status())
+				.build();
+		IncomeStatement saved = incomeStatementRepository.save(is);
+		return new IncomeStatementResponse(saved);
+	}
+	
+	private final AbstractSaveAsService<IncomeStatement, IncomeStatementResponse> saveAsHelper = new AbstractSaveAsService<IncomeStatement, IncomeStatementResponse>() {
+		
+		@Override
+		protected IncomeStatementResponse toResponse(IncomeStatement entity) {
+			return new IncomeStatementResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<IncomeStatement, Long> getRepository() {
+			return incomeStatementRepository;
+		}
+		
+		@Override
+		protected IncomeStatement copyAndOverride(IncomeStatement source, Map<String, Object> overrides) {
+			return IncomeStatement.builder()
+					.periodStart(source.getPeriodStart())
+					.periodEnd(source.getPeriodEnd())
+					.totalRevenue((BigDecimal) overrides.getOrDefault("Total-revenue", source.getTotalRevenue()))
+					.totalExpenses((BigDecimal) overrides.getOrDefault("Total-expenses", source.getTotalExpenses()))
+					.netProfit((BigDecimal) overrides.getOrDefault("Net-profit", source.getNetProfit()))
+					.fiscalYear(validateFiscalYear(source.getFiscalYear().getId()))
+					.build();
+		}
+	};
+
+	@Transactional
+	@Override
+	public IncomeStatementResponse saveAs(IncomeStatementSaveAsRequest request) {
+		Map<String, Object> overrides = new HashMap<>();
+		FiscalYear fy = validateFiscalYear(request.fiscalYearId());
+		if(request.periodStart().isBefore(fy.getStartDate()) || request.periodEnd().isAfter(fy.getEndDate())) {
+			throw new ValidationException("Income statement period must fall within the fiscal year period");
+		}
+		if(request.periodEnd().isBefore(request.periodStart())) {
+			throw new ValidationException("Period end date cannot be before start date.");
+		}
+		BigDecimal expectedProfit = request.totalRevenue().subtract(request.totalExpenses());
+		if(request.netProfit() == null || expectedProfit.compareTo(request.netProfit()) != 0) {
+			throw new ValidationException("Net profit must equal total revenue minus total expenses.");
+		}
+		if(request.periodStart() != null) overrides.put("Period-start", request.periodStart());
+		if(request.periodEnd() != null) overrides.put("Period-end", request.periodEnd());
+		if(request.totalRevenue() != null) overrides.put("Total-revenue", request.totalRevenue());
+		if(request.totalExpenses() != null) overrides.put("Total-expenses", request.totalExpenses());
+		if(request.netProfit() != null) overrides.put("Net-profit", request.netProfit());
+		if(request.fiscalYearId() != null) overrides.put("Fiscal-year ID", validateFiscalYear(request.fiscalYearId()));
+		return saveAsHelper.saveAs(request.sourceId(), overrides);
+	}
+	
+	private final AbstractSaveAllService<IncomeStatement, IncomeStatementResponse> saveAllHelper = new AbstractSaveAllService<IncomeStatement, IncomeStatementResponse>() {
+		
+		@Override
+		protected Function<IncomeStatement, IncomeStatementResponse> toResponse() {
+			return IncomeStatementResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<IncomeStatement, Long> getRepository() {
+			return incomeStatementRepository;
+		}
+	};
+
+	@Transactional
+	@Override
+	public List<IncomeStatementResponse> saveAll(List<IncomeStatementRequest> requests) {
+		List<IncomeStatement> items = requests.stream()
+				.map(req -> {
+					FiscalYear fy = validateFiscalYear(req.fiscalYearId());
+					//provera da li periodStart i periodEnd spadaju u opseg godine
+					if(req.periodStart().isBefore(fy.getStartDate()) || req.periodEnd().isAfter(fy.getEndDate())) {
+						throw new ValidationException("Income statement period must fall within the fiscal year period for ID: " + req.id());
+					}
+					if (req.periodEnd().isBefore(req.periodStart())) {
+		                throw new ValidationException("Period end cannot be before start date for ID: " + req.id());
+		            }
+					if(req.totalRevenue() == null || req.totalExpenses() == null) {
+						throw new ValidationException("Total revenue and expenses must not be null for ID: " + req.id());
+					}
+					if(req.totalRevenue().compareTo(BigDecimal.ZERO) < 0) {
+						throw new ValidationException("Total revenue canot be negative for ID: "+ req.id());
+					}
+					if(req.totalExpenses().compareTo(req.totalRevenue()) > 0) {
+						throw new ValidationException("Expenses cannot exceed revenue for ID: "+ req.id());
+					}
+					BigDecimal expectedProfit = req.totalRevenue().subtract(req.totalExpenses());
+					if(req.netProfit() == null || expectedProfit.compareTo(req.netProfit()) != 0) {
+						throw new ValidationException("Net profit must equal revenue minus expenses for ID: " + req.id());
+					}
+					return IncomeStatement.builder()
+							.id(req.id())
+							.periodStart(req.periodStart())
+							.periodEnd(req.periodEnd())
+							.totalRevenue(req.totalRevenue())
+							.totalExpenses(req.totalExpenses())
+							.netProfit(req.netProfit())
+							.fiscalYear(validateFiscalYear(req.fiscalYearId()))
+							.confirmed(req.confirmed())
+							.status(req.status())
+							.build();
+				})
+				.toList();
+		return saveAllHelper.saveAll(items);
+	}
+
+	@Override
+	public List<IncomeStatementResponse> generalSearch(IncomeStatementSearchRequest request) {
+		Specification<IncomeStatement> spec = IncomeStatementSpecification.fromRequest(request);
+		List<IncomeStatement> items = incomeStatementRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No IncomeStatement found for given criteria.");
+		}
+		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
+	}
+	
 	private void validateBigDecimalNonNegative(BigDecimal num) {
 		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
 			throw new ValidationException("Number must be zero or positive");
@@ -506,5 +727,9 @@ public class IncomeStatementService implements IntIncomeStatementService {
     	}
     	return fiscalYearRepository.findById(yearId).orElseThrow(() -> new ValidationException("FiscalYear not found with id"+yearId));
     }
-
+    
+    private void validateIncomeStatementStatus(IncomeStatementStatus status) {
+    	Optional.ofNullable(status)
+    		.orElseThrow(() -> new ValidationException("IncomeStatementStatus status must not be null"));
+    }
 }

@@ -13,7 +13,7 @@ import jakarta.persistence.criteria.Predicate;
 
 public class IncomeStatementSpecification {
 
-	public Specification<IncomeStatement> fromRequest(IncomeStatementSearchRequest req){
+	public static Specification<IncomeStatement> fromRequest(IncomeStatementSearchRequest req){
 		return Specification.where(hasId(req.id()))
 				.and(hasIdRange(req.idFrom(), req.idTo()))
 				.and(hasPeriodStart(req.periodStart()))

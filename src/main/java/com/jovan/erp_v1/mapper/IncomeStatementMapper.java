@@ -70,7 +70,9 @@ public class IncomeStatementMapper extends AbstractMapper<IncomeStatementRequest
                 incomeStatement.getTotalRevenue(),
                 incomeStatement.getTotalExpenses(),
                 incomeStatement.getNetProfit(),
-                fiscalYearResponse);
+                fiscalYearResponse,
+                incomeStatement.getStatus(),
+                incomeStatement.getConfirmed());
     }
 
     public List<IncomeStatementResponse> toResponseList(List<IncomeStatement> income) {

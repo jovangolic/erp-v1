@@ -20,8 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.dto.MonthlyNetProfitDTO;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
+import com.jovan.erp_v1.enumeration.IncomeStatementStatus;
 import com.jovan.erp_v1.request.IncomeStatementRequest;
 import com.jovan.erp_v1.response.IncomeStatementResponse;
+import com.jovan.erp_v1.save_as.IncomeStatementSaveAsRequest;
+import com.jovan.erp_v1.search_request.IncomeStatementSearchRequest;
 import com.jovan.erp_v1.service.IntIncomeStatementService;
 import com.jovan.erp_v1.util.RoleGroups;
 
@@ -316,4 +319,67 @@ public class IncomeStatementController {
     	return ResponseEntity.ok(responses);
     }
     
+    //nove metode
+    @PreAuthorize(RoleGroups.INCOME_STATEMENT_READ_ACCESS)
+    @GetMapping("/track/{id}")
+    public ResponseEntity<IncomeStatementResponse> trackIncomeStatement(Long id){
+    	IncomeStatementResponse items = incomeStatementService.trackIncomeStatement(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INCOME_STATEMENT_FULL_ACCESS)
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<IncomeStatementResponse> confirmIncomeStatement(@PathVariable Long id){
+    	IncomeStatementResponse items = incomeStatementService.confirmIncomeStatement(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INCOME_STATEMENT_FULL_ACCESS)
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<IncomeStatementResponse> cancelIncomeStatement(@PathVariable Long id){
+    	IncomeStatementResponse items = incomeStatementService.cancelIncomeStatement(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INCOME_STATEMENT_FULL_ACCESS)
+    @PostMapping("/{id}/close")
+    public ResponseEntity<IncomeStatementResponse> closeIncomeStatement(@PathVariable Long id){
+    	IncomeStatementResponse items = incomeStatementService.closeIncomeStatement(id);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INCOME_STATEMENT_FULL_ACCESS)
+    @PostMapping("/{id}/status/{status}")
+    public ResponseEntity<IncomeStatementResponse> changeStatus(@PathVariable Long id,@PathVariable IncomeStatementStatus status){
+    	IncomeStatementResponse items = incomeStatementService.changeStatus(id, status);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INCOME_STATEMENT_FULL_ACCESS)
+    @PostMapping("/save")
+    public ResponseEntity<IncomeStatementResponse> saveIncomeStatement(@Valid @RequestBody IncomeStatementRequest request){
+    	IncomeStatementResponse items = incomeStatementService.saveIncomeStatement(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INCOME_STATEMENT_FULL_ACCESS)
+    @PostMapping("/save-as")
+    public ResponseEntity<IncomeStatementResponse> saveAs(@Valid @RequestBody IncomeStatementSaveAsRequest request){
+    	IncomeStatementResponse items = incomeStatementService.saveAs(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INCOME_STATEMENT_FULL_ACCESS)
+    @PostMapping("/save-all")
+    public ResponseEntity<List<IncomeStatementResponse>> saveAll(@Valid @RequestBody List<IncomeStatementRequest> requests){
+    	List<IncomeStatementResponse> items = incomeStatementService.saveAll(requests);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INCOME_STATEMENT_FULL_ACCESS)
+    @PostMapping("/general-search")
+    public ResponseEntity<List<IncomeStatementResponse>> generalSearch(@RequestBody IncomeStatementSearchRequest request){
+    	List<IncomeStatementResponse> items = incomeStatementService.generalSearch(request);
+    	return ResponseEntity.ok(items);
+    }
 }
