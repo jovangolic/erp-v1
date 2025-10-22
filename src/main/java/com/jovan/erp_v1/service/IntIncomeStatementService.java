@@ -11,6 +11,9 @@ import com.jovan.erp_v1.request.IncomeStatementRequest;
 import com.jovan.erp_v1.response.IncomeStatementResponse;
 import com.jovan.erp_v1.save_as.IncomeStatementSaveAsRequest;
 import com.jovan.erp_v1.search_request.IncomeStatementSearchRequest;
+import com.jovan.erp_v1.statistics.income_statement.IncomeStatementExpensesStatDTO;
+import com.jovan.erp_v1.statistics.income_statement.IncomeStatementNetProfitStatDTO;
+import com.jovan.erp_v1.statistics.income_statement.IncomeStatementRevenuStatDTO;
 
 public interface IntIncomeStatementService {
 
@@ -64,4 +67,7 @@ public interface IntIncomeStatementService {
     IncomeStatementResponse saveAs(IncomeStatementSaveAsRequest request);
     List<IncomeStatementResponse> saveAll(List<IncomeStatementRequest> requests);
     List<IncomeStatementResponse> generalSearch(IncomeStatementSearchRequest request);
+    List<IncomeStatementRevenuStatDTO> countIncomeStatementRevenuByFiscalYear();
+    List<IncomeStatementExpensesStatDTO> countIncomeStatementExpensesByFiscalYear();
+    List<IncomeStatementNetProfitStatDTO> countIncomeStatementNetProfitByFiscalYear();
 }

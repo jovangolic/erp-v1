@@ -26,6 +26,9 @@ import com.jovan.erp_v1.response.IncomeStatementResponse;
 import com.jovan.erp_v1.save_as.IncomeStatementSaveAsRequest;
 import com.jovan.erp_v1.search_request.IncomeStatementSearchRequest;
 import com.jovan.erp_v1.service.IntIncomeStatementService;
+import com.jovan.erp_v1.statistics.income_statement.IncomeStatementExpensesStatDTO;
+import com.jovan.erp_v1.statistics.income_statement.IncomeStatementNetProfitStatDTO;
+import com.jovan.erp_v1.statistics.income_statement.IncomeStatementRevenuStatDTO;
 import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
@@ -380,6 +383,27 @@ public class IncomeStatementController {
     @PostMapping("/general-search")
     public ResponseEntity<List<IncomeStatementResponse>> generalSearch(@RequestBody IncomeStatementSearchRequest request){
     	List<IncomeStatementResponse> items = incomeStatementService.generalSearch(request);
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INCOME_STATEMENT_READ_ACCESS)
+    @GetMapping("/count/revenue-by-fiscal-year")
+    public ResponseEntity<List<IncomeStatementRevenuStatDTO>> countIncomeStatementRevenuByFiscalYear(){
+    	List<IncomeStatementRevenuStatDTO> items = incomeStatementService.countIncomeStatementRevenuByFiscalYear();
+    	return ResponseEntity.ok(items);
+    }
+    
+    @PreAuthorize(RoleGroups.INCOME_STATEMENT_READ_ACCESS)
+    @GetMapping("/count/expenses-by-fiscal-year")
+    public ResponseEntity<List<IncomeStatementExpensesStatDTO>> countIncomeStatementExpensesByFiscalYear(){
+	    List<IncomeStatementExpensesStatDTO> items = incomeStatementService.countIncomeStatementExpensesByFiscalYear();
+	    return ResponseEntity.ok(items);	
+    }
+    
+    @PreAuthorize(RoleGroups.INCOME_STATEMENT_READ_ACCESS)
+    @GetMapping("/count/net-profit-by-fiscal-year")
+    public ResponseEntity<List<IncomeStatementNetProfitStatDTO>> countIncomeStatementNetProfitByFiscalYear(){
+    	List<IncomeStatementNetProfitStatDTO> items = incomeStatementService.countIncomeStatementNetProfitByFiscalYear();
     	return ResponseEntity.ok(items);
     }
 }

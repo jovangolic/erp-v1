@@ -14,6 +14,9 @@ import org.springframework.stereotype.Repository;
 import com.jovan.erp_v1.enumeration.FiscalQuarterStatus;
 import com.jovan.erp_v1.enumeration.FiscalYearStatus;
 import com.jovan.erp_v1.model.IncomeStatement;
+import com.jovan.erp_v1.statistics.income_statement.IncomeStatementExpensesStatDTO;
+import com.jovan.erp_v1.statistics.income_statement.IncomeStatementNetProfitStatDTO;
+import com.jovan.erp_v1.statistics.income_statement.IncomeStatementRevenuStatDTO;
 
 @Repository
 public interface IncomeStatementRepository extends JpaRepository<IncomeStatement, Long>, JpaSpecificationExecutor<IncomeStatement> {
@@ -80,4 +83,43 @@ public interface IncomeStatementRepository extends JpaRepository<IncomeStatement
     
     @Query("SELECT is FROM IncomeStatement is WHERE is.id = :id")
     Optional<IncomeStatement> trackIncomeStatement(@Param("id") Long id);
+    
+    @Query("""
+    	    SELECT new com.jovan.erp_v1.statistics.income_statement.IncomeStatementRevenuStatDTO(
+    	        COUNT(in),
+    	        SUM(in.totalRevenue),
+    	        in.fiscalYear.id,
+    	        in.fiscalYear.year
+    	    )
+    	    FROM IncomeStatement in
+    	    WHERE in.confirmed = true
+    	    GROUP BY in.fiscalYear.id, in.fiscalYear.year
+    """)
+    List<IncomeStatementRevenuStatDTO> countIncomeStatementRevenuByFiscalYear();
+    
+    @Query("""
+    	    SELECT new com.jovan.erp_v1.statistics.income_statement.IncomeStatementExpensesStatDTO(
+    	        COUNT(in),
+    	        SUM(in.totalExpenses),
+    	        in.fiscalYear.id,
+    	        in.fiscalYear.year
+    	    )
+    	    FROM IncomeStatement in
+    	    WHERE in.confirmed = true
+    	    GROUP BY in.fiscalYear.id, in.fiscalYear.year
+    """)
+    List<IncomeStatementExpensesStatDTO> countIncomeStatementExpensesByFiscalYear();
+    
+    @Query("""
+    		SELECT new com.jovan.erp_v1.statistics.income_statement.IncomeStatementNetProfitStatDTO(
+    		COUNT(in),
+    		SUM(in.netProfit),
+    		in.fiscalYear.id,
+    	    in.fiscalYear.year
+    	    )
+    	    FROM IncomeStatement in
+    	    WHERE in.confirmed = true
+    	    GROUP BY in.fiscalYear.id, in.fiscalYear.year
+    """)
+    List<IncomeStatementNetProfitStatDTO> countIncomeStatementNetProfitByFiscalYear();
 }

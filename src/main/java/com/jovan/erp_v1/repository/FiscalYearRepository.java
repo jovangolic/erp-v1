@@ -24,13 +24,21 @@ public interface FiscalYearRepository extends JpaRepository<FiscalYear, Long>, J
 
     @Query("SELECT fy FROM FiscalYear fy WHERE fy.startDate >= :start AND fy.endDate <= :end")
     List<FiscalYear> findBetweenStartAndEndDates(@Param("start") LocalDate start, @Param("end") LocalDate end);
+
     Optional<FiscalYear> findByYear(Integer year);
+
     Optional<FiscalYear> findByYearStatusAndYear(FiscalYearStatus status, Integer year);
+
     Optional<FiscalYear> findFirstByYearStatusOrderByStartDateDesc(FiscalYearStatus status);
+
     List<FiscalYear> findByStartDateAfter(LocalDate date);
+
     List<FiscalYear> findByEndDateBefore(LocalDate date);
+
     List<FiscalYear> findByYearStatus(FiscalYearStatus yearStatus);
+
     List<FiscalYear> findByQuarterStatus(FiscalQuarterStatus quarterStatus);
+
     // Kvartali "manji od" prosledjenog
     @Query("""
                 SELECT f FROM FiscalYear f
@@ -68,24 +76,25 @@ public interface FiscalYearRepository extends JpaRepository<FiscalYear, Long>, J
                     END
             """)
     List<FiscalYear> findByQuarterGreaterThan(@Param("quarterStatus") FiscalQuarterStatus quarterStatus);
+
     @Query("SELECT f FROM FiscalYear f LEFT JOIN FETCH f.quarters WHERE f.id = :id")
     List<FiscalYear> trackFiscalYear(@Param("id") Long id);
+
     @Query("""
-    		SELECT new com.jovan.erp_v1.statistics.fiscal_year.FiscalYearMonthlyStatDTO( 
-    		CAST(FUNCTION('YEAR', f.startDate) as Integer),
-    		CAST(FUNCTION('MONTH', f.startDate) as Integer)
-    		COUNT(f)) FROM FiscalYear f
-    		GROUP BY FUNCTION('YEAR' , f.startDate), FUNCTION('MONTH' , f.startDate)
-    		ORDER BY FUNCTION('YEAR' , f.startDate), FUNCTION('MONTH' , f.startDate)
-    		""")
+            SELECT new com.jovan.erp_v1.statistics.fiscal_year.FiscalYearMonthlyStatDTO(
+            CAST(FUNCTION('YEAR', f.startDate) as Integer),
+            CAST(FUNCTION('MONTH', f.startDate) as Integer),
+            COUNT(f)) FROM FiscalYear f
+            GROUP BY FUNCTION('YEAR' , f.startDate), FUNCTION('MONTH' , f.startDate)
+            ORDER BY FUNCTION('YEAR' , f.startDate), FUNCTION('MONTH' , f.startDate)
+            """)
     List<FiscalYearMonthlyStatDTO> countFiscalYearsByYearAndMonth();
-    
+
     @Query("SELECT new com.jovan.erp_v1.statistics.fiscal_year.FiscalYearStatusStatDTO(f.yearStatus, COUNT(f))"
-    		+ "FROM f FiscalYear GROUP BY f.yearStatus")
+            + "FROM f FiscalYear GROUP BY f.yearStatus")
     List<FiscalYearStatusStatDTO> countByFiscalYearStatus();
-    
+
     @Query("SELECT new com.jovan.erp_v1.statistics.fiscal_year.FiscalYearQuarterStatDTO(f.quarterStatus, COUNT(f))"
-    		+ "FROM f FiscalYear GROUP BY f.quarterStatus")
+            + "FROM f FiscalYear GROUP BY f.quarterStatus")
     List<FiscalYearQuarterStatDTO> countByFiscalYearQuarterStatus();
 }
-

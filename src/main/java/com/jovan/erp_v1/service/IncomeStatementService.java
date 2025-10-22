@@ -35,6 +35,9 @@ import com.jovan.erp_v1.save_as.AbstractSaveAllService;
 import com.jovan.erp_v1.save_as.AbstractSaveAsService;
 import com.jovan.erp_v1.save_as.IncomeStatementSaveAsRequest;
 import com.jovan.erp_v1.search_request.IncomeStatementSearchRequest;
+import com.jovan.erp_v1.statistics.income_statement.IncomeStatementExpensesStatDTO;
+import com.jovan.erp_v1.statistics.income_statement.IncomeStatementNetProfitStatDTO;
+import com.jovan.erp_v1.statistics.income_statement.IncomeStatementRevenuStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -674,6 +677,57 @@ public class IncomeStatementService implements IntIncomeStatementService {
 		return items.stream().map(incomeStatementMapper::toResponse).collect(Collectors.toList());
 	}
 	
+	@Override
+	public List<IncomeStatementRevenuStatDTO> countIncomeStatementRevenuByFiscalYear() {
+		List<IncomeStatementRevenuStatDTO> items = incomeStatementRepository.countIncomeStatementRevenuByFiscalYear();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No IncomeStatement for revenue by fiscal-year, is found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					BigDecimal revenue = item.getRevenue();
+					Long fiscalYearId = item.getFiscalYearId();
+					Integer fiscalYear = item.getFiscalYear();
+					return new IncomeStatementRevenuStatDTO(count, revenue, fiscalYearId, fiscalYear);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<IncomeStatementExpensesStatDTO> countIncomeStatementExpensesByFiscalYear() {
+		List<IncomeStatementExpensesStatDTO> items = incomeStatementRepository.countIncomeStatementExpensesByFiscalYear();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No IncomeStatement fro expenses by fiscal-year, is found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					BigDecimal expenses = item.getExpenses();
+					Long fiscalYearId = item.getFiscalYearId();
+					Integer fiscalYear = item.getFiscalYear();
+					return new IncomeStatementExpensesStatDTO(count, expenses, fiscalYearId, fiscalYear);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<IncomeStatementNetProfitStatDTO> countIncomeStatementNetProfitByFiscalYear() {
+		List<IncomeStatementNetProfitStatDTO> items = incomeStatementRepository.countIncomeStatementNetProfitByFiscalYear();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No IncomeStatement for net-profit by fiscal-year, is found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					BigDecimal netProfit = item.getNetProfit();
+					Long fiscalYearId = item.getFiscalYearId();
+					Integer fiscalYear = item.getFiscalYear();
+					return new IncomeStatementNetProfitStatDTO(count, netProfit, fiscalYearId, fiscalYear);
+				})
+				.toList();
+	}
+	
 	private void validateBigDecimalNonNegative(BigDecimal num) {
 		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
 			throw new ValidationException("Number must be zero or positive");
@@ -732,4 +786,5 @@ public class IncomeStatementService implements IntIncomeStatementService {
     	Optional.ofNullable(status)
     		.orElseThrow(() -> new ValidationException("IncomeStatementStatus status must not be null"));
     }
+
 }
