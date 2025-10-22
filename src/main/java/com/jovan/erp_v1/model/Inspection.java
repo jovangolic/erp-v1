@@ -84,6 +84,7 @@ public class Inspection {
     private String notes;
 	
 	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	private InspectionResult result;
 	
 	@ManyToOne
@@ -96,6 +97,7 @@ public class Inspection {
 	
 	@Column(nullable = false)
 	@Builder.Default
+	@Enumerated(EnumType.STRING)
 	private InspectionStatus status = InspectionStatus.NEW;
 	
 	@OneToMany(mappedBy = "inspection", cascade = CascadeType.ALL, orphanRemoval = true)

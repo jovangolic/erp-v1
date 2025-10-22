@@ -1,0 +1,88 @@
+package com.jovan.erp_v1.search_request;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.InspectionResult;
+import com.jovan.erp_v1.enumeration.InspectionStatus;
+import com.jovan.erp_v1.enumeration.InspectionType;
+import com.jovan.erp_v1.enumeration.QualityCheckStatus;
+import com.jovan.erp_v1.enumeration.QualityCheckType;
+import com.jovan.erp_v1.enumeration.ReferenceType;
+import com.jovan.erp_v1.enumeration.StorageType;
+import com.jovan.erp_v1.enumeration.SupplierType;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
+
+public record InspectionSearchRequest(
+		Long id,
+		Long idFrom,
+		Long idTo,
+		String code,
+		InspectionType type,
+		LocalDateTime inspectionDate,
+		LocalDateTime inspectionDateBefore,
+		LocalDateTime inspectionDateAfter,
+		Long batchId,
+		Long batchIdFrom,
+		Long batchIdTo,
+		String batchCode,
+		Long batchProductId,
+		Long batchProductIdFrom,
+		Long batchProductIdTo,
+		Integer quantityProduced,
+		Integer quantityProducedMin,
+		Integer quantityProducedMax,
+		LocalDate productionDate,
+		LocalDate productionDateBefore,
+		LocalDate productionDateAfter,
+		LocalDate expiryDate,
+		LocalDate expiryDateBefore,
+		LocalDate expiryDateAfter,
+		Long productId,
+		Long productIdFrom,
+		Long productIdTo,
+		BigDecimal productCurrentQuantity,
+		BigDecimal productCurrentQuantityMin,
+		BigDecimal productCurrentQuantityMax,
+		String productName,
+		UnitMeasure unitMeasure,
+		SupplierType supplierType,
+		StorageType storageType,
+		GoodsType goodsType,
+		Long storageId,
+		Long storageIdFrom,
+		Long storageIdTo,
+		Long inspectorId,
+		Long inspectorIdFrom,
+		Long inspectorIdTo,
+		String firstName,
+		String lastName,
+		Integer quantityInspected,
+		Integer quantityInspectedMin,
+		Integer quantityInspectedMax,
+		Integer quantityAccepted,
+		Integer quantityAcceptedMin,
+		Integer quantityAcceptedMax,
+		Integer quantityRejected,
+		Integer quantityRejectedMin,
+		Integer quantityRejectedMax,
+		String notes,
+		InspectionResult result,
+		Long qualityCheckId,
+		Long qualityCheckIdFrom,
+		Long qualityCheckIdTo,
+		LocalDateTime locDate,
+		LocalDateTime locDateBefore,
+		LocalDateTime locDateAfter,
+		Long qualityCheckInspectorId,
+		Long qualityCheckInspectorIdFrom,
+		Long qualityCheckInspectorIdTo,
+		ReferenceType referenceType,
+		QualityCheckType checkType,
+		QualityCheckStatus checkStatus,
+		Boolean confirmed,
+		InspectionStatus status
+		) {
+}

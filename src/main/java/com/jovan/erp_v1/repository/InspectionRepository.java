@@ -25,6 +25,18 @@ import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.Inspection;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByBatchStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByInspectorStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByProductStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByQualityCheckStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByBatchStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByInspectorStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByProductStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByQualityCheckStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByBatchStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByInspectorStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByProductStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByQualityCheckStatDTO;
 
 
 
@@ -188,4 +200,161 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("SELECT i FROM Inspection i WHERE LOWER(i.qualityCheck.inspector.firstName) LIKE LOWER(CONCAT('%', :firstName,'%')) AND LOWER(i.qualityCheck.inspector.firstName) LIKE LOWER(CONCAT('%', :lastName,'%'))")
 	List<Inspection> findByQualityCheckInspectorFirstNameContainingIgnoreCaseAndQualityCheckInspectorLastNameContainingIgnoreCase(@Param("firstName") String firstName,@Param("lastName") String lastName);
 	
+	//nove metode
+	@Query("SELECT i FROM Inspection i LEFT JOIN FETCH i.defects WHERE i.id = :id")
+	List<Inspection> trackInspectionByInspectionDefect(@Param("id") Long id);
+	@Query("SELECT i FROM Inspection i LEFT JOIN FETCH i.measurements WHERE i.id = :id")
+	List<Inspection> trackInspectionByTestMeasurement(@Param("id") Long id);
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityInspectedByBatchStatDTO(
+			COUNT(i),
+			SUM(i.quantityInspected),
+			i.batch.id,
+			i.batch.code
+			)
+			FROM i Inspection i
+			WHERE i.confirmed = true
+    	    GROUP BY i.batch.id, i.batch.code
+			""")
+	List<QuantityInspectedByBatchStatDTO> countQuantityInspectedByBatch();
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityRejectedByBatchStatDTO(
+			COUNT(i),
+			SUM(i.quantityRejected),
+			i.batch.id,
+			i.batch.code
+			)
+			FROM i Inspection i
+			WHERE i.confirmed = true
+    	    GROUP BY i.batch.id, i.batch.code
+			""")
+	List<QuantityRejectedByBatchStatDTO> countQuantityRejectedByBatch();
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByBatchStatDTO(
+			COUNT(i),
+			SUM(i.quantityAccepted),
+			i.batch.id,
+			i.batch.code
+			)
+			FROM i Inspection i
+			WHERE i.confirmed = true
+    	    GROUP BY i.batch.id, i.batch.code
+			""")
+	List<QuantityAcceptedByBatchStatDTO> countQuantityAcceptedByBatch();
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityInspectedByProductStatDTO(
+			COUNT(i),
+			SUM(i.quantityInspected),
+			i.product.id,
+			i.product.name
+			)
+			FROM i Inspection i
+			WHERE i.confirmed = true
+    	    GROUP BY i.product.id, i.product.name
+			""")
+	List<QuantityInspectedByProductStatDTO> countQuantityInspectedByProduct();
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByProductStatDTO(
+			COUNT(i),
+			SUM(i.quantityAccepted),
+			i.product.id,
+			i.product.name
+			)
+			FROM i Inspection i
+			WHERE i.confirmed = true
+    	    GROUP BY i.product.id, i.product.name
+			""")
+	List<QuantityAcceptedByProductStatDTO> countQuantityAcceptedByProduct();
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityRejectedByProductStatDTO(
+			COUNT(i),
+			SUM(i.quantityRejected),
+			i.product.id,
+			i.product.name
+			)
+			FROM i Inspection i
+			WHERE i.confirmed = true
+    	    GROUP BY i.product.id, i.product.name
+			""")
+	List<QuantityRejectedByProductStatDTO> countQuantityRejectedByProduct();
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityInspectedByInspectorStatDTO(
+			COUNT(i),
+			SUM(i.quantityInspected),
+			i.inspector.id,
+			i.inspector.firstName, 
+			i.inspector.lastName
+			)
+			FROM i Inspection i
+			WHERE i.confirmed = true
+    	    GROUP BY i.inspector.id, i.inspector.firstName, i.inspector.lastName
+			""")
+	List<QuantityInspectedByInspectorStatDTO> countQuantityInspectedByInspector();
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByInspectorStatDTO(
+			COUNT(i),
+			SUM(i.quantityAccepted),
+			i.inspector.id,
+			i.inspector.firstName, 
+			i.inspector.lastName
+			)
+			FROM i Inspection i
+			WHERE i.confirmed = true
+    	    GROUP BY i.inspector.id, i.inspector.firstName, i.inspector.lastName
+			""")
+	List<QuantityAcceptedByInspectorStatDTO> countQuantityAcceptedByInspector();
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityRejectedByInspectorStatDTO(
+			COUNT(i),
+			SUM(i.quantityRejected),
+			i.inspector.id,
+			i.inspector.firstName, 
+			i.inspector.lastName
+			)
+			FROM i Inspection i
+			WHERE i.confirmed = true
+    	    GROUP BY i.inspector.id, i.inspector.firstName, i.inspector.lastName
+			""")
+	List<QuantityRejectedByInspectorStatDTO> countQuantityRejectedByInspector();
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityInspectedByQualityCheckStatDTO(
+			COUNT(i),
+			SUM(i.quantityInspected),
+			i.qualityCheck.id
+			)
+			FROM i Inspection i
+			WHERE i.confirmed = true
+			GROUP BY i.qualityCheck.id
+			""")
+	List<QuantityInspectedByQualityCheckStatDTO> countQuantityInspectedByQualityCheck();
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByQualityCheckStatDTO(
+			COUNT(i),
+			SUM(i.quantityAccepted),
+			i.qualityCheck.id
+			)
+			FROM i Inspection i
+			WHERE i.confirmed = true
+			GROUP BY i.qualityCheck.id
+			""")
+	List<QuantityAcceptedByQualityCheckStatDTO> countQuantityAcceptedByQualityCheck();
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityRejectedByQualityCheckStatDTO(
+			COUNT(i),
+			SUM(i.quantityRejected),
+			i.qualityCheck.id
+			)
+			FROM i Inspection i
+			WHERE i.confirmed = true
+			GROUP BY i.qualityCheck.id
+			""")
+	List<QuantityRejectedByQualityCheckStatDTO> countQuantityRejectedByQualityCheck();
 }
