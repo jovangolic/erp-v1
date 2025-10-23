@@ -25,6 +25,8 @@ import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.Inspection;
+import com.jovan.erp_v1.statistics.inspection.InspectionResultStatDTO;
+import com.jovan.erp_v1.statistics.inspection.InspectionTypeStatDTO;
 import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByBatchStatDTO;
 import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByInspectorStatDTO;
 import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByProductStatDTO;
@@ -206,6 +208,9 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("SELECT i FROM Inspection i LEFT JOIN FETCH i.measurements WHERE i.id = :id")
 	List<Inspection> trackInspectionByTestMeasurement(@Param("id") Long id);
 	
+	@Query("SELECT i FROM Inspection i WHERE (:id IS NULL OR i.id = :id) "
+			+ "AND (:notes IS NULL OR LOWER(i.notes) LIKE LOWER(CONCAT('%', :notes, '%')))")
+	List<Inspection> findByReports(@Param("id") Long id, @Param("notes") String notes);
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityInspectedByBatchStatDTO(
 			COUNT(i),
@@ -357,4 +362,11 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 			GROUP BY i.qualityCheck.id
 			""")
 	List<QuantityRejectedByQualityCheckStatDTO> countQuantityRejectedByQualityCheck();
+	
+	@Query("SELECT new com.jovan.erp_v1.statistics.inspection.InspectionTypeStatDTO(i.type, COUNT(i))"
+			+ "FROM Inspection i GROUP BY i.type ")
+	List<InspectionTypeStatDTO> countInspectionByType();
+	@Query("SELECT new com.jovan.erp_v1.statistics.inspection.InspectionResultStatDTO(i.result, COUNT(i))"
+			+ "FROM Inspection i GROUP BY i.result ")
+	List<InspectionResultStatDTO> countInspectionByResult();
 }

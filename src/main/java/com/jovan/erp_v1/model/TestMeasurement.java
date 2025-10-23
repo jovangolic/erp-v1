@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,6 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Builder
 public class TestMeasurement {
 
 	@Id
@@ -39,4 +41,8 @@ public class TestMeasurement {
 	
 	@Column
     private Boolean withinSpec;
+	
+	@Column(nullable = false)
+	@Builder.Default
+	private Boolean confirmed = false;
 }

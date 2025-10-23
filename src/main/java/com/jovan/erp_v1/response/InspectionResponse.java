@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.jovan.erp_v1.enumeration.InspectionResult;
+import com.jovan.erp_v1.enumeration.InspectionStatus;
 import com.jovan.erp_v1.enumeration.InspectionType;
 import com.jovan.erp_v1.model.Inspection;
 
@@ -32,6 +33,8 @@ public class InspectionResponse {
 	private InspectionForQualityCheckResponse inspectionForQualityCheckResponse;
 	private List<InspectionForTestMeasurementResponse>  inspectionForTestMeasurementResponses;
 	private List<InspectionDefectResponse> inspectionDefectResponses;
+	private InspectionStatus status;
+	private Boolean confirmed;
 	
 	public InspectionResponse(Inspection insp) {
 		this.id = insp.getId();
@@ -53,5 +56,7 @@ public class InspectionResponse {
 		this.inspectionDefectResponses = insp.getDefects().stream()
 				.map(InspectionDefectResponse::new)
 				.collect(Collectors.toList());
+		this.status = insp.getStatus();
+		this.confirmed = insp.getConfirmed();
 	}
 }

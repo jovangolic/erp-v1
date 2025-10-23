@@ -12,6 +12,7 @@ import com.jovan.erp_v1.dto.InspectionQuantityRejectedDTO;
 import com.jovan.erp_v1.dto.InspectionQuantityRejectedSummaryDTO;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.InspectionResult;
+import com.jovan.erp_v1.enumeration.InspectionStatus;
 import com.jovan.erp_v1.enumeration.InspectionType;
 import com.jovan.erp_v1.enumeration.QualityCheckStatus;
 import com.jovan.erp_v1.enumeration.QualityCheckType;
@@ -21,6 +22,22 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.InspectionRequest;
 import com.jovan.erp_v1.response.InspectionResponse;
+import com.jovan.erp_v1.save_as.InspectionSaveAsRequest;
+import com.jovan.erp_v1.search_request.InspectionSearchRequest;
+import com.jovan.erp_v1.statistics.inspection.InspectionResultStatDTO;
+import com.jovan.erp_v1.statistics.inspection.InspectionTypeStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByBatchStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByInspectorStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByProductStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByQualityCheckStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByBatchStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByInspectorStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByProductStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByQualityCheckStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByBatchStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByInspectorStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByProductStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByQualityCheckStatDTO;
 
 public interface InfInspectionService {
 
@@ -151,4 +168,33 @@ public interface InfInspectionService {
 	List<InspectionResponse> findByQualityCheckInspectorEmailLikeIgnoreCase(String inspectorEmail);
 	List<InspectionResponse> findByQualityCheckInspectorPhoneNumberLikeIgnoreCase(String inspectorPhoneNumber);
 	List<InspectionResponse> findByQualityCheckInspectorFirstNameContainingIgnoreCaseAndQualityCheckInspectorLastNameContainingIgnoreCase( String firstName, String lastName);
+	
+	//nove metode
+	InspectionResponse trackInspectionByInspectionDefect(Long id);
+	InspectionResponse trackInspectionByTestMeasurement(Long id);
+	List<InspectionResponse> findByReports(Long id, String notes);
+	InspectionResponse confirmInspection(Long id);
+	InspectionResponse cancelInspection(Long id);
+	InspectionResponse closeInspection(Long id);
+	InspectionResponse changeStatus(Long id, InspectionStatus status);
+	InspectionResponse saveInspection(InspectionRequest request);
+	InspectionResponse saveAs(InspectionSaveAsRequest request);
+	List<InspectionResponse> saveAll(List<InspectionRequest> requests);
+	List<InspectionResponse> generalSearch(InspectionSearchRequest request);
+	List<QuantityInspectedByBatchStatDTO> countQuantityInspectedByBatch();
+	List<QuantityRejectedByBatchStatDTO> countQuantityRejectedByBatch();
+	List<QuantityAcceptedByBatchStatDTO> countQuantityAcceptedByBatch();
+	List<QuantityInspectedByProductStatDTO> countQuantityInspectedByProduct();
+	List<QuantityAcceptedByProductStatDTO> countQuantityAcceptedByProduct();
+	List<QuantityRejectedByProductStatDTO> countQuantityRejectedByProduct();
+	List<QuantityInspectedByInspectorStatDTO> countQuantityInspectedByInspector();
+	List<QuantityAcceptedByInspectorStatDTO> countQuantityAcceptedByInspector();
+	List<QuantityRejectedByInspectorStatDTO> countQuantityRejectedByInspector();
+	List<QuantityInspectedByQualityCheckStatDTO> countQuantityInspectedByQualityCheck();
+	List<QuantityAcceptedByQualityCheckStatDTO> countQuantityAcceptedByQualityCheck();
+	List<QuantityRejectedByQualityCheckStatDTO> countQuantityRejectedByQualityCheck();
+	List<InspectionTypeStatDTO> countInspectionByType();
+	List<InspectionResultStatDTO> countInspectionByResult();
 }
+
+

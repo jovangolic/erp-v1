@@ -3,6 +3,7 @@ package com.jovan.erp_v1.request;
 import java.time.LocalDateTime;
 
 import com.jovan.erp_v1.enumeration.InspectionResult;
+import com.jovan.erp_v1.enumeration.InspectionStatus;
 import com.jovan.erp_v1.enumeration.InspectionType;
 
 import jakarta.validation.constraints.NotBlank;
@@ -37,6 +38,8 @@ public record InspectionRequest(
         @NotNull(message = "Result is required")
         InspectionResult result,
         @NotNull(message = "Quality check ID is required")
-        Long qualityCheckId
+        Long qualityCheckId,
+        @NotNull InspectionStatus satus,
+        @NotNull Boolean confirmed
 		) {
 }

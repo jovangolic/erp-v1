@@ -20,6 +20,7 @@ import com.jovan.erp_v1.dto.InspectionQuantityRejectedDTO;
 import com.jovan.erp_v1.dto.InspectionQuantityRejectedSummaryDTO;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.InspectionResult;
+import com.jovan.erp_v1.enumeration.InspectionStatus;
 import com.jovan.erp_v1.enumeration.InspectionType;
 import com.jovan.erp_v1.enumeration.QualityCheckStatus;
 import com.jovan.erp_v1.enumeration.QualityCheckType;
@@ -49,6 +50,22 @@ import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.repository.specification.InspectionSpecifications;
 import com.jovan.erp_v1.request.InspectionRequest;
 import com.jovan.erp_v1.response.InspectionResponse;
+import com.jovan.erp_v1.save_as.InspectionSaveAsRequest;
+import com.jovan.erp_v1.search_request.InspectionSearchRequest;
+import com.jovan.erp_v1.statistics.inspection.InspectionResultStatDTO;
+import com.jovan.erp_v1.statistics.inspection.InspectionTypeStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByBatchStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByInspectorStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByProductStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByQualityCheckStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByBatchStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByInspectorStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByProductStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByQualityCheckStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByBatchStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByInspectorStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByProductStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByQualityCheckStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -1330,6 +1347,373 @@ public class InspectionService implements InfInspectionService {
 		return items.stream().map(inspectionMapper::toResponse).collect(Collectors.toList());
 	}
 	
+	@Transactional(readOnly = true)
+	@Override
+	public InspectionResponse trackInspectionByInspectionDefect(Long id) {
+		List<Inspection> items = inspectionRepository.trackInspectionByInspectionDefect(id);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Inspection with id "+id+" for inspection-defect, not found");
+		}
+		Inspection ins = items.get(0);
+		return new InspectionResponse(ins);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public InspectionResponse trackInspectionByTestMeasurement(Long id) {
+		List<Inspection> items = inspectionRepository.trackInspectionByTestMeasurement(id);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Inspection with id "+id+" for test-measurement, not found");
+		}
+		Inspection ins = items.get(0);
+		return new InspectionResponse(ins);
+	}
+
+	@Override
+	public List<InspectionResponse> findByReports(Long id, String notes) {
+		if(id != null) validateInspectionId(id);
+		if(notes != null && !notes.trim().isEmpty()) validateString(notes);
+		List<Inspection> items = inspectionRepository.findByReports(id, notes);
+		return items.stream().map(inspectionMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	@Transactional
+	@Override
+	public InspectionResponse confirmInspection(Long id) {
+		Inspection ins = inspectionRepository.findById(id).orElseThrow(() -> new ValidationException("Inspection not found with id "+id));
+		ins.setConfirmed(true);
+		ins.setStatus(InspectionStatus.CONFIRMED);
+		ins.getDefects().stream()
+			.filter(i -> i.getQuantityAffected() > 0)
+			.forEach(i -> i.setConfirmed(true));
+		ins.getMeasurements().stream()
+			
+			.forEach(t -> t.setConfirmed(true));
+		return new InspectionResponse(inspectionRepository.save(ins));
+	}
+
+	@Transactional
+	@Override
+	public InspectionResponse cancelInspection(Long id) {
+		Inspection ins = inspectionRepository.findById(id).orElseThrow(() -> new ValidationException("Inspection not found with id "+id));
+		if(ins.getStatus() != InspectionStatus.NEW && ins.getStatus() != InspectionStatus.CONFIRMED) {
+			throw new ValidationException("Only NEW or CONFIRMED inspections can be cancelled");
+		}
+		ins.setStatus(InspectionStatus.CANCELLED);
+		return new InspectionResponse(inspectionRepository.save(ins));
+	}
+
+	@Transactional
+	@Override
+	public InspectionResponse closeInspection(Long id) {
+		Inspection ins = inspectionRepository.findById(id).orElseThrow(() -> new ValidationException("Inspection not found with id "+id));
+		if(ins.getStatus() != InspectionStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED inspections can be closed");
+		}
+		ins.setStatus(InspectionStatus.CLOSED);
+		return new InspectionResponse(inspectionRepository.save(ins));
+	}
+
+	@Transactional
+	@Override
+	public InspectionResponse changeStatus(Long id, InspectionStatus status) {
+		Inspection ins = inspectionRepository.findById(id).orElseThrow(() -> new ValidationException("Inspection not found with id "+id));
+		validateInspectionStatus(status);
+		if(ins.getStatus() == InspectionStatus.CLOSED) {
+			throw new ValidationException("Closed inspections cannot change status");
+		}
+		if(status == InspectionStatus.CONFIRMED) {
+			if(ins.getStatus() != InspectionStatus.NEW) {
+				throw new ValidationException("Only NEW inspections can be confirmed");
+			}
+			ins.setConfirmed(true);
+			ins.getDefects().stream().forEach(f -> f.setConfirmed(true));
+			ins.getMeasurements().stream().forEach(t -> t.setConfirmed(true));
+		}
+		ins.setStatus(status);
+		return new InspectionResponse(inspectionRepository.save(ins));
+	}
+
+	@Transactional
+	@Override
+	public InspectionResponse saveInspection(InspectionRequest request) {
+		Inspection ins = Inspection.builder()
+				.code(request.code())
+				.type(request.type())
+				.batch(validateBatchId(request.batchId()))
+				.product(validateProductId(request.productId()))
+				.inspector(validateUserId(request.inspectorId()))
+				.quantityInspected(request.quantityInspected())
+				.quantityAccepted(request.quantityAccepted())
+				.quantityRejected(request.quantityRejected())
+				.notes(request.notes())
+				.result(request.result())
+				.qualityCheck(validateQualityCheckId(request.qualityCheckId()))
+				.status(request.satus())
+				.confirmed(request.confirmed())
+				.build();
+		Inspection saved = inspectionRepository.save(ins);
+		return new InspectionResponse(saved);
+	}
+
+	@Transactional
+	@Override
+	public InspectionResponse saveAs(InspectionSaveAsRequest request) {
+		
+		return null;
+	}
+
+	@Transactional
+	@Override
+	public List<InspectionResponse> saveAll(List<InspectionRequest> requests) {
+		
+		return null;
+	}
+
+	@Override
+	public List<InspectionResponse> generalSearch(InspectionSearchRequest request) {
+		Specification<Inspection> spec = InspectionSpecifications.fromRequest(request);
+		List<Inspection> items = inspectionRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspections for given criteria, found");
+		}
+		return items.stream().map(inspectionMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<QuantityInspectedByBatchStatDTO> countQuantityInspectedByBatch() {
+		List<QuantityInspectedByBatchStatDTO> items = inspectionRepository.countQuantityInspectedByBatch();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection for count quantity-inspected by batch, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityInspected = item.getQuantityInspected();
+					Long batchId = item.getBatchId();
+					String batchCode = item.getBatchCode();
+					return new QuantityInspectedByBatchStatDTO(count, quantityInspected, batchId, batchCode);
+				})
+				.toList();
+		}
+
+	@Override
+	public List<QuantityRejectedByBatchStatDTO> countQuantityRejectedByBatch() {
+		List<QuantityRejectedByBatchStatDTO> items = inspectionRepository.countQuantityRejectedByBatch();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection for count quantity-rejected by batch, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityRejected = item.getQuantityRejected();
+					Long batchId = item.getBatchId();
+					String batchCode = item.getBatchCode();
+					return new QuantityRejectedByBatchStatDTO(count, quantityRejected, batchId, batchCode);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<QuantityAcceptedByBatchStatDTO> countQuantityAcceptedByBatch() {
+		List<QuantityAcceptedByBatchStatDTO> items = inspectionRepository.countQuantityAcceptedByBatch();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection for count quantity-accepted by batch, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityAccepted = item.getQuantityAccepted();
+					Long batchId = item.getBatchId();
+					String batchCode = item.getBatchCode();
+					return new QuantityAcceptedByBatchStatDTO(count, quantityAccepted, batchId, batchCode);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<QuantityInspectedByProductStatDTO> countQuantityInspectedByProduct() {
+		List<QuantityInspectedByProductStatDTO> items = inspectionRepository.countQuantityInspectedByProduct();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection for count quantity-inspected by product, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityInspected = item.getQuantityInspected();
+					Long productId = item.getProductId();
+					String productName = item.getProductName();
+					return new QuantityInspectedByProductStatDTO(count, quantityInspected, productId, productName);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<QuantityAcceptedByProductStatDTO> countQuantityAcceptedByProduct() {
+		List<QuantityAcceptedByProductStatDTO> items = inspectionRepository.countQuantityAcceptedByProduct();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection fro count quantity-accepted by product, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityAccepted = item.getQuantityAccepted();
+					Long productId = item.getProductId();
+					String productName = item.getProductName();
+					return new QuantityAcceptedByProductStatDTO(count, quantityAccepted, productId, productName);
+				})
+				.toList();
+		}
+
+	@Override
+	public List<QuantityRejectedByProductStatDTO> countQuantityRejectedByProduct() {
+		List<QuantityRejectedByProductStatDTO> items = inspectionRepository.countQuantityRejectedByProduct();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection for count quantity-rejected by product, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityRejected = item.getQuantityRejected();
+					Long productId = item.getProductId();
+					String productName = item.getProductName();
+					return new QuantityRejectedByProductStatDTO(count, quantityRejected, productId, productName);
+				})
+				.toList();
+		}
+
+	@Override
+	public List<QuantityInspectedByInspectorStatDTO> countQuantityInspectedByInspector() {
+		List<QuantityInspectedByInspectorStatDTO> items = inspectionRepository.countQuantityInspectedByInspector();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Insepction fro count quantity-inspected by given inspector, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityInspected = item.getQuantityInspected();
+					Long inspectorId = item.getInspectorId();
+					String firstName = item.getFirstName();
+					String lastName = item.getLastName();
+					return new QuantityInspectedByInspectorStatDTO(count, quantityInspected, inspectorId, firstName, lastName);
+				})
+				.toList();
+		}
+
+	@Override
+	public List<QuantityAcceptedByInspectorStatDTO> countQuantityAcceptedByInspector() {
+		List<QuantityAcceptedByInspectorStatDTO> items = inspectionRepository.countQuantityAcceptedByInspector();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection for count quantity-accepted by given inspector, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityAccepted = item.getQuantityAccepted();
+					Long inspectorId = item.getInspectorId();
+					String firstName = item.getFirstName();
+					String lastName = item.getLastName();
+					return new QuantityAcceptedByInspectorStatDTO(count, quantityAccepted, inspectorId, firstName, lastName);
+				})
+				.toList();
+		}
+
+	@Override
+	public List<QuantityRejectedByInspectorStatDTO> countQuantityRejectedByInspector() {
+		List<QuantityRejectedByInspectorStatDTO> items = inspectionRepository.countQuantityRejectedByInspector();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection for count quality-rejected by particular inspector, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityRejected = item.getQuantityRejected();
+					Long inspectorId = item.getInspectorId();
+					String firstName = item.getFirstName();
+					String lastName = item.getLastName();
+					return new QuantityRejectedByInspectorStatDTO(count, quantityRejected, inspectorId, firstName, lastName);
+				})
+				.toList();	
+		}
+
+	@Override
+	public List<QuantityInspectedByQualityCheckStatDTO> countQuantityInspectedByQualityCheck() {
+		List<QuantityInspectedByQualityCheckStatDTO> items = inspectionRepository.countQuantityInspectedByQualityCheck();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection for count quantity-inspected by quality-check, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityInspected = item.getQuantityInspected();
+					Long qualityCheckId = item.getQualityCheckId();
+					return new QuantityInspectedByQualityCheckStatDTO(count, quantityInspected, qualityCheckId);
+				})
+				.toList();
+		}
+
+	@Override
+	public List<QuantityAcceptedByQualityCheckStatDTO> countQuantityAcceptedByQualityCheck() {
+		List<QuantityAcceptedByQualityCheckStatDTO> items = inspectionRepository.countQuantityAcceptedByQualityCheck();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection for count quality-accepted by quality-check, found");
+		}
+		return items.stream()
+				.map(item  -> {
+					Long count = item.getCount();
+					Integer quantityAccepted = item.getQuantityAccepted();
+					Long qualityCheckId = item.getQualityCheckId();
+					return new QuantityAcceptedByQualityCheckStatDTO(count, quantityAccepted, qualityCheckId);
+				})
+				.toList();
+		}
+
+	@Override
+	public List<QuantityRejectedByQualityCheckStatDTO> countQuantityRejectedByQualityCheck() {
+		List<QuantityRejectedByQualityCheckStatDTO> items = inspectionRepository.countQuantityRejectedByQualityCheck();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection for count quality-rejected by quality check, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityRejected = item.getQuantityRejected();
+					Long qualityCheckId = item.getQualityCheckId();
+					return new QuantityRejectedByQualityCheckStatDTO(count, quantityRejected, qualityCheckId);
+				})
+				.toList();
+		}
+
+	@Override
+	public List<InspectionTypeStatDTO> countInspectionByType() {
+		List<InspectionTypeStatDTO> items = inspectionRepository.countInspectionByType();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection for count insepction-type, is found");
+		}
+		return items.stream()
+				.map(item -> {
+					InspectionType type = item.type();
+					Long count = item.count();
+					return new InspectionTypeStatDTO(type, count);
+				})
+				.toList();
+		}
+
+	@Override
+	public List<InspectionResultStatDTO> countInspectionByResult() {
+		List<InspectionResultStatDTO> items = inspectionRepository.countInspectionByResult();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inspection for count inspection-result, is found");
+		}
+		return items.stream()
+				.map(item -> {
+					InspectionResult res = item.result();
+					Long count = item.count();
+					return new InspectionResultStatDTO(res, count);
+				})
+				.toList();
+		}
+	
 	private QualityCheck validateQualityCheckId(Long qualityCheckId) {
 		if(qualityCheckId == null) {
 			throw new ValidationException("QualityCheck ID must not be null");
@@ -1503,5 +1887,17 @@ public class InspectionService implements InfInspectionService {
 		validateInteger(request.quantityRejected());
 		validateString(request.notes());
 		validateInspectionResult(request.result());
+	}
+	
+	private void validateInspectionStatus(InspectionStatus status) {
+		Optional.ofNullable(status)
+			.orElseThrow(() -> new ValidationException("InspectionStatus status must not be null"));
+	}
+	
+	private Inspection validateInspectionId(Long id) {
+		if(id == null) {
+			throw new ValidationException("Inspection id must not be null");
+		}
+		return inspectionRepository.findById(id).orElseThrow(() -> new ValidationException("Inspection not found with id "+id));
 	}
 }
