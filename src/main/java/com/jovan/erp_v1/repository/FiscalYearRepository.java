@@ -91,10 +91,10 @@ public interface FiscalYearRepository extends JpaRepository<FiscalYear, Long>, J
     List<FiscalYearMonthlyStatDTO> countFiscalYearsByYearAndMonth();
 
     @Query("SELECT new com.jovan.erp_v1.statistics.fiscal_year.FiscalYearStatusStatDTO(f.yearStatus, COUNT(f))"
-            + "FROM f FiscalYear GROUP BY f.yearStatus")
+            + "FROM FiscalYear f GROUP BY f.yearStatus")
     List<FiscalYearStatusStatDTO> countByFiscalYearStatus();
 
     @Query("SELECT new com.jovan.erp_v1.statistics.fiscal_year.FiscalYearQuarterStatDTO(f.quarterStatus, COUNT(f))"
-            + "FROM f FiscalYear GROUP BY f.quarterStatus")
+            + "FROM FiscalYear f GROUP BY f.quarterStatus")
     List<FiscalYearQuarterStatDTO> countByFiscalYearQuarterStatus();
 }

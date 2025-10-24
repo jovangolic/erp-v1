@@ -39,7 +39,7 @@ public record InspectionRequest(
         InspectionResult result,
         @NotNull(message = "Quality check ID is required")
         Long qualityCheckId,
-        @NotNull InspectionStatus satus,
+        @NotNull InspectionStatus status,
         @NotNull Boolean confirmed
 		) {
 }

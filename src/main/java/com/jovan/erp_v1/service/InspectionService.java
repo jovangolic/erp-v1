@@ -1457,7 +1457,7 @@ public class InspectionService implements InfInspectionService {
 				.notes(request.notes())
 				.result(request.result())
 				.qualityCheck(validateQualityCheckId(request.qualityCheckId()))
-				.status(request.satus())
+				.status(request.status())
 				.confirmed(request.confirmed())
 				.build();
 		ins = validateAndNormalizeQuantities(ins);
@@ -1546,7 +1546,7 @@ public class InspectionService implements InfInspectionService {
 						.notes(item.notes())
 						.result(item.result())
 						.qualityCheck(validateQualityCheckId(item.qualityCheckId()))
-						.status(item.satus())
+						.status(item.status())
 						.confirmed(item.confirmed())
 						.build())
 				.map(this::validateAndNormalizeQuantities)

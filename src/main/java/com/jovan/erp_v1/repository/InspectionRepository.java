@@ -42,6 +42,8 @@ import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByQualityCheckStat
 
 
 
+
+
 @Repository
 public interface InspectionRepository extends JpaRepository<Inspection, Long>, JpaSpecificationExecutor<Inspection> {
 
@@ -214,11 +216,11 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityInspectedByBatchStatDTO(
 			COUNT(i),
-			SUM(i.quantityInspected),
+			CAST(SUM(i.quantityInspected) AS integer),
 			i.batch.id,
 			i.batch.code
 			)
-			FROM i Inspection i
+			FROM  Inspection i
 			WHERE i.confirmed = true
     	    GROUP BY i.batch.id, i.batch.code
 			""")
@@ -227,11 +229,11 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityRejectedByBatchStatDTO(
 			COUNT(i),
-			SUM(i.quantityRejected),
+			CAST(SUM(i.quantityRejected) AS integer),
 			i.batch.id,
 			i.batch.code
 			)
-			FROM i Inspection i
+			FROM  Inspection i
 			WHERE i.confirmed = true
     	    GROUP BY i.batch.id, i.batch.code
 			""")
@@ -239,11 +241,11 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByBatchStatDTO(
 			COUNT(i),
-			SUM(i.quantityAccepted),
+			CAST(SUM(i.quantityAccepted) AS integer),
 			i.batch.id,
 			i.batch.code
 			)
-			FROM i Inspection i
+			FROM  Inspection i
 			WHERE i.confirmed = true
     	    GROUP BY i.batch.id, i.batch.code
 			""")
@@ -251,11 +253,11 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityInspectedByProductStatDTO(
 			COUNT(i),
-			SUM(i.quantityInspected),
+			CAST(SUM(i.quantityInspected) AS integer),
 			i.product.id,
 			i.product.name
 			)
-			FROM i Inspection i
+			FROM  Inspection i
 			WHERE i.confirmed = true
     	    GROUP BY i.product.id, i.product.name
 			""")
@@ -264,11 +266,11 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByProductStatDTO(
 			COUNT(i),
-			SUM(i.quantityAccepted),
+			CAST(SUM(i.quantityAccepted) AS integer),
 			i.product.id,
 			i.product.name
 			)
-			FROM i Inspection i
+			FROM  Inspection i
 			WHERE i.confirmed = true
     	    GROUP BY i.product.id, i.product.name
 			""")
@@ -277,11 +279,11 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityRejectedByProductStatDTO(
 			COUNT(i),
-			SUM(i.quantityRejected),
+			CAST(SUM(i.quantityRejected) AS integer),
 			i.product.id,
 			i.product.name
 			)
-			FROM i Inspection i
+			FROM  Inspection i
 			WHERE i.confirmed = true
     	    GROUP BY i.product.id, i.product.name
 			""")
@@ -289,12 +291,12 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityInspectedByInspectorStatDTO(
 			COUNT(i),
-			SUM(i.quantityInspected),
+			CAST(SUM(i.quantityInspected) AS integer),
 			i.inspector.id,
 			i.inspector.firstName, 
 			i.inspector.lastName
 			)
-			FROM i Inspection i
+			FROM  Inspection i
 			WHERE i.confirmed = true
     	    GROUP BY i.inspector.id, i.inspector.firstName, i.inspector.lastName
 			""")
@@ -303,12 +305,12 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByInspectorStatDTO(
 			COUNT(i),
-			SUM(i.quantityAccepted),
+			CAST(SUM(i.quantityAccepted) AS integer),
 			i.inspector.id,
 			i.inspector.firstName, 
 			i.inspector.lastName
 			)
-			FROM i Inspection i
+			FROM  Inspection i
 			WHERE i.confirmed = true
     	    GROUP BY i.inspector.id, i.inspector.firstName, i.inspector.lastName
 			""")
@@ -317,12 +319,12 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityRejectedByInspectorStatDTO(
 			COUNT(i),
-			SUM(i.quantityRejected),
+			CAST(SUM(i.quantityRejected) AS integer),
 			i.inspector.id,
 			i.inspector.firstName, 
 			i.inspector.lastName
 			)
-			FROM i Inspection i
+			FROM  Inspection i
 			WHERE i.confirmed = true
     	    GROUP BY i.inspector.id, i.inspector.firstName, i.inspector.lastName
 			""")
@@ -330,10 +332,10 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityInspectedByQualityCheckStatDTO(
 			COUNT(i),
-			SUM(i.quantityInspected),
+			CAST(SUM(i.quantityInspected) AS integer),
 			i.qualityCheck.id
 			)
-			FROM i Inspection i
+			FROM  Inspection i
 			WHERE i.confirmed = true
 			GROUP BY i.qualityCheck.id
 			""")
@@ -342,10 +344,10 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByQualityCheckStatDTO(
 			COUNT(i),
-			SUM(i.quantityAccepted),
+			CAST(SUM(i.quantityAccepted) AS integer),
 			i.qualityCheck.id
 			)
-			FROM i Inspection i
+			FROM  Inspection i
 			WHERE i.confirmed = true
 			GROUP BY i.qualityCheck.id
 			""")
@@ -354,10 +356,10 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long>, J
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection.QuantityRejectedByQualityCheckStatDTO(
 			COUNT(i),
-			SUM(i.quantityRejected),
+			CAST(SUM(i.quantityRejected) AS integer),
 			i.qualityCheck.id
 			)
-			FROM i Inspection i
+			FROM  Inspection i
 			WHERE i.confirmed = true
 			GROUP BY i.qualityCheck.id
 			""")
