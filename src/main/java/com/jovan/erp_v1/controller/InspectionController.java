@@ -859,4 +859,7 @@ public class InspectionController {
 		return ResponseEntity.ok(items);
 	}
 	
+	//nove metode
+	
+	
 }

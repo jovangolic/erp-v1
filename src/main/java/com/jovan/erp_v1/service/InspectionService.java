@@ -4,11 +4,15 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +54,8 @@ import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.repository.specification.InspectionSpecifications;
 import com.jovan.erp_v1.request.InspectionRequest;
 import com.jovan.erp_v1.response.InspectionResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
 import com.jovan.erp_v1.save_as.InspectionSaveAsRequest;
 import com.jovan.erp_v1.search_request.InspectionSearchRequest;
 import com.jovan.erp_v1.statistics.inspection.InspectionResultStatDTO;
@@ -93,7 +99,8 @@ public class InspectionService implements InfInspectionService {
 		QualityCheck qc = validateQualityCheckId(request.qualityCheckId());
 		validateInspectionRequest(request);
 		Inspection inspection = inspectionMapper.toEntity(request, batch, product, inspector, qc);
-		Inspection saved = inspectionRepository.save(inspection);
+		Inspection ins = validateAndNormalizeQuantities(inspection);
+		Inspection saved = inspectionRepository.save(ins);
 		return new InspectionResponse(saved);
 	}
 
@@ -122,7 +129,8 @@ public class InspectionService implements InfInspectionService {
 		}
 		validateInspectionRequest(request);
 		inspectionMapper.toEntityUpdate(inspection, request, batch, product, inspector, qc);
-		Inspection saved = inspectionRepository.save(inspection);
+		Inspection ins = validateAndNormalizeQuantities(inspection);
+		Inspection saved = inspectionRepository.save(ins);
 		return new InspectionResponse(saved);
 	}
 
@@ -1387,7 +1395,7 @@ public class InspectionService implements InfInspectionService {
 			.filter(i -> i.getQuantityAffected() > 0)
 			.forEach(i -> i.setConfirmed(true));
 		ins.getMeasurements().stream()
-			
+			.filter(t -> t.getMeasuredValue().compareTo(BigDecimal.ZERO) > 0 )
 			.forEach(t -> t.setConfirmed(true));
 		return new InspectionResponse(inspectionRepository.save(ins));
 	}
@@ -1452,22 +1460,119 @@ public class InspectionService implements InfInspectionService {
 				.status(request.satus())
 				.confirmed(request.confirmed())
 				.build();
+		ins = validateAndNormalizeQuantities(ins);
 		Inspection saved = inspectionRepository.save(ins);
 		return new InspectionResponse(saved);
 	}
+	
+	private final AbstractSaveAsService<Inspection, InspectionResponse> saveAsHelper = new AbstractSaveAsService<Inspection, InspectionResponse>() {
+		
+		@Override
+		protected InspectionResponse toResponse(Inspection entity) {
+			return new InspectionResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<Inspection, Long> getRepository() {
+			return inspectionRepository;
+		}
+		
+		@Override
+		protected Inspection copyAndOverride(Inspection source, Map<String, Object> overrides) {
+			return Inspection.builder()
+					.code((String) overrides.getOrDefault("Code", source.getCode()))
+					.type(source.getType())
+					.batch(validateBatchId(source.getBatch().getId()))
+					.product(validateProductId(source.getProduct().getId()))
+					.inspector(validateUserId(source.getInspector().getId()))
+					.quantityInspected((Integer) overrides.getOrDefault("Quantity-inspected", source.getQuantityInspected()))
+					.quantityAccepted((Integer) overrides.getOrDefault("Quantity-accepted", source.getQuantityAccepted()))
+					.quantityRejected((Integer) overrides.getOrDefault("Quantity-rejected", source.getQuantityRejected()))
+					.notes((String) overrides.getOrDefault("Notes", source.getNotes()))
+					.result(source.getResult())
+					.qualityCheck(validateQualityCheckId(source.getQualityCheck().getId()))
+					.build();
+		}
+	};
 
 	@Transactional
 	@Override
 	public InspectionResponse saveAs(InspectionSaveAsRequest request) {
-		
-		return null;
+		Map<String, Object> overrides = new HashMap<>();
+		if(request.code() != null) overrides.put("Code", request.code());
+		if(request.type() != null) overrides.put("Type", request.type());
+		if(request.batchId() != null) overrides.put("Batch-ID", validateBatchId(request.batchId()));
+		if(request.productId() != null) overrides.put("Product-ID", validateProductId(request.productId()));
+		if(request.inspectorId() != null) overrides.put("Inspector-ID", validateInspectionId(request.inspectorId()));
+		if(request.quantityInspected() != null) overrides.put("Quantity-inspected", request.quantityInspected());
+		if(request.quantityAccepted() != null) overrides.put("Quantity-accepted", request.quantityAccepted());
+		if(request.quantityRejected() != null) overrides.put("Quantity-rejected", request.quantityRejected());
+		if(request.notes() != null) overrides.put("Notes", request.notes());
+		if(request.result() != null) overrides.put("Result", request.result());
+		if(request.qualityCheckId() != null) overrides.put("Quality-check ID", validateQualityCheckId(request.qualityCheckId()));
+		InspectionResponse response = saveAsHelper.saveAs(request.sourceId(), overrides);
+		Inspection saved = inspectionRepository.findById(response.getId()).orElseThrow(() -> new ValidationException("Saved inspection not found"));
+		validateAndNormalizeQuantities(saved);
+		return response;
 	}
+	
+	private final AbstractSaveAllService<Inspection, InspectionResponse> saveAllHelper = new AbstractSaveAllService<Inspection, InspectionResponse>() {
+		
+		@Override
+		protected Function<Inspection, InspectionResponse> toResponse() {
+			return InspectionResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<Inspection, Long> getRepository() {
+			return inspectionRepository;
+		}
+	};
 
 	@Transactional
 	@Override
 	public List<InspectionResponse> saveAll(List<InspectionRequest> requests) {
-		
-		return null;
+		List<Inspection> items = requests.stream()
+				.map(item -> Inspection.builder()
+						.id(item.id())
+						.code(item.code())
+						.type(item.type())
+						.batch(validateBatchId(item.batchId()))
+						.product(validateProductId(item.productId()))
+						.inspector(validateUserId(item.inspectorId()))
+						.quantityInspected(item.quantityInspected())
+						.quantityAccepted(item.quantityAccepted())
+						.quantityRejected(item.quantityRejected())
+						.notes(item.notes())
+						.result(item.result())
+						.qualityCheck(validateQualityCheckId(item.qualityCheckId()))
+						.status(item.satus())
+						.confirmed(item.confirmed())
+						.build())
+				.map(this::validateAndNormalizeQuantities)
+				.toList();
+		List<Inspection> saved = inspectionRepository.saveAll(items);
+		saved.forEach(this::validateAndNormalizeQuantities);;
+		return saveAllHelper.saveAll(saved);
+	}
+	
+	private Inspection validateAndNormalizeQuantities(Inspection inspection) {
+		Integer inspected = inspection.getQuantityInspected();
+		Integer accepted = inspection.getQuantityAccepted();
+		Integer rejected = inspection.calculateQuantityRejected();
+		if(inspected == null && accepted != null && rejected != null) {
+			inspection.setQuantityInspected(inspection.calculateQuantityInspected());	
+		}
+		else if(accepted == null && inspected != null && rejected != null) {
+			inspection.setQuantityAccepted(inspection.calculateQuantityAccepted());
+		}
+		else if(rejected == null && inspected != null && accepted != null) {
+			inspection.setQuantityRejected(inspection.calculateQuantityRejected());
+		}
+		if(!inspection.isConsistent()) {
+			throw new ValidationException("Inspection quantities are inconsistent (inspected ≠ accepted + rejected).");
+		}
+		return inspection;
 	}
 
 	@Override
