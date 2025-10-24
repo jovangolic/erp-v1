@@ -26,6 +26,7 @@ import com.jovan.erp_v1.dto.InspectionQuantityRejectedDTO;
 import com.jovan.erp_v1.dto.InspectionQuantityRejectedSummaryDTO;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.InspectionResult;
+import com.jovan.erp_v1.enumeration.InspectionStatus;
 import com.jovan.erp_v1.enumeration.InspectionType;
 import com.jovan.erp_v1.enumeration.QualityCheckStatus;
 import com.jovan.erp_v1.enumeration.QualityCheckType;
@@ -35,7 +36,23 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.InspectionRequest;
 import com.jovan.erp_v1.response.InspectionResponse;
+import com.jovan.erp_v1.save_as.InspectionSaveAsRequest;
+import com.jovan.erp_v1.search_request.InspectionSearchRequest;
 import com.jovan.erp_v1.service.InfInspectionService;
+import com.jovan.erp_v1.statistics.inspection.InspectionResultStatDTO;
+import com.jovan.erp_v1.statistics.inspection.InspectionTypeStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByBatchStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByInspectorStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByProductStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityAcceptedByQualityCheckStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByBatchStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByInspectorStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByProductStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityInspectedByQualityCheckStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByBatchStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByInspectorStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByProductStatDTO;
+import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByQualityCheckStatDTO;
 import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
@@ -861,5 +878,178 @@ public class InspectionController {
 	
 	//nove metode
 	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/quantity-inspected-batch")
+	public ResponseEntity<List<QuantityInspectedByBatchStatDTO>> countQuantityInspectedByBatch(){
+		List<QuantityInspectedByBatchStatDTO> items = inspectionService.countQuantityInspectedByBatch();
+		return ResponseEntity.ok(items);
+	}
 	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/quantity-rejected-batch")
+	public ResponseEntity<List<QuantityRejectedByBatchStatDTO>> countQuantityRejectedByBatch(){
+		List<QuantityRejectedByBatchStatDTO> items = inspectionService.countQuantityRejectedByBatch();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/quantity-accepted-batch")
+	public ResponseEntity<List<QuantityAcceptedByBatchStatDTO>> countQuantityAcceptedByBatch(){
+		List<QuantityAcceptedByBatchStatDTO> items = inspectionService.countQuantityAcceptedByBatch();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/quantity-inspected-product")
+	public ResponseEntity<List<QuantityInspectedByProductStatDTO>> countQuantityInspectedByProduct(){
+		List<QuantityInspectedByProductStatDTO> items = inspectionService.countQuantityInspectedByProduct();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/quantity-accepted-product")
+	public ResponseEntity<List<QuantityAcceptedByProductStatDTO>> countQuantityAcceptedByProduct(){
+		List<QuantityAcceptedByProductStatDTO> items = inspectionService.countQuantityAcceptedByProduct();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/quantity-rejected-product")
+	public ResponseEntity<List<QuantityRejectedByProductStatDTO>> countQuantityRejectedByProduct(){
+		List<QuantityRejectedByProductStatDTO> items = inspectionService.countQuantityRejectedByProduct();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/quantity-inspected-inspector")
+	public ResponseEntity<List<QuantityInspectedByInspectorStatDTO>> countQuantityInspectedByInspector(){
+		List<QuantityInspectedByInspectorStatDTO> items = inspectionService.countQuantityInspectedByInspector();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/quantity-accepted-inspector")
+	public ResponseEntity<List<QuantityAcceptedByInspectorStatDTO>> countQuantityAcceptedByInspector(){
+		List<QuantityAcceptedByInspectorStatDTO> items = inspectionService.countQuantityAcceptedByInspector();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/quantity-rejected-inspector")
+	public ResponseEntity<List<QuantityRejectedByInspectorStatDTO>> countQuantityRejectedByInspector(){
+		List<QuantityRejectedByInspectorStatDTO> items = inspectionService.countQuantityRejectedByInspector();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/quantity-inspected-quality-check")
+	public ResponseEntity<List<QuantityInspectedByQualityCheckStatDTO>> countQuantityInspectedByQualityCheck(){
+		List<QuantityInspectedByQualityCheckStatDTO> items = inspectionService.countQuantityInspectedByQualityCheck();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/quantity-accepted-quality-check")
+	public ResponseEntity<List<QuantityAcceptedByQualityCheckStatDTO>> countQuantityAcceptedByQualityCheck(){
+		List<QuantityAcceptedByQualityCheckStatDTO> items = inspectionService.countQuantityAcceptedByQualityCheck();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/quantity-rejected-quality-check")
+	public ResponseEntity<List<QuantityRejectedByQualityCheckStatDTO>> countQuantityRejectedByQualityCheck(){
+		List<QuantityRejectedByQualityCheckStatDTO> items = inspectionService.countQuantityRejectedByQualityCheck();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/by-type")
+	public ResponseEntity<List<InspectionTypeStatDTO>> countInspectionByType(){
+		List<InspectionTypeStatDTO> items = inspectionService.countInspectionByType();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/count/by-result")
+	public ResponseEntity<List<InspectionResultStatDTO>> countInspectionByResult(){
+		List<InspectionResultStatDTO> items = inspectionService.countInspectionByResult();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/track-inspection-defect/{id}")
+	public ResponseEntity<InspectionResponse> trackInspectionByInspectionDefect(@PathVariable Long id){
+		InspectionResponse items = inspectionService.trackInspectionByInspectionDefect(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/track-test-measurement/{id}")
+	public ResponseEntity<InspectionResponse> trackInspectionByTestMeasurement(@PathVariable Long id){
+		InspectionResponse items = inspectionService.trackInspectionByTestMeasurement(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_READ_ACCESS)
+	@GetMapping("/reports")
+	public ResponseEntity<List<InspectionResponse>> findByReports(@RequestParam Long id,@RequestParam(required = false) String notes){
+		List<InspectionResponse> items = inspectionService.findByReports(id, notes);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_FULL_ACCESS)
+	@PostMapping("/{id}/confirm")
+	public ResponseEntity<InspectionResponse> confirmInspection(@PathVariable Long id){
+		InspectionResponse items = inspectionService.confirmInspection(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_FULL_ACCESS)
+	@PostMapping("/{id}/cancel")
+	public ResponseEntity<InspectionResponse> cancelInspection(@PathVariable Long id){
+		InspectionResponse items = inspectionService.cancelInspection(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_FULL_ACCESS)
+	@PostMapping("/{id}/close")
+	public ResponseEntity<InspectionResponse> closeInspection(@PathVariable Long id){
+		InspectionResponse items = inspectionService.closeInspection(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_FULL_ACCESS)
+	@PostMapping("/{id}/status/{status}")
+	public ResponseEntity<InspectionResponse> changeStatus(@PathVariable Long id,@PathVariable  InspectionStatus status){
+		InspectionResponse items = inspectionService.changeStatus(id, status);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_FULL_ACCESS)
+	@PostMapping("/save")
+	public ResponseEntity<InspectionResponse> saveInspection(@Valid @RequestBody InspectionRequest request){
+		InspectionResponse items = inspectionService.saveInspection(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_FULL_ACCESS)
+	@PostMapping("/save-as")
+	public ResponseEntity<InspectionResponse> saveAs(@Valid @RequestBody InspectionSaveAsRequest request){
+		InspectionResponse items = inspectionService.saveAs(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_FULL_ACCESS)
+	@PostMapping("/save-all")
+	public ResponseEntity<List<InspectionResponse>> saveAll(@Valid @RequestBody List<InspectionRequest> requests){
+		List<InspectionResponse> items = inspectionService.saveAll(requests);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_FULL_ACCESS)
+	@PostMapping("/general-search")
+	public ResponseEntity<List<InspectionResponse>> generalSearch(@RequestBody InspectionSearchRequest request){
+		List<InspectionResponse> items = inspectionService.generalSearch(request);
+		return ResponseEntity.ok(items);
+	}
 }
