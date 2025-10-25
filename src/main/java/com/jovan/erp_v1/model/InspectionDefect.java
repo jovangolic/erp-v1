@@ -1,7 +1,11 @@
 package com.jovan.erp_v1.model;
 
+import com.jovan.erp_v1.enumeration.InspectionDefectStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Builder
 public class InspectionDefect {
 
 	@Id
@@ -34,5 +40,11 @@ public class InspectionDefect {
     private Defect defect;
     
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private InspectionDefectStatus status = InspectionDefectStatus.NEW;
+    
+    @Column(nullable = false)
+    @Builder.Default
 	private Boolean confirmed = false;
 }

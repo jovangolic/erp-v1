@@ -3,8 +3,12 @@ package com.jovan.erp_v1.repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.jovan.erp_v1.enumeration.GoodsType;
@@ -18,9 +22,10 @@ import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.InspectionDefect;
+import com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedStatDTO;
 
 @Repository
-public interface InspectionDefectRepository extends JpaRepository<InspectionDefect, Long> {
+public interface InspectionDefectRepository extends JpaRepository<InspectionDefect, Long>, 	JpaSpecificationExecutor<InspectionDefect> {
 
 	List<InspectionDefect> findByQuantityAffected(Integer quantityAffected);
 	List<InspectionDefect> findByQuantityAffectedGreaterThan(Integer quantityAffected);
@@ -106,4 +111,18 @@ public interface InspectionDefectRepository extends JpaRepository<InspectionDefe
 	
 	List<InspectionDefect> findByConfirmed(Boolean confirmed);
 	List<InspectionDefect> findByDefectIdAndConfirmed(Long defectId, Boolean confirmed);
+	
+	//nove metode
+	@Query("SELECT i FROM InspectionDefect i WHERE i.id = :id")
+	Optional<InspectionDefect> trackInspectionDefect(@Param("id") Long id);
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedStatDTO(
+			COUNT(i),
+			CAST(SUM(i.quantityAffected) AS integer)
+			)
+			FROM InspectionDefect i
+			WHERE i.confirmed = true
+			""")
+	List<QuantityAffectedStatDTO> countQuantityAffectedByInspectionDefect();
 }

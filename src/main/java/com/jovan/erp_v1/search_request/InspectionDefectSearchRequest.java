@@ -1,0 +1,63 @@
+package com.jovan.erp_v1.search_request;
+
+import java.time.LocalDateTime;
+
+import com.jovan.erp_v1.enumeration.InspectionDefectStatus;
+import com.jovan.erp_v1.enumeration.InspectionResult;
+import com.jovan.erp_v1.enumeration.InspectionType;
+import com.jovan.erp_v1.enumeration.SeverityLevel;
+
+public record InspectionDefectSearchRequest(
+		Long id,
+		Long idFrom,
+		Long idTo,
+		Integer quantityAffected,
+		Integer quantityAffectedMin,
+		Integer quantityAffectedMax,
+		Long inspectionId,
+		Long inspectionIdFrom,
+		Long inspectionIdTo,
+		String inspectionCode,
+		InspectionType type,
+		LocalDateTime inspectionDate,
+		LocalDateTime inspectionDateBefore,
+		LocalDateTime inspectionDateAfter,
+		Long batchId,
+		Long batchIdFrom,
+		Long batchIdTo,
+		Long productId,
+		Long productIdFrom,
+		Long productIdTo,
+		Long inspectorId,
+		Long inspectorIdFrom,
+		Long inspectorIdTo,
+		String firstName,
+		String lastName,
+		Integer quantityInspected,
+		Integer quantityInspectedMin,
+		Integer quantityInspectedMax,
+		Integer quantityAccepted,
+		Integer quantityAcceptedMin,
+		Integer quantityAcceptedMax,
+		Integer quantityRejected,
+		Integer quantityRejectedMin,
+		Integer quantityRejectedMax,
+		String notes,
+		InspectionResult result,
+		Long qualityCheckId,
+		Long qualityCheckIdFrom,
+		Long qualityCheckIdTo,
+		Long defectId,
+		Long defectIdFrom,
+		Long defectIdTo,
+		String defectCode,
+		String defectName,
+		String defectDescription,
+		SeverityLevel severity,
+		LocalDateTime defectCreatedDate,
+		LocalDateTime defectCreatedDateBefore,
+		LocalDateTime defectCreatedDateAfter,
+		InspectionDefectStatus status,
+		Boolean confirmed
+		) {
+}
