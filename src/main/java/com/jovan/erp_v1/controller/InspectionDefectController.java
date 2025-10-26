@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.InspectionDefectStatus;
 import com.jovan.erp_v1.enumeration.InspectionResult;
 import com.jovan.erp_v1.enumeration.InspectionType;
 import com.jovan.erp_v1.enumeration.QualityCheckStatus;
@@ -29,7 +30,12 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.InspectionDefectRequest;
 import com.jovan.erp_v1.response.InspectionDefectResponse;
+import com.jovan.erp_v1.save_as.InspectionDefectSaveAsRequest;
+import com.jovan.erp_v1.search_request.InspectionDefectSearchRequest;
 import com.jovan.erp_v1.service.InfInspectionDefectService;
+import com.jovan.erp_v1.statistics.inspection_defect.InspectionDefectQuantityAffectedSummaryDTO;
+import com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByDefectStatDTO;
+import com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByInspectionStatDTO;
 import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
@@ -611,6 +617,92 @@ public class InspectionDefectController {
 	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_READ_ACCESS)
 	public ResponseEntity<List<InspectionDefectResponse>> findByDefectIdAndConfirmed(@PathVariable Long defectId,@RequestParam("confirmed") Boolean confirmed){
 		List<InspectionDefectResponse> items = inspectionDefectService.findByDefectIdAndConfirmed(defectId, confirmed);
+		return ResponseEntity.ok(items);
+	}
+	
+	//nove metode
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_READ_ACCESS)
+	@GetMapping("/track/{id}")
+	public ResponseEntity<InspectionDefectResponse> trackInspectionDefec(@PathVariable Long id){
+		InspectionDefectResponse items = inspectionDefectService.trackInspectionDefec(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
+	@PostMapping("/{id}/confirm")
+	public ResponseEntity<InspectionDefectResponse> confirmInspectionDefect(@PathVariable Long id){
+		InspectionDefectResponse items = inspectionDefectService.confirmInspectionDefect(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
+	@PostMapping("/{id}/cancel")
+	public ResponseEntity<InspectionDefectResponse> cancelInspectionDefect(@PathVariable Long id){
+		InspectionDefectResponse items = inspectionDefectService.cancelInspectionDefect(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
+	@PostMapping("/{id}/close")
+	public ResponseEntity<InspectionDefectResponse> closeInspectionDefect(@PathVariable Long id){
+		InspectionDefectResponse items = inspectionDefectService.closeInspectionDefect(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
+	@PostMapping("/{id}/status/{status}")
+	public ResponseEntity<InspectionDefectResponse> changeStatus(@PathVariable Long id,@PathVariable  InspectionDefectStatus status){
+		InspectionDefectResponse items = inspectionDefectService.changeStatus(id, status);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
+	@PostMapping("/save")
+	public ResponseEntity<InspectionDefectResponse> saveInspectionDefect(@Valid @RequestBody InspectionDefectRequest request){
+		InspectionDefectResponse items = inspectionDefectService.saveInspectionDefect(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
+	@PostMapping("/save-as")
+	public ResponseEntity<InspectionDefectResponse> saveAs(@Valid @RequestBody InspectionDefectSaveAsRequest request){
+		InspectionDefectResponse items = inspectionDefectService.saveAs(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
+	@PostMapping("/save-all")
+	public ResponseEntity<List<InspectionDefectResponse>> saveAll(@Valid @RequestBody List<InspectionDefectRequest> request){
+		List<InspectionDefectResponse> items = inspectionDefectService.saveAll(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
+	@PostMapping("/general-search")
+	public ResponseEntity<List<InspectionDefectResponse>> generalSearch(@RequestBody InspectionDefectSearchRequest request){
+		List<InspectionDefectResponse> items = inspectionDefectService.generalSearch(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
+	@GetMapping("/sum-quantity-affected")
+	public ResponseEntity<InspectionDefectQuantityAffectedSummaryDTO> getQuantityAffectedSummary(){
+		InspectionDefectQuantityAffectedSummaryDTO items = inspectionDefectService.getQuantityAffectedSummary();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
+	@GetMapping("/count/quantity-affected-by-inspection")
+	public ResponseEntity<List<QuantityAffectedByInspectionStatDTO>> countQuantityAffectedByInspection(){
+		List<QuantityAffectedByInspectionStatDTO> items = inspectionDefectService.countQuantityAffectedByInspection();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INSPECTION_DEFECT_FULL_ACCESS)
+	@GetMapping("/count/quantity-affected-by-defect")
+	public ResponseEntity<List<QuantityAffectedByDefectStatDTO>> countQuantityAffectedByDefect(){
+		List<QuantityAffectedByDefectStatDTO> items = inspectionDefectService.countQuantityAffectedByDefect();
 		return ResponseEntity.ok(items);
 	}
 }

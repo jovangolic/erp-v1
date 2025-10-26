@@ -41,9 +41,6 @@ import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByProductStatDTO;
 import com.jovan.erp_v1.statistics.inspection.QuantityRejectedByQualityCheckStatDTO;
 
 
-
-
-
 @Repository
 public interface InspectionRepository extends JpaRepository<Inspection, Long>, JpaSpecificationExecutor<Inspection> {
 

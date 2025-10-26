@@ -5,13 +5,15 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class QuantityAffectedStatDTO {
+public class QuantityAffectedByDefectStatDTO {
 
 	private Long count;
 	private Integer quantityAffected;
+	private Long defectId;
 	
-	public QuantityAffectedStatDTO(Long count, Integer quantityAffected) {
+	public QuantityAffectedByDefectStatDTO(Long count,Integer quantityAffected,Long defectId) {
 		this.count = count;
 		this.quantityAffected = quantityAffected;
+		this.defectId = defectId;
 	}
 }

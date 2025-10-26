@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.InspectionDefectStatus;
 import com.jovan.erp_v1.enumeration.InspectionResult;
 import com.jovan.erp_v1.enumeration.InspectionType;
 import com.jovan.erp_v1.enumeration.QualityCheckStatus;
@@ -16,6 +17,11 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.InspectionDefectRequest;
 import com.jovan.erp_v1.response.InspectionDefectResponse;
+import com.jovan.erp_v1.save_as.InspectionDefectSaveAsRequest;
+import com.jovan.erp_v1.search_request.InspectionDefectSearchRequest;
+import com.jovan.erp_v1.statistics.inspection_defect.InspectionDefectQuantityAffectedSummaryDTO;
+import com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByDefectStatDTO;
+import com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByInspectionStatDTO;
 
 public interface InfInspectionDefectService {
 
@@ -109,4 +115,18 @@ public interface InfInspectionDefectService {
 	
 	List<InspectionDefectResponse> findByConfirmed(Boolean confirmed);
 	List<InspectionDefectResponse> findByDefectIdAndConfirmed(Long defectId, Boolean confirmed);
+	
+	//nove metode
+	InspectionDefectResponse trackInspectionDefec(Long id);
+	InspectionDefectResponse confirmInspectionDefect(Long id);
+	InspectionDefectResponse cancelInspectionDefect(Long id);
+	InspectionDefectResponse closeInspectionDefect(Long id);
+	InspectionDefectResponse changeStatus(Long id, InspectionDefectStatus status);
+	InspectionDefectResponse saveInspectionDefect(InspectionDefectRequest request);
+	InspectionDefectResponse saveAs(InspectionDefectSaveAsRequest request);
+	List<InspectionDefectResponse> saveAll(List<InspectionDefectRequest> request);
+	List<InspectionDefectResponse> generalSearch(InspectionDefectSearchRequest request);
+	InspectionDefectQuantityAffectedSummaryDTO getQuantityAffectedSummary();
+	List<QuantityAffectedByInspectionStatDTO> countQuantityAffectedByInspection();
+	List<QuantityAffectedByDefectStatDTO> countQuantityAffectedByDefect();
 }

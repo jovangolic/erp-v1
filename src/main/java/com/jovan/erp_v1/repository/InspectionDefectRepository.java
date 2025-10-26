@@ -22,7 +22,9 @@ import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.InspectionDefect;
-import com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedStatDTO;
+import com.jovan.erp_v1.statistics.inspection_defect.InspectionDefectQuantityAffectedSummaryDTO;
+import com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByDefectStatDTO;
+import com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByInspectionStatDTO;
 
 @Repository
 public interface InspectionDefectRepository extends JpaRepository<InspectionDefect, Long>, 	JpaSpecificationExecutor<InspectionDefect> {
@@ -117,12 +119,34 @@ public interface InspectionDefectRepository extends JpaRepository<InspectionDefe
 	Optional<InspectionDefect> trackInspectionDefect(@Param("id") Long id);
 	
 	@Query("""
-			SELECT new com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedStatDTO(
+			SELECT new com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByInspectionStatDTO(
 			COUNT(i),
-			CAST(SUM(i.quantityAffected) AS integer)
+			CAST(SUM(i.quantityAffected) AS integer),
+			i.inspection.id
 			)
 			FROM InspectionDefect i
 			WHERE i.confirmed = true
+			GROUP BY i.inspection.id
 			""")
-	List<QuantityAffectedStatDTO> countQuantityAffectedByInspectionDefect();
+	List<QuantityAffectedByInspectionStatDTO> countQuantityAffectedByInspection();
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByDefectStatDTO(
+			COUNT(i),
+			CAST(SUM(i.quantityAffected) AS integer),
+			i.defect.id
+			)
+			FROM InspectionDefect i 
+			WHERE i.comfirmed = true
+			GRIPU BY i.defect.id
+			""")
+	List<QuantityAffectedByDefectStatDTO> countQuantityAffectedByDefect();
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inspection_defect.InspectionDefectQuantityAffectedSummaryDTO(
+			COUNT(i),
+			CAST(SUM(i.quantityAffected) AS integer)
+			FROM InspectionDefect i
+			""")
+	InspectionDefectQuantityAffectedSummaryDTO getQuantityAffectedSummary();
 }

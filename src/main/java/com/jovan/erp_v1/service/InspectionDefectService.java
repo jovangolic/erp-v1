@@ -3,13 +3,20 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.InspectionDefectStatus;
 import com.jovan.erp_v1.enumeration.InspectionResult;
 import com.jovan.erp_v1.enumeration.InspectionType;
 import com.jovan.erp_v1.enumeration.QualityCheckStatus;
@@ -36,8 +43,16 @@ import com.jovan.erp_v1.repository.InspectionRepository;
 import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.QualityCheckRepository;
 import com.jovan.erp_v1.repository.UserRepository;
+import com.jovan.erp_v1.repository.specification.InspectionDefectSpecification;
 import com.jovan.erp_v1.request.InspectionDefectRequest;
 import com.jovan.erp_v1.response.InspectionDefectResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.InspectionDefectSaveAsRequest;
+import com.jovan.erp_v1.search_request.InspectionDefectSearchRequest;
+import com.jovan.erp_v1.statistics.inspection_defect.InspectionDefectQuantityAffectedSummaryDTO;
+import com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByDefectStatDTO;
+import com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByInspectionStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -929,6 +944,182 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
 	}
 	
+	@Transactional(readOnly = true)
+	@Override
+	public InspectionDefectResponse trackInspectionDefec(Long id) {
+		InspectionDefect idef = inspectionDefectRepository.trackInspectionDefect(id).orElseThrow(() -> new ValidationException("InspectionDefect not found with id "+id));
+		return new InspectionDefectResponse(idef);
+	}
+
+	@Transactional
+	@Override
+	public InspectionDefectResponse confirmInspectionDefect(Long id) {
+		InspectionDefect idef = inspectionDefectRepository.trackInspectionDefect(id).orElseThrow(() -> new ValidationException("InspectionDefect not found with id "+id));
+		idef.setConfirmed(true);
+		idef.setStatus(InspectionDefectStatus.CONFIRMED);;
+		return new InspectionDefectResponse(inspectionDefectRepository.save(idef));
+	}
+
+	@Transactional
+	@Override
+	public InspectionDefectResponse cancelInspectionDefect(Long id) {
+		InspectionDefect idef = inspectionDefectRepository.trackInspectionDefect(id).orElseThrow(() -> new ValidationException("InspectionDefect not found with id "+id));
+		if(idef.getStatus() != InspectionDefectStatus.NEW && idef.getStatus() != InspectionDefectStatus.CONFIRMED) {
+			throw new ValidationException("Only NEW or CONFIRMED InspectionDefects can be cancelled");
+		}
+		idef.setStatus(InspectionDefectStatus.CANCELLED);
+		return new InspectionDefectResponse(inspectionDefectRepository.save(idef));  
+	}
+
+	@Transactional
+	@Override
+	public InspectionDefectResponse closeInspectionDefect(Long id) {
+		InspectionDefect idef = inspectionDefectRepository.trackInspectionDefect(id).orElseThrow(() -> new ValidationException("InspectionDefect not found with id "+id));
+		if(idef.getStatus() != InspectionDefectStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED InspectionDefects can be closed");
+		}
+		idef.setStatus(InspectionDefectStatus.CLOSED);
+		return new InspectionDefectResponse(inspectionDefectRepository.save(idef));  
+	}
+
+	@Transactional
+	@Override
+	public InspectionDefectResponse changeStatus(Long id, InspectionDefectStatus status) {
+		InspectionDefect idef = inspectionDefectRepository.trackInspectionDefect(id).orElseThrow(() -> new ValidationException("InspectionDefect not found with id "+id));
+		validateInspectionDefectStatus(status);
+		if(idef.getStatus() == InspectionDefectStatus.CLOSED) {
+			throw new ValidationException("Closed InspectionDefects cannot change status");
+		}
+		if(status == InspectionDefectStatus.CONFIRMED) {
+			if(idef.getStatus() != InspectionDefectStatus.NEW) {
+				throw new ValidationException("Only NEW InspectionDefects can be confirmed");
+			}
+			idef.setConfirmed(true);
+		}
+		idef.setStatus(status);
+		return new InspectionDefectResponse(inspectionDefectRepository.save(idef));
+	}
+
+	@Transactional
+	@Override
+	public InspectionDefectResponse saveInspectionDefect(InspectionDefectRequest request) {
+		InspectionDefect idef = InspectionDefect.builder()
+				.id(request.id())
+				.quantityAffected(request.quantityAffected())
+				.inspection(validateInspectionId(request.inspectionId()))
+				.defect(validateDefectId(request.defectId()))
+				.build();
+		InspectionDefect saved = inspectionDefectRepository.save(idef);
+		return new InspectionDefectResponse(saved);
+	}
+	
+	private final AbstractSaveAsService<InspectionDefect, InspectionDefectResponse> saveAsHelper = new AbstractSaveAsService<InspectionDefect, InspectionDefectResponse>() {
+		
+		@Override
+		protected InspectionDefectResponse toResponse(InspectionDefect entity) {
+			return new InspectionDefectResponse(entity); 
+		}
+		
+		@Override
+		protected JpaRepository<InspectionDefect, Long> getRepository() {
+			return inspectionDefectRepository;
+		}
+		
+		@Override
+		protected InspectionDefect copyAndOverride(InspectionDefect source, Map<String, Object> overrides) {
+			return InspectionDefect.builder()
+					.quantityAffected((Integer) overrides.getOrDefault("Quantity-affected", source.getQuantityAffected()))
+					.inspection(validateInspectionId(source.getInspection().getId()))
+					.defect(validateDefectId(source.getDefect().getId()))
+					.build();
+		}
+	};
+	
+	private final AbstractSaveAllService<InspectionDefect, InspectionDefectResponse> saveAllHelper = new AbstractSaveAllService<InspectionDefect, InspectionDefectResponse>() {
+		
+		@Override
+		protected Function<InspectionDefect, InspectionDefectResponse> toResponse() {
+			return InspectionDefectResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<InspectionDefect, Long> getRepository() {
+			return inspectionDefectRepository;
+		}
+	};
+
+	@Transactional
+	@Override
+	public InspectionDefectResponse saveAs(InspectionDefectSaveAsRequest request) {
+		Map<String, Object> overrides = new HashMap<String, Object>();
+		if(request.quantityAffected() != null) overrides.put("Quantity-affected", request.quantityAffected());
+		if(request.inspectionId() != null) overrides.put("Inspection-ID", validateInspectionId(request.inspectionId()));
+		if(request.defectId() != null) overrides.put("Defect-ID", validateDefectId(request.defectId()));
+		return saveAsHelper.saveAs(request.sourceId(), overrides);
+	}
+
+	@Transactional
+	@Override
+	public List<InspectionDefectResponse> saveAll(List<InspectionDefectRequest> request) {
+		List<InspectionDefect> items = request.stream()
+				.map(req -> InspectionDefect.builder()
+						.id(req.id())
+						.quantityAffected(req.quantityAffected())
+						.inspection(validateInspectionId(req.inspectionId()))
+						.defect(validateDefectId(req.defectId()))
+						.build())
+				.toList();		
+		return saveAllHelper.saveAll(items);
+	}
+
+	@Override
+	public List<InspectionDefectResponse> generalSearch(InspectionDefectSearchRequest request) {
+		Specification<InspectionDefect> spec = InspectionDefectSpecification.formRequest(request);
+		List<InspectionDefect> items = inspectionDefectRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InspectionDefect found for given criteria");
+		}
+		return items.stream().map(inspectionDefectMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public InspectionDefectQuantityAffectedSummaryDTO getQuantityAffectedSummary() {
+		InspectionDefectQuantityAffectedSummaryDTO items = inspectionDefectRepository.getQuantityAffectedSummary();
+		return new InspectionDefectQuantityAffectedSummaryDTO(1L, items.getQuantityAffected());
+	}
+
+	@Override
+	public List<QuantityAffectedByInspectionStatDTO> countQuantityAffectedByInspection() {
+		List<QuantityAffectedByInspectionStatDTO> items = inspectionDefectRepository.countQuantityAffectedByInspection();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InspectionDefect for quantity-affected by inspection, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityAffected = item.getQuantityAffected();
+					Long inspectionId = item.getInspectionId();
+					return new QuantityAffectedByInspectionStatDTO(count, quantityAffected, inspectionId);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<QuantityAffectedByDefectStatDTO> countQuantityAffectedByDefect() {
+		List<QuantityAffectedByDefectStatDTO> items = inspectionDefectRepository.countQuantityAffectedByDefect();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InspectionDefect for quantity-affected by defect, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Integer quantityAffected = item.getQuantityAffected();
+					Long defectId = item.getDefectId();
+					return new QuantityAffectedByDefectStatDTO(count, quantityAffected, defectId);
+				})
+				.toList();
+	}
+	
 	private void validateString(String str) {
         if (str == null || str.trim().isEmpty()) {
             throw new ValidationException("Tekstualni karakter ne sme biti null ili prazan");
@@ -1055,6 +1246,11 @@ public class InspectionDefectService implements InfInspectionDefectService {
 			.orElseThrow(() -> new ValidationException("SeverityLevel severity must not be null"));
 	}
 	
+	private void validateInspectionDefectStatus(InspectionDefectStatus status) {
+		Optional.ofNullable(status)
+			.orElseThrow(() -> new ValidationException("InspectionDefectStatus status must not be null"));
+	}
+	
 	private Product validateProductId(Long productId) {
 		if(productId == null) {
 			throw new ValidationException("Product ID must not be null");
@@ -1088,5 +1284,5 @@ public class InspectionDefectService implements InfInspectionDefectService {
 		}
 		return batchRepository.findById(batchId).orElseThrow(() -> new ValidationException("Batch not found with id "+batchId));
 	}
-	
+
 }
