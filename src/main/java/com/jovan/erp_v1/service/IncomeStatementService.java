@@ -628,6 +628,9 @@ public class IncomeStatementService implements IntIncomeStatementService {
 	@Transactional
 	@Override
 	public List<IncomeStatementResponse> saveAll(List<IncomeStatementRequest> requests) {
+		if (requests == null || requests.isEmpty()) {
+	        throw new ValidationException("IncomeStatement request list must not be empty.");
+	    }
 		List<IncomeStatement> items = requests.stream()
 				.map(req -> {
 					FiscalYear fy = validateFiscalYear(req.fiscalYearId());

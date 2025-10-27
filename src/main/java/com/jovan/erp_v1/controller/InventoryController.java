@@ -18,9 +18,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.InventoryStatus;
+import com.jovan.erp_v1.enumeration.InventoryTypeStatus;
 import com.jovan.erp_v1.request.InventoryRequest;
 import com.jovan.erp_v1.response.InventoryResponse;
+import com.jovan.erp_v1.save_as.InventorySaveAsWithItemsRequest;
+import com.jovan.erp_v1.search_request.InventorySearchRequest;
 import com.jovan.erp_v1.service.IInventoryService;
+import com.jovan.erp_v1.statistics.inventory.InventoryEmployeeStatDTO;
+import com.jovan.erp_v1.statistics.inventory.InventoryForemanStatDTO;
 import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
@@ -276,4 +281,81 @@ public class InventoryController {
 		return ResponseEntity.ok(responses);
 	}
 	
+	//nove metode
+	@PreAuthorize(RoleGroups.INVENTORY_READ_ACCESS)
+	@GetMapping("/track/{id}")
+	public ResponseEntity<InventoryResponse> trackInventory(@PathVariable Long id){
+		InventoryResponse items = inventoryService.trackInventory(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_FULL_ACCESS)
+	@PostMapping("/{id}/confirm")
+	public ResponseEntity<InventoryResponse> confirmInventory(@PathVariable Long id){
+		InventoryResponse items = inventoryService.confirmInventory(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_FULL_ACCESS)
+	@PostMapping("/{id}/cancel")
+	public ResponseEntity<InventoryResponse> cancelInventory(@PathVariable Long id){
+		InventoryResponse items = inventoryService.cancelInventory(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_FULL_ACCESS)
+	@PostMapping("/{id}/close")
+	public ResponseEntity<InventoryResponse> closeInventory(@PathVariable Long id){
+		InventoryResponse items = inventoryService.closeInventory(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_FULL_ACCESS)
+	@PostMapping("/{id}/status/{status}")
+	public ResponseEntity<InventoryResponse> changeStatus(@PathVariable Long id,@PathVariable  InventoryTypeStatus typeStatus){
+		InventoryResponse items = inventoryService.changeStatus(id, typeStatus);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_FULL_ACCESS)
+	@PostMapping("/save")
+	public ResponseEntity<InventoryResponse> saveInventory(@Valid @RequestBody InventoryRequest request){
+		InventoryResponse items = inventoryService.saveInventory(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_FULL_ACCESS)
+	@PostMapping("/save-as")
+	public ResponseEntity<InventoryResponse> saveAs(@Valid @RequestBody InventorySaveAsWithItemsRequest request){
+		InventoryResponse items = inventoryService.saveAs(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_FULL_ACCESS)
+	@PostMapping("/save-all")
+	public ResponseEntity<List<InventoryResponse>> saveAll(@Valid @RequestBody List<InventoryRequest> requests){
+		List<InventoryResponse> items = inventoryService.saveAll(requests);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_FULL_ACCESS)
+	@PostMapping("/general-search")
+	public ResponseEntity<List<InventoryResponse>> generalSearch(@RequestBody InventorySearchRequest request){
+		List<InventoryResponse> items = inventoryService.generalSearch(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_READ_ACCESS)
+	@GetMapping("/count/inventory-by-employee")
+	public ResponseEntity<List<InventoryEmployeeStatDTO>> countInventoryByEmployee(){
+		List<InventoryEmployeeStatDTO> items = inventoryService.countInventoryByEmployee();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_READ_ACCESS)
+	@GetMapping("/count/inventory-by-foreman")
+	public ResponseEntity<List<InventoryForemanStatDTO>> countInventoryByForeman(){
+		List<InventoryForemanStatDTO> items = inventoryService.countInventoryByForeman();
+		return ResponseEntity.ok(items);
+	}
 }

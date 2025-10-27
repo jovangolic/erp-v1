@@ -356,6 +356,9 @@ public class AccountService implements IAccountService {
     @Transactional
 	@Override
 	public List<AccountResponse> saveAll(List<AccountRequest> request) {
+    	if (request == null || request.isEmpty()) {
+	        throw new ValidationException("Account request list must not be empty.");
+	    }
 		List<Account> items = request.stream()
 				.map(req -> Account.builder()
 						.accountName(req.accountName())
