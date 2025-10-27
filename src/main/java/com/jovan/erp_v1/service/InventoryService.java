@@ -1,15 +1,24 @@
 package com.jovan.erp_v1.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.jovan.erp_v1.enumeration.InventoryStatus;
+import com.jovan.erp_v1.enumeration.InventoryTypeStatus;
 import com.jovan.erp_v1.exception.InventoryNotFoundException;
 import com.jovan.erp_v1.exception.NoDataFoundException;
 import com.jovan.erp_v1.exception.ProductNotFoundException;
@@ -23,9 +32,17 @@ import com.jovan.erp_v1.repository.InventoryItemsRepository;
 import com.jovan.erp_v1.repository.InventoryRepository;
 import com.jovan.erp_v1.repository.ProductRepository;
 import com.jovan.erp_v1.repository.UserRepository;
+import com.jovan.erp_v1.repository.specification.InventorySpecification;
 import com.jovan.erp_v1.request.InventoryItemsRequest;
 import com.jovan.erp_v1.request.InventoryRequest;
 import com.jovan.erp_v1.response.InventoryResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.InventoryItemSaveAsRequest;
+import com.jovan.erp_v1.save_as.InventorySaveAsWithItemsRequest;
+import com.jovan.erp_v1.search_request.InventorySearchRequest;
+import com.jovan.erp_v1.statistics.inventory.InventoryEmployeeStatDTO;
+import com.jovan.erp_v1.statistics.inventory.InventoryForemanStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -453,6 +470,305 @@ public class InventoryService implements IInventoryService {
         Inventory saved = inventoryRepository.save(inv);
         return new InventoryResponse(saved);
 	}
+	
+	@Transactional(readOnly = true)
+	@Override
+	public InventoryResponse trackInventory(Long id) {
+		List<Inventory> inv = inventoryRepository.trackInventory(id);
+		if(inv.isEmpty()) {
+			throw new NoDataFoundException("Inventory with id "+id+" not found");
+		}
+		Inventory item = inv.get(0);
+		return new InventoryResponse(item);
+	}
+
+	@Transactional
+	@Override
+	public InventoryResponse confirmInventory(Long id) {
+		Inventory inv = inventoryRepository.findById(id).orElseThrow(() -> new ValidationException("Inventory not found with id "+id));
+		validateAndNormalizeInventoryItems(inv);
+		inv.setConfirmed(true);
+		inv.setTypeStatus(InventoryTypeStatus.CONFIRMED);
+		inv.getInventoryItems().stream()
+			.forEach(i -> i.setConfirmed(true));
+		return new InventoryResponse(inventoryRepository.save(inv));
+	}
+
+	@Transactional
+	@Override
+	public InventoryResponse cancelInventory(Long id) {
+		Inventory inv = inventoryRepository.findById(id).orElseThrow(() -> new ValidationException("Inventory not found with id "+id));
+		if(inv.getTypeStatus() != InventoryTypeStatus.NEW && inv.getTypeStatus() != InventoryTypeStatus.CONFIRMED) {
+			throw new ValidationException("Only NEW or CONFIRMED inventories can be cancelled");
+		}
+		inv.setTypeStatus(InventoryTypeStatus.CANCELLED);
+		return new InventoryResponse(inventoryRepository.save(inv));
+	}
+
+	@Transactional
+	@Override
+	public InventoryResponse closeInventory(Long id) {
+		Inventory inv = inventoryRepository.findById(id).orElseThrow(() -> new ValidationException("Inventory not found with id "+id));
+		if(inv.getTypeStatus() != InventoryTypeStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED inventories can be closed");
+		}
+		inv.setTypeStatus(InventoryTypeStatus.CLOSED);
+		return new InventoryResponse(inventoryRepository.save(inv));
+	}
+
+	@Transactional
+	@Override
+	public InventoryResponse changeStatus(Long id, InventoryTypeStatus typeStatus) {
+		Inventory inv = inventoryRepository.findById(id).orElseThrow(() -> new ValidationException("Inventory not found with id "+id));
+		validateInventoryTypeStatus(typeStatus);
+		if(inv.getTypeStatus() == InventoryTypeStatus.CLOSED) {
+			throw new ValidationException("Closed inventories cannot change status");
+		}
+		if(typeStatus == InventoryTypeStatus.CONFIRMED) {
+			if(inv.getTypeStatus() != InventoryTypeStatus.NEW) {
+				throw new ValidationException("Only NEW inventories can be confirmed");
+			}
+			inv.setConfirmed(true);
+			inv.getInventoryItems().forEach(i -> i.setConfirmed(true));;
+		}
+		inv.setTypeStatus(typeStatus);
+		return new InventoryResponse(inventoryRepository.save(inv));
+	}
+
+	@Transactional
+	@Override
+	public InventoryResponse saveInventory(InventoryRequest request) {
+		User storageEmployee = validateStorageEmployee(request.storageEmployeeId());
+	    User storageForeman = validateStorageForeman(request.storageForemanId());
+	    List<InventoryItems> items = request.inventoryItems().stream()
+	            .map(req -> {
+	                if (req.condition() == null || req.quantity() == null) {
+	                    throw new ValidationException("Quantity and item condition must not be null for item ID: " + req.id());
+	                }
+	                if (req.condition().compareTo(req.quantity()) > 0) {
+	                    throw new ValidationException("Item condition cannot be greater than quantity for item ID: " + req.id());
+	                }
+	                BigDecimal diff = validateAndCalculateDifference(req.quantity(), req.condition(), req.id());
+	                //upisivanje u InventoryItems podatke
+	                return InventoryItems.builder()
+	                        .product(validateProductId(req.productId()))
+	                        .quantity(req.quantity())
+	                        .itemCondition(req.condition())
+	                        .difference(diff)
+	                        .confirmed(false)
+	                        .build();
+	            })
+	            .toList();
+		Inventory inv = Inventory.builder()
+				.storageEmployee(storageEmployee)
+				.storageForeman(storageForeman)
+				.date(LocalDate.now())
+				.aligned(request.aligned())
+				.inventoryItems(items)
+				.status(request.status())
+				.build();
+		//Povezivanje svakog InventoryItems sa roditeljem
+		items.forEach(i -> i.setInventory(inv));
+		Inventory saved = inventoryRepository.save(inv);
+		return new InventoryResponse(saved);
+	}
+	
+	private final AbstractSaveAsService<Inventory, InventoryResponse> saveAsHelper = new AbstractSaveAsService<Inventory, InventoryResponse>() {
+		
+		@Override
+		protected InventoryResponse toResponse(Inventory entity) {
+			return new InventoryResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<Inventory, Long> getRepository() {
+			return inventoryRepository;
+		}
+		
+		@Override
+		protected Inventory copyAndOverride(Inventory source, Map<String, Object> overrides) {
+			List<InventoryItems> copiedItems = new ArrayList<InventoryItems>();
+		    // Ako request ima inventoryItems, koristim njih.
+		    if(overrides.containsKey("inventoryItems")) {
+		    	@SuppressWarnings("unchecked")
+		        List<InventoryItemSaveAsRequest> newItems = (List<InventoryItemSaveAsRequest>) overrides.get("inventoryItems");
+		    	copiedItems = newItems.stream()
+		    			.map(itemReq -> InventoryItems.builder()
+		    					.product(validateProductId(itemReq.productId()))
+		    					.quantity(itemReq.quantity())
+		    					.itemCondition(itemReq.itemCondition())
+		    					.difference(itemReq.quantity().subtract(itemReq.itemCondition()))
+		    					.confirmed(false)
+		    					.build())
+		    			.toList();
+		    }
+		    else {
+		    	//kopiram iz postojeceg izvornog inventara
+		    	copiedItems = source.getInventoryItems().stream()
+		    			.map(req -> InventoryItems.builder()
+		    					.product(req.getProduct())
+		    					.quantity(req.getQuantity())
+		    					.itemCondition(req.getItemCondition())
+		    					.difference(req.getDifference())
+		    					.confirmed(false)
+		    					.build())
+		    			.toList();
+		    }
+		    return Inventory.builder()
+		            .storageEmployee(validateStorageEmployee((Long) overrides.getOrDefault("storageEmployeeId", source.getStorageEmployee().getId())))
+		            .storageForeman(validateStorageForeman((Long) overrides.getOrDefault("storageForemanId", source.getStorageForeman().getId())))
+		            .aligned((Boolean) overrides.getOrDefault("aligned", source.getAligned()))
+		            .status((InventoryStatus) overrides.getOrDefault("status", source.getStatus()))
+		            .typeStatus((InventoryTypeStatus) overrides.getOrDefault("typeStatus", source.getTypeStatus()))
+		            .confirmed((Boolean) overrides.getOrDefault("confirmed", source.getConfirmed()))
+		            .inventoryItems(copiedItems)
+		            .build();
+		}
+	};
+
+	@Transactional
+	@Override
+	public InventoryResponse saveAs(InventorySaveAsWithItemsRequest request) {
+		Map<String, Object> overrides = new HashMap<String, Object>();
+		User storageEmployee = validateStorageEmployee(request.storageEmployeeId());
+	    User storageForeman = validateStorageForeman(request.storageForemanId());
+	    //provera da li je kolekcija null ili prazna
+	    if (request.inventoryItems() == null || request.inventoryItems().isEmpty()) {
+	        throw new ValidationException("Inventory must contain at least one item.");
+	    }
+	    List<InventoryItems> items = request.inventoryItems().stream()
+	    		.map(req -> {
+	    			if (req.itemCondition() == null || req.quantity() == null) {
+	                    throw new ValidationException("Quantity and item condition must not be null for item");
+	                }
+	                if (req.itemCondition().compareTo(req.quantity()) > 0) {
+	                    throw new ValidationException("Item condition cannot be greater than quantity for item");
+	                }
+	                BigDecimal diff = req.quantity().subtract(req.itemCondition()).max(BigDecimal.ZERO);
+	    			return InventoryItems.builder()
+	    					.product(validateProductId(req.productId()))
+	    					.quantity(req.quantity())
+	                        .itemCondition(req.itemCondition())
+	                        .difference(diff)
+	                        .confirmed(false)
+	    					.build();
+	    		})
+	    		.toList();
+	    if(request.storageEmployeeId() != null) overrides.put("Employee ID", storageEmployee);
+	    if(request.storageForemanId() != null) overrides.put("Foreman ID", storageForeman);
+	    if(request.aligned() != null) overrides.put("Aligned", request.aligned());
+	    if(request.inventoryItems() != null) overrides.put("Inventory-items", items);
+	    if(request.status() != null && !request.inventoryItems().isEmpty()) overrides.put("inventoryItems", items);
+	    if(request.typeStatus() != null) overrides.put("Type-status", request.typeStatus());
+	    if(request.confirmed() != null) overrides.put("Confirmed", request.confirmed());
+		return saveAsHelper.saveAs(request.sourceId(), overrides);
+	}
+	
+	private final AbstractSaveAllService<Inventory, InventoryResponse> saveAllHelper = new AbstractSaveAllService<Inventory, InventoryResponse>() {
+		
+		@Override
+		protected Function<Inventory, InventoryResponse> toResponse() {
+			return InventoryResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<Inventory, Long> getRepository() {
+			return inventoryRepository;
+		}
+	};
+
+	@Transactional
+	@Override
+	public List<InventoryResponse> saveAll(List<InventoryRequest> requests) {
+		if (requests == null || requests.isEmpty()) {
+	        throw new ValidationException("Inventory request list must not be empty.");
+	    }
+		List<Inventory> inventories = requests.stream()
+				.map(item -> {
+					User storageEmployee = validateStorageEmployee(item.storageEmployeeId());
+					User storageForeman = validateStorageForeman(item.storageForemanId());
+					if(item.inventoryItems() == null || item.inventoryItems().isEmpty()) {
+						throw new ValidationException("Inventory must contain at least one item.");
+					}
+					List<InventoryItems> inventoryItems = item.inventoryItems().stream()
+							.map(itemReq -> {
+								if (itemReq.condition() == null || itemReq.quantity() == null) {
+					                throw new ValidationException("Quantity and item condition must not be null for product ID: " + itemReq.productId());
+					            }
+					            if (itemReq.condition().compareTo(itemReq.quantity()) > 0) {
+					                throw new ValidationException("Item condition cannot be greater than quantity for product ID: " + itemReq.productId());
+					            }
+					            BigDecimal difference = itemReq.quantity().subtract(itemReq.condition()).max(BigDecimal.ZERO);
+					            return InventoryItems.builder()
+					                    .product(validateProductId(itemReq.productId()))
+					                    .quantity(itemReq.quantity())
+					                    .itemCondition(itemReq.condition())
+					                    .difference(difference)
+					                    .confirmed(false)
+					                    .build();
+							})
+							.toList();
+					Inventory inventory = Inventory.builder()
+			                .storageEmployee(storageEmployee)
+			                .storageForeman(storageForeman)
+			                .aligned(item.aligned())
+			                .status(item.status())
+			                .typeStatus(item.typeStatus() != null ? item.typeStatus() : InventoryTypeStatus.NEW)
+			                .confirmed(false)
+			                .date(LocalDate.now())
+			                .inventoryItems(inventoryItems)
+			                .build();
+					inventoryItems.forEach(it -> it.setInventory(inventory));
+			        return inventory;
+				})
+				.toList();
+		List<Inventory> savedInventories = inventoryRepository.saveAll(inventories);
+		return saveAllHelper.saveAll(savedInventories);
+	}
+
+	@Override
+	public List<InventoryResponse> generalSearch(InventorySearchRequest request) {
+		Specification<Inventory> spec = InventorySpecification.fromRequest(request);
+		List<Inventory> items = inventoryRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inventories for given criteria found");
+		}
+		return items.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InventoryEmployeeStatDTO> countInventoryByEmployee() {
+		List<InventoryEmployeeStatDTO> items = inventoryRepository.countInventoryByEmployee();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inventories count for employee, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Long employeeId = item.getEmployeeId();
+					InventoryStatus status = item.getStatus();
+				    InventoryTypeStatus typeStatus = item.getTypeStatus();
+				    return new InventoryEmployeeStatDTO(count, employeeId, status, typeStatus);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<InventoryForemanStatDTO> countInventoryByForeman() {
+		List<InventoryForemanStatDTO> items = inventoryRepository.countInventoryByForeman();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Inventories count for foreman, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					Long foremanId = item.getForemanId();
+					InventoryStatus status = item.getStatus();
+				    InventoryTypeStatus typeStatus = item.getTypeStatus();
+				    return new InventoryForemanStatDTO(count, foremanId, status, typeStatus);
+				})
+				.toList();
+	}
 
 	private List<InventoryItems> mapInventoryItemRequestsToEntities(List<InventoryItemsRequest> requests,
 			Inventory inventory) {
@@ -508,4 +824,39 @@ public class InventoryService implements IInventoryService {
 		}
 	}
 
+	private void validateInventoryTypeStatus(InventoryTypeStatus typeStatus) {
+		Optional.ofNullable(typeStatus)
+			.orElseThrow(() -> new ValidationException("InventoryTypeStatus typeStatus must not be null"));
+	}
+	
+	private void validateAndNormalizeInventoryItems(Inventory inventory) {
+		inventory.getInventoryItems().stream().forEach(item -> {
+			if(item.getQuantity() == null || item.getItemCondition() == null) {
+				throw new ValidationException("Quantity and item condition must not be null for item with ID: "+item.getId());
+			}
+			//ako je stanje vece od proverene(inventurisane) kolicine
+			if(item.getItemCondition().compareTo(item.getQuantity()) > 0) {
+				throw new ValidationException("Item condition cannot be greater than quantity for item with ID: " + item.getId());
+			}
+			BigDecimal difference = item.calculateDifference();
+			item.setDifference(difference);	
+		});
+	}
+	
+	private Product validateProductId(Long id) {
+		if(id == null) {
+			throw new ValidationException("Product ID must not be null");
+		}
+		return productRepository.findById(id).orElseThrow(() -> new ValidationException("Product not found with id "+id));
+	}
+	
+	private BigDecimal validateAndCalculateDifference(BigDecimal quantity, BigDecimal condition, Long itemId) {
+	    if (quantity == null || condition == null) {
+	        throw new ValidationException("Quantity and condition must not be null for item ID: " + itemId);
+	    }
+	    if (condition.compareTo(quantity) > 0) {
+	        throw new ValidationException("Condition cannot exceed quantity for item ID: " + itemId);
+	    }
+	    return quantity.subtract(condition).max(BigDecimal.ZERO);
+	}
 }

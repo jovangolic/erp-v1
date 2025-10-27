@@ -3,8 +3,13 @@ package com.jovan.erp_v1.service;
 import java.time.LocalDate;
 import java.util.List;
 import com.jovan.erp_v1.enumeration.InventoryStatus;
+import com.jovan.erp_v1.enumeration.InventoryTypeStatus;
 import com.jovan.erp_v1.request.InventoryRequest;
 import com.jovan.erp_v1.response.InventoryResponse;
+import com.jovan.erp_v1.save_as.InventorySaveAsWithItemsRequest;
+import com.jovan.erp_v1.search_request.InventorySearchRequest;
+import com.jovan.erp_v1.statistics.inventory.InventoryEmployeeStatDTO;
+import com.jovan.erp_v1.statistics.inventory.InventoryForemanStatDTO;
 
 public interface IInventoryService {
 
@@ -42,4 +47,18 @@ public interface IInventoryService {
     Long countByStorageForemanId( Long foremanId);
     Boolean existsByStatus(InventoryStatus status);
     InventoryResponse approveInventory(Long id);
+    
+    //nove metode
+    
+    InventoryResponse trackInventory(Long id);
+    InventoryResponse confirmInventory(Long id);
+    InventoryResponse cancelInventory(Long id);
+    InventoryResponse closeInventory(Long id);
+    InventoryResponse changeStatus(Long id, InventoryTypeStatus typeStatus);
+    InventoryResponse saveInventory(InventoryRequest request);
+    InventoryResponse saveAs(InventorySaveAsWithItemsRequest request);
+    List<InventoryResponse> saveAll(List<InventoryRequest> requests);
+    List<InventoryResponse> generalSearch(InventorySearchRequest request);
+    List<InventoryEmployeeStatDTO> countInventoryByEmployee();
+    List<InventoryForemanStatDTO> countInventoryByForeman();
 }

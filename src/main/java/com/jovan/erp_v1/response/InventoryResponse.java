@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.jovan.erp_v1.enumeration.InventoryStatus;
+import com.jovan.erp_v1.enumeration.InventoryTypeStatus;
 import com.jovan.erp_v1.model.Inventory;
 
 import lombok.AllArgsConstructor;
@@ -23,6 +24,8 @@ public class InventoryResponse {
         private Boolean aligned;
         private List<InventoryItemsResponse> inventoryItems;
         private InventoryStatus status;
+        private InventoryTypeStatus typeStatus;
+        private Boolean confirmed;
 
         public InventoryResponse(Inventory inventory) {
                 this.id = inventory.getId();
@@ -34,5 +37,7 @@ public class InventoryResponse {
                 this.inventoryItems = inventory.getInventoryItems().stream()
                                 .map(InventoryItemsResponse::new)
                                 .collect(Collectors.toList());
+                this.typeStatus = inventory.getTypeStatus();
+                this.confirmed = inventory.getConfirmed();
         }
 }

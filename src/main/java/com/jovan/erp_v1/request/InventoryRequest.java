@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.jovan.erp_v1.enumeration.InventoryStatus;
+import com.jovan.erp_v1.enumeration.InventoryTypeStatus;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -24,7 +25,9 @@ public record InventoryRequest(
 		@Valid // da validira i svaki InventoryItemRequest
 		List<InventoryItemsRequest> inventoryItems,
 		@NotNull(message = "Status inventara je obavezan")
-		InventoryStatus status
+		InventoryStatus status,
+		@NotNull InventoryTypeStatus typeStatus,
+		@NotNull Boolean confirmed
 		) {
 }
 

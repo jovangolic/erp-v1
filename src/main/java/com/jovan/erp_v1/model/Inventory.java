@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.jovan.erp_v1.enumeration.InventoryStatus;
+import com.jovan.erp_v1.enumeration.InventoryTypeStatus;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,6 +26,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -33,6 +35,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Inventory {
 
 	@Id
@@ -59,6 +62,15 @@ public class Inventory {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private InventoryStatus status;
+	
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	@Builder.Default
+	private InventoryTypeStatus typeStatus = InventoryTypeStatus.NEW;
+	
+	@Column(nullable = false)
+	@Builder.Default
+	private Boolean confirmed = false;
 	
 	@CreatedDate
     @Column(name = "created_at", updatable = false)

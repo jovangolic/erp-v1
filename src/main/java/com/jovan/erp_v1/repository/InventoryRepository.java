@@ -3,15 +3,18 @@ package com.jovan.erp_v1.repository;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.jovan.erp_v1.enumeration.InventoryStatus;
 import com.jovan.erp_v1.model.Inventory;
 import com.jovan.erp_v1.model.User;
+import com.jovan.erp_v1.statistics.inventory.InventoryEmployeeStatDTO;
+import com.jovan.erp_v1.statistics.inventory.InventoryForemanStatDTO;
 
 @Repository
-public interface InventoryRepository extends JpaRepository<Inventory, Long> {
+public interface InventoryRepository extends JpaRepository<Inventory, Long>, JpaSpecificationExecutor<Inventory> {
 
     List<Inventory> findByStorageEmployee(User storageEmployee);
     List<Inventory> findByStorageEmployeeId(Long storageEmployeeId); 
@@ -70,4 +73,28 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     @Query("SELECT COUNT(i) FROM Inventory i WHERE i.storageForeman.id = :foremanId")
     Long countByStorageForemanId(@Param("foreman") Long foremanId);
     Boolean existsByStatus(InventoryStatus status);
+    
+    //nove metode
+    @Query("SELECT i FROM Inventory i LEFT JOIN FETCH i.inventoryItems WHERE i.id = :id")
+    List<Inventory> trackInventory(@Param("id") Long id);
+    @Query("""
+    		SELECT new com.jovan.erp_v1.statistics.inventory.InventoryEmployeeStatDTO(
+    		COUNT(inv),
+    		inv.storageEmployeeId
+    		)
+    		FROM Inventory inv
+    		WHERE inv.confirmed = true
+    		GROUP BY inv.storageEmployee.id, inv.status, inv.typeStatus
+    		""")
+    List<InventoryEmployeeStatDTO> countInventoryByEmployee();
+    @Query("""
+    		SELECT new com.jovan.erp_v1.statistics.inventory.InventoryForemanStatDTO(
+    		COUNT(inv),
+    		inv.storageForemanId
+    		)
+    		FROM Inventory inv
+    		WHERE inv.confirmed = true
+    		GROUP BY inv.storageForemanId.id, inv.status, inv.typeStatus
+    		""")
+    List<InventoryForemanStatDTO> countInventoryByForeman();
 }

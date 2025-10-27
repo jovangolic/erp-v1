@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,6 +22,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "inventory_items")
+@Builder
 public class InventoryItems {
 
 	@Id
@@ -43,6 +45,10 @@ public class InventoryItems {
 	
 	@Column(nullable = true)
 	private BigDecimal difference; //Razlika između stanja na skladistu i inventurisanog
+	
+	@Column(nullable = false)
+	@Builder.Default
+	private Boolean confirmed = false;
 	
 	public BigDecimal calculateDifference() {
 		if(this.quantity == null || this.itemCondition == null) {
