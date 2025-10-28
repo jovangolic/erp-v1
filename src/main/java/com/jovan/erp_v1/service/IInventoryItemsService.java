@@ -19,6 +19,7 @@ import com.jovan.erp_v1.response.InventorySummaryResponse;
 import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponseFull;
 import com.jovan.erp_v1.response.StorageCapacityResponse;
 import com.jovan.erp_v1.response.StorageItemSummaryResponse;
+import com.jovan.erp_v1.save_as.InventoryItemsSaveAsRequest;
 import com.jovan.erp_v1.search_request.InventoryItemsSearchRequest;
 import com.jovan.erp_v1.statistics.inventory_items.InventoryStatRequest;
 import com.jovan.erp_v1.statistics.inventory_items.InventoryStatResponse;
@@ -111,7 +112,7 @@ public interface IInventoryItemsService {
 	BigDecimal getTotalDifferenceByProduct(Long productId);
 	InventoryStatResponse getInventoryStatistics(InventoryStatRequest request);
 	InventoryItemsResponse saveInventoryItems(InventoryItemsRequest request);
-	InventoryItemsResponse saveAs();
+	InventoryItemsResponse saveAs(InventoryItemsSaveAsRequest request);
 	List<InventoryItemsResponse> saveAll(List<InventoryItemsRequest> requests);
 	List<InventoryItemsResponse> generalSearch(InventoryItemsSearchRequest request);
 }

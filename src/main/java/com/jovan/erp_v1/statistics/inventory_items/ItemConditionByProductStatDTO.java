@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 public class ItemConditionByProductStatDTO {
 
 	private Long count;
-	private BigDecimal quantity;
+	private BigDecimal itemCondition;
 	private Long productId;
 	private String productName;
 	
-	public ItemConditionByProductStatDTO(Long count,BigDecimal quantity,Long productId,String productName) {
+	public ItemConditionByProductStatDTO(Long count,BigDecimal itemCondition,Long productId,String productName) {
 		this.count = count;
-		this.quantity = quantity;
+		this.itemCondition = itemCondition;
 		this.productId = productId;
 		this.productName = productName;
 	}

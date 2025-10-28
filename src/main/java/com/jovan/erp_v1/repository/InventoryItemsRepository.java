@@ -193,7 +193,7 @@ public interface InventoryItemsRepository extends JpaRepository<InventoryItems, 
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inventory_items.ItemConditionByProductStatDTO(
 			COUNT(i),
-			SUM(i.quantity),
+			SUM(i.itemCondition),
 			i.product.id,
 			i.product.name
 			)
@@ -206,7 +206,5 @@ public interface InventoryItemsRepository extends JpaRepository<InventoryItems, 
 			SELECT SUM(i.quantity - i.itemCondition) FROM InventoryItems i WHERE i.product.id = :productId AND i.confirmed = true
 			""")
 	BigDecimal getTotalDifferenceByProduct(@Param("productId") Long productId);
-	
-	
 }
 

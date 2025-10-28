@@ -4,12 +4,16 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.InventoryItemsStatus;
@@ -48,6 +52,9 @@ import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponse;
 import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponseFull;
 import com.jovan.erp_v1.response.StorageCapacityResponse;
 import com.jovan.erp_v1.response.StorageItemSummaryResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.InventoryItemsSaveAsRequest;
 import com.jovan.erp_v1.search_request.InventoryItemsSearchRequest;
 import com.jovan.erp_v1.statistics.inventory_items.InventoryStatRequest;
 import com.jovan.erp_v1.statistics.inventory_items.InventoryStatResponse;
@@ -874,64 +881,129 @@ public class InventoryItemsService implements IInventoryItemsService {
 		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
 	}
 	
+	@Transactional(readOnly = true)
 	@Override
 	public InventoryItemsResponse trackInventoryItems(Long id) {
-		// TODO Auto-generated method stub
-		return null;
+		InventoryItems items = inventoryItemsRepository.trackInventoryItems(id).orElseThrow(() -> new ValidationException("InventoryItems not found with id "+id));		
+		return new InventoryItemsResponse(items);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public InventoryItemsResponse trackInventoryItemsByInventory(Long inventoryId) {
-		// TODO Auto-generated method stub
-		return null;
+		List<InventoryItems> items = inventoryItemsRepository.trackInventoryItemsByInventory(inventoryId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("InventoryItems with inventory-id "+inventoryId+" not found");
+		}
+		InventoryItems ii = items.get(0);
+		return new InventoryItemsResponse(ii);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public InventoryItemsResponse trackInventoryItemsByProduct(Long productId) {
-		// TODO Auto-generated method stub
-		return null;
+		List<InventoryItems> items = inventoryItemsRepository.trackInventoryItemsByProduct(productId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("InventoryItems with product-id "+productId+" not found");
+		}
+		InventoryItems ii = items.get(0);
+		return new InventoryItemsResponse(ii);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public InventoryItemsResponse confirmInventoryItems(Long id) {
-		// TODO Auto-generated method stub
-		return null;
+		InventoryItems items = inventoryItemsRepository.findById(id).orElseThrow(() -> new ValidationException("InventoryItems not found with id "+id));
+		items.setConfirmed(true);
+		items.setStatus(InventoryItemsStatus.CONFIRMED);
+		return new InventoryItemsResponse(inventoryItemsRepository.save(items));
 	}
 
+	@Transactional
 	@Override
 	public InventoryItemsResponse cancelInventoryItems(Long id) {
-		// TODO Auto-generated method stub
-		return null;
+		InventoryItems items = inventoryItemsRepository.findById(id).orElseThrow(() -> new ValidationException("InventoryItems not found with id "+id));
+		if(items.getStatus() != InventoryItemsStatus.NEW && items.getStatus() != InventoryItemsStatus.CONFIRMED) {
+			throw new ValidationException("Only NEW or CONFIRMED inventoryItems can be cancelled");
+		}
+		items.setStatus(InventoryItemsStatus.CANCELLED);
+		return new InventoryItemsResponse(inventoryItemsRepository.save(items));
 	}
 
+	@Transactional
 	@Override
 	public InventoryItemsResponse closeInventoryItems(Long id) {
-		// TODO Auto-generated method stub
-		return null;
+		InventoryItems items = inventoryItemsRepository.findById(id).orElseThrow(() -> new ValidationException("InventoryItems not found with id "+id));
+		if(items.getStatus() != InventoryItemsStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED inventoryItems can be closed");
+		}
+		items.setStatus(InventoryItemsStatus.CLOSED);;
+		return new InventoryItemsResponse(inventoryItemsRepository.save(items));
 	}
 
+	@Transactional
 	@Override
 	public InventoryItemsResponse changeStatus(Long id, InventoryItemsStatus status) {
-		// TODO Auto-generated method stub
-		return null;
+		InventoryItems items = inventoryItemsRepository.findById(id).orElseThrow(() -> new ValidationException("InventoryItems not found with id "+id));
+		validateInventoryItemsStatus(status);
+		if(items.getStatus() == InventoryItemsStatus.CONFIRMED) {
+			throw new ValidationException("Closed inventoryItems cannot change status");
+		}
+		if(status == InventoryItemsStatus.CONFIRMED) {
+			if(items.getStatus() != InventoryItemsStatus.NEW) {
+				throw new ValidationException("Only NEW inventoryItems can be confirmed");
+			}
+			items.setConfirmed(true);
+		}
+		items.setStatus(status);;
+		return new InventoryItemsResponse(inventoryItemsRepository.save(items));
 	}
 
 	@Override
 	public List<QuantityByProductStatDTO> countQuantityByProduct() {
-		// TODO Auto-generated method stub
-		return null;
+		List<QuantityByProductStatDTO> items = inventoryItemsRepository.countQuantityByProduct();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InventoryItems for product quanitiy, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					BigDecimal quantity = item.getQuantity();
+					Long productId = item.getProductId();
+					String productName = item.getProductName();
+					return new QuantityByProductStatDTO(count, quantity, productId, productName);
+				})
+				.toList();
 	}
 
 	@Override
 	public List<ItemConditionByProductStatDTO> countItemConditionByProduct() {
-		// TODO Auto-generated method stub
-		return null;
+		List<ItemConditionByProductStatDTO> items = inventoryItemsRepository.countItemConditionByProduct();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InventoryItems for product itemCondition, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					BigDecimal itemCondition = item.getItemCondition();
+					Long productId = item.getProductId();
+					String productName = item.getProductName();
+					return new ItemConditionByProductStatDTO(count, itemCondition, productId, productName);
+				})
+				.toList();
 	}
 
 	@Override
 	public BigDecimal getTotalDifferenceByProduct(Long productId) {
-		
-		return null;
+		if(productId == null) {
+			throw new NoDataFoundException("Product ID must not be null");
+		}
+		BigDecimal totalDiff = inventoryItemsRepository.getTotalDifferenceByProduct(productId);
+		if(totalDiff == null) {
+			String msg = String.format("No confirmed inventory items found for product ID %d", productId);
+	        throw new NoDataFoundException(msg);
+		}
+		return totalDiff;
 	}
 
 	@Transactional(readOnly = true)
@@ -971,28 +1043,122 @@ public class InventoryItemsService implements IInventoryItemsService {
                 .build();
 	}
 
+	@Transactional
 	@Override
 	public InventoryItemsResponse saveInventoryItems(InventoryItemsRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		Product product = validateProduct(request.productId());
+		Inventory inventory = validateInventory(request.inventoryId());
+		BigDecimal totalDiff = calculateDifference(request.quantity(), request.condition());
+		InventoryItems items = InventoryItems.builder()
+				.inventory(inventory)
+				.product(product)
+				.quantity(request.quantity())
+				.itemCondition(request.condition())
+				.difference(totalDiff)
+				.confirmed(request.confirmed())
+				.status(request.status())
+				.build();
+		return new InventoryItemsResponse(inventoryItemsRepository.save(items));
 	}
+	
+	private final AbstractSaveAsService<InventoryItems, InventoryItemsResponse> saveAsHelper = new AbstractSaveAsService<InventoryItems, InventoryItemsResponse>() {
+		
+		@Override
+		protected InventoryItemsResponse toResponse(InventoryItems entity) {
+			return new InventoryItemsResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<InventoryItems, Long> getRepository() {
+			return inventoryItemsRepository;
+		}
+		
+		@Override
+		protected InventoryItems copyAndOverride(InventoryItems source, Map<String, Object> overrides) {
+			BigDecimal quantity = (BigDecimal) overrides.getOrDefault("quantity", source.getQuantity());
+		    BigDecimal itemCondition = (BigDecimal) overrides.getOrDefault("itemCondition", source.getItemCondition());
+		    BigDecimal totalDiff = calculateDifference(quantity, itemCondition);
+		    return InventoryItems.builder()
+		            .inventory((Inventory) overrides.getOrDefault("inventory", source.getInventory()))
+		            .product((Product) overrides.getOrDefault("product", source.getProduct()))
+		            .quantity(quantity)
+		            .itemCondition(itemCondition)
+		            .difference(totalDiff)
+		            .confirmed((Boolean) overrides.getOrDefault("confirmed", source.getConfirmed()))
+		            .status((InventoryItemsStatus) overrides.getOrDefault("status", source.getStatus()))
+		            .build();
+		}
+	};
 
+	@Transactional
 	@Override
-	public InventoryItemsResponse saveAs() {
-		// TODO Auto-generated method stub
-		return null;
+	public InventoryItemsResponse saveAs(InventoryItemsSaveAsRequest request) {
+		Inventory inventory = validateInventory(request.inventoryId());
+	    Product product = validateProduct(request.productId());
+	    Map<String, Object> overrides = new HashMap<>();
+	    overrides.put("inventory", inventory);
+	    overrides.put("product", product);
+	    overrides.put("quantity", request.quantity());
+	    overrides.put("itemCondition", request.itemCondition());
+	    overrides.put("status", request.status());
+	    overrides.put("confirmed", request.confirmed());
+	    return saveAsHelper.saveAs(request.sourceId(), overrides);
 	}
+	
+	private final AbstractSaveAllService<InventoryItems, InventoryItemsResponse> saveAllHelper = new AbstractSaveAllService<InventoryItems, InventoryItemsResponse>() {
+		
+		@Override
+		protected Function<InventoryItems, InventoryItemsResponse> toResponse() {
+			return InventoryItemsResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<InventoryItems, Long> getRepository() {
+			return inventoryItemsRepository;
+		}
+	};
 
+	@Transactional
 	@Override
 	public List<InventoryItemsResponse> saveAll(List<InventoryItemsRequest> requests) {
-		// TODO Auto-generated method stub
-		return null;
+		if (requests == null || requests.isEmpty()) {
+	        throw new ValidationException("InventoryItems request list must not be empty.");
+	    }
+		Map<Long, Inventory> inventoryCache = new HashMap<>();
+	    Map<Long, Product> productCache = new HashMap<>();
+	    List<InventoryItems> items = requests.stream()
+	        .map(item -> {
+	            if (item.quantity() == null || item.condition() == null) {
+	                throw new ValidationException("Quantity and item condition must not be null for product ID: " + item.productId());
+	            }
+	            if (item.condition().compareTo(item.quantity()) > 0) {
+	                throw new ValidationException("Item condition cannot be greater than quantity for product ID: " + item.productId());
+	            }
+	            Inventory inventory = inventoryCache.computeIfAbsent(item.inventoryId(), this::validateInventory);
+	            Product product = productCache.computeIfAbsent(item.productId(), this::validateProduct);
+	            BigDecimal totalDiff = calculateDifference(item.quantity(), item.condition());
+	            return InventoryItems.builder()
+	                    .inventory(inventory)
+	                    .product(product)
+	                    .quantity(item.quantity())
+	                    .itemCondition(item.condition())
+	                    .difference(totalDiff)
+	                    .confirmed(item.confirmed())
+	                    .status(item.status())
+	                    .build();
+	        })
+	        .toList();
+	    return saveAllHelper.saveAll(items);
 	}
 
 	@Override
 	public List<InventoryItemsResponse> generalSearch(InventoryItemsSearchRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		Specification<InventoryItems> spec = InventoryItemsSpecification.fromRequest(request);
+		List<InventoryItems> items = inventoryItemsRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No InventoryItems found for given criteria");
+		}
+		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
 	}
 
 	private BigDecimal calculateDifference(BigDecimal quantity, BigDecimal condition) {
@@ -1104,4 +1270,8 @@ public class InventoryItemsService implements IInventoryItemsService {
 		return userRepository.findById(userId).orElseThrow(() -> new ValidationException("User not found with id "+userId));
 	}
 
+	private void validateInventoryItemsStatus(InventoryItemsStatus status) {
+		Optional.ofNullable(status)
+			.orElseThrow(() -> new ValidationException("InventoryItemsStatus status must not be null"));
+	}
 }
