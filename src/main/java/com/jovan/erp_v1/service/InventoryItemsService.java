@@ -5,10 +5,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.InventoryItemsStatus;
 import com.jovan.erp_v1.enumeration.InventoryStatus;
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
@@ -33,6 +37,7 @@ import com.jovan.erp_v1.repository.ShelfRepository;
 import com.jovan.erp_v1.repository.StorageRepository;
 import com.jovan.erp_v1.repository.SupplyRepository;
 import com.jovan.erp_v1.repository.UserRepository;
+import com.jovan.erp_v1.repository.specification.InventoryItemsSpecification;
 import com.jovan.erp_v1.request.InventoryItemCalculateRequest;
 import com.jovan.erp_v1.request.InventoryItemsRequest;
 import com.jovan.erp_v1.response.InventoryItemCalculateResponse;
@@ -43,6 +48,11 @@ import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponse;
 import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponseFull;
 import com.jovan.erp_v1.response.StorageCapacityResponse;
 import com.jovan.erp_v1.response.StorageItemSummaryResponse;
+import com.jovan.erp_v1.search_request.InventoryItemsSearchRequest;
+import com.jovan.erp_v1.statistics.inventory_items.InventoryStatRequest;
+import com.jovan.erp_v1.statistics.inventory_items.InventoryStatResponse;
+import com.jovan.erp_v1.statistics.inventory_items.ItemConditionByProductStatDTO;
+import com.jovan.erp_v1.statistics.inventory_items.QuantityByProductStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +62,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InventoryItemsService implements IInventoryItemsService {
 
+	private final InventoryItemsSpecification specification;
 	private final InventoryItemsRepository inventoryItemsRepository;
 	private final InventoryRepository inventoryRepository;
 	private final ProductRepository productRepository;
@@ -862,6 +873,127 @@ public class InventoryItemsService implements IInventoryItemsService {
 		}
 		return items.stream().map(inventoryItemsMapper::toResponse).collect(Collectors.toList());
 	}
+	
+	@Override
+	public InventoryItemsResponse trackInventoryItems(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InventoryItemsResponse trackInventoryItemsByInventory(Long inventoryId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InventoryItemsResponse trackInventoryItemsByProduct(Long productId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InventoryItemsResponse confirmInventoryItems(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InventoryItemsResponse cancelInventoryItems(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InventoryItemsResponse closeInventoryItems(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InventoryItemsResponse changeStatus(Long id, InventoryItemsStatus status) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<QuantityByProductStatDTO> countQuantityByProduct() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ItemConditionByProductStatDTO> countItemConditionByProduct() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public BigDecimal getTotalDifferenceByProduct(Long productId) {
+		
+		return null;
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public InventoryStatResponse getInventoryStatistics(InventoryStatRequest request) {
+		List<InventoryItems> filteredItems = specification.findByFilters(request);
+		if(filteredItems.isEmpty()) {
+			return InventoryStatResponse.builder()
+					.inventoryId(request.inventoryId())
+					.totalItemsCount(0L)
+					.totalQuantity(BigDecimal.ZERO)
+					.totalItemCondition(BigDecimal.ZERO)
+                    .totalDifference(BigDecimal.ZERO)
+                    .productStats(List.of())
+					.build();
+		}
+		//racunanje statistike agregacijom
+		BigDecimal totalQuantity = filteredItems.stream()
+				.map(InventoryItems::getQuantity)
+				.filter(Objects::nonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal totalItemCondition = filteredItems.stream()
+				.map(InventoryItems::getItemCondition)
+				.filter(Objects::nonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal totalDifference = filteredItems.stream()
+				.map(InventoryItems::getDifference)
+				.filter(Objects::nonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		return InventoryStatResponse.builder()
+				.inventoryId(null)
+                .totalItemsCount((long) filteredItems.size())
+                .totalQuantity(totalQuantity)
+                .totalItemCondition(totalItemCondition)
+                .totalDifference(totalDifference)
+                .productStats(filteredItems)
+                .build();
+	}
+
+	@Override
+	public InventoryItemsResponse saveInventoryItems(InventoryItemsRequest request) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InventoryItemsResponse saveAs() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<InventoryItemsResponse> saveAll(List<InventoryItemsRequest> requests) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<InventoryItemsResponse> generalSearch(InventoryItemsSearchRequest request) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	private BigDecimal calculateDifference(BigDecimal quantity, BigDecimal condition) {
 		if (quantity == null || condition == null) {
@@ -971,4 +1103,5 @@ public class InventoryItemsService implements IInventoryItemsService {
 		}
 		return userRepository.findById(userId).orElseThrow(() -> new ValidationException("User not found with id "+userId));
 	}
+
 }

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.InventoryItemsStatus;
 import com.jovan.erp_v1.enumeration.InventoryStatus;
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
@@ -18,6 +19,11 @@ import com.jovan.erp_v1.response.InventorySummaryResponse;
 import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponseFull;
 import com.jovan.erp_v1.response.StorageCapacityResponse;
 import com.jovan.erp_v1.response.StorageItemSummaryResponse;
+import com.jovan.erp_v1.search_request.InventoryItemsSearchRequest;
+import com.jovan.erp_v1.statistics.inventory_items.InventoryStatRequest;
+import com.jovan.erp_v1.statistics.inventory_items.InventoryStatResponse;
+import com.jovan.erp_v1.statistics.inventory_items.ItemConditionByProductStatDTO;
+import com.jovan.erp_v1.statistics.inventory_items.QuantityByProductStatDTO;
 
 public interface IInventoryItemsService {
 
@@ -90,4 +96,22 @@ public interface IInventoryItemsService {
 	List<InventoryItemsResponse> findByProduct_ShelfCols( Integer cols);
 	List<InventoryItemsResponse> findInventoryItemsWithoutShelf();
 	List<InventoryItemsResponse> findByProduct_ShelfIsNotNull();
+	
+	//nove metode
+	
+	InventoryItemsResponse trackInventoryItems(Long id);
+	InventoryItemsResponse trackInventoryItemsByInventory(Long inventoryId);
+	InventoryItemsResponse trackInventoryItemsByProduct(Long productId);
+	InventoryItemsResponse confirmInventoryItems(Long id);
+	InventoryItemsResponse cancelInventoryItems(Long id);
+	InventoryItemsResponse closeInventoryItems(Long id);
+	InventoryItemsResponse changeStatus(Long id, InventoryItemsStatus status);
+	List<QuantityByProductStatDTO> countQuantityByProduct();
+	List<ItemConditionByProductStatDTO> countItemConditionByProduct();
+	BigDecimal getTotalDifferenceByProduct(Long productId);
+	InventoryStatResponse getInventoryStatistics(InventoryStatRequest request);
+	InventoryItemsResponse saveInventoryItems(InventoryItemsRequest request);
+	InventoryItemsResponse saveAs();
+	List<InventoryItemsResponse> saveAll(List<InventoryItemsRequest> requests);
+	List<InventoryItemsResponse> generalSearch(InventoryItemsSearchRequest request);
 }

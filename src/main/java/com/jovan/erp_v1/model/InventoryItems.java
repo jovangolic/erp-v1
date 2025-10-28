@@ -2,10 +2,13 @@ package com.jovan.erp_v1.model;
 
 import java.math.BigDecimal;
 
+import com.jovan.erp_v1.enumeration.InventoryItemsStatus;
 import com.jovan.erp_v1.exception.ValidationException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,18 +40,23 @@ public class InventoryItems {
 	@JoinColumn(name="product_id")
 	private Product product;
 	
-	@Column(nullable = false)
+	@Column(nullable = false,precision = 10, scale = 2)
 	private BigDecimal quantity; //Kolicina proizvoda koja je inventurisana
 	
-	@Column(name = "item_condition", nullable = false)
+	@Column(name = "item_condition", nullable = false, precision = 10, scale = 2)
 	private BigDecimal itemCondition;// Stanje proizvoda u skladistu (pre inventure)
 	
-	@Column(nullable = true)
-	private BigDecimal difference; //Razlika između stanja na skladistu i inventurisanog
+	@Column(nullable = true, precision = 10, scale = 2)
+	private BigDecimal difference; //Razlika izmedju stanja na skladistu i inventurisanog
 	
 	@Column(nullable = false)
 	@Builder.Default
 	private Boolean confirmed = false;
+	
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	@Builder.Default
+	private InventoryItemsStatus status = InventoryItemsStatus.NEW;
 	
 	public BigDecimal calculateDifference() {
 		if(this.quantity == null || this.itemCondition == null) {

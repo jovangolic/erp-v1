@@ -4,8 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,11 +26,13 @@ import com.jovan.erp_v1.response.InventorySummaryResponse;
 import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponse;
 import com.jovan.erp_v1.response.StorageCapacityResponse;
 import com.jovan.erp_v1.response.StorageItemSummaryResponse;
+import com.jovan.erp_v1.statistics.inventory_items.ItemConditionByProductStatDTO;
+import com.jovan.erp_v1.statistics.inventory_items.QuantityByProductStatDTO;
 
 import jakarta.transaction.Transactional;
 
 @Repository
-public interface InventoryItemsRepository extends JpaRepository<InventoryItems, Long> {
+public interface InventoryItemsRepository extends JpaRepository<InventoryItems, Long>, JpaSpecificationExecutor<InventoryItems> {
 
 	List<InventoryItems> findByInventoryId(Long inventoryId);
 	List<InventoryItems> findByProductId(Long productId);
@@ -165,5 +169,44 @@ public interface InventoryItemsRepository extends JpaRepository<InventoryItems, 
 	@Query("SELECT i FROM InventoryItems i WHERE i.product.shelf IS NULL")
 	List<InventoryItems> findInventoryItemsWithoutShelf();
 	List<InventoryItems> findByProduct_ShelfIsNotNull();
+	
+	//nove metode
+	@Query("SELECT i FROM InventoryItems i WHERE i.id = :id")
+	Optional<InventoryItems> trackInventoryItems(@Param("id") Long id);
+	@Query("SELECT i FROM InventoryItems i WHERE i.inventory.id = :inventoryId")
+	List<InventoryItems> trackInventoryItemsByInventory(@Param("inventoryId") Long inventoryId);
+	@Query("SELECT i FROM InventoryItems i WHERE i.product.id = :productId")
+	List<InventoryItems> trackInventoryItemsByProduct(@Param("productId") Long productId);
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inventory_items.QuantityByProductStatDTO(
+			COUNT(i),
+			SUM(i.quantity),
+			i.product.id,
+			i.product.name
+			)
+			FROM InventoryItems i
+			WHERE i.confirmed = true
+			GROUP BY i.product.id, i.product.name
+			""")
+	List<QuantityByProductStatDTO> countQuantityByProduct();
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.inventory_items.ItemConditionByProductStatDTO(
+			COUNT(i),
+			SUM(i.quantity),
+			i.product.id,
+			i.product.name
+			)
+			FROM InventoryItems i
+			WHERE i.confirmed = true
+			GROUP BY i.product.id, i.product.name
+			""")
+	List<ItemConditionByProductStatDTO> countItemConditionByProduct();
+	@Query("""
+			SELECT SUM(i.quantity - i.itemCondition) FROM InventoryItems i WHERE i.product.id = :productId AND i.confirmed = true
+			""")
+	BigDecimal getTotalDifferenceByProduct(@Param("productId") Long productId);
+	
+	
 }
 
