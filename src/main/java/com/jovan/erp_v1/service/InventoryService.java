@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -47,9 +48,11 @@ import com.jovan.erp_v1.util.DateValidator;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InventoryService implements IInventoryService {
 
 	private final InventoryRepository inventoryRepository;
@@ -674,6 +677,12 @@ public class InventoryService implements IInventoryService {
 		@Override
 		protected JpaRepository<Inventory, Long> getRepository() {
 			return inventoryRepository;
+		}
+		
+		@Override
+		protected void beforeSaveAll(List<Inventory> entities) {
+		    String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+		    log.info("User '{}' is saving {} inventory ", currentUser, entities.size());
 		}
 	};
 

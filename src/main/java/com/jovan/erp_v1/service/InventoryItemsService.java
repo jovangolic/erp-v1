@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.jovan.erp_v1.enumeration.GoodsType;
 import com.jovan.erp_v1.enumeration.InventoryItemsStatus;
@@ -64,9 +65,11 @@ import com.jovan.erp_v1.util.DateValidator;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InventoryItemsService implements IInventoryItemsService {
 
 	private final InventoryItemsSpecification specification;
@@ -1115,6 +1118,12 @@ public class InventoryItemsService implements IInventoryItemsService {
 		@Override
 		protected JpaRepository<InventoryItems, Long> getRepository() {
 			return inventoryItemsRepository;
+		}
+		
+		@Override
+		protected void beforeSaveAll(List<InventoryItems> entities) {
+		    String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+		    log.info("User '{}' is saving {} inventory items", currentUser, entities.size());
 		}
 	};
 

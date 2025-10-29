@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
+import com.jovan.erp_v1.enumeration.InvoiceTypeStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,6 +24,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -31,6 +33,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Invoice {
 
     @Id
@@ -40,27 +43,30 @@ public class Invoice {
     @Column(nullable = false, unique = true)
     private String invoiceNumber;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime issueDate;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime dueDate;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private InvoiceStatus status;
 
+    @Column(nullable = false, precision = 15, scale = 3)
     private BigDecimal totalAmount;
 
     @ManyToOne
     @JoinColumn(name="buyer_id")
     private Buyer buyer;
 
-    @OneToOne
+    @OneToOne(mappedBy = "invoice")
     private Sales relatedSales;
 
-    @OneToOne
+    @OneToOne(mappedBy = "invoice")
     private Payment payment;
 
+    @Column
     private String note;
     
     @OneToOne(mappedBy = "invoice")
@@ -69,6 +75,15 @@ public class Invoice {
     @ManyToOne
     @JoinColumn(name="user_id")
     private User createdBy;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private InvoiceTypeStatus typeStatus = InvoiceTypeStatus.NEW;
+    
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean confirmed = false;
     
     @CreatedDate
     @Column(name = "created_at", updatable = false)

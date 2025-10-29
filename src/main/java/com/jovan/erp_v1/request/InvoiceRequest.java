@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
+import com.jovan.erp_v1.enumeration.InvoiceTypeStatus;
+
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -30,6 +32,8 @@ public record InvoiceRequest(
 	    String note,
 	    Long salesOrderId,
 	    @NotNull(message = "ID osobe koja je kreirala fakturu je obavezan")
-	    Long createdById
+	    Long createdById,
+	    @NotNull InvoiceTypeStatus typeStatus,
+	    @NotNull Boolean confirmed
 		) {
 }

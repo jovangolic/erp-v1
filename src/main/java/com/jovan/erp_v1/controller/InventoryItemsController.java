@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.InventoryItemsStatus;
 import com.jovan.erp_v1.enumeration.InventoryStatus;
 import com.jovan.erp_v1.enumeration.StorageStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
@@ -33,7 +34,13 @@ import com.jovan.erp_v1.response.InventorySummaryResponse;
 import com.jovan.erp_v1.response.StorageCapacityAndInventorySummaryResponseFull;
 import com.jovan.erp_v1.response.StorageCapacityResponse;
 import com.jovan.erp_v1.response.StorageItemSummaryResponse;
+import com.jovan.erp_v1.save_as.InventoryItemsSaveAsRequest;
+import com.jovan.erp_v1.search_request.InventoryItemsSearchRequest;
 import com.jovan.erp_v1.service.IInventoryItemsService;
+import com.jovan.erp_v1.statistics.inventory_items.InventoryStatRequest;
+import com.jovan.erp_v1.statistics.inventory_items.InventoryStatResponse;
+import com.jovan.erp_v1.statistics.inventory_items.ItemConditionByProductStatDTO;
+import com.jovan.erp_v1.statistics.inventory_items.QuantityByProductStatDTO;
 import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
@@ -523,4 +530,110 @@ public class InventoryItemsController {
 		return ResponseEntity.ok(responses);
 	}
 	
+	//nove metode
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_READ_ACCESS)
+	@GetMapping("/track-inventory-items/{id}")
+	public ResponseEntity<InventoryItemsResponse> trackInventoryItems(@PathVariable Long id){
+		InventoryItemsResponse items = inventoryItemsService.trackInventoryItems(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_READ_ACCESS)
+	@GetMapping("/track-by-inventory/{inventoryId}")
+	public ResponseEntity<InventoryItemsResponse> trackInventoryItemsByInventory(@PathVariable Long inventoryId){
+		InventoryItemsResponse items = inventoryItemsService.trackInventoryItemsByInventory(inventoryId);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_READ_ACCESS)
+	@GetMapping("/track-by-product/{productId}")
+	public ResponseEntity<InventoryItemsResponse> trackInventoryItemsByProduct(@PathVariable Long productId){
+		InventoryItemsResponse items = inventoryItemsService.trackInventoryItemsByProduct(productId);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_FULL_ACCESS)
+	@PostMapping("/{id}/confirm")
+	public ResponseEntity<InventoryItemsResponse> confirmInventoryItems(@PathVariable Long id){
+		InventoryItemsResponse items = inventoryItemsService.confirmInventoryItems(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_FULL_ACCESS)
+	@PostMapping("/{id}/cancel")
+	public ResponseEntity<InventoryItemsResponse> cancelInventoryItems(@PathVariable Long id){
+		InventoryItemsResponse items = inventoryItemsService.cancelInventoryItems(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_FULL_ACCESS)
+	@PostMapping("/{id}/close")
+	public ResponseEntity<InventoryItemsResponse> closeInventoryItems(@PathVariable Long id){
+		InventoryItemsResponse items = inventoryItemsService.closeInventoryItems(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_FULL_ACCESS)
+	@PostMapping("/{id}/status/{status}")
+	public ResponseEntity<InventoryItemsResponse> changeStatus(@PathVariable Long id,@PathVariable  InventoryItemsStatus status){
+		InventoryItemsResponse items = inventoryItemsService.changeStatus(id, status);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_READ_ACCESS)
+	@GetMapping("/count/quantity-by-product")
+	public ResponseEntity<List<QuantityByProductStatDTO>> countQuantityByProduct(){
+		List<QuantityByProductStatDTO> items = inventoryItemsService.countQuantityByProduct();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_READ_ACCESS)
+	@GetMapping("/count/item-condition-by-product")
+	public ResponseEntity<List<ItemConditionByProductStatDTO>> countItemConditionByProduct(){
+		List<ItemConditionByProductStatDTO> items = inventoryItemsService.countItemConditionByProduct();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_READ_ACCESS)
+	@GetMapping("/stats/total-difference/{productId}")
+	public ResponseEntity<BigDecimal> getTotalDifferenceByProduct(@PathVariable Long productId){
+		BigDecimal items = inventoryItemsService.getTotalDifferenceByProduct(productId);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_FULL_ACCESS)
+	@PostMapping("/stats/inventory")
+	public ResponseEntity<InventoryStatResponse> getInventoryStatistics(@RequestBody InventoryStatRequest request){
+		InventoryStatResponse items = inventoryItemsService.getInventoryStatistics(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_FULL_ACCESS)
+	@PostMapping("/save")
+	public ResponseEntity<InventoryItemsResponse> saveInventoryItems(@Valid @RequestBody InventoryItemsRequest request){
+		InventoryItemsResponse items = inventoryItemsService.saveInventoryItems(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_FULL_ACCESS)
+	@PostMapping("/save-as")
+	public ResponseEntity<InventoryItemsResponse> saveAs(@Valid @RequestBody InventoryItemsSaveAsRequest request){
+		InventoryItemsResponse items = inventoryItemsService.saveAs(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_FULL_ACCESS)
+	@PostMapping("/save-all")
+	public ResponseEntity<List<InventoryItemsResponse>> saveAll(@Valid @RequestBody List<InventoryItemsRequest> requests){
+		List<InventoryItemsResponse> items = inventoryItemsService.saveAll(requests);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVENTORY_ITEMS_FULL_ACCESS)
+	@PostMapping("/general-search")
+	public ResponseEntity<List<InventoryItemsResponse>> generalSearch(@RequestBody InventoryItemsSearchRequest request){
+		List<InventoryItemsResponse> items = inventoryItemsService.generalSearch(request);
+		return ResponseEntity.ok(items);
+	}
 }

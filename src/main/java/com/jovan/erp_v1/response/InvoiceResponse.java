@@ -3,6 +3,7 @@ package com.jovan.erp_v1.response;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
+import com.jovan.erp_v1.enumeration.InvoiceTypeStatus;
 import com.jovan.erp_v1.model.Invoice;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,8 @@ public class InvoiceResponse {
     private String note;
     private SalesOrderResponse salesOrderResponse;
     private UserResponse userResponse;
+    private InvoiceTypeStatus typeStatus;
+    private Boolean confirmed;
 
 
     public InvoiceResponse(Invoice invoice) {
@@ -38,5 +41,7 @@ public class InvoiceResponse {
         this.paymentInvoiceResponse = invoice.getPayment() != null ? new PaymentInvoiceResponse(invoice.getPayment()) : null;
         this.salesOrderResponse = invoice.getSalesOrder() != null ? new SalesOrderResponse(invoice.getSalesOrder()) : null;
         this.userResponse = invoice.getCreatedBy() != null ? new UserResponse(invoice.getCreatedBy()) : null;
+        this.typeStatus = invoice.getTypeStatus();
+        this.confirmed = invoice.getConfirmed();
     }
 }

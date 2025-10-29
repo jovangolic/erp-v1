@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
+import com.jovan.erp_v1.enumeration.InvoiceTypeStatus;
 import com.jovan.erp_v1.model.Invoice;
 
 import lombok.AllArgsConstructor;
@@ -25,6 +26,8 @@ public class InvoiceForSalesOrderResponse {
     private PaymentInvoiceResponse paymentInvoiceResponse;
     private String note;
     private UserResponse userResponse;
+    private InvoiceTypeStatus typeStatus;
+    private Boolean confirmed;
 	
 	public InvoiceForSalesOrderResponse(Invoice invoice) {
 		this.id = invoice.getId();
@@ -37,5 +40,7 @@ public class InvoiceForSalesOrderResponse {
         this.note = invoice.getNote();
         this.paymentInvoiceResponse = invoice.getPayment() != null ? new PaymentInvoiceResponse(invoice.getPayment()) : null;
         this.userResponse = invoice.getCreatedBy() != null ? new UserResponse(invoice.getCreatedBy()) : null;
+        this.typeStatus = invoice.getTypeStatus();
+        this.confirmed = invoice.getConfirmed();
 	}
 }
