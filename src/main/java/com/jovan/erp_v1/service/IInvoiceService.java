@@ -9,6 +9,8 @@ import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
 import com.jovan.erp_v1.request.InvoiceRequest;
 import com.jovan.erp_v1.response.InvoiceResponse;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByBuyerStatDTO;
 
 public interface IInvoiceService {
 
@@ -57,4 +59,8 @@ public interface IInvoiceService {
 	List<InvoiceResponse> findByCreatedBy_Id(Long createdById);
 	List<InvoiceResponse> findByCreatedBy_EmailContainingIgnoreCase(String createdByEmail);
 	List<InvoiceResponse> findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(String createdByFirstName, String createdByLastName);
+	
+	//nove metode
+	
+	List<InvoiceTotalAmountByBuyerStatDTO> getInvoiceStatistics(InvoiceStatRequest request);
 }

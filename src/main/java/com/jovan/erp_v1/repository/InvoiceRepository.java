@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,9 +14,10 @@ import com.jovan.erp_v1.enumeration.OrderStatus;
 import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
 import com.jovan.erp_v1.model.Invoice;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByBuyerStatDTO;
 
 @Repository
-public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
+public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpecificationExecutor<Invoice> {
 
 	Optional<Invoice> findByInvoiceNumber(String invocieNumber);
 	List<Invoice> findByStatus(InvoiceStatus status);
@@ -64,4 +66,22 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 	boolean existsByBuyer_Pib(String pib);
 	Integer countByIssueDateBetween(LocalDateTime atStartOfDay, LocalDateTime atStartOfDay2);
 	
+	//nove metode
+	
+	@Query("SELECT i FROM Invoice i WHERE i.id = :id")
+	Optional<Invoice> trackInvoice(@Param("id") Long id);
+	@Query("SELECT i FROM Invoice i WHERE (:id IS NULL OR i.id = :id)"
+			+ "AND (:note IS NULL OR LOWER(i.note) LIKE LOWER(CONCAT('%', :note, '%')))")
+	List<Invoice> findByReports(@Param("id") Long id, @Param("note") String note);
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByBuyerStatDTO(
+			COUNT(i),
+			i.invoiceNumber,
+			SUM(i.totalAmount),
+			i.buyer.id)
+			FROM Invoice i
+			WHERE i.confirmed = true
+			GROUP BY i.invoiceNumber, i.buyer.id
+			""")
+	List<InvoiceTotalAmountByBuyerStatDTO> countInvoiceTotalAmountByBuyer();
 }

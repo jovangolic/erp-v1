@@ -5,13 +5,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
-
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
 import com.jovan.erp_v1.enumeration.OrderStatus;
 import com.jovan.erp_v1.enumeration.PaymentMethod;
@@ -37,9 +33,11 @@ import com.jovan.erp_v1.repository.PaymentRepository;
 import com.jovan.erp_v1.repository.SalesOrderRepository;
 import com.jovan.erp_v1.repository.SalesRepository;
 import com.jovan.erp_v1.repository.UserRepository;
+import com.jovan.erp_v1.repository.specification.InvoiceSpecification;
 import com.jovan.erp_v1.request.InvoiceRequest;
 import com.jovan.erp_v1.response.InvoiceResponse;
-import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByBuyerStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +45,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class InvoiceService extends AbstractSaveAsService<Invoice, InvoiceResponse> implements IInvoiceService {
+public class InvoiceService  implements IInvoiceService {
 
 	private final InvoiceRepository invoiceRepository;
 	private final BuyerRepository buyerRepository;
@@ -56,17 +54,6 @@ public class InvoiceService extends AbstractSaveAsService<Invoice, InvoiceRespon
 	private final InvoiceMapper invoiceMapper;
 	private final SalesOrderRepository salesOrderRepository;
 	private final UserRepository userRepository;
-	
-	
-	@Override
-    protected JpaRepository<Invoice, Long> getRepository() {
-        return invoiceRepository;
-    }
-
-    @Override
-    protected InvoiceResponse toResponse(Invoice entity) {
-        return new InvoiceResponse(entity);
-    }
 
 	@Transactional
 	@Override
@@ -667,6 +654,28 @@ public class InvoiceService extends AbstractSaveAsService<Invoice, InvoiceRespon
 				.collect(Collectors.toList());
 	}
 	
+	@Transactional(readOnly = true)
+	@Override
+	public List<InvoiceTotalAmountByBuyerStatDTO> getInvoiceStatistics(InvoiceStatRequest request) {
+		List<Invoice> invoices = invoiceRepository.findAll(InvoiceSpecification.withFilters(request));
+		return invoices.stream()
+		        .collect(Collectors.groupingBy(
+		            inv -> inv.getBuyer().getId(),
+		            Collectors.collectingAndThen(
+		                Collectors.toList(),
+		                list -> new InvoiceTotalAmountByBuyerStatDTO(
+		                    (long) list.size(),
+		                    list.get(0).getInvoiceNumber(),
+		                    list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+		                    list.get(0).getBuyer().getId()
+		                )
+		            )
+		        ))
+		        .values()
+		        .stream()
+		        .toList();
+	}
+	
 	private void validateBigDecimalNonNegative(BigDecimal num) {
 		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
 			throw new ValidationException("Number must be zero or positive");
@@ -771,17 +780,5 @@ public class InvoiceService extends AbstractSaveAsService<Invoice, InvoiceRespon
     		throw new IllegalArgumentException(fieldName + " must not be null or empty");
     	}
     }
-
-    /**
-     *Genericka metoda sa save_as
-     * @param source
-     * @param overrides
-     * @return
-     */
-	@Override
-	protected Invoice copyAndOverride(Invoice source, Map<String, Object> overrides) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 }

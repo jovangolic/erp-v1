@@ -23,6 +23,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -31,6 +32,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Sales {
 
 	@Id
@@ -47,7 +49,7 @@ public class Sales {
 	@Column(nullable = false)
 	private LocalDateTime createdAt;
 	
-	@Column(nullable = false)
+	@Column(nullable = false, precision = 15, scale = 3)
 	private BigDecimal totalPrice;
 	
 	@Column

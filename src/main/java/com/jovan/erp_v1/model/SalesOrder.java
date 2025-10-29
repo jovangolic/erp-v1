@@ -44,10 +44,10 @@ public class SalesOrder {
     @Column(nullable = false, unique = true)
     private String orderNumber;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime orderDate;
 
-    @Column
+    @Column(nullable =  false)
     private BigDecimal totalAmount;
 
     @ManyToOne
