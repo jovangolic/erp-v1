@@ -13,7 +13,8 @@ import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
 import com.jovan.erp_v1.model.Invoice;
 import com.jovan.erp_v1.search_request.InvoiceSearchRequest;
-import com.jovan.erp_v1.statistics.invoice.InvoiceStatRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatByBuyerRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatBySalesRequest;
 
 import jakarta.persistence.criteria.Predicate;
 
@@ -585,11 +586,28 @@ public class InvoiceSpecification {
 		};
 	}
 	
-	public static Specification<Invoice> withFilters(InvoiceStatRequest request){
+	public static Specification<Invoice> withFiltersByBuyer(InvoiceStatByBuyerRequest request){
 		return(root, query, cb) -> {
 			List<Predicate> predicates = new ArrayList<Predicate>();
 			if(request.buyerId() != null) {
 				predicates.add(cb.equal(root.get("buyer").get("id"), request.buyerId()));
+			}
+			if(request.fromDate() != null) {
+				predicates.add(cb.greaterThanOrEqualTo(root.get("issueDate"), request.fromDate().atStartOfDay()));
+			}
+			if(request.toDate() != null) {
+				predicates.add(cb.lessThanOrEqualTo(root.get("issueDate"), request.toDate().atTime(23,59,59)));
+			}
+			predicates.add(cb.isTrue(root.get("confirmed")));
+			return cb.and(predicates.toArray(new Predicate[0]));
+		};
+	}
+	
+	public static Specification<Invoice> withFiltersBySales(InvoiceStatBySalesRequest request) {
+		return(root, query, cb) -> {
+			List<Predicate> predicates = new ArrayList<Predicate>();
+			if(request.salesId() != null) {
+				predicates.add(cb.equal(root.get("relatedSales").get("id"), request.salesId()));
 			}
 			if(request.fromDate() != null) {
 				predicates.add(cb.greaterThanOrEqualTo(root.get("issueDate"), request.fromDate().atStartOfDay()));

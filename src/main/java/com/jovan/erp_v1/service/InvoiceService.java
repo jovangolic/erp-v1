@@ -36,7 +36,8 @@ import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.repository.specification.InvoiceSpecification;
 import com.jovan.erp_v1.request.InvoiceRequest;
 import com.jovan.erp_v1.response.InvoiceResponse;
-import com.jovan.erp_v1.statistics.invoice.InvoiceStatRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatByBuyerRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatStrategy;
 import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByBuyerStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 
@@ -654,26 +655,66 @@ public class InvoiceService  implements IInvoiceService {
 				.collect(Collectors.toList());
 	}
 	
+	
 	@Transactional(readOnly = true)
 	@Override
-	public List<InvoiceTotalAmountByBuyerStatDTO> getInvoiceStatistics(InvoiceStatRequest request) {
-		List<Invoice> invoices = invoiceRepository.findAll(InvoiceSpecification.withFilters(request));
-		return invoices.stream()
-		        .collect(Collectors.groupingBy(
-		            inv -> inv.getBuyer().getId(),
-		            Collectors.collectingAndThen(
-		                Collectors.toList(),
-		                list -> new InvoiceTotalAmountByBuyerStatDTO(
-		                    (long) list.size(),
-		                    list.get(0).getInvoiceNumber(),
-		                    list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
-		                    list.get(0).getBuyer().getId()
-		                )
-		            )
-		        ))
-		        .values()
-		        .stream()
-		        .toList();
+	public List<InvoiceTotalAmountByBuyerStatDTO> getInvoiceStatisticsByBuyer(InvoiceStatByBuyerRequest request) {
+	    long totalInvoices = invoiceRepository.count();
+	    InvoiceStatStrategy strategy = 
+	        request.strategy() != null ? request.strategy() : InvoiceStatStrategy.AUTO;
+	    switch (strategy) {
+	        case SQL -> {
+	            if (totalInvoices < 10000) {
+	                return aggregateInMemory(request);
+	            } else {
+	                return invoiceRepository.countInvoiceTotalAmountByBuyer(
+	                        request.buyerId(),
+	                        request.fromDate(),
+	                        request.toDate()
+	                );
+	            }
+	        }
+	        case MEMORY -> {
+	            return aggregateInMemory(request);
+	        }
+	        case AUTO -> {
+	            // AUTO odlucuje sam na osnovu velicine dataset-a
+	            if (totalInvoices < 10000) {
+	                return aggregateInMemory(request);
+	            } else {
+	                return invoiceRepository.countInvoiceTotalAmountByBuyer(
+	                        request.buyerId(),
+	                        request.fromDate(),
+	                        request.toDate()
+	                );
+	            }
+	        }
+	        default -> throw new ValidationException("Unknown strategy: " + strategy);
+	    }
+	}
+	
+	private List<InvoiceTotalAmountByBuyerStatDTO> aggregateInMemory(InvoiceStatByBuyerRequest request) {
+	    List<Invoice> invoices = invoiceRepository.findAll(
+	        InvoiceSpecification.withFiltersByBuyer(request)
+	    );
+	    return invoices.stream()
+	        .collect(Collectors.groupingBy(
+	            inv -> inv.getBuyer().getId(), // grupisi po kupcu
+	            Collectors.collectingAndThen(
+	                Collectors.toList(),
+	                list -> new InvoiceTotalAmountByBuyerStatDTO(
+	                    (long) list.size(), // broj faktura
+	                    list.get(0).getInvoiceNumber(), // moze uzeti prvi za prikaz
+	                    list.stream()
+	                        .map(Invoice::getTotalAmount)
+	                        .reduce(BigDecimal.ZERO, BigDecimal::add), // saberi totalAmount
+	                    list.get(0).getBuyer().getId()
+	                )
+	            )
+	        ))
+	        .values()
+	        .stream()
+	        .toList();
 	}
 	
 	private void validateBigDecimalNonNegative(BigDecimal num) {

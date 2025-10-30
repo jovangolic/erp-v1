@@ -9,7 +9,7 @@ import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
 import com.jovan.erp_v1.request.InvoiceRequest;
 import com.jovan.erp_v1.response.InvoiceResponse;
-import com.jovan.erp_v1.statistics.invoice.InvoiceStatRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatByBuyerRequest;
 import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByBuyerStatDTO;
 
 public interface IInvoiceService {
@@ -62,5 +62,5 @@ public interface IInvoiceService {
 	
 	//nove metode
 	
-	List<InvoiceTotalAmountByBuyerStatDTO> getInvoiceStatistics(InvoiceStatRequest request);
+	List<InvoiceTotalAmountByBuyerStatDTO> getInvoiceStatisticsByBuyer(InvoiceStatByBuyerRequest request);
 }

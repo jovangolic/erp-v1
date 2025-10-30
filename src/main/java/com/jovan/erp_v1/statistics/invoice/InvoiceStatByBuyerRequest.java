@@ -2,9 +2,10 @@ package com.jovan.erp_v1.statistics.invoice;
 
 import java.time.LocalDate;
 
-public record InvoiceStatRequest(
+public record InvoiceStatByBuyerRequest(
 		Long buyerId,
 		LocalDate fromDate,
-		LocalDate toDate
+		LocalDate toDate,
+		InvoiceStatStrategy strategy
 		) {
 }

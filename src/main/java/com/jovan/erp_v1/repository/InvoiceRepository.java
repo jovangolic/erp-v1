@@ -1,6 +1,7 @@
 package com.jovan.erp_v1.repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +16,9 @@ import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
 import com.jovan.erp_v1.model.Invoice;
 import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByBuyerStatDTO;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByPaymentStatDTO;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountBySalesOrderStatDTO;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountBySalesStatDTO;
 
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpecificationExecutor<Invoice> {
@@ -74,14 +78,55 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
 			+ "AND (:note IS NULL OR LOWER(i.note) LIKE LOWER(CONCAT('%', :note, '%')))")
 	List<Invoice> findByReports(@Param("id") Long id, @Param("note") String note);
 	@Query("""
-			SELECT new com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByBuyerStatDTO(
+	        SELECT new com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByBuyerStatDTO(
+	            COUNT(i),
+	            MAX(i.invoiceNumber),
+	            SUM(i.totalAmount),
+	            i.buyer.id
+	        )
+	        FROM Invoice i
+	        WHERE i.confirmed = true
+	          AND (:buyerId IS NULL OR i.buyer.id = :buyerId)
+	          AND (:fromDate IS NULL OR i.issueDate >= :fromDate)
+	          AND (:toDate IS NULL OR i.issueDate <= :toDate)
+	        GROUP BY i.buyer.id
+	    """)
+	List<InvoiceTotalAmountByBuyerStatDTO> countInvoiceTotalAmountByBuyer(
+			@Param("buyerId") Long buyerId,
+	        @Param("fromDate") LocalDate fromDate,
+	        @Param("toDate") LocalDate toDate);
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountBySalesStatDTO(
 			COUNT(i),
-			i.invoiceNumber,
+			MAX(i.invoiceNumber),
 			SUM(i.totalAmount),
-			i.buyer.id)
+			i.relatedSales.id
+			)
 			FROM Invoice i
 			WHERE i.confirmed = true
-			GROUP BY i.invoiceNumber, i.buyer.id
+			GROUP BY  i.relatedSales.id
 			""")
-	List<InvoiceTotalAmountByBuyerStatDTO> countInvoiceTotalAmountByBuyer();
+	List<InvoiceTotalAmountBySalesStatDTO> countInvoiceTotalAmountBySales();
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByPaymentStatDTO(
+			COUNT(i),
+			MAX(i.invoiceNumber),
+			SUM(i.totalAmount),
+			i.payment.id)
+			FROM Invoice i
+			WHERE i.confirmed = true
+			GROUP BY  i.payment.id
+			""")
+	List<InvoiceTotalAmountByPaymentStatDTO> countInvoiceTotalAmountByPayment();
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountBySalesOrderStatDTO(
+			COUNT(i),
+			MAX(i.invoiceNumber),
+			SUM(i.totalAmount),
+			i.salesOrder.id)
+			FROM Invoice i
+			WHERE i.confirmed = true
+			GROUP BY i.salesOrder.id
+			""")
+	List<InvoiceTotalAmountBySalesOrderStatDTO> countInvoiceTotalAmountBySalesOrder();
 }

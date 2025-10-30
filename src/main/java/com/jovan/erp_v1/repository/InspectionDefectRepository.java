@@ -27,97 +27,168 @@ import com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByDefectSta
 import com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByInspectionStatDTO;
 
 @Repository
-public interface InspectionDefectRepository extends JpaRepository<InspectionDefect, Long>, 	JpaSpecificationExecutor<InspectionDefect> {
+public interface InspectionDefectRepository
+		extends JpaRepository<InspectionDefect, Long>, JpaSpecificationExecutor<InspectionDefect> {
 
 	List<InspectionDefect> findByQuantityAffected(Integer quantityAffected);
+
 	List<InspectionDefect> findByQuantityAffectedGreaterThan(Integer quantityAffected);
+
 	List<InspectionDefect> findByQuantityAffectedLessThan(Integer quantityAffected);
+
 	List<InspectionDefect> findByQuantityAffectedBetween(Integer min, Integer max);
-	
-	//inspection
+
+	// inspection
 	List<InspectionDefect> findByInspectionId(Long inspectionId);
+
 	boolean existsByInspectionCode(String inspectionCode);
+
 	List<InspectionDefect> findByInspection_CodeLikeIgnoreCase(String inspectionCode);
+
 	List<InspectionDefect> findByInspection_Type(InspectionType type);
+
 	List<InspectionDefect> findByInspection_Result(InspectionResult result);
+
 	List<InspectionDefect> findByInspection_Notes(String notes);
+
 	List<InspectionDefect> findByInspection_TypeAndInspection_Result(InspectionType type, InspectionResult result);
+
 	List<InspectionDefect> findByInspection_NotesAndInspection_Type(String notes, InspectionType type);
+
 	List<InspectionDefect> findByInspection_NotesAndInspection_Result(String notes, InspectionResult result);
+
 	List<InspectionDefect> findByInspection_InspectionDate(LocalDateTime inspectionDate);
+
 	List<InspectionDefect> findByInspection_InspectionDateBefore(LocalDateTime inspectionDate);
+
 	List<InspectionDefect> findByInspection_InspectionDateAfter(LocalDateTime inspectionDate);
+
 	List<InspectionDefect> findByInspection_InspectionDateBetween(LocalDateTime start, LocalDateTime end);
-	List<InspectionDefect> findByInspection_InspectionDateAndInspection_Result(LocalDateTime inspectionDate, InspectionResult result);
-	
+
+	List<InspectionDefect> findByInspection_InspectionDateAndInspection_Result(LocalDateTime inspectionDate,
+			InspectionResult result);
+
 	List<InspectionDefect> findByInspection_InspectorId(Long inspectorId);
-	List<InspectionDefect> findByInspection_InspectorFirstNameContainingIgnoreCaseAndInspection_InspectorLastNameContainingIgnoreCase(String firstName, String lastName);
+
+	List<InspectionDefect> findByInspection_InspectorFirstNameContainingIgnoreCaseAndInspection_InspectorLastNameContainingIgnoreCase(
+			String firstName, String lastName);
+
 	List<InspectionDefect> findByInspection_InspectorEmailLikeIgnoreCase(String inspectorEmail);
+
 	List<InspectionDefect> findByInspection_InspectorPhoneNumberLikeIgnoreCase(String inspectorPhoneNumber);
-	
+
 	List<InspectionDefect> findByInspection_QuantityInspected(Integer quantityInspected);
+
 	List<InspectionDefect> findByInspection_QuantityInspectedGreaterThan(Integer quantityInspected);
+
 	List<InspectionDefect> findByInspection_QuantityInspectedLessThan(Integer quantityInspected);
+
 	List<InspectionDefect> findByInspection_QuantityInspectedBetween(Integer min, Integer max);
-	
+
 	List<InspectionDefect> findByInspection_QuantityAccepted(Integer quantityAccepted);
+
 	List<InspectionDefect> findByInspection_QuantityAcceptedGreaterThan(Integer quantityAccepted);
+
 	List<InspectionDefect> findByInspection_QuantityAcceptedLessThan(Integer quantityAccepted);
+
 	List<InspectionDefect> findByInspection_QuantityAcceptedBetween(Integer min, Integer max);
-	
+
 	List<InspectionDefect> findByInspection_QuantityRejected(Integer quantityRejected);
+
 	List<InspectionDefect> findByInspection_QuantityRejectedGreaterThan(Integer quantityRejected);
+
 	List<InspectionDefect> findByInspection_QuantityRejectedLessThan(Integer quantityRejected);
+
 	List<InspectionDefect> findByInspection_QuantityRejectedBetween(Integer min, Integer max);
-	
+
 	List<InspectionDefect> findByInspection_QualityCheck_Id(Long qualityCheckId);
+
 	List<InspectionDefect> findByInspection_QualityCheck_LocDate(LocalDateTime locDate);
+
 	List<InspectionDefect> findByInspection_QualityCheck_LocDateAfter(LocalDateTime locDate);
+
 	List<InspectionDefect> findByInspection_QualityCheck_LocDateBefore(LocalDateTime locDate);
+
 	List<InspectionDefect> findByInspection_QualityCheck_LocDateBetween(LocalDateTime start, LocalDateTime end);
+
 	List<InspectionDefect> findByInspection_QualityCheck_Notes(String notes);
+
 	List<InspectionDefect> findByInspection_QualityCheck_ReferenceId(Long referenceId);
+
 	List<InspectionDefect> findByInspection_QualityCheck_ReferenceType(ReferenceType referenceType);
+
 	List<InspectionDefect> findByInspection_QualityCheck_CheckType(QualityCheckType checkType);
+
 	List<InspectionDefect> findByInspection_QualityCheck_Status(QualityCheckStatus status);
-	List<InspectionDefect> findByInspection_QualityCheck_ReferenceTypeAndInspection_QualityCheck_CheckType(ReferenceType referenceType, QualityCheckType checkType);
-	List<InspectionDefect> findByInspection_QualityCheck_ReferenceTypeAndInspection_QualityCheck_Status(ReferenceType referenceType, QualityCheckStatus status);
-	List<InspectionDefect> findByInspection_QualityCheck_CheckTypeAndInspection_QualityCheck_Status(QualityCheckType checkType, QualityCheckStatus status);
-	
+
+	List<InspectionDefect> findByInspection_QualityCheck_ReferenceTypeAndInspection_QualityCheck_CheckType(
+			ReferenceType referenceType, QualityCheckType checkType);
+
+	List<InspectionDefect> findByInspection_QualityCheck_ReferenceTypeAndInspection_QualityCheck_Status(
+			ReferenceType referenceType, QualityCheckStatus status);
+
+	List<InspectionDefect> findByInspection_QualityCheck_CheckTypeAndInspection_QualityCheck_Status(
+			QualityCheckType checkType, QualityCheckStatus status);
+
 	List<InspectionDefect> findByInspection_Product_Id(Long productId);
+
 	List<InspectionDefect> findByInspection_Product_CurrentQuantity(BigDecimal currentQuantity);
+
 	List<InspectionDefect> findByInspection_Product_CurrentQuantityGreaterThan(BigDecimal currentQuantity);
+
 	List<InspectionDefect> findByInspection_Product_CurrentQuantityLessThan(BigDecimal currentQuantity);
+
 	List<InspectionDefect> findByInspection_Product_CurrentQuantityBetween(BigDecimal min, BigDecimal max);
+
 	List<InspectionDefect> findByInspection_Product_NameContainingIgnoreCase(String productName);
+
 	List<InspectionDefect> findByInspection_Product_UnitMeasure(UnitMeasure unitMeasure);
+
 	List<InspectionDefect> findByInspection_Product_SupplierType(SupplierType supplierType);
+
 	List<InspectionDefect> findByInspection_Product_StorageType(StorageType storageType);
+
 	List<InspectionDefect> findByInspection_Product_GoodsType(GoodsType goodsType);
+
 	List<InspectionDefect> findByInspection_Batch_Id(Long batchId);
-	
-	//defect
+
+	// defect
 	List<InspectionDefect> findByDefect_CodeContainingIgnoreCase(String code);
+
 	List<InspectionDefect> findByDefect_NameContainingIgnoreCase(String name);
+
 	List<InspectionDefect> findByDefect_DescriptionContainingIgnoreCase(String description);
-	List<InspectionDefect> findByDefect_CodeContainingIgnoreCaseAndDefect_NameContainingIgnoreCase(String code, String name);
+
+	List<InspectionDefect> findByDefect_CodeContainingIgnoreCaseAndDefect_NameContainingIgnoreCase(String code,
+			String name);
+
 	List<InspectionDefect> findByDefect_Severity(SeverityLevel severity);
+
 	List<InspectionDefect> findByDefect_CodeContainingIgnoreCaseAndDefect_Severity(String code, SeverityLevel severity);
+
 	List<InspectionDefect> findByDefect_NameContainingIgnoreCaseAndDefect_Severity(String name, SeverityLevel severity);
-	List<InspectionDefect> findByDefect_SeverityAndDefect_DescriptionContainingIgnoreCase(SeverityLevel severity, String descPart);
+
+	List<InspectionDefect> findByDefect_SeverityAndDefect_DescriptionContainingIgnoreCase(SeverityLevel severity,
+			String descPart);
+
 	Long countByDefect_Severity(SeverityLevel severity);
+
 	Long countByDefect_Code(String code);
+
 	Long countByDefect_Name(String name);
+
 	Boolean existsByDefect_Code(String code);
+
 	Boolean existsByDefect_Name(String name);
-	
+
 	List<InspectionDefect> findByConfirmed(Boolean confirmed);
+
 	List<InspectionDefect> findByDefectIdAndConfirmed(Long defectId, Boolean confirmed);
-	
-	//nove metode
+
+	// nove metode
 	@Query("SELECT i FROM InspectionDefect i WHERE i.id = :id")
 	Optional<InspectionDefect> trackInspectionDefect(@Param("id") Long id);
-	
+
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByInspectionStatDTO(
 			COUNT(i),
@@ -129,23 +200,23 @@ public interface InspectionDefectRepository extends JpaRepository<InspectionDefe
 			GROUP BY i.inspection.id
 			""")
 	List<QuantityAffectedByInspectionStatDTO> countQuantityAffectedByInspection();
-	
+
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection_defect.QuantityAffectedByDefectStatDTO(
 			COUNT(i),
 			CAST(SUM(i.quantityAffected) AS integer),
 			i.defect.id
 			)
-			FROM InspectionDefect i 
+			FROM InspectionDefect i
 			WHERE i.comfirmed = true
 			GRIPU BY i.defect.id
 			""")
 	List<QuantityAffectedByDefectStatDTO> countQuantityAffectedByDefect();
-	
+
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.inspection_defect.InspectionDefectQuantityAffectedSummaryDTO(
 			COUNT(i),
-			CAST(SUM(i.quantityAffected) AS integer)
+			CAST(SUM(i.quantityAffected) AS integer) )
 			FROM InspectionDefect i
 			""")
 	InspectionDefectQuantityAffectedSummaryDTO getQuantityAffectedSummary();
