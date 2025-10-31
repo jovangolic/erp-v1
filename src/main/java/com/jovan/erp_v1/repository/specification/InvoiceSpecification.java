@@ -1,20 +1,19 @@
 package com.jovan.erp_v1.repository.specification;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.data.jpa.domain.Specification;
-
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
 import com.jovan.erp_v1.enumeration.InvoiceTypeStatus;
 import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
 import com.jovan.erp_v1.model.Invoice;
 import com.jovan.erp_v1.search_request.InvoiceSearchRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceSpecificationRequest;
 import com.jovan.erp_v1.statistics.invoice.InvoiceStatByBuyerRequest;
-import com.jovan.erp_v1.statistics.invoice.InvoiceStatBySalesRequest;
 
 import jakarta.persistence.criteria.Predicate;
 
@@ -603,20 +602,55 @@ public class InvoiceSpecification {
 		};
 	}
 	
-	public static Specification<Invoice> withFiltersBySales(InvoiceStatBySalesRequest request) {
+	public static Specification<Invoice> withDynamicFilters(InvoiceSpecificationRequest request) {
 		return(root, query, cb) -> {
-			List<Predicate> predicates = new ArrayList<Predicate>();
-			if(request.salesId() != null) {
-				predicates.add(cb.equal(root.get("relatedSales").get("id"), request.salesId()));
+			List<Predicate> predicates = new ArrayList<>();
+			// Ako ima polje buyerId
+			if(hasField(request, "buyerId")) {
+				Long buyerId = getFieldValue(request, "buyerId");
+				if(buyerId != null) {
+					predicates.add(cb.equal(root.get("buyer").get("id"), buyerId));
+				}
 			}
+			// Ako ima polje salesId
+			if(hasField(request, "salesId")) {
+				Long salesId = getFieldValue(request, "salesId");
+				if(salesId != null) {
+					predicates.add(cb.equal(root.get("relatedSales").get("id"), salesId));
+				}
+			}
+			//Datum od
 			if(request.fromDate() != null) {
 				predicates.add(cb.greaterThanOrEqualTo(root.get("issueDate"), request.fromDate().atStartOfDay()));
 			}
+			//Datum do
 			if(request.toDate() != null) {
 				predicates.add(cb.lessThanOrEqualTo(root.get("issueDate"), request.toDate().atTime(23,59,59)));
 			}
+			// Samo potvrdjene fakture
 			predicates.add(cb.isTrue(root.get("confirmed")));
 			return cb.and(predicates.toArray(new Predicate[0]));
 		};
+	}
+	
+	private static Boolean hasField(Object obj, String fieldName) {
+		try {
+			return obj.getClass().getDeclaredField(fieldName) != null;
+		}
+		catch(NoSuchFieldException e) {
+			return false;
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static <T> T getFieldValue(Object obj, String fieldName) {
+		try {
+			Field field = obj.getClass().getDeclaredField(fieldName);
+			field.setAccessible(true);
+			return (T) field.get(obj);
+		}
+		catch(Exception e) {
+			return null;
+		}
 	}
 }

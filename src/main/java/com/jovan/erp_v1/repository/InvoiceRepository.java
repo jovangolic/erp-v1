@@ -104,9 +104,15 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
 			)
 			FROM Invoice i
 			WHERE i.confirmed = true
+					AND (:relatedSalesId IS NULL OR i.relatedSales.id = :relatedSalesId)
+			        AND (:fromDate IS NULL OR i.issueDate >= :fromDate)
+			        AND (:toDate IS NULL OR i.issueDate <= :toDate)
 			GROUP BY  i.relatedSales.id
 			""")
-	List<InvoiceTotalAmountBySalesStatDTO> countInvoiceTotalAmountBySales();
+	List<InvoiceTotalAmountBySalesStatDTO> countInvoiceTotalAmountBySales(
+			@Param("relatedSalesId") Long relatedSalesId,
+	        @Param("fromDate") LocalDate fromDate,
+	        @Param("toDate") LocalDate toDate);
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByPaymentStatDTO(
 			COUNT(i),
@@ -115,9 +121,15 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
 			i.payment.id)
 			FROM Invoice i
 			WHERE i.confirmed = true
+				AND (:paymentId IS NULL OR i.payment.id = :paymentId)
+			    AND (:fromDate IS NULL OR i.issueDate >= :fromDate)
+			    AND (:toDate IS NULL OR i.issueDate <= :toDate)
 			GROUP BY  i.payment.id
 			""")
-	List<InvoiceTotalAmountByPaymentStatDTO> countInvoiceTotalAmountByPayment();
+	List<InvoiceTotalAmountByPaymentStatDTO> countInvoiceTotalAmountByPayment(
+			@Param("paymentId") Long paymentId,
+	        @Param("fromDate") LocalDate fromDate,
+	        @Param("toDate") LocalDate toDate);
 	@Query("""
 			SELECT new com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountBySalesOrderStatDTO(
 			COUNT(i),
@@ -126,7 +138,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
 			i.salesOrder.id)
 			FROM Invoice i
 			WHERE i.confirmed = true
+				AND (:salesOrderId IS NULL OR i.salesOrder.id = :salesOrderId)
+			    AND (:fromDate IS NULL OR i.issueDate >= :fromDate)
+			    AND (:toDate IS NULL OR i.issueDate <= :toDate)
 			GROUP BY i.salesOrder.id
 			""")
-	List<InvoiceTotalAmountBySalesOrderStatDTO> countInvoiceTotalAmountBySalesOrder();
+	List<InvoiceTotalAmountBySalesOrderStatDTO> countInvoiceTotalAmountBySalesOrder(
+			@Param("salesOrderId") Long salesOrderId,
+	        @Param("fromDate") LocalDate fromDate,
+	        @Param("toDate") LocalDate toDate);
 }

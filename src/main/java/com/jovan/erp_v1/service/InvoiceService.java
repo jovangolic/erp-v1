@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -36,9 +37,16 @@ import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.repository.specification.InvoiceSpecification;
 import com.jovan.erp_v1.request.InvoiceRequest;
 import com.jovan.erp_v1.response.InvoiceResponse;
+import com.jovan.erp_v1.statistics.invoice.InvoiceSpecificationRequest;
 import com.jovan.erp_v1.statistics.invoice.InvoiceStatByBuyerRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatByPaymentRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatBySalesOrderRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatBySalesRequest;
 import com.jovan.erp_v1.statistics.invoice.InvoiceStatStrategy;
 import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByBuyerStatDTO;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByPaymentStatDTO;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountBySalesOrderStatDTO;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountBySalesStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -665,7 +673,7 @@ public class InvoiceService  implements IInvoiceService {
 	    switch (strategy) {
 	        case SQL -> {
 	            if (totalInvoices < 10000) {
-	                return aggregateInMemory(request);
+	                return aggregateInMemoryByBuyer(request);
 	            } else {
 	                return invoiceRepository.countInvoiceTotalAmountByBuyer(
 	                        request.buyerId(),
@@ -675,12 +683,12 @@ public class InvoiceService  implements IInvoiceService {
 	            }
 	        }
 	        case MEMORY -> {
-	            return aggregateInMemory(request);
+	            return aggregateInMemoryByBuyer(request);
 	        }
 	        case AUTO -> {
 	            // AUTO odlucuje sam na osnovu velicine dataset-a
 	            if (totalInvoices < 10000) {
-	                return aggregateInMemory(request);
+	                return aggregateInMemoryByBuyer(request);
 	            } else {
 	                return invoiceRepository.countInvoiceTotalAmountByBuyer(
 	                        request.buyerId(),
@@ -693,9 +701,9 @@ public class InvoiceService  implements IInvoiceService {
 	    }
 	}
 	
-	private List<InvoiceTotalAmountByBuyerStatDTO> aggregateInMemory(InvoiceStatByBuyerRequest request) {
+	private List<InvoiceTotalAmountByBuyerStatDTO> aggregateInMemoryByBuyer(InvoiceStatByBuyerRequest request) {
 	    List<Invoice> invoices = invoiceRepository.findAll(
-	        InvoiceSpecification.withFiltersByBuyer(request)
+	        InvoiceSpecification.withDynamicFilters(request)
 	    );
 	    return invoices.stream()
 	        .collect(Collectors.groupingBy(
@@ -715,6 +723,15 @@ public class InvoiceService  implements IInvoiceService {
 	        .values()
 	        .stream()
 	        .toList();
+	}
+	
+	private <T,R extends InvoiceSpecificationRequest> List<T> aggergateInMemory(R request, Function<Invoice, Long> groupByFn, Function<List<Invoice>, T> dtoMapper){
+		List<Invoice> invoices = invoiceRepository.findAll(InvoiceSpecification.withDynamicFilters(request));
+		return invoices.stream().collect(Collectors.groupingBy(groupByFn))
+				.values()
+				.stream()
+				.map(dtoMapper)
+				.toList();
 	}
 	
 	private void validateBigDecimalNonNegative(BigDecimal num) {
@@ -821,5 +838,24 @@ public class InvoiceService  implements IInvoiceService {
     		throw new IllegalArgumentException(fieldName + " must not be null or empty");
     	}
     }
+
+	@Override
+	public List<InvoiceTotalAmountBySalesStatDTO> getInvoiceStatisticsBySales(InvoiceStatBySalesRequest request) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<InvoiceTotalAmountByPaymentStatDTO> getInvoiceStatisticsByPayment(InvoiceStatByPaymentRequest request) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<InvoiceTotalAmountBySalesOrderStatDTO> getInvoiceStatisticsBySalesOrder(
+			InvoiceStatBySalesOrderRequest request) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

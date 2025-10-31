@@ -10,7 +10,13 @@ import com.jovan.erp_v1.enumeration.PaymentStatus;
 import com.jovan.erp_v1.request.InvoiceRequest;
 import com.jovan.erp_v1.response.InvoiceResponse;
 import com.jovan.erp_v1.statistics.invoice.InvoiceStatByBuyerRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatByPaymentRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatBySalesOrderRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatBySalesRequest;
 import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByBuyerStatDTO;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByPaymentStatDTO;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountBySalesOrderStatDTO;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountBySalesStatDTO;
 
 public interface IInvoiceService {
 
@@ -63,4 +69,7 @@ public interface IInvoiceService {
 	//nove metode
 	
 	List<InvoiceTotalAmountByBuyerStatDTO> getInvoiceStatisticsByBuyer(InvoiceStatByBuyerRequest request);
+	List<InvoiceTotalAmountBySalesStatDTO> getInvoiceStatisticsBySales(InvoiceStatBySalesRequest request);
+	List<InvoiceTotalAmountByPaymentStatDTO> getInvoiceStatisticsByPayment(InvoiceStatByPaymentRequest request);
+	List<InvoiceTotalAmountBySalesOrderStatDTO> getInvoiceStatisticsBySalesOrder(InvoiceStatBySalesOrderRequest request);
 }

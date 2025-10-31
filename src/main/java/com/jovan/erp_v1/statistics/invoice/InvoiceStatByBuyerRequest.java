@@ -7,5 +7,5 @@ public record InvoiceStatByBuyerRequest(
 		LocalDate fromDate,
 		LocalDate toDate,
 		InvoiceStatStrategy strategy
-		) {
+		) implements InvoiceSpecificationRequest {
 }
