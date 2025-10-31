@@ -5,11 +5,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
+import com.jovan.erp_v1.enumeration.InvoiceTypeStatus;
 import com.jovan.erp_v1.enumeration.OrderStatus;
 import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.enumeration.PaymentStatus;
@@ -37,6 +40,8 @@ import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.repository.specification.InvoiceSpecification;
 import com.jovan.erp_v1.request.InvoiceRequest;
 import com.jovan.erp_v1.response.InvoiceResponse;
+import com.jovan.erp_v1.save_as.InvoiceSaveAsRequest;
+import com.jovan.erp_v1.search_request.InvoiceSearchRequest;
 import com.jovan.erp_v1.statistics.invoice.InvoiceSpecificationRequest;
 import com.jovan.erp_v1.statistics.invoice.InvoiceStatByBuyerRequest;
 import com.jovan.erp_v1.statistics.invoice.InvoiceStatByPaymentRequest;
@@ -673,7 +678,12 @@ public class InvoiceService  implements IInvoiceService {
 	    switch (strategy) {
 	        case SQL -> {
 	            if (totalInvoices < 10000) {
-	                return aggregateInMemoryByBuyer(request);
+	                return aggregateInMemory(request,
+	                		inv -> inv.getBuyer().getId(),
+	                		list -> new InvoiceTotalAmountByBuyerStatDTO((long)list.size(),
+	                				list.get(0).getInvoiceNumber(),
+	                				list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+	                				list.get(0).getRelatedSales().getId()));
 	            } else {
 	                return invoiceRepository.countInvoiceTotalAmountByBuyer(
 	                        request.buyerId(),
@@ -683,12 +693,22 @@ public class InvoiceService  implements IInvoiceService {
 	            }
 	        }
 	        case MEMORY -> {
-	            return aggregateInMemoryByBuyer(request);
+	        	return aggregateInMemory(request,
+                		inv -> inv.getBuyer().getId(),
+                		list -> new InvoiceTotalAmountByBuyerStatDTO((long)list.size(),
+                				list.get(0).getInvoiceNumber(),
+                				list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+                				list.get(0).getRelatedSales().getId()));
 	        }
 	        case AUTO -> {
 	            // AUTO odlucuje sam na osnovu velicine dataset-a
-	            if (totalInvoices < 10000) {
-	                return aggregateInMemoryByBuyer(request);
+	        	if (totalInvoices < 10000) {
+	                return aggregateInMemory(request,
+	                		inv -> inv.getBuyer().getId(),
+	                		list -> new InvoiceTotalAmountByBuyerStatDTO((long)list.size(),
+	                				list.get(0).getInvoiceNumber(),
+	                				list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+	                				list.get(0).getRelatedSales().getId()));
 	            } else {
 	                return invoiceRepository.countInvoiceTotalAmountByBuyer(
 	                        request.buyerId(),
@@ -701,31 +721,261 @@ public class InvoiceService  implements IInvoiceService {
 	    }
 	}
 	
-	private List<InvoiceTotalAmountByBuyerStatDTO> aggregateInMemoryByBuyer(InvoiceStatByBuyerRequest request) {
-	    List<Invoice> invoices = invoiceRepository.findAll(
-	        InvoiceSpecification.withDynamicFilters(request)
-	    );
-	    return invoices.stream()
-	        .collect(Collectors.groupingBy(
-	            inv -> inv.getBuyer().getId(), // grupisi po kupcu
-	            Collectors.collectingAndThen(
-	                Collectors.toList(),
-	                list -> new InvoiceTotalAmountByBuyerStatDTO(
-	                    (long) list.size(), // broj faktura
-	                    list.get(0).getInvoiceNumber(), // moze uzeti prvi za prikaz
-	                    list.stream()
-	                        .map(Invoice::getTotalAmount)
-	                        .reduce(BigDecimal.ZERO, BigDecimal::add), // saberi totalAmount
-	                    list.get(0).getBuyer().getId()
-	                )
-	            )
-	        ))
-	        .values()
-	        .stream()
-	        .toList();
+	@Transactional(readOnly = true)
+	@Override
+	public List<InvoiceTotalAmountBySalesStatDTO> getInvoiceStatisticsBySales(InvoiceStatBySalesRequest request) {
+		long totalInvoices = invoiceRepository.count();
+		InvoiceStatStrategy strategy = request.strategy() != null ? request.strategy() : InvoiceStatStrategy.AUTO;
+		switch (strategy) {
+			case SQL -> {
+				if(totalInvoices < 10000) {
+					return aggregateInMemory(request,
+							inv -> inv.getRelatedSales().getId(),
+							list -> new InvoiceTotalAmountBySalesStatDTO((long)list.size(),
+									list.get(0).getInvoiceNumber(),
+									list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+									list.get(0).getRelatedSales().getId()));
+				}
+				else {
+					return invoiceRepository.countInvoiceTotalAmountBySales(request.salesId(), request.fromDate(), request.toDate());
+				}
+			}
+			case MEMORY -> {
+				return aggregateInMemory(request,
+						inv -> inv.getRelatedSales().getId(),
+						list -> new InvoiceTotalAmountBySalesStatDTO((long)list.size(),
+								list.get(0).getInvoiceNumber(),
+								list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+								list.get(0).getRelatedSales().getId()));
+			}
+			case AUTO -> {
+				if(totalInvoices < 10000) {
+					return aggregateInMemory(request,
+							inv -> inv.getRelatedSales().getId(),
+							list -> new InvoiceTotalAmountBySalesStatDTO((long)list.size(),
+									list.get(0).getInvoiceNumber(),
+									list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+									list.get(0).getRelatedSales().getId()));
+				}
+				else {
+					return invoiceRepository.countInvoiceTotalAmountBySales(request.salesId(), request.fromDate(), request.toDate());
+				}
+			}
+			default -> throw new ValidationException("Unknown strategy: " + strategy);
+		}
 	}
 	
-	private <T,R extends InvoiceSpecificationRequest> List<T> aggergateInMemory(R request, Function<Invoice, Long> groupByFn, Function<List<Invoice>, T> dtoMapper){
+	@Transactional(readOnly = true)
+	@Override
+	public List<InvoiceTotalAmountByPaymentStatDTO> getInvoiceStatisticsByPayment(InvoiceStatByPaymentRequest request) {
+		long totalInvoices = invoiceRepository.count();
+		InvoiceStatStrategy strategy = request.strategy() != null ? request.strategy() : InvoiceStatStrategy.AUTO;
+		switch(strategy) {
+			case SQL -> {
+				if(totalInvoices < 10000) {
+					return aggregateInMemory(request,
+						inv -> inv.getPayment().getId(),
+						list -> new InvoiceTotalAmountByPaymentStatDTO((long)list.size(),
+								list.get(0).getInvoiceNumber(),
+								list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+								list.get(0).getPayment().getId()));
+			}
+			else {
+				return invoiceRepository.countInvoiceTotalAmountByPayment(request.paymentId(), request.fromDate(), request.toDate());
+			}
+		}
+			case MEMORY -> {
+				return aggregateInMemory(request,
+						inv -> inv.getPayment().getId(),
+						list -> new InvoiceTotalAmountByPaymentStatDTO((long)list.size(),
+								list.get(0).getInvoiceNumber(),
+								list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+								list.get(0).getPayment().getId()));
+			}
+			case AUTO -> {
+				if(totalInvoices < 10000) {
+					return aggregateInMemory(request,
+							inv -> inv.getPayment().getId(),
+							list -> new InvoiceTotalAmountByPaymentStatDTO((long)list.size(),
+									list.get(0).getInvoiceNumber(),
+									list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+									list.get(0).getPayment().getId()));
+				}
+				else {
+					return invoiceRepository.countInvoiceTotalAmountByPayment(request.paymentId(), request.fromDate(), request.toDate());
+				}
+			}
+			default -> throw new ValidationException("Unknown strategy: " + strategy);
+		}
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<InvoiceTotalAmountBySalesOrderStatDTO> getInvoiceStatisticsBySalesOrder(
+			InvoiceStatBySalesOrderRequest request) {
+		long totalInvoices = invoiceRepository.count();
+		InvoiceStatStrategy strategy = request.strategy() != null ? request.strategy() : InvoiceStatStrategy.AUTO;
+		switch(strategy) {
+		case SQL -> {
+			if(totalInvoices < 10000) {
+				return aggregateInMemory(request,
+						inv -> inv.getSalesOrder().getId(),
+						list -> new InvoiceTotalAmountBySalesOrderStatDTO((long)list.size(),
+								list.get(0).getInvoiceNumber(),
+								list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+								list.get(0).getSalesOrder().getId()));
+			}
+			else {
+				return invoiceRepository.countInvoiceTotalAmountBySalesOrder(request.salesOrderId(), request.fromDate(), request.toDate());
+			}
+		}
+		case MEMORY -> {
+			return aggregateInMemory(request,
+					inv -> inv.getSalesOrder().getId(),
+					list -> new InvoiceTotalAmountBySalesOrderStatDTO((long)list.size(),
+							list.get(0).getInvoiceNumber(),
+							list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+							list.get(0).getSalesOrder().getId()));
+		}
+		case AUTO -> {
+			if(totalInvoices < 10000) {
+				return aggregateInMemory(request,
+						inv -> inv.getSalesOrder().getId(),
+						list -> new InvoiceTotalAmountBySalesOrderStatDTO((long)list.size(),
+								list.get(0).getInvoiceNumber(),
+								list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+								list.get(0).getSalesOrder().getId()));
+			}
+			else {
+				return invoiceRepository.countInvoiceTotalAmountBySalesOrder(request.salesOrderId(), request.fromDate(), request.toDate());
+			}
+		}
+		default -> throw new ValidationException("Unknown strategy " + strategy);
+		}
+	}
+	
+	@Transactional(readOnly = true)
+	@Override
+	public InvoiceResponse trackInvoice(Long id) {
+		Invoice inv = invoiceRepository.trackInvoice(id).orElseThrow(() -> new ValidationException("Invoice not found with id "+id));
+		return new InvoiceResponse(inv);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<InvoiceResponse> findByReports(Long id, String note) {
+		if(id != null) validateInvoiceId(id);
+		if(note != null && !note.trim().isEmpty()) validateString(note, "Note");
+		List<Invoice> items = invoiceRepository.findByReports(id, note);
+		return items.stream().map(invoiceMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	@Transactional
+	@Override
+	public InvoiceResponse confirmInvoice(Long id) {
+		Invoice inv = invoiceRepository.findById(id).orElseThrow(() -> new ValidationException("Invoice not found with id "+id));
+		inv.setConfirmed(true);
+		inv.setTypeStatus(InvoiceTypeStatus.CONFIRMED);
+		return new InvoiceResponse(invoiceRepository.save(inv));
+	}
+
+	@Transactional
+	@Override
+	public InvoiceResponse cancelInvoice(Long id) {
+		Invoice inv = invoiceRepository.findById(id).orElseThrow(() -> new ValidationException("Invoice not found with id "+id));
+		if(inv.getTypeStatus() != InvoiceTypeStatus.CONFIRMED && inv.getTypeStatus() != InvoiceTypeStatus.NEW) {
+			throw new ValidationException("Only NEW or CONFIRMED invoices can be cancelled");
+		}
+		inv.setTypeStatus(InvoiceTypeStatus.CANCELLED);
+		return new InvoiceResponse(invoiceRepository.save(inv));
+	}
+
+	@Transactional
+	@Override
+	public InvoiceResponse closeInvoice(Long id) {
+		Invoice inv = invoiceRepository.findById(id).orElseThrow(() -> new ValidationException("Invoice not found with id "+id));
+		if(inv.getTypeStatus() != InvoiceTypeStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED invoices can be closed");
+		}
+		inv.setTypeStatus(InvoiceTypeStatus.CLOSED);
+		return new InvoiceResponse(invoiceRepository.save(inv));
+	}
+
+	@Transactional
+	@Override
+	public InvoiceResponse changeStatus(Long id, InvoiceTypeStatus status) {
+		Invoice inv = invoiceRepository.findById(id).orElseThrow(() -> new ValidationException("Invoice not found with id "+id));
+		validateInvoiceTypeStatus(status);
+		if(inv.getTypeStatus() == InvoiceTypeStatus.CLOSED) {
+			throw new ValidationException("Closed invoices cannot change status");
+		}
+		if(status == InvoiceTypeStatus.CONFIRMED) {
+			if(inv.getTypeStatus() != InvoiceTypeStatus.NEW) {
+				throw new ValidationException("Only NEW invoices can be confirmed");
+			}
+			inv.setConfirmed(true);
+		}
+		inv.setTypeStatus(status);
+		return new InvoiceResponse(invoiceRepository.save(inv));
+	}
+
+	@Transactional
+	@Override
+	public InvoiceResponse saveInvoice(InvoiceRequest request) {
+		Invoice inv = Invoice.builder()
+				.issueDate(LocalDateTime.now())
+				.dueDate(request.dueDate())
+				.status(request.status())
+				.totalAmount(request.totalAmount())
+				.buyer(fetchBuyer(request.buyerId()))
+				.relatedSales(fetchSales(request.salesId()))
+				.payment(fetchPayment(request.paymentId()))
+				.note(request.note())
+				.salesOrder(fetchSalesOrder(request.salesOrderId()))
+				.createdBy(fetchCreatedBy(request.createdById()))
+				.typeStatus(request.typeStatus())
+				.confirmed(request.confirmed())
+				.build();
+		Invoice saved = invoiceRepository.save(inv);
+		return new InvoiceResponse(saved);
+	}
+
+	@Transactional
+	@Override
+	public InvoiceResponse saveAs(InvoiceSaveAsRequest request) {
+		
+		return null;
+	}
+
+	@Transactional
+	@Override
+	public List<InvoiceResponse> saveAll(List<InvoiceRequest> requests) {
+		
+		return null;
+	}
+
+	@Override
+	public List<InvoiceResponse> generalSearch(InvoiceSearchRequest request) {
+		Specification<Invoice> spec = InvoiceSpecification.fromRequest(request);
+		List<Invoice> items = invoiceRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No Invoices found for given criteria");
+		}
+		return items.stream().map(invoiceMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	private List<InvoiceTotalAmountByBuyerStatDTO> aggregateInMemoryByBuyer(InvoiceStatByBuyerRequest request) {
+	    return aggregateInMemory(request,
+	    		inv -> inv.getBuyer().getId(),
+	    		list -> new InvoiceTotalAmountByBuyerStatDTO((long)list.size(),
+	    				list.get(0).getInvoiceNumber(),
+	    				list.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+	    				list.get(0).getBuyer().getId()
+	    		)
+	    );
+	}
+	
+	private <T,R extends InvoiceSpecificationRequest> List<T> aggregateInMemory(R request, Function<Invoice, Long> groupByFn, Function<List<Invoice>, T> dtoMapper){
 		List<Invoice> invoices = invoiceRepository.findAll(InvoiceSpecification.withDynamicFilters(request));
 		return invoices.stream().collect(Collectors.groupingBy(groupByFn))
 				.values()
@@ -839,23 +1089,16 @@ public class InvoiceService  implements IInvoiceService {
     	}
     }
 
-	@Override
-	public List<InvoiceTotalAmountBySalesStatDTO> getInvoiceStatisticsBySales(InvoiceStatBySalesRequest request) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<InvoiceTotalAmountByPaymentStatDTO> getInvoiceStatisticsByPayment(InvoiceStatByPaymentRequest request) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<InvoiceTotalAmountBySalesOrderStatDTO> getInvoiceStatisticsBySalesOrder(
-			InvoiceStatBySalesOrderRequest request) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    private Invoice validateInvoiceId(Long id) {
+    	if(id == null) {
+    		throw new ValidationException("Invoice ID must not be null");
+    	}
+    	return invoiceRepository.findById(id).orElseThrow(() -> new ValidationException("Invoice not found with id "+id));
+    }
+    
+    private void validateInvoiceTypeStatus(InvoiceTypeStatus status) {
+    	Optional.of(status)
+    		.orElseThrow(() -> new ValidationException("InvoiceTypeStatus status must not be null"));
+    }
 
 }
