@@ -39,10 +39,10 @@ public class Procurement {
     @OneToMany(mappedBy = "procurement", cascade = CascadeType.ALL)
     private List<SupplyItem> supplies;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime date;
 
-    @Column
+    @Column(nullable = false, precision = 15, scale = 3)
     private BigDecimal totalCost;
     
     @CreatedDate

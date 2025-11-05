@@ -47,7 +47,7 @@ public class SalesOrder {
     @Column(nullable = false)
     private LocalDateTime orderDate;
 
-    @Column(nullable =  false)
+    @Column(nullable =  false, precision = 15, scale = 3)
     private BigDecimal totalAmount;
 
     @ManyToOne
@@ -60,6 +60,7 @@ public class SalesOrder {
     @OneToOne
     private Invoice invoice;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 

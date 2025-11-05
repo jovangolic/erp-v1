@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Size;
 public record InvoiceRequest(
 		
 		Long id,
+		@NotNull String invoiceNumber,
 	    @NotNull(message = "Datum izdavanja je obavezan")
 	    LocalDateTime issueDate,
 	    @NotNull(message = "Datum dospeća je obavezan")

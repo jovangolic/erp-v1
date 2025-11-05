@@ -1,0 +1,83 @@
+package com.jovan.erp_v1.search_request;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.ItemSalesStatus;
+import com.jovan.erp_v1.enumeration.OrderStatus;
+import com.jovan.erp_v1.enumeration.StorageType;
+import com.jovan.erp_v1.enumeration.SupplierType;
+import com.jovan.erp_v1.enumeration.UnitMeasure;
+
+public record ItemSalesSearchRequest(
+		Long id,
+		Long idFrom,
+		Long idTo,
+		Long goodsId,
+		Long goodsIdFrom,
+		Long goodsIdTo,
+		String goodsName,
+		UnitMeasure unitMeasure,
+		SupplierType supplierType,
+		StorageType storageType,
+		GoodsType goodsType,
+		Long goodsStorageId,
+		Long goodsStorageIdFrom,
+		Long goodsStorageIdTo,
+		Long goodsSupplyId,
+		Long goodsSupplyIdFrom,
+		Long goodsSupplyIdTo,
+		Long goodsShelfId,
+		Long goodsShelfIdFrom,
+		Long goodsShelfIdTo,
+		Long salesId,
+		Long salesIdFrom,
+		Long salesIdTo,
+		Long salesBuyerId,
+		Long salesBuyerIdFrom,
+		Long salesBuyerIdTo,
+		LocalDateTime salesCreatedAt,
+		LocalDateTime salesCreatedAtBefore,
+		LocalDateTime salesCreatedAtAfter,
+		BigDecimal salesTotalPrice,
+		BigDecimal salesTotalPriceMin,
+		BigDecimal salesTotalPriceMax,
+		String salesDescription,
+		Long procurementId,
+		Long procurementIdFrom,
+		Long procurementIdTo,
+		LocalDateTime procurementDate,
+		LocalDateTime procurementDateBefore,
+		LocalDateTime procurementDateAfter,
+		BigDecimal procurementTotalCost,
+		BigDecimal procurementTotalCostMin,
+		BigDecimal procurementTotalCostMax,
+		Long salesOrderId,
+		Long salesOrderIdFrom,
+		Long salesOrderIdTo,
+		String orderNumber,
+		LocalDateTime orderDate,
+		LocalDateTime orderDateBefore,
+		LocalDateTime orderDateAfter,
+		BigDecimal totalAmount,
+		BigDecimal totalAmountMin,
+		BigDecimal totalAmountMax,
+		Long salesOrdBuyerId,
+		Long salesOrdBuyerIdFrom,
+		Long salesOrdBuyerIdTo,
+		Long salesOrdInvoiceId,
+		Long salesOrdInvoiceIdFrom,
+		Long salesOrdInvoiceIdTo,
+		OrderStatus orderStatus,
+		String salesOrdNote,
+		BigDecimal quantity,
+		BigDecimal quantityMin,
+		BigDecimal quantityMax,
+		BigDecimal unitPrice,
+		BigDecimal unitPriceMin,
+		BigDecimal unitPriceMax,
+		ItemSalesStatus status,
+		Boolean confirmed
+		) {
+}

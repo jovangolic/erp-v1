@@ -2,14 +2,19 @@ package com.jovan.erp_v1.model;
 
 import java.math.BigDecimal;
 
+import com.jovan.erp_v1.enumeration.ItemSalesStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,6 +22,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ItemSales {
 
 	@Id
@@ -39,9 +45,18 @@ public class ItemSales {
 	@JoinColumn(name = "sales_order_id") 
 	private SalesOrder salesOrder;
 	
-	@Column
+	@Column(nullable = false, precision = 15, scale = 3)
 	private BigDecimal quantity;
 	
-	@Column(nullable = false)
+	@Column(nullable = false, precision = 15, scale = 3)
 	private BigDecimal unitPrice;
+	
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	@Builder.Default
+	private ItemSalesStatus status = ItemSalesStatus.NEW;
+	
+	@Column(nullable = false)
+	@Builder.Default
+	private Boolean confirmed = false;
 }

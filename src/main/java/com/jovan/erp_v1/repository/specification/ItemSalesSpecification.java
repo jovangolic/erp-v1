@@ -7,8 +7,34 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.jovan.erp_v1.enumeration.OrderStatus;
 import com.jovan.erp_v1.model.ItemSales;
+import com.jovan.erp_v1.search_request.ItemSalesSearchRequest;
 
 public class ItemSalesSpecification {
+	
+	public static Specification<ItemSales> fromRequest(ItemSalesSearchRequest req){
+		return Specification.where(hasId(req.id()))
+				
+				.and(hasIdRange(req.idFrom(), req.idTo()));
+	}
+	
+	public static Specification<ItemSales> hasId(Long id){
+		return(root, query, cb) -> id == null ? null  :cb.equal(root.get("id"), id);
+	}
+	
+	public static Specification<ItemSales> hasIdRange(Long from, Long to){
+		return(root, query, cb) -> {
+			if(from != null && to != null) {
+				return cb.between(root.get("id"), from , to);
+			}
+			else if(from != null) {
+				return cb.greaterThanOrEqualTo(root.get("id"), from);
+			}
+			else if(to != null) {
+				return cb.lessThanOrEqualTo(root.get("id"), to);
+			}
+			return null;
+		};
+	}
 
 	public static Specification<ItemSales> hasGoodsId(Long goodsId) {
         return (root, query, cb) -> cb.equal(root.get("goods").get("id"), goodsId);
