@@ -97,7 +97,7 @@ public class InvoiceController {
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/invoice/buyer-status")
+	@GetMapping("/buyer-status")
 	public ResponseEntity<List<InvoiceResponse>> getByBuyerAndStatus(@RequestParam("buyerId") Long buyerId,@RequestParam("status") InvoiceStatus status){
 		Buyer buyer = buyerRepository.findById(buyerId).orElseThrow(() -> new BuyerNotFoundException("Buyer not found with id: " + buyerId));
 		List<InvoiceResponse> responses = invoiceService.findByBuyerIdAndStatus(buyer.getId(), status);
@@ -105,35 +105,35 @@ public class InvoiceController {
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/invoice/total-amount")
+	@GetMapping("/total-amount")
 	public ResponseEntity<List<InvoiceResponse>> getByTotalAmount(@RequestParam("totalAmount") BigDecimal totalAmount){
 		List<InvoiceResponse> responses = invoiceService.findByTotalAmount(totalAmount);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/invoice/buyer/{buyerId}")
+	@GetMapping("/buyer/{buyerId}")
 	public ResponseEntity<List<InvoiceResponse>> getByBuyerId(@PathVariable Long buyerId){
 		List<InvoiceResponse> responses = invoiceService.findByBuyerId(buyerId);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/invoice/sales/{salesId}")
+	@GetMapping("/sales/{salesId}")
 	public ResponseEntity<List<InvoiceResponse>> getBySalesId(@PathVariable Long salesId){
 		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_Id(salesId);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/invoice/payment/{paymentId}")
+	@GetMapping("/payment/{paymentId}")
 	public ResponseEntity<List<InvoiceResponse>> getByPaymentId(@PathVariable Long paymentId){
 		List<InvoiceResponse> responses = invoiceService.findByPayment_Id(paymentId);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/invoice/issue-date-between")
+	@GetMapping("/issue-date-between")
 	public ResponseEntity<List<InvoiceResponse>> getByIssueDateBetween(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
 			@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate){
 		List<InvoiceResponse> responses = invoiceService.findByIssueDateBetween(startDate, endDate);
@@ -141,28 +141,28 @@ public class InvoiceController {
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/invoice/due-date-before")
+	@GetMapping("/due-date-before")
 	public ResponseEntity<List<InvoiceResponse>> getByDueDateBefore(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date){
 		List<InvoiceResponse> responses = invoiceService.findByDueDateBefore(date);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/invoice/search-fragment/{fragment}")
+	@GetMapping("/search-fragment/{fragment}")
 	public ResponseEntity<List<InvoiceResponse>> searchByInvoiceNumberFragment(@PathVariable String fragment){
 		List<InvoiceResponse> responses = invoiceService.findByInvoiceNumberContainingIgnoreCase(fragment);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/invoice/exists")
+	@GetMapping("/exists")
 	public ResponseEntity<Boolean> existsByInvoiceNumber(@RequestParam("invoiceNumber") String invoiceNumber){
 		Boolean ifExists = invoiceService.existsByInvoiceNumber(invoiceNumber);
 		return ResponseEntity.ok(ifExists);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/invoice/sorted-buyer/{buyerId}")
+	@GetMapping("/sorted-buyer/{buyerId}")
 	public ResponseEntity<List<InvoiceResponse>> getInvoicesByBuyerSortedByIssueDate(@PathVariable Long buyerId){
 		List<InvoiceResponse> responses = invoiceService.findInvoicesByBuyerSortedByIssueDate(buyerId);
 		return ResponseEntity.ok(responses);
@@ -205,28 +205,28 @@ public class InvoiceController {
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/relatedSales/{relatedSalesId}")
+	@GetMapping("/related-sales/{relatedSalesId}")
 	public ResponseEntity<List<InvoiceResponse>> findByRelatedSales_Id(@PathVariable Long relatedSalesId){
 		List<InvoiceResponse> responses = invoiceService.findByRelatedSales_Id(relatedSalesId);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/relatedSales-totalPrice")
+	@GetMapping("/related-sales/total-price")
 	public ResponseEntity<List<InvoiceResponse>> findByRelatedSales_TotalPrice(@RequestParam("totalPrice") BigDecimal totalPrice){
 		List<InvoiceResponse> responses = invoiceService.findByRelatedSales_TotalPrice(totalPrice);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/relatedSales-totalPrice-greate-than")
+	@GetMapping("/related-sales/total-price-greater-than")
 	public ResponseEntity<List<InvoiceResponse>> findByRelatedSales_TotalPriceGreaterThan(@RequestParam("totalPrice") BigDecimal totalPrice){
 		List<InvoiceResponse> responses = invoiceService.findByRelatedSales_TotalPriceGreaterThan(totalPrice);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/relatedSales-totalPrice-less-than")
+	@GetMapping("/related-sales/total-price-less-than")
 	public ResponseEntity<List<InvoiceResponse>> findByRelatedSales_TotalPriceLessThan(@RequestParam("totalPrice") BigDecimal totalPrice){
 		List<InvoiceResponse> responses = invoiceService.findByRelatedSales_TotalPriceLessThan(totalPrice);
 		return ResponseEntity.ok(responses);
@@ -269,77 +269,77 @@ public class InvoiceController {
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/salesOrder/{salesOrderId}")
+	@GetMapping("/sales-order/{salesOrderId}")
 	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_Id(@PathVariable Long salesOrderId){
 		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_Id(salesOrderId);
 		return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/salesOrder-date")
+	@GetMapping("/sales-order/by-date")
 	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_OrderDate(@RequestParam("orderDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime orderDate){
 		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_OrderDate(orderDate);
 				return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/salesOrder-date-range")
+	@GetMapping("/sales-order/date-range")
 	public ResponseEntity<List<InvoiceResponse>> indBySalesOrder_OrderDateBetween(@RequestParam("orderDateStart") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime orderDateStart, @RequestParam("orderDateEnd") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime orderDateEnd){
 		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_OrderDateBetween(orderDateStart, orderDateEnd);
 				return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/salesOrder-total-amount")
+	@GetMapping("/sales-order/total-amount")
 	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_TotalAmount(@RequestParam("totalAmount") BigDecimal totalAmount){
 		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_TotalAmount(totalAmount);
 				return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/salesOrder-total-amount-greater-than")
+	@GetMapping("/sales-order/total-amount-greater-than")
 	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_TotalAmountGreaterThan(@RequestParam("totalAmount") BigDecimal totalAmount){
 		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_TotalAmountGreaterThan(totalAmount);
 				return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/salesOrder-total-amount-less-than")
+	@GetMapping("/sales-order/total-amount-less-than")
 	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_TotalAmountLessThan(@RequestParam("totalAmount") BigDecimal totalAmount){
 		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_TotalAmountLessThan(totalAmount);
 				return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/salesOrder-status")
+	@GetMapping("/sales-order/by-status")
 	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_Status(@RequestParam("status") OrderStatus status){
 		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_Status(status);
 				return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/salesOrder-note")
+	@GetMapping("/sales-order/by-note")
 	public ResponseEntity<List<InvoiceResponse>> findBySalesOrder_NoteContainingIgnoreCase(@RequestParam("note") String note){
 		List<InvoiceResponse> responses = invoiceService.findBySalesOrder_NoteContainingIgnoreCase(note);
 				return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/createdBy/{createdById}")
+	@GetMapping("/created-by/{createdById}")
 	public ResponseEntity<List<InvoiceResponse>> findByCreatedBy_Id(@PathVariable Long createdById){
 		List<InvoiceResponse> responses = invoiceService.findByCreatedBy_Id(createdById);
 				return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/createdBy-email")
+	@GetMapping("/created-by/email")
 	public ResponseEntity<List<InvoiceResponse>>  findByCreatedBy_EmailContainingIgnoreCase(@RequestParam("createdByEmail") String createdByEmail){
 		List<InvoiceResponse> responses = invoiceService.findByCreatedBy_EmailContainingIgnoreCase(createdByEmail);
 				return ResponseEntity.ok(responses);
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/createdBy-first-last-name")
+	@GetMapping("/created-by/first-last-name")
 	public ResponseEntity<List<InvoiceResponse>>  findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(@RequestParam("createdByFirstName") String createdByFirstName,
 			@RequestParam("createdByLastName") String createdByLastName){
 		List<InvoiceResponse> responses = invoiceService.findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(createdByFirstName, createdByLastName);
@@ -384,7 +384,7 @@ public class InvoiceController {
 	}
 	
 	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
-	@GetMapping("/track-by-sales/salesId{}")
+	@GetMapping("/track-by-sales/{salesId}")
 	public ResponseEntity<InvoiceResponse> trackInvoiceBySales(@PathVariable Long salesId){
 		InvoiceResponse items = invoiceService.trackInvoiceBySales(salesId);
 		return ResponseEntity.ok(items);
