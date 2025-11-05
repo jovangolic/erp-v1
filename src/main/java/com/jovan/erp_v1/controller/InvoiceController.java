@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
+import com.jovan.erp_v1.enumeration.InvoiceTypeStatus;
 import com.jovan.erp_v1.enumeration.OrderStatus;
 import com.jovan.erp_v1.enumeration.PaymentMethod;
 import com.jovan.erp_v1.exception.BuyerNotFoundException;
@@ -26,7 +27,17 @@ import com.jovan.erp_v1.model.Buyer;
 import com.jovan.erp_v1.repository.BuyerRepository;
 import com.jovan.erp_v1.request.InvoiceRequest;
 import com.jovan.erp_v1.response.InvoiceResponse;
+import com.jovan.erp_v1.save_as.InvoiceSaveAsRequest;
+import com.jovan.erp_v1.search_request.InvoiceSearchRequest;
 import com.jovan.erp_v1.service.IInvoiceService;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatByBuyerRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatByPaymentRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatBySalesOrderRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceStatBySalesRequest;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByBuyerStatDTO;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountByPaymentStatDTO;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountBySalesOrderStatDTO;
+import com.jovan.erp_v1.statistics.invoice.InvoiceTotalAmountBySalesStatDTO;
 import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
@@ -333,5 +344,133 @@ public class InvoiceController {
 			@RequestParam("createdByLastName") String createdByLastName){
 		List<InvoiceResponse> responses = invoiceService.findByCreatedBy_FirstNameContainingIgnoreCaseAndCreatedBy_LastNameContainingIgnoreCase(createdByFirstName, createdByLastName);
 				return ResponseEntity.ok(responses);
+	}
+	
+	//nove metode
+	
+	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
+	@PostMapping("/invoice-statistics/buyer")
+	public ResponseEntity<List<InvoiceTotalAmountByBuyerStatDTO>> getInvoiceStatisticsByBuyer(@RequestBody InvoiceStatByBuyerRequest request){
+		List<InvoiceTotalAmountByBuyerStatDTO> items = invoiceService.getInvoiceStatisticsByBuyer(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
+	@PostMapping("/invoice-statistics/sales")
+	public ResponseEntity<List<InvoiceTotalAmountBySalesStatDTO>> getInvoiceStatisticsBySales(@RequestBody InvoiceStatBySalesRequest request){
+		List<InvoiceTotalAmountBySalesStatDTO> items = invoiceService.getInvoiceStatisticsBySales(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
+	@PostMapping("/invoice-statistics/payment")
+	public ResponseEntity<List<InvoiceTotalAmountByPaymentStatDTO>> getInvoiceStatisticsByPayment(@RequestBody InvoiceStatByPaymentRequest request){
+		List<InvoiceTotalAmountByPaymentStatDTO> items = invoiceService.getInvoiceStatisticsByPayment(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
+	@PostMapping("/invoice-statistics/sales-order")
+	public ResponseEntity<List<InvoiceTotalAmountBySalesOrderStatDTO>> getInvoiceStatisticsBySalesOrder(@RequestBody InvoiceStatBySalesOrderRequest request){
+		List<InvoiceTotalAmountBySalesOrderStatDTO> items = invoiceService.getInvoiceStatisticsBySalesOrder(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
+	@GetMapping("/track-by-buyer/{buyerId}")
+	public ResponseEntity<InvoiceResponse> trackInvoiceByBuyer(@PathVariable Long buyerId) {
+		InvoiceResponse items = invoiceService.trackInvoiceByBuyer(buyerId);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
+	@GetMapping("/track-by-sales/salesId{}")
+	public ResponseEntity<InvoiceResponse> trackInvoiceBySales(@PathVariable Long salesId){
+		InvoiceResponse items = invoiceService.trackInvoiceBySales(salesId);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
+	@GetMapping("/track-by-payment/{paymentId}")
+	public ResponseEntity<InvoiceResponse> trackInvoiceByPayment(@PathVariable Long paymentId){
+		InvoiceResponse items = invoiceService.trackInvoiceByPayment(paymentId);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
+	@GetMapping("/track-by-sales-order/{salesOrderId}")
+	public ResponseEntity<InvoiceResponse> trackInvoiceBySalesOrder(@PathVariable Long salesOrderId){
+		InvoiceResponse items = invoiceService.trackInvoiceBySalesOrder(salesOrderId);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
+	@GetMapping("/track/{id}")
+	public ResponseEntity<InvoiceResponse> trackInvoice(@PathVariable Long id){
+		InvoiceResponse items = invoiceService.trackInvoice(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
+	@PostMapping("/{id}/confirm")
+	public ResponseEntity<InvoiceResponse> confirmInvoice(@PathVariable Long id){
+		InvoiceResponse items = invoiceService.confirmInvoice(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
+	@PostMapping("/{id}/cancel")
+	public ResponseEntity<InvoiceResponse> cancelInvoice(@PathVariable Long id){
+		InvoiceResponse items = invoiceService.cancelInvoice(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
+	@PostMapping("/{id}/close")
+	public ResponseEntity<InvoiceResponse> closeInvoice(@PathVariable Long id){
+		InvoiceResponse items = invoiceService.closeInvoice(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
+	@PostMapping("/{id}/status/{status}")
+	public ResponseEntity<InvoiceResponse> changeStatus(@PathVariable Long id,@PathVariable  InvoiceTypeStatus status){
+		InvoiceResponse items = invoiceService.changeStatus(id, status);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_READ_ACCESS)
+	@GetMapping("/reports")
+	public ResponseEntity<List<InvoiceResponse>> findByReports(@RequestParam Long id,@RequestParam(required = false) String note){
+		List<InvoiceResponse> items = invoiceService.findByReports(id, note);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
+	@PostMapping("/save")
+	public ResponseEntity<InvoiceResponse> saveInvoice(@Valid @RequestBody InvoiceRequest request){
+		InvoiceResponse items = invoiceService.saveInvoice(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
+	@PostMapping("/save-as")
+	public ResponseEntity<InvoiceResponse> saveAs(@Valid @RequestBody InvoiceSaveAsRequest request){
+		InvoiceResponse items = invoiceService.saveAs(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
+	@PostMapping("/save-all")
+	public ResponseEntity<List<InvoiceResponse>> saveAll(@Valid @RequestBody List<InvoiceRequest> requests){
+		List<InvoiceResponse> items = invoiceService.saveAll(requests);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.INVOICE_FULL_ACCESS)
+	@PostMapping("/general-search")
+	public ResponseEntity<List<InvoiceResponse>> generalSearch(@RequestBody InvoiceSearchRequest request){
+		List<InvoiceResponse> items = invoiceService.generalSearch(request);
+		return ResponseEntity.ok(items);
 	}
 }

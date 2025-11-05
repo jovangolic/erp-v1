@@ -75,6 +75,10 @@ public interface IInvoiceService {
 	List<InvoiceTotalAmountBySalesStatDTO> getInvoiceStatisticsBySales(InvoiceStatBySalesRequest request);
 	List<InvoiceTotalAmountByPaymentStatDTO> getInvoiceStatisticsByPayment(InvoiceStatByPaymentRequest request);
 	List<InvoiceTotalAmountBySalesOrderStatDTO> getInvoiceStatisticsBySalesOrder(InvoiceStatBySalesOrderRequest request);
+	InvoiceResponse trackInvoiceByBuyer( Long buyerId);
+	InvoiceResponse trackInvoiceBySales( Long salesId);
+	InvoiceResponse trackInvoiceByPayment( Long paymentId);
+	InvoiceResponse trackInvoiceBySalesOrder( Long salesOrderId);
 	InvoiceResponse trackInvoice(Long id);
 	InvoiceResponse confirmInvoice(Long id);
 	InvoiceResponse cancelInvoice(Long id);

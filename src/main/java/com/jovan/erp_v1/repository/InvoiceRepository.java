@@ -74,6 +74,15 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
 	
 	@Query("SELECT i FROM Invoice i WHERE i.id = :id")
 	Optional<Invoice> trackInvoice(@Param("id") Long id);
+	
+	@Query("SELECT i FROM Invoice i WHERE i.buyer.id = :buyerId")
+	List<Invoice> trackInvoiceByBuyer(@Param("buyerId") Long buyerId);
+	@Query("SELECT i FROM Invoice i WHERE i.relatedSales.id = :salesId")
+	List<Invoice> trackInvoiceBySales(@Param("salesId") Long salesId);
+	@Query("SELECT i FROM Invoice i WHERE i.payment.id = :paymentId")
+	List<Invoice> trackInvoiceByPayment(@Param("paymentId") Long paymentId);
+	@Query("SELECT i FROM Invoice i WHERE i.salesOrder.id = :salesOrderId")
+	List<Invoice> trackInvoiceBySalesOrder(@Param("salesOrderId") Long salesOrderId);
 	@Query("SELECT i FROM Invoice i WHERE (:id IS NULL OR i.id = :id)"
 			+ "AND (:note IS NULL OR LOWER(i.note) LIKE LOWER(CONCAT('%', :note, '%')))")
 	List<Invoice> findByReports(@Param("id") Long id, @Param("note") String note);

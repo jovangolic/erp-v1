@@ -4,12 +4,16 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.jovan.erp_v1.enumeration.InvoiceStatus;
 import com.jovan.erp_v1.enumeration.InvoiceTypeStatus;
@@ -40,6 +44,8 @@ import com.jovan.erp_v1.repository.UserRepository;
 import com.jovan.erp_v1.repository.specification.InvoiceSpecification;
 import com.jovan.erp_v1.request.InvoiceRequest;
 import com.jovan.erp_v1.response.InvoiceResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
 import com.jovan.erp_v1.save_as.InvoiceSaveAsRequest;
 import com.jovan.erp_v1.search_request.InvoiceSearchRequest;
 import com.jovan.erp_v1.statistics.invoice.InvoiceSpecificationRequest;
@@ -56,9 +62,11 @@ import com.jovan.erp_v1.util.DateValidator;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InvoiceService  implements IInvoiceService {
 
 	private final InvoiceRepository invoiceRepository;
@@ -939,19 +947,100 @@ public class InvoiceService  implements IInvoiceService {
 		Invoice saved = invoiceRepository.save(inv);
 		return new InvoiceResponse(saved);
 	}
+	
+	private final AbstractSaveAsService<Invoice, InvoiceResponse> saveAsHelper = new AbstractSaveAsService<Invoice, InvoiceResponse>() {
+		
+		@Override
+		protected InvoiceResponse toResponse(Invoice entity) {
+			return new InvoiceResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<Invoice, Long> getRepository() {
+			return invoiceRepository;
+		}
+		
+		@Override
+		protected Invoice copyAndOverride(Invoice source, Map<String, Object> overrides) {
+			return Invoice.builder()
+					.invoiceNumber((String) overrides.getOrDefault("invoiceNumber", source.getInvoiceNumber()))
+					.dueDate((LocalDateTime) overrides.getOrDefault("dueDate", source.getDueDate()))
+					.status((InvoiceStatus) overrides.getOrDefault("status", source.getStatus()))
+					.totalAmount((BigDecimal) overrides.getOrDefault("totalAmount", source.getTotalAmount()))
+					.buyer(fetchBuyer((Long) overrides.getOrDefault("buyerId", source.getBuyer().getId())))
+					.relatedSales(fetchSales((Long) overrides.getOrDefault("relatedSales", source.getRelatedSales().getId())))
+					.payment(fetchPayment((Long) overrides.getOrDefault("paymentId", source.getPayment().getId())))
+					.note((String) overrides.getOrDefault("note", source.getNote()))
+					.salesOrder(fetchSalesOrder((Long) overrides.getOrDefault("salesOrderId", source.getSalesOrder().getId())))
+					.createdBy(fetchCreatedBy((Long) overrides.getOrDefault("createdById", source.getCreatedBy().getId())))
+					.build();
+		}
+	};
 
 	@Transactional
 	@Override
 	public InvoiceResponse saveAs(InvoiceSaveAsRequest request) {
-		
-		return null;
+		Map<String, Object> overrides = new HashMap<String, Object>();
+		Buyer buyer = fetchBuyer(request.buyerId());
+		Sales relatedSales = fetchSales(request.relatedSalesId());
+		Payment payment = fetchPayment(request.paymentId());
+		SalesOrder so = fetchSalesOrder(request.salesOrderId());
+		User user = fetchCreatedBy(request.createdById());
+		if(request.invoiceNumber() != null) overrides.put("Invoice Number", request.invoiceNumber());
+		if(request.dueDate() != null) overrides.put("Due Date", request.dueDate());
+		if(request.status() != null) overrides.put("Status", request.status());
+		if(request.totalAmount() != null) overrides.put("Total Amount", request.totalAmount());
+		if(request.buyerId() != null) overrides.put("Buyer ID", buyer);
+		if(request.relatedSalesId() != null) overrides.put("Related Sales Id", relatedSales);
+		if(request.paymentId() != null) overrides.put("Payment ID", payment);
+		if(request.note() != null) overrides.put("Note", request.note());
+		if(request.salesOrderId() != null) overrides.put("Sales Order ID", so);
+		if(request.createdById() != null) overrides.put("CreatedBy ID", user);
+		return saveAsHelper.saveAs(request.sourceId(), overrides);
 	}
+	
+	private final AbstractSaveAllService<Invoice, InvoiceResponse> saveAllHelper = new AbstractSaveAllService<Invoice, InvoiceResponse>() {
+		
+		@Override
+		protected Function<Invoice, InvoiceResponse> toResponse() {
+			return InvoiceResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<Invoice, Long> getRepository() {
+			return invoiceRepository;
+		}
+		
+		@Override
+		protected void beforeSaveAll(List<Invoice> entities) {
+		    String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+		    log.info("User '{}' is saving {} invoice ", currentUser, entities.size());
+		}
+	};
 
 	@Transactional
 	@Override
 	public List<InvoiceResponse> saveAll(List<InvoiceRequest> requests) {
-		
-		return null;
+		if (requests == null || requests.isEmpty()) {
+	        throw new ValidationException("Invoice request list must not be empty.");
+	    }
+		List<Invoice> items = requests.stream()
+				.map(item -> Invoice.builder()
+						.id(item.id())
+						.dueDate(item.dueDate())
+						.status(item.status())
+						.totalAmount(item.totalAmount())
+						.buyer(fetchBuyer(item.buyerId()))
+						.relatedSales(fetchSales(item.salesId()))
+						.payment(fetchPayment(item.paymentId()))
+						.note(item.note())
+						.salesOrder(fetchSalesOrder(item.salesOrderId()))
+						.createdBy(fetchCreatedBy(item.createdById()))
+						.typeStatus(item.typeStatus())
+						.confirmed(item.confirmed())
+						.build())
+				.toList();
+		return saveAllHelper.saveAll(items);
 	}
 
 	@Override
@@ -962,6 +1051,50 @@ public class InvoiceService  implements IInvoiceService {
 			throw new NoDataFoundException("No Invoices found for given criteria");
 		}
 		return items.stream().map(invoiceMapper::toResponse).collect(Collectors.toList());
+	}
+	
+	@Transactional(readOnly = true)
+	@Override
+	public InvoiceResponse trackInvoiceByBuyer(Long buyerId) {
+		List<Invoice> items = invoiceRepository.trackInvoiceByBuyer(buyerId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Invoice with buyer-id "+buyerId + " not found");
+		}
+		Invoice inv = items.get(0);
+		return new InvoiceResponse(inv);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public InvoiceResponse trackInvoiceBySales(Long salesId) {
+		List<Invoice> items = invoiceRepository.trackInvoiceBySales(salesId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Invoice with sales-id " + salesId + " not found");
+		}
+		Invoice inv = items.get(0);
+		return new InvoiceResponse(inv);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public InvoiceResponse trackInvoiceByPayment(Long paymentId) {
+		List<Invoice> items = invoiceRepository.trackInvoiceByPayment(paymentId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Invoice with payment-id "+paymentId+ " not found");
+		}
+		Invoice inv = items.get(0);
+		return new InvoiceResponse(inv);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public InvoiceResponse trackInvoiceBySalesOrder(Long salesOrderId) {
+		List<Invoice> items = invoiceRepository.trackInvoiceBySalesOrder(salesOrderId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("Invoice with sales-order-id "+salesOrderId+ " not found");
+		}
+		Invoice inv = items.get(0);
+		return new InvoiceResponse(inv);
 	}
 	
 	private List<InvoiceTotalAmountByBuyerStatDTO> aggregateInMemoryByBuyer(InvoiceStatByBuyerRequest request) {
