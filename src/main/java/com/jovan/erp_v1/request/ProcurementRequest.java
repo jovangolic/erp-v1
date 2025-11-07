@@ -13,7 +13,7 @@ public record ProcurementRequest(
 		
 		Long id,
 		@NotNull(message = "Datum nabavke je obavezan")
-	    LocalDateTime date,
+	    LocalDateTime locdate,
 
 	    @NotNull(message = "Ukupna cena je obavezna")
 	    @DecimalMin(value = "0.0", inclusive = false, message = "Ukupna cena mora biti pozitivna")

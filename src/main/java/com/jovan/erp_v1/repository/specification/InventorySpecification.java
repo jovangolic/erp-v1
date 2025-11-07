@@ -29,7 +29,7 @@ public class InventorySpecification {
 				.and(hasDate(req.date()))
 				.and(hasDateBefore(req.dateBefore()))
 				.and(hasDateAfter(req.dateAfter()))
-				.and(hasDateRange(req.dateBefore(), req.dateAfter()))
+				.and(hasDateRange(req.dateAfter(), req.dateBefore()))
 				.and(hasAligned(req.aligned()))
 				.and(hasConfirmed(req.confirmed()))
 				.and(hasTypeStatus(req.typeStatus()))

@@ -19,10 +19,10 @@ public interface SupplyItemRepository extends JpaRepository<SupplyItem, Long> {
     List<SupplyItem> findBySupplierId(Long supplierId);
     List<SupplyItem> findByCostBetween(BigDecimal min, BigDecimal max);
  // Pretraga stavki nabavke po datumu nabavke (Procurement)
-    @Query("SELECT si FROM SupplyItem si JOIN si.procurement p WHERE p.date BETWEEN :startDate AND :endDate")
+    @Query("SELECT si FROM SupplyItem si JOIN si.procurement p WHERE p.locdate BETWEEN :startDate AND :endDate")
     List<SupplyItem> findByProcurementDateBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
     // Pretraga stavki nabavke prema ceni i datumu
-    @Query("SELECT si FROM SupplyItem si JOIN si.procurement p WHERE p.date BETWEEN :startDate AND :endDate AND si.cost BETWEEN :minCost AND :maxCost")
+    @Query("SELECT si FROM SupplyItem si JOIN si.procurement p WHERE p.locdate BETWEEN :startDate AND :endDate AND si.cost BETWEEN :minCost AND :maxCost")
     List<SupplyItem> findByProcurementDateAndCostBetween(
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate,
@@ -38,14 +38,14 @@ public interface SupplyItemRepository extends JpaRepository<SupplyItem, Long> {
         @Param("procurementId") Long procurementId,
         @Param("minCost") BigDecimal minCost);
  // Pretraga stavki sa filtrima za datum i cenu
-    @Query("SELECT si FROM SupplyItem si JOIN si.procurement p WHERE p.date >= :startDate AND p.date <= :endDate AND si.cost BETWEEN :minCost AND :maxCost")
+    @Query("SELECT si FROM SupplyItem si JOIN si.procurement p WHERE p.locdate >= :startDate AND p.locdate <= :endDate AND si.cost BETWEEN :minCost AND :maxCost")
     List<SupplyItem> findByDateAndCost(
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate,
         @Param("minCost") BigDecimal minCost,
         @Param("maxCost") BigDecimal maxCost);
  // Pretraga sa JOIN-om i uslovima za isporučioca, nabavku i cenu
-    @Query("SELECT si FROM SupplyItem si JOIN si.procurement p JOIN si.supplier s WHERE s.name = :supplierName AND p.date BETWEEN :startDate AND :endDate AND si.cost < :maxCost")
+    @Query("SELECT si FROM SupplyItem si JOIN si.procurement p JOIN si.supplier s WHERE s.name = :supplierName AND p.locdate BETWEEN :startDate AND :endDate AND si.cost < :maxCost")
     List<SupplyItem> findBySupplierNameAndProcurementDateAndMaxCost(
         @Param("supplierName") String supplierName,
         @Param("startDate") LocalDateTime startDate,
@@ -87,7 +87,7 @@ public interface SupplyItemRepository extends JpaRepository<SupplyItem, Long> {
 	List<SupplyItem> findByProcurement_TotalCostLessThan(BigDecimal totalCost);
 	@Query(" SELECT si FROM SupplyItem si WHERE si.procurement.totalCost > :minCost")
 	List<SupplyItem> findByProcurementTotalCostGreaterThan(@Param("minCost") BigDecimal minCost);
-	@Query("SELECT si FROM SupplyItem si WHERE si.procurement.date = :date")
+	@Query("SELECT si FROM SupplyItem si WHERE si.procurement.locdate = :date")
 	List<SupplyItem> findByProcurementDate(@Param("date") LocalDateTime date);
 	@Query("SELECT si FROM SupplyItem si WHERE  (SELECT COUNT(s) FROM SupplyItem s WHERE s.procurement.id = si.procurement.id) <> (SELECT COUNT(isl) FROM ItemSales isl WHERE isl.procurement.id = si.procurement.id)")
 	List<SupplyItem> findBySupplyAndSalesCountMismatch();

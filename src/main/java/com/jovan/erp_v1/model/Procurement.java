@@ -40,7 +40,7 @@ public class Procurement {
     private List<SupplyItem> supplies;
 
     @Column(nullable = false)
-    private LocalDateTime date;
+    private LocalDateTime locdate;
 
     @Column(nullable = false, precision = 15, scale = 3)
     private BigDecimal totalCost;

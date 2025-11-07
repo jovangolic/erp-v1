@@ -37,7 +37,7 @@ public class ProcurementService implements IProcurementService {
 	@Transactional
 	@Override
 	public ProcurementResponse createProcurement(ProcurementRequest request) {
-		DateValidator.validatePastOrPresent(request.date(), "Procurement date");
+		DateValidator.validatePastOrPresent(request.locdate(), "Procurement date");
 		validateBigDecimal(request.totalCost());
 		Procurement procurement = procurementMapper.toEntity(request);
 		Procurement savedProcurement = procurementRepository.save(procurement);
@@ -54,7 +54,7 @@ public class ProcurementService implements IProcurementService {
 		}
 		Procurement existingProcurement = procurementRepository.findById(id)
 				.orElseThrow(() -> new ProcurementNotFoundException("Procurement not found with id: " + id));
-		DateValidator.validatePastOrPresent(request.date(), "Procurement date");
+		DateValidator.validatePastOrPresent(request.locdate(), "Procurement date");
 		validateBigDecimal(request.totalCost());
 		existingProcurement.getItemSales().clear();
 		existingProcurement.getSupplies().clear();

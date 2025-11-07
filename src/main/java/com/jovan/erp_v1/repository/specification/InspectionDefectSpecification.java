@@ -27,7 +27,7 @@ public class InspectionDefectSpecification {
 				.and(hasInspectionDate(req.inspectionDate()))
 				.and(hasInspectionDateBefore(req.inspectionDateBefore()))
 				.and(hasInspectionDateAfter(req.inspectionDateAfter()))
-				.and(hasInspectionDateRange(req.inspectionDateBefore(),req.inspectionDateAfter()))
+				.and(hasInspectionDateRange(req.inspectionDateAfter(),req.inspectionDateBefore()))
 				.and(hasBatchId(req.batchId()))
 				.and(hasBatchIdRange(req.batchIdFrom(), req.batchIdTo()))
 				.and(hasProductId(req.productId()))
@@ -54,7 +54,7 @@ public class InspectionDefectSpecification {
 				.and(hasDefectCreatedDate(req.defectCreatedDate()))
 				.and(hasDefectCreatedDateBefore(req.defectCreatedDateBefore()))
 				.and(hasDefectCreatedDateAfter(req.defectCreatedDateAfter()))
-				.and(hasDefectCreatedDateRange(req.defectCreatedDateBefore(), req.defectCreatedDateAfter()))
+				.and(hasDefectCreatedDateRange(req.defectCreatedDateAfter(), req.defectCreatedDateBefore()))
 				.and(hasConfirmed(req.confirmed()))
 				.and(hasInspectionDefectStatus(req.status()));
 	}

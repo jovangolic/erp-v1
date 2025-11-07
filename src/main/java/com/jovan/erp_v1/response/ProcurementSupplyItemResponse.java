@@ -18,7 +18,7 @@ public class ProcurementSupplyItemResponse {
 
 	public ProcurementSupplyItemResponse(Procurement procurement) {
 		this.id = procurement.getId();
-		this.date = procurement.getDate();
+		this.date = procurement.getLocdate();
 		this.totalCost = procurement.getTotalCost();
 	}
 }

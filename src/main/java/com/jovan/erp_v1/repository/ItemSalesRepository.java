@@ -1,8 +1,10 @@
 package com.jovan.erp_v1.repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -17,6 +19,10 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.Goods;
 import com.jovan.erp_v1.model.ItemSales;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityByGoodsStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityByProcurementStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityBySalesOrderStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityBySalesStatDTO;
 
 
 @Repository
@@ -79,4 +85,74 @@ public interface ItemSalesRepository extends JpaRepository<ItemSales, Long>, Jpa
 	List<ItemSales> findByUnitPrice(BigDecimal unitPrice);
 	List<ItemSales> findByUnitPriceGreaterThan(BigDecimal unitPrice);
 	List<ItemSales> findByUnitPriceLessThan(BigDecimal unitPrice);
+	
+	//nove metode
+	@Query("SELECT i FROM ItemSales i WHERE i.goods.id = :goodsId")
+	List<ItemSales> trackItemSalesByGoods(@Param("goodsId") Long goodsId);
+	@Query("SELECT i FROM ItemSales i WHERE i.sales.id = :salesId")
+	List<ItemSales> trackItemSalesBySales(@Param("salesId") Long salesId);
+	@Query("SELECT i FROM ItemSales i WHERE i.procurement.id = :procurementId")
+	List<ItemSales> trackItemSalesByProcurement(@Param("procurementId") Long procurementId);
+	@Query("SELECT i FROM ItemSales i WHERE i.salesOrder.id = :salesOrderId")
+	List<ItemSales> trackItemSalesBySalesOrder(@Param("salesOrderId") Long salesOrderId);
+	@Query("SELECT i FROM ItemSales i WHERE i.id = :id")
+	Optional<ItemSales> trackItemSales(@Param("id") Long id);
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityByGoodsStatDTO(
+			COUNT(i),
+			MAX(i.goods.name),
+			SUM(i.quantity),
+			i.goods.id)
+			FROM ItemSales i
+			WHERE i.confired = true
+			GROUP BY i.goods.id
+			""")
+	List<ItemSalesQuantityByGoodsStatDTO> countItemSalesQuantityByGoods();
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityBySalesStatDTO(
+			COUNT(i),
+			SUM(i.quantity),
+			i.sales,id)
+			FROM ItemSales i
+			WHERE i.confirmed = true
+			GROUP BY i.sales.id
+			""")
+	List<ItemSalesQuantityBySalesStatDTO> countItemSalesQuantityBySales();
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityByProcurementStatDTO(
+			COUNT(i),
+			SUM(i.quantity),
+			i.procurement.id)
+			FROM ItemSales i
+			WHERE i.confirmed = true
+				AND (:procurementId IS NULL OR i.procurement.id = :procurementId)
+			    AND (:fromDate IS NULL OR i.procurement.locdate >= :fromDate)
+			    AND (:toDate IS NULL OR i.procurement.locdate <= :toDate)
+			GROUP BY i.procurement.id
+			""")
+	List<ItemSalesQuantityByProcurementStatDTO> countItemSalesQuantityByProcurement(
+			@Param("procurementId") Long procurementId,
+	        @Param("fromDate") LocalDate fromDate,
+	        @Param("toDate") LocalDate toDate
+			);
+	
+	@Query("""
+			SELECT new com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityBySalesOrderStatDTO(
+			COUNT(i),
+			i.salesOrder.orderNumber,
+			SUM(i.quantity),
+			i.salesOrder.id)
+			FROM ItemSales i
+			WHERE i.confirmed = true
+				AND (:salesOrderId IS NULL OR i.salesOrder.id = :salesOrderId)
+			    AND (:fromDate IS NULL OR i.salesOrder.orderDate >= :fromDate)
+			    AND (:toDate IS NULL OR i.salesOrder.orderDate <= :toDate)
+			GROUP BY i.salesOrder.id
+			""")
+	List<ItemSalesQuantityBySalesOrderStatDTO> countItemSalesQuantityBySalesOrder(
+			@Param("salesOrderId") Long salesOrderId,
+	        @Param("fromDate") LocalDate fromDate,
+	        @Param("toDate") LocalDate toDate
+			);
 }

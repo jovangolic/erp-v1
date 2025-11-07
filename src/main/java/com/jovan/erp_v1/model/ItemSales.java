@@ -3,6 +3,7 @@ package com.jovan.erp_v1.model;
 import java.math.BigDecimal;
 
 import com.jovan.erp_v1.enumeration.ItemSalesStatus;
+import com.jovan.erp_v1.exception.ValidationException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -59,4 +60,14 @@ public class ItemSales {
 	@Column(nullable = false)
 	@Builder.Default
 	private Boolean confirmed = false;
+	
+	public BigDecimal totalPrice() {
+		if(this.quantity == null || this.unitPrice == null) {
+			throw new ValidationException("Quantity and unitPrice must not be null");
+		}
+		if(this.quantity.compareTo(BigDecimal.ZERO) < 0 || this.unitPrice.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Quantity and unitPrice must be positive numbers");
+		}
+		return this.quantity.multiply(this.unitPrice).max(BigDecimal.ZERO);
+	}
 }

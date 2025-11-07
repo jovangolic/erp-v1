@@ -36,7 +36,7 @@ public class InventoryItemsSpecification {
 				.and(hasInventoryDate(req.inventoryDate()))
 				.and(hasInventoryDateBefore(req.inventoryDateBefore()))
 				.and(hasInventoryDateAfter(req.inventoryDateAfter()))
-				.and(hasInventoryDateRange(req.inventoryDateBefore(), req.inventoryDateAfter()))
+				.and(hasInventoryDateRange(req.inventoryDateAfter(), req.inventoryDateBefore()))
 				.and(hasInventoryAligned(req.inventoryAligned()))
 				.and(hasInventoryStatus(req.inventoryStatus()))
 				.and(hasProductId(req.productId()))
