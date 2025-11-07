@@ -3,7 +3,11 @@ package com.jovan.erp_v1.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
@@ -11,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.ItemSalesStatStrategy;
+import com.jovan.erp_v1.enumeration.ItemSalesStatus;
 import com.jovan.erp_v1.enumeration.OrderStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
@@ -52,6 +58,19 @@ import com.jovan.erp_v1.repository.specification.ItemSalesSpecification;
 import com.jovan.erp_v1.request.ItemSalesFilterRequest;
 import com.jovan.erp_v1.request.ItemSalesRequest;
 import com.jovan.erp_v1.response.ItemSalesResponse;
+import com.jovan.erp_v1.search_request.ItemSalesSearchRequest;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesByProcurementRequest;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesBySalesOrderRequest;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityByGoodsStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityByProcurementStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityBySalesOrderStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityBySalesStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesStatsDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesStatsRequest;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesUnitPriceByGoodsStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesUnitPriceByProcurementStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesUnitPriceBySalesOrderStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesUnitPriceBySalesStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -656,6 +675,249 @@ public class ItemSalesService implements INTERItemSales {
 	    return result.stream().map(itemSalesMapper::toResponse).collect(Collectors.toList());
 	}
 	
+	@Transactional(readOnly = true)
+	@Override
+	public List<ItemSalesStatsDTO> getStats(ItemSalesStatsRequest req) {
+		long totalCount = itemSalesRepository.count();
+		ItemSalesStatStrategy strategy = resolveStrategy(req.strategy(), totalCount);
+		if(strategy == ItemSalesStatStrategy.SQL) {
+			return itemSalesRepository.findItemSalesStatsSQL(req.goodsId(), req.salesId(), req.procurementId(), req.salesOrderId(),
+					req.fromDate() != null ? req.fromDate().atStartOfDay() : null,
+			        req.toDate() != null ? req.toDate().atTime(23, 59, 59) : null);
+		}
+		else {
+			//MEMORY obrada
+			List<ItemSales> all = itemSalesRepository.findAll(ItemSalesSpecification.withDynamicFilters(req));
+			return aggregateInMemory(all);
+		}
+	}
+	
+	@Transactional(readOnly = true)
+	@Override
+	public List<ItemSalesQuantityByGoodsStatDTO> countItemSalesQuantityByGoods() {
+		
+		return null;
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<ItemSalesQuantityBySalesStatDTO> countItemSalesQuantityBySales() {
+		
+		return null;
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<ItemSalesQuantityByProcurementStatDTO> countItemSalesQuantityByProcurement(
+			ItemSalesByProcurementRequest request) {
+		
+		return null;
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<ItemSalesQuantityBySalesOrderStatDTO> countItemSalesQuantityBySalesOrder(
+			ItemSalesBySalesOrderRequest request) {
+		
+		return null;
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<ItemSalesUnitPriceByGoodsStatDTO> countItemSalesUnitPriceByGoods() {
+		
+		return null;
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<ItemSalesUnitPriceBySalesStatDTO> countItemSalesUnitPriceBySalesStatDTO() {
+		
+		return null;
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<ItemSalesUnitPriceBySalesOrderStatDTO> countItemSalesUnitPriceBySalesOrderStatDTO(
+			ItemSalesByProcurementRequest request) {
+		
+		return null;
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<ItemSalesUnitPriceByProcurementStatDTO> countItemSalesUnitPriceByProcurementStatDTO(
+			ItemSalesBySalesOrderRequest request) {
+		
+		return null;
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public ItemSalesResponse trackItemSalesByGoods(Long goodsId) {
+		List<ItemSales> items = itemSalesRepository.trackItemSalesByGoods(goodsId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("ItemSales with goods-id "+goodsId+" not found");
+		}
+		ItemSales rez = items.get(0);
+		return new ItemSalesResponse(rez);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public ItemSalesResponse trackItemSalesBySales(Long salesId) {
+		List<ItemSales> items = itemSalesRepository.trackItemSalesBySales(salesId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No ItemSales with sales-id "+salesId+" not found");
+		}
+		ItemSales rez = items.get(0);
+		return new ItemSalesResponse(rez);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public ItemSalesResponse trackItemSalesByProcurement(Long procurementId) {
+		List<ItemSales> items = itemSalesRepository.trackItemSalesByProcurement(procurementId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No ItemSales with procurement-id "+procurementId+" not found");
+		}
+		ItemSales rez = items.get(0);
+		return new ItemSalesResponse(rez);
+	}
+	
+	@Transactional(readOnly = true)
+	@Override
+	public ItemSalesResponse trackItemSalesBySalesOrder(Long salesOrderId) {
+		List<ItemSales> items = itemSalesRepository.trackItemSalesBySalesOrder(salesOrderId);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No ItemSales with salesOrder-id "+salesOrderId+" not found");
+		}
+		ItemSales rez = items.get(0);
+		return new ItemSalesResponse(rez);
+	}
+
+	@Transactional
+	@Override
+	public ItemSalesResponse trackItemSales(Long id) {
+		ItemSales item = itemSalesRepository.trackItemSales(id).orElseThrow(() -> new ValidationException("ItemSales not found with id "+id));
+		return new ItemSalesResponse(item);
+	}
+
+	@Transactional
+	@Override
+	public ItemSalesResponse confirmItemSales(Long id) {
+		ItemSales item = itemSalesRepository.findById(id).orElseThrow(() -> new ValidationException("ItemSales not found with id "+id));
+		item.setConfirmed(true);
+		item.setStatus(ItemSalesStatus.CONFIRMED);
+		return new ItemSalesResponse(itemSalesRepository.save(item));
+	}
+
+	@Transactional
+	@Override
+	public ItemSalesResponse cancelItemSales(Long id) {
+		ItemSales item = itemSalesRepository.findById(id).orElseThrow(() -> new ValidationException("ItemSales not found with id "+id));
+		if(item.getStatus() != ItemSalesStatus.CONFIRMED && item.getStatus() != ItemSalesStatus.NEW) {
+			throw new ValidationException("Only NEW or CONFIRMED itemSales can be cancelled");
+		}
+		item.setStatus(ItemSalesStatus.CANCELLED);
+		return new ItemSalesResponse(itemSalesRepository.save(item));
+	}
+
+	@Transactional
+	@Override
+	public ItemSalesResponse closeItemSales(Long id) {
+		ItemSales item = itemSalesRepository.findById(id).orElseThrow(() -> new ValidationException("ItemSales not found with id "+id));
+		if(item.getStatus() != ItemSalesStatus.CONFIRMED) {
+			throw new ValidationException("Only CONFIRMED itemSales can be closed");
+		}
+		item.setStatus(ItemSalesStatus.CLOSED);
+		return new ItemSalesResponse(itemSalesRepository.save(item));
+	}
+
+	@Transactional
+	@Override
+	public ItemSalesResponse changeStatus(Long id, ItemSalesStatus status) {
+		ItemSales item = itemSalesRepository.findById(id).orElseThrow(() -> new ValidationException("ItemSales not found with id "+id));
+		validateItemSalesStatus(status);
+		if(item.getStatus() == ItemSalesStatus.CLOSED) {
+			throw new ValidationException("Closed itemSales cannot change status");
+		}
+		if(status == ItemSalesStatus.CONFIRMED) {
+			if(item.getStatus() != ItemSalesStatus.NEW) {
+				throw new ValidationException("Only NEW itemSales can be confirmed");
+			}
+			item.setConfirmed(true);
+		}
+		item.setStatus(status);
+		return new ItemSalesResponse(itemSalesRepository.save(item));
+	}
+
+	@Transactional
+	@Override
+	public ItemSalesResponse saveItemSales(ItemSalesRequest request) {
+		
+		return null;
+	}
+
+	@Transactional
+	@Override
+	public ItemSalesResponse saveAs() {
+		
+		return null;
+	}
+
+	@Transactional
+	@Override
+	public List<ItemSalesResponse> saveAll(List<ItemSalesRequest> request) {
+		
+		return null;
+	}
+
+	@Override
+	public List<ItemSalesResponse> generalSearch(ItemSalesSearchRequest request) {
+		Specification<ItemSales> spec = ItemSalesSpecification.fromRequest(request);
+		List<ItemSales> items = itemSalesRepository.findAll(spec);
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No ItemSales found for given criteria");
+		}
+		return items.stream().map(itemSalesMapper::toResponse).collect(Collectors.toList());			
+	}
+	
+	private ItemSalesStatStrategy resolveStrategy(ItemSalesStatStrategy reqStrategy, long count) {
+		if(reqStrategy == ItemSalesStatStrategy.AUTO) {
+			return count > 10000 ? ItemSalesStatStrategy.SQL : ItemSalesStatStrategy.MEMORY;
+		}
+		return reqStrategy;
+	}
+	
+	//metoda za strategiju koja je u memoriji racunara do 10000
+	private List<ItemSalesStatsDTO> aggregateInMemory(List<ItemSales> items){
+		Map<String, ItemSalesStatsDTO> map = new HashMap<String, ItemSalesStatsDTO>();
+		for(ItemSales i : items) {
+			String key = (i.getGoods() != null ? i.getGoods().getId() : 0L) + "-" +
+                    (i.getSales() != null ? i.getSales().getId() : 0L) + "-" +
+                    (i.getProcurement() != null ? i.getProcurement().getId() : 0L) + "-" + 
+                    (i.getSalesOrder() != null ? i.getSalesOrder().getId() : 0L);
+			map.compute(key, (k, v) -> {
+				if(v == null) {
+					return new ItemSalesStatsDTO(
+							i.getGoods() != null ? i.getGoods().getId() : null,
+							i.getSales() != null ? i.getSales().getId() : null,
+							i.getProcurement() != null ? i.getProcurement().getId() : null,
+							i.getSalesOrder() != null ? i.getSalesOrder().getId() : null,
+							i.getQuantity(),
+							i.getUnitPrice());
+				}
+				else {
+					v.setTotalQuantity(v.getTotalQuantity().add(i.getQuantity()));
+					v.setTotalAmount(v.getTotalAmount().add(i.getQuantity()));
+					return v;
+				}
+			});
+		}
+		return new ArrayList<>(map.values());
+	}
+	
 	private void validateBigDecimalNonNegative(BigDecimal num) {
 		if (num == null || num.compareTo(BigDecimal.ZERO) < 0) {
 			throw new ValidationException("Number must be zero or positive");
@@ -783,5 +1045,9 @@ public class ItemSalesService implements INTERItemSales {
     	}
     	return shelfRepository.findById(shelfId).orElseThrow(() -> new ShelfNotFoundException("Shelf not found with id: "+shelfId));
     }
-    
+
+	private void validateItemSalesStatus(ItemSalesStatus status) {
+		Optional.ofNullable(status)
+			.orElseThrow(() -> new ValidationException("ItemSalesStatus status must not be null"));
+	}
 }

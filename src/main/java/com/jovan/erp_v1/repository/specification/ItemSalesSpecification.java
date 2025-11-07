@@ -1,8 +1,11 @@
 package com.jovan.erp_v1.repository.specification;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.jovan.erp_v1.enumeration.GoodsType;
@@ -12,6 +15,12 @@ import com.jovan.erp_v1.enumeration.SupplierType;
 import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.model.ItemSales;
 import com.jovan.erp_v1.search_request.ItemSalesSearchRequest;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesSpecificationRequest;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesStatsRequest;
+
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 public class ItemSalesSpecification {
 	
@@ -530,4 +539,127 @@ public class ItemSalesSpecification {
         return (root, query, criteriaBuilder) -> 
             criteriaBuilder.between(root.get("sales").get("totalPrice"), min, max);
     }
+    
+    public static Specification<ItemSales> withDynamicFilters(ItemSalesStatsRequest req){
+    	return(root, query, cb) -> {
+    		List<Predicate> predicates = new ArrayList<Predicate>();
+            if (req.procurementId() != null) {
+                predicates.add(cb.equal(root.get("procurement").get("id"), req.procurementId()));
+            }
+            if (req.salesOrderId() != null) {
+                predicates.add(cb.equal(root.get("salesOrder").get("id"), req.salesOrderId()));
+            }
+            if (req.goodsId() != null) {
+                predicates.add(cb.equal(root.get("goods").get("id"), req.goodsId()));
+            }
+            if (req.salesId() != null) {
+                predicates.add(cb.equal(root.get("sales").get("id"), req.salesId()));
+            }
+            if (req.minQuantity() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("quantity"), req.minQuantity()));
+            }
+            if (req.maxQuantity() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("quantity"), req.maxQuantity()));
+            }
+            if (req.minUnitPrice() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("unitPrice"), req.minUnitPrice()));
+            }
+            if (req.maxUnitPrice() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("unitPrice"), req.maxUnitPrice()));
+            }
+            if (req.fromDate() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("procurement").get("locdate"), req.fromDate().atStartOfDay()));
+            }
+            if (req.toDate() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("procurement").get("locdate"), req.toDate().atTime(23,59,59)));
+            }
+            if (req.fromDate() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("salesOrder").get("orderDate"), req.fromDate().atStartOfDay()));
+            }
+            if (req.toDate() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("salesOrder").get("orderDate"), req.toDate().atTime(23,59,59)));
+            }
+    		predicates.add(cb.isTrue(root.get("confirmed")));
+			return cb.and(predicates.toArray(new Predicate[0]));
+    	};
+    }
+    
+    public static Specification<ItemSales> withDynamicFiltersOrDates(ItemSalesStatsRequest req) {
+    	return(root ,query, cb) -> {
+    		List<Predicate> predicates = new ArrayList<Predicate>();
+    		if (req.procurementId() != null) {
+                predicates.add(cb.equal(root.get("procurement").get("id"), req.procurementId()));
+            }
+            if (req.salesOrderId() != null) {
+                predicates.add(cb.equal(root.get("salesOrder").get("id"), req.salesOrderId()));
+            }
+            if (req.goodsId() != null) {
+                predicates.add(cb.equal(root.get("goods").get("id"), req.goodsId()));
+            }
+            if (req.salesId() != null) {
+                predicates.add(cb.equal(root.get("sales").get("id"), req.salesId()));
+            }
+            if (req.minQuantity() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("quantity"), req.minQuantity()));
+            }
+            if (req.maxQuantity() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("quantity"), req.maxQuantity()));
+            }
+
+            if (req.minUnitPrice() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("unitPrice"), req.minUnitPrice()));
+            }
+            if (req.maxUnitPrice() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("unitPrice"), req.maxUnitPrice()));
+            }
+            if (req.minUnitPrice() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("unitPrice"), req.minUnitPrice()));
+            }
+            if (req.maxUnitPrice() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("unitPrice"), req.maxUnitPrice()));
+            }
+            //Filter po datumima OR logika
+            if(req.fromDate() != null || req.toDate() != null) {
+            	List<Predicate> datePreds = new ArrayList<Predicate>();
+            	if (req.fromDate() != null) {
+                    datePreds.add(cb.greaterThanOrEqualTo(root.get("procurement").get("locdate"), req.fromDate().atStartOfDay()));
+                }
+                if (req.toDate() != null) {
+                    datePreds.add(cb.lessThanOrEqualTo(root.get("procurement").get("locdate"), req.toDate().atTime(23,59,59)));
+                }
+                Predicate procurementDatePredicate = datePreds.isEmpty() ? null : cb.and(datePreds.toArray(new Predicate[0]));
+                datePreds.clear();
+                if (req.fromDate() != null) {
+                    datePreds.add(cb.greaterThanOrEqualTo(root.get("salesOrder").get("orderDate"), req.fromDate().atStartOfDay()));
+                }
+                if (req.toDate() != null) {
+                    datePreds.add(cb.lessThanOrEqualTo(root.get("salesOrder").get("orderDate"), req.toDate().atTime(23,59,59)));
+                }
+                Predicate salesOrderDatePredicate = datePreds.isEmpty() ? null : cb.and(datePreds.toArray(new Predicate[0]));
+                // OR izmedju Procurement i SalesOrder datuma
+                if(procurementDatePredicate != null && salesOrderDatePredicate != null) {
+                	cb.and(cb.or(procurementDatePredicate, salesOrderDatePredicate));
+                }
+                else if(procurementDatePredicate != null) {
+                	predicates.add(procurementDatePredicate);
+                }
+                else if(salesOrderDatePredicate != null) {
+                	predicates.add(salesOrderDatePredicate);
+                }
+            }
+    		predicates.add(cb.isTrue(root.get("confirmed")));
+			return cb.and(predicates.toArray(new Predicate[0]));
+    	};
+    }
+	
+	private static Predicate datePredicate(Root<ItemSales> root, CriteriaBuilder cb, LocalDate fromDate, LocalDate toDate, String entityName, String entityField) {
+		List<Predicate> predicates = new ArrayList<Predicate>();
+		if(fromDate != null) {
+			predicates.add(cb.greaterThanOrEqualTo(root.get(entityName).get(entityField), fromDate.atStartOfDay()));
+		}
+		if(toDate != null) {
+			predicates.add(cb.lessThanOrEqualTo(root.get(entityName).get(entityField), toDate.atTime(23,59,59)));
+		}
+		return cb.and(predicates.toArray(new Predicate[0]));
+	}
 }
