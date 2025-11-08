@@ -584,7 +584,7 @@ public class ItemSalesSpecification {
     	};
     }
     
-    public static Specification<ItemSales> withDynamicFiltersOrDates(ItemSalesStatsRequest req) {
+    public static Specification<ItemSales> withDynamicFiltersOrDates(ItemSalesSpecificationRequest req) {
     	return(root ,query, cb) -> {
     		List<Predicate> predicates = new ArrayList<Predicate>();
     		if (req.procurementId() != null) {

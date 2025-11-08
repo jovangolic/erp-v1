@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
@@ -65,6 +67,7 @@ import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityByGoodsStatDTO;
 import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityByProcurementStatDTO;
 import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityBySalesOrderStatDTO;
 import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityBySalesStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesSpecificationRequest;
 import com.jovan.erp_v1.statistics.item_sales.ItemSalesStatsDTO;
 import com.jovan.erp_v1.statistics.item_sales.ItemSalesStatsRequest;
 import com.jovan.erp_v1.statistics.item_sales.ItemSalesUnitPriceByGoodsStatDTO;
@@ -695,51 +698,190 @@ public class ItemSalesService implements INTERItemSales {
 	@Transactional(readOnly = true)
 	@Override
 	public List<ItemSalesQuantityByGoodsStatDTO> countItemSalesQuantityByGoods() {
-		
-		return null;
-	}
+		List<ItemSalesQuantityByGoodsStatDTO> items = itemSalesRepository.countItemSalesQuantityByGoods();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No ItemSales for quantity by goods, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					String goodsName = item.getGoodsName();
+					BigDecimal quantity = item.getQuantity();
+					Long goodsId = item.getGoodsId();
+					return new ItemSalesQuantityByGoodsStatDTO(count, goodsName, quantity, goodsId);
+				})
+				.toList();
+		}
 
 	@Transactional(readOnly = true)
 	@Override
 	public List<ItemSalesQuantityBySalesStatDTO> countItemSalesQuantityBySales() {
-		
-		return null;
-	}
+		List<ItemSalesQuantityBySalesStatDTO> items = itemSalesRepository.countItemSalesQuantityBySales();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No ItemSales for quantity by sales, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					BigDecimal quantity = item.getQuantity();
+					Long salesId = item.getSalesId();
+					return new ItemSalesQuantityBySalesStatDTO(count, quantity, salesId);
+				})
+				.toList();	
+		}
 
 	@Transactional(readOnly = true)
 	@Override
 	public List<ItemSalesQuantityByProcurementStatDTO> countItemSalesQuantityByProcurement(
 			ItemSalesByProcurementRequest request) {
-		
-		return null;
+		long totalItemSales = itemSalesRepository.count();
+		ItemSalesStatStrategy strategy = request.strategy() != null ? request.strategy() : ItemSalesStatStrategy.AUTO;
+		switch (strategy) {
+		case SQL -> {
+			if(totalItemSales < 10000) {
+				return aggregateInMemory(request,
+						i -> i.getProcurement() != null ? i.getProcurement().getId() : null,
+						safeMapToDto(list -> {
+							ItemSales first = list.get(0);
+							BigDecimal quantity = list.stream().map(ItemSales::getQuantity).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+							Long procurementId = first.getProcurement() != null ? first.getProcurement().getId() : null;
+							return new ItemSalesQuantityByProcurementStatDTO(procurementId,quantity,procurementId);
+						})
+				);
+			}
+			else {
+				return itemSalesRepository.countItemSalesQuantityByProcurement(request.procurementId(), request.fromDate(), request.toDate());
+			}
+		}
+		case MEMORY -> {
+			return aggregateInMemory(request,
+					i -> i.getProcurement() != null ? i.getProcurement().getId() : null,
+					safeMapToDto(list -> {
+						ItemSales first = list.get(0);
+						BigDecimal quantity = list.stream().map(ItemSales::getQuantity).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+						Long procurementId = first.getProcurement() != null ? first.getProcurement().getId() : null;
+						return new ItemSalesQuantityByProcurementStatDTO(procurementId,quantity,procurementId);
+					})
+			);
+		}
+		case AUTO -> {
+			if(totalItemSales < 10000) {
+				return aggregateInMemory(request,
+						i -> i.getProcurement() != null ? i.getProcurement().getId() : null,
+						safeMapToDto(list -> {
+							ItemSales first = list.get(0);
+							BigDecimal quantity = list.stream().map(ItemSales::getQuantity).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+							Long procurementId = first.getProcurement() != null ? first.getProcurement().getId() : null;
+							return new ItemSalesQuantityByProcurementStatDTO(procurementId,quantity,procurementId);
+						})
+				);
+			}
+			else {
+				return itemSalesRepository.countItemSalesQuantityByProcurement(request.procurementId(), request.fromDate(), request.toDate());
+			}
+		}
+		default -> throw new ValidationException("Unknown strategy " + strategy);
+		}
 	}
 
 	@Transactional(readOnly = true)
 	@Override
 	public List<ItemSalesQuantityBySalesOrderStatDTO> countItemSalesQuantityBySalesOrder(
 			ItemSalesBySalesOrderRequest request) {
-		
-		return null;
+		long totalItemSales = itemSalesRepository.count();
+		ItemSalesStatStrategy strategy = request.strategy() != null ? request.strategy() : ItemSalesStatStrategy.AUTO;
+		switch(strategy) {
+		case SQL -> {
+			if(totalItemSales > 10000) {
+				return aggregateInMemory(request,
+						i -> i.getSalesOrder() != null ? i.getSalesOrder().getId() : null,		
+						safeMapToDto(list -> {
+							ItemSales first = list.get(0);
+							String orderNumber = first.getSalesOrder() != null ? first.getSalesOrder().getOrderNumber() : null;
+							BigDecimal totalQuantity = list.stream().map(ItemSales::getQuantity).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+							Long salesOrderId = first.getSalesOrder() != null ? first.getSalesOrder().getId() : null;
+							return new ItemSalesQuantityBySalesOrderStatDTO(salesOrderId, orderNumber, totalQuantity, salesOrderId);
+						})
+					);
+			}
+			else {
+				return itemSalesRepository.countItemSalesQuantityBySalesOrder(request.salesOrderId(), request.fromDate(), request.toDate());
+			}
+		}
+		case MEMORY -> {
+			return aggregateInMemory(request,
+					i -> i.getSalesOrder() != null ? i.getSalesOrder().getId() : null,		
+					safeMapToDto(list -> {
+						ItemSales first = list.get(0);
+						String orderNumber = first.getSalesOrder() != null ? first.getSalesOrder().getOrderNumber() : null;
+						BigDecimal totalQuantity = list.stream().map(ItemSales::getQuantity).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+						Long salesOrderId = first.getSalesOrder() != null ? first.getSalesOrder().getId() : null;
+						return new ItemSalesQuantityBySalesOrderStatDTO(salesOrderId, orderNumber, totalQuantity, salesOrderId);
+					})
+				);
+		}
+		case AUTO -> {
+			if(totalItemSales > 10000) {
+				return aggregateInMemory(request,
+						i -> i.getSalesOrder() != null ? i.getSalesOrder().getId() : null,		
+						safeMapToDto(list -> {
+							ItemSales first = list.get(0);
+							String orderNumber = first.getSalesOrder() != null ? first.getSalesOrder().getOrderNumber() : null;
+							BigDecimal totalQuantity = list.stream().map(ItemSales::getQuantity).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+							Long salesOrderId = first.getSalesOrder() != null ? first.getSalesOrder().getId() : null;
+							return new ItemSalesQuantityBySalesOrderStatDTO(salesOrderId, orderNumber, totalQuantity, salesOrderId);
+						})
+					);
+			}
+			else {
+				return itemSalesRepository.countItemSalesQuantityBySalesOrder(request.salesOrderId(), request.fromDate(), request.toDate());
+			}
+		}
+		default -> throw new ValidationException("Unknown strategy " + strategy);
+		}
 	}
 
 	@Transactional(readOnly = true)
 	@Override
 	public List<ItemSalesUnitPriceByGoodsStatDTO> countItemSalesUnitPriceByGoods() {
-		
-		return null;
+		List<ItemSalesUnitPriceByGoodsStatDTO> items = itemSalesRepository.countItemSalesUnitPriceByGoods();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No ItemSales for unitPrice by goods, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					String goodsName = item.getGoodsName();
+					BigDecimal unitPrice = item.getUnitPrice();
+					Long goodsId = item.getGoodsId();
+					return new ItemSalesUnitPriceByGoodsStatDTO(count, goodsName, unitPrice, goodsId);
+				})
+				.toList();	
 	}
 
 	@Transactional(readOnly = true)
 	@Override
 	public List<ItemSalesUnitPriceBySalesStatDTO> countItemSalesUnitPriceBySalesStatDTO() {
-		
-		return null;
-	}
+		List<ItemSalesUnitPriceBySalesStatDTO> items = itemSalesRepository.countItemSalesUnitPriceBySalesStatDTO();
+		if(items.isEmpty()) {
+			throw new NoDataFoundException("No ItemSales for unitPrice by sales, found");
+		}
+		return items.stream()
+				.map(item -> {
+					Long count = item.getCount();
+					BigDecimal unitPrice = item.getUnitPrice();
+					Long salesId = item.getSalesId();
+					return new ItemSalesUnitPriceBySalesStatDTO(count, unitPrice, salesId);
+				})
+				.toList();
+		}
 
 	@Transactional(readOnly = true)
 	@Override
 	public List<ItemSalesUnitPriceBySalesOrderStatDTO> countItemSalesUnitPriceBySalesOrderStatDTO(
 			ItemSalesByProcurementRequest request) {
+		long totalItemSales = itemSalesRepository.count();
+		ItemSalesStatStrategy strategy = request.strategy() != null ? request.strategy() : ItemSalesStatStrategy.AUTO;
 		
 		return null;
 	}
@@ -748,6 +890,8 @@ public class ItemSalesService implements INTERItemSales {
 	@Override
 	public List<ItemSalesUnitPriceByProcurementStatDTO> countItemSalesUnitPriceByProcurementStatDTO(
 			ItemSalesBySalesOrderRequest request) {
+		long totalItemSales = itemSalesRepository.count();
+		ItemSalesStatStrategy strategy = request.strategy() != null ? request.strategy() : ItemSalesStatStrategy.AUTO;
 		
 		return null;
 	}
@@ -916,6 +1060,25 @@ public class ItemSalesService implements INTERItemSales {
 			});
 		}
 		return new ArrayList<>(map.values());
+	}
+	
+	private <T, R extends ItemSalesSpecificationRequest> List<T> aggregateInMemory(R request, Function<ItemSales, Long> groupByFn, Function<List<ItemSales>, T> dtoMapper){
+		List<ItemSales> items = itemSalesRepository.findAll(ItemSalesSpecification.withDynamicFiltersOrDates(request));
+		return items.stream().collect(Collectors.groupingBy(groupByFn))
+				.values()
+				.stream()
+				.map(dtoMapper)
+				.filter(Objects::nonNull)
+				.toList();	
+	}
+	
+	private <T> Function<List<ItemSales>, T> safeMapToDto(Function<List<ItemSales>, T> mapper){
+		return list -> {
+			if(list == null || list.isEmpty()) {
+				return null;
+			}
+			return mapper.apply(list);
+		};
 	}
 	
 	private void validateBigDecimalNonNegative(BigDecimal num) {
