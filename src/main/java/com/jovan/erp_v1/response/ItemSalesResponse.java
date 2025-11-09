@@ -2,6 +2,7 @@ package com.jovan.erp_v1.response;
 
 import java.math.BigDecimal;
 
+import com.jovan.erp_v1.enumeration.ItemSalesStatus;
 import com.jovan.erp_v1.model.ItemSales;
 
 import lombok.AllArgsConstructor;
@@ -20,6 +21,8 @@ public class ItemSalesResponse {
 	private SalesResponse sales;
 	private ProcurementResponse procurement;
 	private SalesOrderResponse salesOrder;
+	private ItemSalesStatus status;
+	private Boolean confirmed;
 
 	public ItemSalesResponse(ItemSales itemSales) {
 		this.id = itemSales.getId();
@@ -38,5 +41,7 @@ public class ItemSalesResponse {
 		if (itemSales.getSalesOrder() != null) {
 			this.salesOrder = new SalesOrderResponse(itemSales.getSalesOrder());
 		}
+		this.status = itemSales.getStatus();
+		this.confirmed = itemSales.getConfirmed();
 	}
 }

@@ -580,9 +580,9 @@ public class IncomeStatementService implements IntIncomeStatementService {
 			return IncomeStatement.builder()
 					.periodStart(source.getPeriodStart())
 					.periodEnd(source.getPeriodEnd())
-					.totalRevenue((BigDecimal) overrides.getOrDefault("Total-revenue", source.getTotalRevenue()))
-					.totalExpenses((BigDecimal) overrides.getOrDefault("Total-expenses", source.getTotalExpenses()))
-					.netProfit((BigDecimal) overrides.getOrDefault("Net-profit", source.getNetProfit()))
+					.totalRevenue((BigDecimal) overrides.getOrDefault("totalRevenue", source.getTotalRevenue()))
+					.totalExpenses((BigDecimal) overrides.getOrDefault("totalExpenses", source.getTotalExpenses()))
+					.netProfit((BigDecimal) overrides.getOrDefault("netProfit", source.getNetProfit()))
 					.fiscalYear(validateFiscalYear(source.getFiscalYear().getId()))
 					.build();
 		}

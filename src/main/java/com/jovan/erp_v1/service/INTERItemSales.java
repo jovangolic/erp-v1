@@ -12,6 +12,7 @@ import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.ItemSalesFilterRequest;
 import com.jovan.erp_v1.request.ItemSalesRequest;
 import com.jovan.erp_v1.response.ItemSalesResponse;
+import com.jovan.erp_v1.save_as.ItemSalesSaveAsRequest;
 import com.jovan.erp_v1.search_request.ItemSalesSearchRequest;
 import com.jovan.erp_v1.statistics.item_sales.ItemSalesByProcurementRequest;
 import com.jovan.erp_v1.statistics.item_sales.ItemSalesBySalesOrderRequest;
@@ -103,7 +104,7 @@ public interface INTERItemSales {
 	ItemSalesResponse closeItemSales(Long id);
 	ItemSalesResponse changeStatus(Long id, ItemSalesStatus status);
 	ItemSalesResponse saveItemSales(ItemSalesRequest request);
-	ItemSalesResponse saveAs();
+	ItemSalesResponse saveAs(ItemSalesSaveAsRequest request);
 	List<ItemSalesResponse> saveAll(List<ItemSalesRequest> request);
 	List<ItemSalesResponse> generalSearch(ItemSalesSearchRequest request);
 }

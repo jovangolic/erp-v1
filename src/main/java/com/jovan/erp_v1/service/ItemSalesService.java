@@ -13,6 +13,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +62,9 @@ import com.jovan.erp_v1.repository.specification.ItemSalesSpecification;
 import com.jovan.erp_v1.request.ItemSalesFilterRequest;
 import com.jovan.erp_v1.request.ItemSalesRequest;
 import com.jovan.erp_v1.response.ItemSalesResponse;
+import com.jovan.erp_v1.save_as.AbstractSaveAllService;
+import com.jovan.erp_v1.save_as.AbstractSaveAsService;
+import com.jovan.erp_v1.save_as.ItemSalesSaveAsRequest;
 import com.jovan.erp_v1.search_request.ItemSalesSearchRequest;
 import com.jovan.erp_v1.statistics.item_sales.ItemSalesByProcurementRequest;
 import com.jovan.erp_v1.statistics.item_sales.ItemSalesBySalesOrderRequest;
@@ -77,9 +82,11 @@ import com.jovan.erp_v1.statistics.item_sales.ItemSalesUnitPriceBySalesStatDTO;
 import com.jovan.erp_v1.util.DateValidator;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ItemSalesService implements INTERItemSales {
 
 	private final ItemSalesRepository itemSalesRepository;
@@ -882,8 +889,52 @@ public class ItemSalesService implements INTERItemSales {
 			ItemSalesByProcurementRequest request) {
 		long totalItemSales = itemSalesRepository.count();
 		ItemSalesStatStrategy strategy = request.strategy() != null ? request.strategy() : ItemSalesStatStrategy.AUTO;
-		
-		return null;
+		switch (strategy) {
+		case SQL -> {
+			if(totalItemSales > 10000) {
+				return aggregateInMemory(request,
+						i -> i.getSalesOrder() != null ? i.getSalesOrder().getId() : null,
+						safeMapToDto(list -> {
+							ItemSales first = list.get(0);
+							String orderNumber = first.getSalesOrder() != null ? first.getSalesOrder().getOrderNumber() : null;
+							BigDecimal unitPrice = list.stream().map(ItemSales::getUnitPrice).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+							Long salesOrderId = first.getSalesOrder() != null ? first.getSalesOrder().getId() : null;
+							return new ItemSalesUnitPriceBySalesOrderStatDTO(salesOrderId, orderNumber, unitPrice, salesOrderId);
+						}));
+			}
+			else {
+				return itemSalesRepository.countItemSalesUnitPriceBySalesOrderStatDTO(request.salesOrderId(), request.fromDate(), request.toDate());
+			}
+		}
+		case MEMORY -> {
+			return aggregateInMemory(request,
+					i -> i.getSalesOrder() != null ? i.getSalesOrder().getId() : null,
+					safeMapToDto(list -> {
+						ItemSales first = list.get(0);
+						String orderNumber = first.getSalesOrder() != null ? first.getSalesOrder().getOrderNumber() : null;
+						BigDecimal unitPrice = list.stream().map(ItemSales::getUnitPrice).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+						Long salesOrderId = first.getSalesOrder() != null ? first.getSalesOrder().getId() : null;
+						return new ItemSalesUnitPriceBySalesOrderStatDTO(salesOrderId, orderNumber, unitPrice, salesOrderId);
+					}));
+		}
+		case AUTO -> {
+			if(totalItemSales > 10000) {
+				return aggregateInMemory(request,
+						i -> i.getSalesOrder() != null ? i.getSalesOrder().getId() : null,
+						safeMapToDto(list -> {
+							ItemSales first = list.get(0);
+							String orderNumber = first.getSalesOrder() != null ? first.getSalesOrder().getOrderNumber() : null;
+							BigDecimal unitPrice = list.stream().map(ItemSales::getUnitPrice).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+							Long salesOrderId = first.getSalesOrder() != null ? first.getSalesOrder().getId() : null;
+							return new ItemSalesUnitPriceBySalesOrderStatDTO(salesOrderId, orderNumber, unitPrice, salesOrderId);
+						}));
+			}
+			else {
+				return itemSalesRepository.countItemSalesUnitPriceBySalesOrderStatDTO(request.salesOrderId(), request.fromDate(), request.toDate());
+			}
+		}
+		default -> throw new ValidationException("Unknown strategy "+ strategy);
+		}
 	}
 
 	@Transactional(readOnly = true)
@@ -892,8 +943,49 @@ public class ItemSalesService implements INTERItemSales {
 			ItemSalesBySalesOrderRequest request) {
 		long totalItemSales = itemSalesRepository.count();
 		ItemSalesStatStrategy strategy = request.strategy() != null ? request.strategy() : ItemSalesStatStrategy.AUTO;
-		
-		return null;
+		switch (strategy) {
+		case SQL -> {
+			if(totalItemSales > 10000) {
+				return aggregateInMemory(request,
+						i -> i.getProcurement() != null ? i.getProcurement().getId() : null,
+						safeMapToDto(list -> {
+							ItemSales first = list.get(0);
+							BigDecimal unitPrice = list.stream().map(ItemSales::getUnitPrice).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+							Long procurementId = first.getProcurement() != null ? first.getProcurement().getId() : null;
+							return new ItemSalesUnitPriceByProcurementStatDTO(procurementId, unitPrice, procurementId);
+						}));
+			}
+			else {
+				return itemSalesRepository.countItemSalesUnitPriceByProcurementStatDTO(request.procurementId(), request.fromDate(), request.toDate());
+				}
+		}
+		case MEMORY -> {
+			return aggregateInMemory(request,
+					i -> i.getProcurement() != null ? i.getProcurement().getId() : null,
+					safeMapToDto(list -> {
+						ItemSales first = list.get(0);
+						BigDecimal unitPrice = list.stream().map(ItemSales::getUnitPrice).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+						Long procurementId = first.getProcurement() != null ? first.getProcurement().getId() : null;
+						return new ItemSalesUnitPriceByProcurementStatDTO(procurementId, unitPrice, procurementId);
+					}));
+		}
+		case AUTO -> {
+			if(totalItemSales > 10000) {
+				return aggregateInMemory(request,
+						i -> i.getProcurement() != null ? i.getProcurement().getId() : null,
+						safeMapToDto(list -> {
+							ItemSales first = list.get(0);
+							BigDecimal unitPrice = list.stream().map(ItemSales::getUnitPrice).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+							Long procurementId = first.getProcurement() != null ? first.getProcurement().getId() : null;
+							return new ItemSalesUnitPriceByProcurementStatDTO(procurementId, unitPrice, procurementId);
+						}));
+			}
+			else {
+				return itemSalesRepository.countItemSalesUnitPriceByProcurementStatDTO(request.procurementId(), request.fromDate(), request.toDate());
+				}
+		}
+		default -> throw new ValidationException("Unknown strategy "+ strategy);
+		}
 	}
 
 	@Transactional(readOnly = true)
@@ -999,22 +1091,138 @@ public class ItemSalesService implements INTERItemSales {
 	@Transactional
 	@Override
 	public ItemSalesResponse saveItemSales(ItemSalesRequest request) {
-		
-		return null;
+		if (request == null) {
+	        throw new ValidationException("Request cannot be null");
+	    }
+		if(request.quantity() == null || request.quantity().compareTo(BigDecimal.ZERO) <= 0) {
+			throw new ValidationException("Quantity must be greater than zero");
+		}
+		if(request.unitPrice() == null || request.unitPrice().compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Unit price must not be negative");
+		}
+		Goods goods = validateGoodsId(request.goodsId());
+		Sales sales = validateSalesId(request.salesId());
+		Procurement procurement = validateProcurementId(request.procurementId());
+		SalesOrder salesOrder = validateSalesOrderId(request.salesOrderId());
+		ItemSales item = ItemSales.builder()
+				.goods(goods)
+				.sales(sales)
+				.procurement(procurement)
+				.salesOrder(salesOrder)
+				.quantity(request.quantity())
+				.unitPrice(request.unitPrice())
+				.status(request.status())
+				.confirmed(request.confirmed())
+				.build();
+		validateItemSales(item);
+		ItemSales saved = itemSalesRepository.save(item);
+		return new ItemSalesResponse(saved);
 	}
+	
+	private final AbstractSaveAsService<ItemSales, ItemSalesResponse> saveAsHelper = new AbstractSaveAsService<ItemSales, ItemSalesResponse>() {
+		
+		@Override
+		protected ItemSalesResponse toResponse(ItemSales entity) {
+			return new ItemSalesResponse(entity);
+		}
+		
+		@Override
+		protected JpaRepository<ItemSales, Long> getRepository() {
+			return itemSalesRepository;
+		}
+		
+		@Override
+		protected ItemSales copyAndOverride(ItemSales source, Map<String, Object> overrides) {
+			Goods goods = validateGoodsId(source.getGoods().getId());
+			Sales sales = validateSalesId(source.getSales().getId());
+			Procurement procurement = validateProcurementId(source.getProcurement().getId());
+			SalesOrder salesOrder = validateSalesOrderId(source.getSalesOrder().getId());
+			if(source.getQuantity() == null || source.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+				throw new ValidationException("Quantity must be greater than zero");
+			}
+			if(source.getUnitPrice() == null || source.getUnitPrice().compareTo(BigDecimal.ZERO) < 0) {
+				throw new ValidationException("Unit price must not be negative");
+			}
+			return ItemSales.builder()
+					.goods(goods)
+					.sales(sales)
+					.procurement(procurement)
+					.salesOrder(salesOrder)
+					.quantity((BigDecimal) overrides.getOrDefault("quantity", source.getQuantity()))
+					.unitPrice((BigDecimal) overrides.getOrDefault("unitPrice", source.getUnitPrice()))
+					.status((ItemSalesStatus) overrides.getOrDefault("itemSalesStatus", source.getStatus()))
+					.confirmed((Boolean) overrides.getOrDefault("confirmed", source.getConfirmed()))
+					.build();
+		}
+	};
 
 	@Transactional
 	@Override
-	public ItemSalesResponse saveAs() {
-		
-		return null;
+	public ItemSalesResponse saveAs(ItemSalesSaveAsRequest request) {
+		Map<String, Object> overrides = new HashMap<String, Object>();
+		Goods goods = validateGoodsId(request.goodsId());
+		Sales sales = validateSalesId(request.salesId());
+		Procurement procurement = validateProcurementId(request.procurementId());
+		SalesOrder salesOrder = validateSalesOrderId(request.salesOrderId());
+		if(request.goodsId() != null) overrides.put("Goods ID", goods);
+		if(request.salesId() != null) overrides.put("Sales ID", sales);
+		if(request.procurementId() != null) overrides.put("Prodcurement Id", procurement);
+		if(request.salesOrderId() != null) overrides.put("Sales-Order ID", salesOrder);
+		if(request.quantity() != null) overrides.put("Quantity", request.quantity());
+		if(request.unitPrice() != null) overrides.put("Unit Price", request.unitPrice());
+		return saveAsHelper.saveAs(request.sourceId(), overrides);
 	}
+	
+	private final AbstractSaveAllService<ItemSales, ItemSalesResponse> saveAllHelper = new AbstractSaveAllService<ItemSales, ItemSalesResponse>() {
+		
+		@Override
+		protected Function<ItemSales, ItemSalesResponse> toResponse() {
+			return ItemSalesResponse::new;
+		}
+		
+		@Override
+		protected JpaRepository<ItemSales, Long> getRepository() {
+			return itemSalesRepository;
+		}
+		
+		@Override
+		protected void beforeSaveAll(List<ItemSales> entities) {
+		    String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+		    log.info("User '{}' is saving {} itemSales ", currentUser, entities.size());
+		}
+	};
 
 	@Transactional
 	@Override
 	public List<ItemSalesResponse> saveAll(List<ItemSalesRequest> request) {
-		
-		return null;
+		if (request == null || request.isEmpty()) {
+	        throw new ValidationException("ItemSales request list must not be empty.");
+	    }
+		List<ItemSales> items = request.stream()
+	            .map(item -> {
+	                if (item.quantity() == null || item.quantity().compareTo(BigDecimal.ZERO) <= 0) {
+	                    throw new ValidationException("Quantity must be greater than zero");
+	                }
+	                if (item.unitPrice() == null || item.unitPrice().compareTo(BigDecimal.ZERO) < 0) {
+	                    throw new ValidationException("Unit price must not be negative");
+	                }
+	                Goods goods = validateGoodsId(item.goodsId());
+	                Sales sales = validateSalesId(item.salesId());
+	                Procurement procurement = validateProcurementId(item.procurementId());
+	                SalesOrder salesOrder = validateSalesOrderId(item.salesOrderId());
+	                return ItemSales.builder()
+	                        .goods(goods)
+	                        .sales(sales)
+	                        .procurement(procurement)
+	                        .salesOrder(salesOrder)
+	                        .quantity(item.quantity())
+	                        .unitPrice(item.unitPrice())
+	                        .status(item.status())
+	                        .confirmed(item.confirmed())
+	                        .build();
+	            })
+	            .toList();
+		return saveAllHelper.saveAll(items);
 	}
 
 	@Override
@@ -1212,5 +1420,48 @@ public class ItemSalesService implements INTERItemSales {
 	private void validateItemSalesStatus(ItemSalesStatus status) {
 		Optional.ofNullable(status)
 			.orElseThrow(() -> new ValidationException("ItemSalesStatus status must not be null"));
+	}
+	
+	private Goods validateGoodsId(Long id) {
+		if(id == null) {
+			throw new ValidationException("Goods ID must not be null");
+		}
+		return goodsRepository.findById(id).orElseThrow(() -> new ValidationException("Goods not found with id "+id));
+	}
+	
+	private Sales validateSalesId(Long id) {
+		if(id == null) {
+			throw new ValidationException("Sales ID must not be null");
+		}
+		return salesRepository.findById(id).orElseThrow(() -> new ValidationException("Sales not found with id "+id));
+	}
+	
+	private Procurement validateProcurementId(Long id) {
+		if(id == null) {
+			throw new ValidationException("Procurement ID must not be null");
+		}
+		return procurementRepository.findById(id).orElseThrow(() -> new ValidationException("Procurement not found with id "+id));
+	}
+	
+	private SalesOrder validateSalesOrderId(Long id) {
+		if(id == null) {
+			throw new ValidationException("SalesOrder ID must not be null");
+		}
+		return salesOrderRepository.findById(id).orElseThrow(() -> new ValidationException("SalesOrder not found with id "+id));
+	}
+	
+	private void validateItemSales(ItemSales item) {
+	    if (item.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+	        throw new ValidationException("Quantity must be positive");
+	    }
+	    if (item.getUnitPrice().compareTo(BigDecimal.ZERO) < 0) {
+	        throw new ValidationException("Unit price cannot be negative");
+	    }
+	    if (item.getGoods() == null) {
+	        throw new ValidationException("Goods must be specified");
+	    }
+	    if (item.getSalesOrder() == null && item.getProcurement() == null && item.getSales() == null) {
+	        throw new ValidationException("ItemSales must be linked to either a SalesOrder, Sales or a Procurement");
+	    }
 	}
 }

@@ -65,8 +65,8 @@ public class ItemSales {
 		if(this.quantity == null || this.unitPrice == null) {
 			throw new ValidationException("Quantity and unitPrice must not be null");
 		}
-		if(this.quantity.compareTo(BigDecimal.ZERO) < 0 || this.unitPrice.compareTo(BigDecimal.ZERO) < 0) {
-			throw new ValidationException("Quantity and unitPrice must be positive numbers");
+		if(this.quantity.compareTo(BigDecimal.ZERO) <= 0 || this.unitPrice.compareTo(BigDecimal.ZERO) < 0) {
+			throw new ValidationException("Quantity must be > 0 and unit price >= 0");
 		}
 		return this.quantity.multiply(this.unitPrice).max(BigDecimal.ZERO);
 	}

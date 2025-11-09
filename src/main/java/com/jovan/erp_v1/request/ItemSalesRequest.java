@@ -2,6 +2,8 @@ package com.jovan.erp_v1.request;
 
 import java.math.BigDecimal;
 
+import com.jovan.erp_v1.enumeration.ItemSalesStatus;
+
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -14,11 +16,11 @@ public record ItemSalesRequest(
 	    Long salesId,
 	    Long procurementId,
 	    Long salesOrderId,
-	    @NotNull(message = "Količina je obavezna")
-	    @Positive(message = "Količina mora biti pozitivna")
+	    @NotNull @DecimalMin(value = "0.01", message = "Quantity must be greater than zero")
 	    BigDecimal quantity,
-	    @NotNull(message = "Jedinična cena je obavezna")
-	    @DecimalMin(value = "0.0", inclusive = false, message = "Cena mora biti pozitivna")
-	    BigDecimal unitPrice
+	    @NotNull @DecimalMin(value = "0", message = "Unit price must not be negative")
+	    BigDecimal unitPrice,
+	    @NotNull ItemSalesStatus status,
+	    @NotNull Boolean confirmed
 		) {
 }
