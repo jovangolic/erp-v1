@@ -430,11 +430,23 @@ public class BalanceSheetService implements IBalanceSheetService {
 	@Transactional
 	@Override
 	public BalanceSheetResponse saveBalanceSheet(BalanceSheetRequest request) {
+		if (request == null) {
+	        throw new ValidationException("Request cannot be null");
+	    }
+		if(request.totalAssets() == null || request.totalEquity() == null  || request.totalLiabilities() == null) {
+			throw new ValidationException("Assets,equity and liability must not be null for item ID: "+request.id());
+		}
+		BigDecimal assets = calculateTotalAssets(request.totalEquity(), request.totalLiabilities());
+		BigDecimal liabilities = calculateTotalLiabilities(request.totalAssets(), request.totalEquity());
+		if(request.totalLiabilities().compareTo(request.totalAssets()) > 0) {
+			throw new ValidationException("BalanceSheet is insolvent for item ID: "+request.id());
+		}
+		BigDecimal equity = calcualteTotalEquity(assets, liabilities);
 		BalanceSheet bs = BalanceSheet.builder()
 				.id(request.id())
-				.totalAssets(request.totalAssets())
-				.totalEquity(request.totalEquity())
-				.totalLiabilities(request.totalLiabilities())
+				.totalAssets(assets)
+				.totalEquity(equity)
+				.totalLiabilities(liabilities)
 				.fiscalYear(validatefiscalYear(request.fiscalYearId()))
 				.confirmed(request.confirmed())
 				.status(request.status())
@@ -518,6 +530,30 @@ public class BalanceSheetService implements IBalanceSheetService {
 		}
 		return items.stream().map(balanceSheetMapper::toResponse).collect(Collectors.toList());		
 	}
+	
+	private BigDecimal calcualteTotalEquity(BigDecimal totalAssets, BigDecimal totalLiabilities) {
+    	if(totalAssets == null || totalLiabilities == null) {
+    		throw new ValidationException("TotalAssets and TotalLiabilities must not be null");
+    	}
+    	if(totalLiabilities.compareTo(totalAssets) > 0) {
+    		throw new ValidationException("BalanceSheet is insolvent");
+    	}
+    	return totalAssets.subtract(totalLiabilities).max(BigDecimal.ZERO);
+    }
+    
+	private BigDecimal calculateTotalLiabilities(BigDecimal totalAssets, BigDecimal totalEquity) {
+    	if(totalEquity == null || totalAssets == null) {
+    		throw new ValidationException("TotalEquity, TotalAssets must not be null");
+    	}
+    	return totalAssets.subtract(totalEquity).max(BigDecimal.ZERO);
+    }
+    
+	private BigDecimal calculateTotalAssets(BigDecimal totalEquity, BigDecimal totalLiabilities) {
+        if (totalLiabilities == null || totalEquity == null) {
+            throw new ValidationException("TotalLiabilities and TotalEquity must not be null");
+        }
+        return totalLiabilities.add(totalEquity).max(BigDecimal.ZERO);
+    }
 	
 	private void validateBalanceSheetStatus(BalanceSheetStatus status) {
 		Optional.ofNullable(status)

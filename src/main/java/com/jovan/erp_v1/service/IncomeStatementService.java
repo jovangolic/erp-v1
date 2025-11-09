@@ -577,6 +577,15 @@ public class IncomeStatementService implements IntIncomeStatementService {
 		
 		@Override
 		protected IncomeStatement copyAndOverride(IncomeStatement source, Map<String, Object> overrides) {
+			if(source.getTotalRevenue() == null || source.getTotalRevenue().compareTo(BigDecimal.ZERO) < 0) {
+				throw new ValidationException("TotalRevenue must be positive number: zero or greater");
+			}
+			if(source.getTotalExpenses() == null || source.getTotalExpenses().compareTo(BigDecimal.ZERO) < 0) {
+				throw new ValidationException("TotalExpenses must be positive number: zero or greater");
+			}
+			if(source.getNetProfit() == null || source.getNetProfit().compareTo(BigDecimal.ZERO) < 0) {
+				throw new ValidationException("Net profit must be positive: zero or greater");
+			}
 			return IncomeStatement.builder()
 					.periodStart(source.getPeriodStart())
 					.periodEnd(source.getPeriodEnd())

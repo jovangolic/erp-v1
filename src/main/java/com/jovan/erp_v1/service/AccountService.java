@@ -293,6 +293,12 @@ public class AccountService implements IAccountService {
     @Transactional
 	@Override
 	public AccountResponse saveAccount(AccountRequest request) {
+    	if (request == null) {
+	        throw new ValidationException("Request cannot be null");
+	    }
+    	if(request.balance() == null || request.balance().compareTo(BigDecimal.ZERO) < 0) {
+    		throw new ValidationException("Balance must be zero or greater");
+    	}
 		Account acc = Account.builder()
 				.id(request.id())
 				.accountName(request.accountName())
@@ -320,6 +326,9 @@ public class AccountService implements IAccountService {
 		
 		@Override
 		protected Account copyAndOverride(Account source, Map<String, Object> overrides) {
+			if(source.getBalance() == null || source.getBalance().compareTo(BigDecimal.ZERO) < 0) {
+				throw new ValidationException("Balance must be zero or greater");
+			}
 			return Account.builder()
 				.accountName((String) overrides.getOrDefault("Account-name", source.getAccountName()))
 				.accountNumber((String) overrides.getOrDefault("Account-number", source.getAccountNumber()))
@@ -360,15 +369,20 @@ public class AccountService implements IAccountService {
 	        throw new ValidationException("Account request list must not be empty.");
 	    }
 		List<Account> items = request.stream()
-				.map(req -> Account.builder()
-						.accountName(req.accountName())
-						.accountNumber(req.accountNumber())
-						.balance(req.balance())
-						.type(req.type())
-						.status(req.status())
-						.confirmed(req.confirmed())
-						.build())
-				.collect(Collectors.toList());
+				.map(req -> {
+					if(req.balance() == null || req.balance().compareTo(BigDecimal.ZERO) < 0) {
+						throw new ValidationException("Balance must be zero or greater");
+					}
+					return Account.builder()
+							.accountName(req.accountName())
+							.accountNumber(req.accountNumber())
+							.balance(req.balance())
+							.type(req.type())
+							.status(req.status())
+							.confirmed(req.confirmed())
+							.build();
+				})
+				.toList();
 		return saveAllHelper.saveAll(items);
 	}
     
