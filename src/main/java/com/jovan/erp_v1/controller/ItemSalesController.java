@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.jovan.erp_v1.enumeration.GoodsType;
+import com.jovan.erp_v1.enumeration.ItemSalesStatus;
 import com.jovan.erp_v1.enumeration.OrderStatus;
 import com.jovan.erp_v1.enumeration.StorageType;
 import com.jovan.erp_v1.enumeration.SupplierType;
@@ -26,7 +27,21 @@ import com.jovan.erp_v1.enumeration.UnitMeasure;
 import com.jovan.erp_v1.request.ItemSalesFilterRequest;
 import com.jovan.erp_v1.request.ItemSalesRequest;
 import com.jovan.erp_v1.response.ItemSalesResponse;
+import com.jovan.erp_v1.save_as.ItemSalesSaveAsRequest;
+import com.jovan.erp_v1.search_request.ItemSalesSearchRequest;
 import com.jovan.erp_v1.service.INTERItemSales;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesByProcurementRequest;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesBySalesOrderRequest;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityByGoodsStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityByProcurementStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityBySalesOrderStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesQuantityBySalesStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesStatsDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesStatsRequest;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesUnitPriceByGoodsStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesUnitPriceByProcurementStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesUnitPriceBySalesOrderStatDTO;
+import com.jovan.erp_v1.statistics.item_sales.ItemSalesUnitPriceBySalesStatDTO;
 import com.jovan.erp_v1.util.RoleGroups;
 
 import jakarta.validation.Valid;
@@ -385,5 +400,161 @@ public class ItemSalesController {
 	    List<ItemSalesResponse> result = itemSales.filter(filterRequest);
 	    return ResponseEntity.ok(result);
 	}*/
+	
+	//nove metode
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/get-stats")
+	public ResponseEntity<List<ItemSalesStatsDTO>> getStats(@RequestBody ItemSalesStatsRequest req){
+		List<ItemSalesStatsDTO> items = itemSales.getStats(req);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/count/quantity-by-goods")
+	public ResponseEntity<List<ItemSalesQuantityByGoodsStatDTO>> countItemSalesQuantityByGoods(){
+		List<ItemSalesQuantityByGoodsStatDTO> items = itemSales.countItemSalesQuantityByGoods();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/count/quantity-by-sales")
+	public ResponseEntity<List<ItemSalesQuantityBySalesStatDTO>> countItemSalesQuantityBySales(){
+		List<ItemSalesQuantityBySalesStatDTO> items = itemSales.countItemSalesQuantityBySales();
+		return ResponseEntity.ok(items);
+	}
+
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/count/quantity-by-procurement")
+	public ResponseEntity<List<ItemSalesQuantityByProcurementStatDTO>> countItemSalesQuantityByProcurement(@RequestBody ItemSalesByProcurementRequest request){
+		List<ItemSalesQuantityByProcurementStatDTO> items = itemSales.countItemSalesQuantityByProcurement(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/count/quantity-by-sales-order")
+	public ResponseEntity<List<ItemSalesQuantityBySalesOrderStatDTO>> countItemSalesQuantityBySalesOrder(@RequestBody ItemSalesBySalesOrderRequest request){
+		List<ItemSalesQuantityBySalesOrderStatDTO> items = itemSales.countItemSalesQuantityBySalesOrder(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/count/unit-price-by-goods")
+	public ResponseEntity<List<ItemSalesUnitPriceByGoodsStatDTO>> countItemSalesUnitPriceByGoods(){
+		List<ItemSalesUnitPriceByGoodsStatDTO> items = itemSales.countItemSalesUnitPriceByGoods();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/count/unit-price-by-sales")
+	public ResponseEntity<List<ItemSalesUnitPriceBySalesStatDTO>> countItemSalesUnitPriceBySalesStatDTO(){
+		List<ItemSalesUnitPriceBySalesStatDTO> items = itemSales.countItemSalesUnitPriceBySalesStatDTO();
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/count/unit-price-by-sales-order")
+	public ResponseEntity<List<ItemSalesUnitPriceBySalesOrderStatDTO>> countItemSalesUnitPriceBySalesOrderStatDTO(@RequestBody ItemSalesByProcurementRequest request){
+		List<ItemSalesUnitPriceBySalesOrderStatDTO> items = itemSales.countItemSalesUnitPriceBySalesOrderStatDTO(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/count/unit-price-by-procurement")
+	public ResponseEntity<List<ItemSalesUnitPriceByProcurementStatDTO>> countItemSalesUnitPriceByProcurementStatDTO(@RequestBody ItemSalesBySalesOrderRequest request){
+		List<ItemSalesUnitPriceByProcurementStatDTO> items = itemSales.countItemSalesUnitPriceByProcurementStatDTO(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_READ_ACCESS)
+	@GetMapping("/track-by-goods/{goodsId}")
+	public ResponseEntity<ItemSalesResponse> trackItemSalesByGoods(@PathVariable Long goodsId){
+		ItemSalesResponse items = itemSales.trackItemSalesByGoods(goodsId);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_READ_ACCESS)
+	@GetMapping("/track-by-sales/{salesId}")
+	public ResponseEntity<ItemSalesResponse> trackItemSalesBySales(@PathVariable Long salesId){
+		ItemSalesResponse items = itemSales.trackItemSalesBySales(salesId);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_READ_ACCESS)
+	@GetMapping("/track-by-procurement/{procurementId}")
+	public ResponseEntity<ItemSalesResponse> trackItemSalesByProcurement(@PathVariable Long procurementId){
+		ItemSalesResponse items = itemSales.trackItemSalesByProcurement(procurementId);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_READ_ACCESS)
+	@GetMapping("/track-by-sales-order/{salesOrderId}")
+	public ResponseEntity<ItemSalesResponse> trackItemSalesBySalesOrder(@PathVariable Long salesOrderId){
+		ItemSalesResponse items = itemSales.trackItemSalesBySalesOrder(salesOrderId);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_READ_ACCESS)
+	@GetMapping("/track/{id}")
+	public ResponseEntity<ItemSalesResponse> trackItemSales(@PathVariable Long id){
+		ItemSalesResponse items = itemSales.trackItemSales(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/{id}/confirm")
+	public ResponseEntity<ItemSalesResponse> confirmItemSales(@PathVariable Long id){
+		ItemSalesResponse items = itemSales.confirmItemSales(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/{id}/cancel")
+	public ResponseEntity<ItemSalesResponse> cancelItemSales(@PathVariable Long id){
+		ItemSalesResponse items = itemSales.cancelItemSales(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/{id}/close")
+	public ResponseEntity<ItemSalesResponse> closeItemSales(@PathVariable Long id){
+		ItemSalesResponse items = itemSales.closeItemSales(id);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/{id}/status/{status}")
+	public ResponseEntity<ItemSalesResponse> changeStatus(@PathVariable Long id,@PathVariable  ItemSalesStatus status){
+		ItemSalesResponse items = itemSales.changeStatus(id, status);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/save")
+	public ResponseEntity<ItemSalesResponse> saveItemSales(@Valid @RequestBody ItemSalesRequest request){
+		ItemSalesResponse items = itemSales.saveItemSales(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/save-as")
+	public ResponseEntity<ItemSalesResponse> saveAs(@Valid @RequestBody ItemSalesSaveAsRequest request){
+		ItemSalesResponse items = itemSales.saveAs(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/save-all")
+	public ResponseEntity<List<ItemSalesResponse>> saveAll(@Valid @RequestBody List<ItemSalesRequest> request){
+		List<ItemSalesResponse> items = itemSales.saveAll(request);
+		return ResponseEntity.ok(items);
+	}
+	
+	@PreAuthorize(RoleGroups.ITEM_SALES_FULL_ACCESS)
+	@PostMapping("/general-search")
+	public ResponseEntity<List<ItemSalesResponse>> generalSearch(@RequestBody ItemSalesSearchRequest request){
+		List<ItemSalesResponse> items = itemSales.generalSearch(request);
+		return ResponseEntity.ok(items);
+	}
 	
 }
